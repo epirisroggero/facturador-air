@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/tmwc_f25flex/!svn/ver/1017/fulltime-model/src/biz/fulltime/dto
+END
+ContactoDTO.as
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/tmwc_f25flex/!svn/ver/1123/fulltime-model/src/biz/fulltime/dto/ContactoDTO.as
+END
+TableReportResult.as
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/tmwc_f25flex/!svn/ver/285/fulltime-model/src/biz/fulltime/dto/TableReportResult.as
+END
+ProveedoresQuery.as
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/tmwc_f25flex/!svn/ver/1175/fulltime-model/src/biz/fulltime/dto/ProveedoresQuery.as
+END
+DocumentoQuery.as
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/tmwc_f25flex/!svn/ver/1278/fulltime-model/src/biz/fulltime/dto/DocumentoQuery.as
+END
+ArticuloDTO.as
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/tmwc_f25flex/!svn/ver/1057/fulltime-model/src/biz/fulltime/dto/ArticuloDTO.as
+END
+EFacturaResult.as
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/tmwc_f25flex/!svn/ver/1254/fulltime-model/src/biz/fulltime/dto/EFacturaResult.as
+END
+ClienteDTO.as
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/tmwc_f25flex/!svn/ver/1077/fulltime-model/src/biz/fulltime/dto/ClienteDTO.as
+END
+ReportParameters.as
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/tmwc_f25flex/!svn/ver/1223/fulltime-model/src/biz/fulltime/dto/ReportParameters.as
+END
+ContactoQuery.as
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/tmwc_f25flex/!svn/ver/1175/fulltime-model/src/biz/fulltime/dto/ContactoQuery.as
+END
+AgendaTareaDTO.as
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/tmwc_f25flex/!svn/ver/1154/fulltime-model/src/biz/fulltime/dto/AgendaTareaDTO.as
+END
+DocumentoDTO.as
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/tmwc_f25flex/!svn/ver/1278/fulltime-model/src/biz/fulltime/dto/DocumentoDTO.as
+END
+CreditoInfo.as
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/tmwc_f25flex/!svn/ver/622/fulltime-model/src/biz/fulltime/dto/CreditoInfo.as
+END
+AntecedentesArticulo.as
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/tmwc_f25flex/!svn/ver/1065/fulltime-model/src/biz/fulltime/dto/AntecedentesArticulo.as
+END
+CodigoNombre.as
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/tmwc_f25flex/!svn/ver/285/fulltime-model/src/biz/fulltime/dto/CodigoNombre.as
+END
+ArticuloQuery.as
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/tmwc_f25flex/!svn/ver/1038/fulltime-model/src/biz/fulltime/dto/ArticuloQuery.as
+END
+ClienteQuery.as
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/tmwc_f25flex/!svn/ver/1175/fulltime-model/src/biz/fulltime/dto/ClienteQuery.as
+END
+StockPrecioQuery.as
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/tmwc_f25flex/!svn/ver/285/fulltime-model/src/biz/fulltime/dto/StockPrecioQuery.as
+END
+ProveedorDTO.as
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/tmwc_f25flex/!svn/ver/1077/fulltime-model/src/biz/fulltime/dto/ProveedorDTO.as
+END

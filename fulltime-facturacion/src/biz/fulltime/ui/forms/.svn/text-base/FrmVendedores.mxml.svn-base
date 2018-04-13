@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:components="components.*" xmlns:components1="com.hillelcoren.components.*" xmlns:components2="biz.fulltime.ui.components.*" xmlns:editor="biz.fulltime.ui.editor.*"
+		  xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" creationComplete="vgroup1_creationCompleteHandler(event)" show="vgroup1_showHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.ComisionesDocumento;
+			import biz.fulltime.model.ParticipacionVendedor;
+			import biz.fulltime.model.Vendedor;
+			import biz.fulltime.ui.facturacion.AyudaVendedores;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TitleWindow;
+			import spark.components.gridClasses.CellPosition;
+			import spark.events.GridItemEditorEvent;
+			
+			import util.CatalogoFactory;
+
+			private var helpWindow:TitleWindow;
+
+			[Bindable]
+			private var _comisiones:ComisionesDocumento;
+
+			[Bindable]
+			public var vendedores:ArrayCollection = CatalogoFactory.getInstance().vendedores;
+			
+			private var _cliente:Cliente;
+
+
+			[Bindable]
+			public function get comisiones():ComisionesDocumento {
+				return _comisiones;
+			}
+
+			public function set comisiones(value:ComisionesDocumento):void {
+				_comisiones = value;
+
+				if (_comisiones.participaciones.length == 0) {
+					var _nueva:ParticipacionVendedor = new ParticipacionVendedor();
+					_nueva.porcentaje = 100;
+
+					_comisiones.participaciones.addItem(_nueva);
+				}
+				
+				
+			}
+
+			protected function dg_keyDownHandler(event:KeyboardEvent):void {
+				var cellPos:CellPosition = dgVendedores.selectedCell;
+
+				if ((event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) { // Se presiono la tecla 'F1' o A-Z o 1-9
+					dgVendedores.startItemEditorSession(cellPos.rowIndex, cellPos.columnIndex);
+
+				} else if (event.keyCode == Keyboard.F1) { // Se presiono la tecla 'F1'
+					event.preventDefault();
+					if (cellPos.columnIndex == 0) {
+						helpWindow = new TitleWindow();
+						helpWindow.title = "Vendedores";
+						helpWindow.width = 300;
+						helpWindow.height = 450;
+
+						var ayudaVendedores:AyudaVendedores = new AyudaVendedores();
+
+						PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
+						PopUpManager.centerPopUp(helpWindow);
+
+						ayudaVendedores.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+						helpWindow.addElement(ayudaVendedores);
+
+						// Hide the close button.
+						helpWindow.closeButton.visible = false;
+					}
+
+				} else if (event.keyCode == Keyboard.INSERT) { // Se presiono la tecla 'INSERT'
+					agregarVendedor();
+				} else if (event.keyCode == Keyboard.DELETE) { // Se presiono la tecla 'DELETE'
+					if (comisiones.participaciones.length > 1) {
+						Alert.show("¿Esta usted seguro?", "Borrar Vendedor", Alert.YES + Alert.NO, null, myCloseHandler2);
+					} else {
+						ParticipacionVendedor(_comisiones.participaciones[0]).vendedor = null;
+						ParticipacionVendedor(_comisiones.participaciones[0]).porcentaje = 100;
+					}
+
+				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					if (validar()) {
+						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					} else {
+						Alert.show("Los porcentajes deben totalizar el cien porciento.", "Advertencia");
+					}
+				} else if (event.keyCode == Keyboard.ENTER) {
+					var maxCol:int = dgVendedores.columnsLength - 2;
+					var maxRow:int = dgVendedores.dataProvider.length - 1;
+
+					var colIndex:int;
+					var rowIndex:int;
+					if (cellPos == null) {
+						colIndex = dgVendedores.editorColumnIndex;
+						rowIndex = dgVendedores.editorRowIndex;
+						callLater(function():void {
+							dgVendedores.setSelectedCell(rowIndex, colIndex);
+						});
+						return;
+					} else {
+						colIndex = cellPos.columnIndex + 1;
+						rowIndex = cellPos.rowIndex;
+					}
+
+					if (colIndex > maxCol) {
+						colIndex = 0;
+						if (rowIndex == maxRow) {
+							agregarVendedor();
+						}
+						rowIndex += 1;
+					}
+					dgVendedores.setSelectedCell(rowIndex, colIndex);
+
+				} else if ((colIndex == 0 || colIndex == 1) && (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) {
+					dgVendedores.startItemEditorSession(cellPos.rowIndex, cellPos.columnIndex);
+				}
+
+			}
+
+			private function myCloseHandler2(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					borrarVendedor();
+				}
+			}
+
+			private function closeHandler(event:CloseEvent):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+
+				var ayudaVendedores:AyudaVendedores = AyudaVendedores(event.target);
+				var vendedor:Vendedor = ayudaVendedores.vendedor;
+
+				var rowIndex:int = dgVendedores.selectedCell.rowIndex;
+				var participacion:ParticipacionVendedor = dgVendedores.dataProvider.getItemAt(rowIndex) as ParticipacionVendedor;
+				participacion.vendedor = vendedor;
+
+				dgVendedores.setFocus();
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				var aux:ArrayCollection = new ArrayCollection();
+				for each (var p:ParticipacionVendedor in _comisiones.participaciones) {
+					if (p.vendedor) {
+						aux.addItem(p);
+					}
+				}
+				_comisiones.participaciones.removeAll();
+				_comisiones.participaciones.addAll(aux);
+
+				var found:Boolean = false;
+				if (cliente.vendedor) {
+					found = false;
+					for each (var participacion1:ParticipacionVendedor in dgVendedores.dataProvider) {
+						if (participacion1.vendedor && cliente.vendedor && cliente.vendedor.codigo == participacion1.vendedor.codigo) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						var _nueva:ParticipacionVendedor = new ParticipacionVendedor();
+						_nueva.vendedor = cliente.vendedor;
+						_nueva.porcentaje = 0;						
+						_comisiones.participaciones.addItem(_nueva);
+					}
+				}
+				
+				if (cliente.encargadoCuenta) {
+					found = false;
+					for each (var participacion:ParticipacionVendedor in dgVendedores.dataProvider) {
+						if (participacion.vendedor &&  participacion.vendedor.codigo == cliente.encargadoCuenta) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						var encargadoDeCuenta:Vendedor;
+						if (cliente.encargadoCuenta) {					
+							for each(var v:Vendedor in CatalogoFactory.getInstance().vendedores) { 
+								if (cliente.encargadoCuenta == v.codigo) {
+									encargadoDeCuenta = v;
+									break;
+								}
+							}
+						}
+						
+						var _nueva1:ParticipacionVendedor = new ParticipacionVendedor();
+						_nueva1.vendedor = encargadoDeCuenta;
+						_nueva1.porcentaje = 0;						
+						_comisiones.participaciones.addItem(_nueva1);
+					}
+				}
+				
+
+				if (validar()) {
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				} else {
+					Alert.show("Los porcentajes deben totalizar el cien porciento.", "Advertencia");
+				}
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
+				callLater(function():void {
+					dgVendedores.setFocus();
+					if (dgVendedores.dataProviderLength > 0) {
+						dgVendedores.setSelectedCell(0, 0);
+					}
+				});
+			}
+
+			protected function vgroup1_showHandler(event:FlexEvent):void {
+				dgVendedores.setFocus();
+			}
+
+			protected function dgVendedores_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void {
+				var maxCol:int = dgVendedores.columnsLength - 1;
+				var maxRow:int = dgVendedores.dataProvider.length - 1;
+
+				var colIndex:int = event.columnIndex + 1;
+				var rowIndex:int = event.rowIndex;
+
+				if (colIndex > maxCol) {
+					colIndex = 0;
+					if (rowIndex == maxRow) {
+						agregarVendedor();
+					} else {
+						rowIndex += 1;
+					}
+				}
+				dgVendedores.setSelectedCell(rowIndex, colIndex);
+			}
+
+			private function agregarVendedor():void {
+				var _nueva:ParticipacionVendedor = new ParticipacionVendedor();
+
+				var total:int = 0;
+				for each (var item:ParticipacionVendedor in _comisiones.participaciones) {
+					total += item.porcentaje;
+				}
+				_nueva.porcentaje = Math.max(100 - total, 0);
+
+				_comisiones.participaciones.addItem(_nueva);
+			}
+
+			private function validar():Boolean {
+				var total:int = 0;
+				for each (var item:ParticipacionVendedor in _comisiones.participaciones) {
+					total += item.porcentaje;
+				}
+				return (total == 100);
+			}
+
+			public function borrarVendedor():void {
+				if (_comisiones.participaciones.length == 1) {
+					for each(var vendedor:Vendedor in CatalogoFactory.getInstance().vendedores) {
+						if (vendedor.codigo == "099") {
+							ParticipacionVendedor(_comisiones.participaciones[0]).vendedor = vendedor;		
+							break;
+						}
+					}
+					ParticipacionVendedor(_comisiones.participaciones[0]).porcentaje = 100;
+					return;
+				}
+				var rowIndex:int = dgVendedores.selectedCell.rowIndex;
+				var maxIndex:int = dgVendedores.dataProvider.length - 1;
+
+				//Borrar participaciones
+				comisiones.participaciones.removeItemAt(rowIndex);
+
+				dgVendedores.invalidateDisplayList();
+				dgVendedores.dataProvider = comisiones.participaciones;
+
+				callLater(function():void {
+					if (rowIndex == 0) {
+						dgVendedores.setSelectedCell(rowIndex, 0);
+					} else if (rowIndex < maxIndex - 1) {
+						dgVendedores.setSelectedCell(rowIndex, 0);
+					} else {
+						dgVendedores.setSelectedCell(maxIndex - 1, 0);
+					}
+					dgVendedores.setSelectedCell(0, 0);
+				});
+			}
+
+			protected function dgVendedores_gridItemEditorSessionCancelHandler(event:GridItemEditorEvent):void {
+			}
+
+			private function codigo_labelFunction(item:Object, column:GridColumn):String {
+				if (item.vendedor) {
+					return item.vendedor.codigo;
+				}
+				return "";
+			}
+
+			private function nombre_labelFunction(item:Object, column:GridColumn):String {
+				if (item.vendedor) {
+					return item.vendedor.codigo + " - " + item.vendedor.nombre;
+				}
+				return "";
+			}
+
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+
+			public function set cliente(value:Cliente):void {
+				_cliente = value;
+			}
+
+		]]>
+	</fx:Script>
+
+	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
+		<s:HGroup width="100%" height="100%" gap="0">
+
+			<s:DataGrid id="dgVendedores" width="100%" height="100%" keyDown="dg_keyDownHandler(event)" 
+						dataProvider="{comisiones.participaciones}" editable="true" gridItemEditorSessionCancel="dgVendedores_gridItemEditorSessionCancelHandler(event)"
+						gridItemEditorSessionSave="dgVendedores_gridItemEditorSessionSaveHandler(event)" selectionMode="singleCell">
+				<s:columns>
+					<s:ArrayList>
+						<s:GridColumn dataField="vendedor" editable="true" headerText="Vendedor" labelFunction="nombre_labelFunction">
+							<s:itemEditor>
+								<fx:Component>
+									<s:GridItemEditor>
+										<components2:MyAutoComplete id="vendedor" width="100%" creationComplete="vendedor_creationCompleteHandler(event)"
+																	dataProvider="{ outerDocument.vendedores }" matchType="anyPart" selectedItemStyleName="underline"
+																	allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction"
+																	backspaceAction="remove" allowNewValues="false"/>
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.Cliente;
+												
+												import mx.events.FlexEvent;
+												
+
+												protected function vendedor_creationCompleteHandler(event:FlexEvent):void {
+													callLater(function():void {
+														vendedor.textInput.setFocus();
+													});
+												}
+
+												override public function get value():Object {
+													return vendedor.selectedItem;
+												}
+
+												override public function set value(newValue:Object):void {
+													vendedor.selectedItem = newValue;
+												}
+
+												override public function prepare():void {
+													super.prepare();
+
+													vendedor.setFocus();
+												}
+
+												public function codigoNombreLabelFunction(item:Object):String {
+													var label:String;
+
+													if (item && item.hasOwnProperty("codigo")) {
+														label = item.codigo;
+													}
+													if (item && item.hasOwnProperty("nombre")) {
+														label += " - " + item.nombre;
+													}
+
+													return label;
+												}
+
+												/**
+												 *  @private
+												 */
+												override public function setFocus():void {
+													vendedor.setFocus();
+												}
+											]]>
+										</fx:Script>
+									</s:GridItemEditor>
+								</fx:Component>
+							</s:itemEditor>
+						</s:GridColumn>
+						<s:GridColumn width="50" dataField="porcentaje" editable="true" headerText="%" />
+						<s:GridColumn width="34" headerText="" rendererIsEditable="true">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:GridItemRenderer>
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.Cliente;
+												
+												import mx.controls.Alert;
+												import mx.events.CloseEvent;
+
+												protected function cmdRemove_clickHandler(event:MouseEvent):void {
+													Alert.show("¿Esta usted seguro?", "Borrar Vendedor", Alert.YES + Alert.NO, null, myCloseHandler);
+												}
+
+												private function myCloseHandler(evt:CloseEvent):void {
+													if (evt.detail == Alert.YES) {
+														outerDocument.borrarVendedor();
+													}
+												}
+																								
+												
+												[Bindable(event='dataChange')]
+												private function removeEnabled():Boolean {
+													var client:Cliente = outerDocument.cliente;
+													if (client && this.data && this.data.vendedor) {
+														if (client.vendedor && client.vendedor.codigo == this.data.vendedor.codigo) {
+															return false;
+														}
+														if (client.encargadoCuenta && client.encargadoCuenta == this.data.vendedor.codigo) {
+															return false;
+														}
+
+													} 
+													return true;
+													
+												}
+											]]>
+										</fx:Script>
+
+										<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="2" paddingLeft="2" paddingTop="2" verticalAlign="middle"
+												  creationComplete="cmdRemove.setFocus()">
+											<s:Button id="cmdRemove" width="100%" height="100%" icon="@Embed('/assets/general/trash.png')" click="cmdRemove_clickHandler(event)" 
+													  focusEnabled="false"/>
+										</s:VGroup>
+									</s:GridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+		</s:HGroup>
+
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+
+</s:HGroup>

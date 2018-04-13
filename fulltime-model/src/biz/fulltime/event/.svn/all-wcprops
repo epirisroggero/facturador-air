@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/tmwc_f25flex/!svn/ver/939/fulltime-model/src/biz/fulltime/event
+END
+FacturasGrabadasEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/tmwc_f25flex/!svn/ver/441/fulltime-model/src/biz/fulltime/event/FacturasGrabadasEvent.as
+END
+ArticuloEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/tmwc_f25flex/!svn/ver/1209/fulltime-model/src/biz/fulltime/event/ArticuloEvent.as
+END
+ClienteEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/tmwc_f25flex/!svn/ver/1124/fulltime-model/src/biz/fulltime/event/ClienteEvent.as
+END
+MonedaEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/tmwc_f25flex/!svn/ver/814/fulltime-model/src/biz/fulltime/event/MonedaEvent.as
+END
+ProveedorEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/tmwc_f25flex/!svn/ver/1069/fulltime-model/src/biz/fulltime/event/ProveedorEvent.as
+END
+FacturasPendientesEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tmwc_f25flex/!svn/ver/738/fulltime-model/src/biz/fulltime/event/FacturasPendientesEvent.as
+END
+ContactoEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/tmwc_f25flex/!svn/ver/1125/fulltime-model/src/biz/fulltime/event/ContactoEvent.as
+END

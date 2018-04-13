@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" xmlns:components="biz.fulltime.ui.components.*" xmlns:renderers="biz.fulltime.ui.renderers.*" creationComplete="vgroup1_creationCompleteHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.DocumentoDTO;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Comprobante;
+			import biz.fulltime.model.LineaDocumento;
+			import biz.fulltime.model.Proveedor;
+			import biz.fulltime.ui.personas.ListadoCotizacionesPanel;
+			import biz.fulltime.ui.personas.ListadoFacturasPanel;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.TitleWindow;
+			
+			import util.CatalogoFactory;
+
+			private var _linea:LineaDocumento;
+
+			[Bindable]
+			public function get linea():LineaDocumento {
+				return _linea;
+			}
+
+			public function set linea(value:LineaDocumento):void {
+				_linea = value;
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				linea.concepto = txtConcepto.text;
+				linea.notas = txtNotas.text;
+
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+
+			}
+			
+			protected function cmbProveedor_changeHandler(event:Event):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function cmbProveedor_keyDownHandler(event:KeyboardEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public function clienteLabelFunction(item:Object):String {
+				var cliente:Cliente = item as Cliente;
+				
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				if (cliente.contacto.ctoRSocial != cliente.contacto.nombre) {
+					label += " [" + cliente.contacto.ctoRSocial + "] ";
+				}
+				
+				return label;
+			}
+			
+			////////////////////////////////
+			///// FACTURAS PENDIENTES //////
+			////////////////////////////////
+			private var remFactPendientes:RemoteObject;
+			
+			public function obtenerDocumentosPendientes():void {
+				if (!remFactPendientes) {
+					remFactPendientes = new RemoteObject();
+					remFactPendientes.destination = "CreatingRpc";
+					remFactPendientes.channelSet = ServerConfig.getInstance().channelSet;
+					remFactPendientes.addEventListener(ResultEvent.RESULT, resultFacturasPendientes);
+					remFactPendientes.addEventListener(FaultEvent.FAULT, handleFault);
+				}
+				
+				remFactPendientes.getDocumentosDeudores();
+			}
+			
+			
+			private function resultFacturasPendientes(event:ResultEvent):void {
+				var data:ArrayCollection = event.result as ArrayCollection;
+				
+			}
+			
+			private function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+			
+			protected function cmdSearch_clickHandler(event:MouseEvent):void {
+				var cliente:Cliente = cmbCliente.selectedItem as Cliente;
+				
+				if (!cliente) {
+					Alert.show("Primero debe seleccionar el cliente.");
+					return;
+				} 
+				var facPendWindow:TitleWindow = new TitleWindow();
+				facPendWindow.title = "Facturas: " + cliente.nombre;
+				facPendWindow.width = 1024;
+				facPendWindow.height = 640;
+				facPendWindow.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
+				
+				var frmFacturas:ListadoFacturasPanel = new ListadoFacturasPanel();
+				frmFacturas.cliente = cliente;
+				frmFacturas.articulo = linea.articulo;
+				frmFacturas.obtenerFacturasOrdenesVenta();
+				
+				PopUpManager.addPopUp(facPendWindow, Sprite(FlexGlobals.topLevelApplication), true);
+				PopUpManager.centerPopUp(facPendWindow);
+				
+				frmFacturas.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
+				frmFacturas.addEventListener("facturaSeleccionada", function(event:Event):void {
+					var doc:DocumentoDTO = frmFacturas.selectedItem as DocumentoDTO;
+					if (doc != null) {
+						txtNumero.text = doc.numero;
+						
+						var values:Array  = txtNotas.text.split("\n");
+						var collection:ArrayCollection = new ArrayCollection(values);
+						collection.addItemAt(cliente.codigo, 0);
+						collection.addItemAt(doc.numero, 1);
+						collection.addItemAt(cliente.nombre, 2);
+						
+						linea.docRefId = new Number(doc.numero);
+						linea.contactoId = cliente.codigo;
+						
+						var nota:String = "";
+						for each (var i:String in collection) {
+							nota+=i+"\n";	
+						}						
+						txtNotas.text = nota;
+						
+						
+					}					
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+					
+					
+				});
+
+				facPendWindow.addElement(frmFacturas);
+				
+				facPendWindow.closeButton.visible = true;
+				
+
+				
+			}
+			
+			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
+				var esCompra:Boolean = linea.documento.comprobante.isCompra() || linea.documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR;
+				
+				vgAyuda.visible = esCompra;
+				vgAyuda.includeInLayout = esCompra;
+				
+				if (linea.contactoId != null) {
+					for each (var cliente:Cliente in CatalogoFactory.getInstance().clientes) {
+						if (cliente.codigo == linea.contactoId) {
+							cmbCliente.selectedItem = cliente;
+							break;
+						}
+					}
+				}
+				if (linea.docRefId) {
+					txtNumero.text = String(linea.docRefId);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+	</fx:Declarations>
+
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+		<s:layout>
+			<s:VerticalLayout/>
+		</s:layout>
+		<s:HGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalAlign="middle">
+			<s:Label text="Concepto" width="90" textAlign="right"/>
+			<s:TextInput id="txtConcepto" width="100%" text="{linea.concepto}" maxChars="50" />
+		</s:HGroup>
+		<s:VGroup id="vgAyuda" width="100%">
+			<s:HGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="0" verticalAlign="middle">			
+				<s:Label text="Cliente" width="90" textAlign="right"/>
+				<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left" change="cmbProveedor_changeHandler(event)" keyDown="cmbProveedor_keyDownHandler(event)"
+										   dataProvider="{CatalogoFactory.getInstance().clientes}" labelField="nombre" matchType="anyPart" prompt="Ingrese proveedor" allowNewValues="false"
+										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="false" allowEditingNewValues="false"
+										   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus" next_focus="{txtNotas}"
+										   previous_focus="{txtConcepto}" dropDownRowCount="10" enabled="{true}" />
+			</s:HGroup>
+			<s:HGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="0" verticalAlign="middle" enabled="{cmbCliente.selectedItem != null}" >			
+				<s:Label text="Factura" width="90" textAlign="right"/>
+				<s:TextInput id="txtNumero" width="90" height="28" editable="false"/>
+				<s:Button id="cmdSearch" label="Buscar" height="28" click="cmdSearch_clickHandler(event)" styleName="textButton"/>
+			</s:HGroup>
+		</s:VGroup>
+	
+		<s:HGroup width="100%" height="100%" paddingLeft="5" paddingRight="5">
+			<s:TextArea id="txtNotas" width="100%" height="100%" text="{linea.notas}" maxChars="1024" prompt="Texto de la nota"/>
+		</s:HGroup>
+	</s:BorderContainer>
+	
+	<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" />
+		</s:layout>
+		<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+		<s:Spacer width="100%" />
+
+		<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" toolTip="Aceptar" />
+		<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cerrar" styleName="cerrarButton" toolTip="Cerrar" />
+	</s:BorderContainer>
+
+</s:VGroup>

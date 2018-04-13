@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.event.ExportToCSVEvent;
+			
+			import mx.events.FlexEvent;
+			
+			import nochump.util.zip.ZipEntry;
+			import nochump.util.zip.ZipFile;
+			
+			private var _entry:ZipEntry;
+			
+			private var _zipFile:ZipFile;
+			
+			private var _changeEntries:Boolean;
+			
+			[Bindable]
+			public function get zipFile():ZipFile {
+				return _zipFile;
+			}
+
+			public function set zipFile(value:ZipFile):void {
+				_zipFile = value;
+			}
+
+			public function get changeEntries():Boolean {
+				return _changeEntries;
+			}
+
+			public function set changeEntries(value:Boolean):void {
+				_changeEntries = value;
+			}
+
+			[Bindable]
+			public function get entry():ZipEntry	{
+				return _entry;
+			}
+
+			public function set entry(value:ZipEntry):void {
+				_entry = value;				
+				_changeEntries = true;
+				invalidateProperties();
+			}
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				
+				if (_changeEntries) {
+					_changeEntries = false;
+					
+					if (_entry) {
+						lblName.text = _entry.name as String;
+						lblTamano.text = sizeFormatter.format(String(_entry.size)) + " bytes";
+						lblFechaMod.text =  dateFormatter.format(new Date(_entry.time));
+					}
+					
+				}
+				
+			}
+
+
+			protected function form1_creationCompleteHandler(event:FlexEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			protected function cmdExportar_clickHandler(event:MouseEvent):void {
+				trace(entry.name);
+				// extract the entry's data from the zip
+				var byteArray:ByteArray = _zipFile.getInput(entry);
+				
+				dispatchEvent(new ExportToCSVEvent(ExportToCSVEvent.EXPORT_TO_CSV, byteArray, entry.name));
+			}
+			
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:NumberFormatter id="sizeFormatter" useThousandsSeparator="true" />
+		<mx:DateFormatter id="dateFormatter" formatString="MM/DD/YYYY L:NN A" />
+	</fx:Declarations>
+	
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0" minHeight="40" cornerRadius="0">
+		<s:layout>
+			<s:VerticalLayout horizontalAlign="left" gap="0" />
+		</s:layout>
+		<s:Form  creationComplete="form1_creationCompleteHandler(event)" visible="{entry != null}">
+			<s:layout>
+				<s:FormLayout gap="-12" />
+			</s:layout>
+			
+			<s:FormItem label="Nombre:">
+				<s:Label id="lblName"/>
+			</s:FormItem>
+			<s:FormItem label="Tamaño:">
+				<s:Label id="lblTamano"/>
+			</s:FormItem>
+			<s:FormItem label="Fecha de modificación:">
+				<s:Label id="lblFechaMod"/>
+			</s:FormItem>
+		</s:Form>
+		
+		<s:HGroup width="400" horizontalAlign="right" paddingTop="20" visible="{entry != null}">
+			<s:Button id="cmdExcel" click="cmdExportar_clickHandler(event)" label="Abrir en Excel" styleName="exportExcel" />
+		</s:HGroup>
+
+	</s:BorderContainer>
+</s:Group>

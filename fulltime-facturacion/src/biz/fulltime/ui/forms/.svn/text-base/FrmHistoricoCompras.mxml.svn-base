@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:components="components.*" xmlns:components1="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:loader="biz.fulltime.util.loader.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)" styleName="pntLineasVenta">
+	<fx:Script>
+		<![CDATA[
+			import com.hillelcoren.components.AutoComplete;
+
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+
+			import spark.components.gridClasses.GridColumn;
+
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.AntecedentesArticulo;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.FamiliaArticulos;
+			import biz.fulltime.model.Usuario;
+
+			import util.CatalogoFactory;
+			import util.DateUtil;
+
+			private var remObjCat:RemoteObject;
+
+			private var _cliente:String;
+
+			private var _maxrows:int = 1000;
+
+
+			[Bindable]
+			public var capitulos:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var subtitulos:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var subfamilia:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var familias:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var proveedores:ArrayCollection = new ArrayCollection();
+
+			private var antecedentes:ArrayCollection;
+
+			private var _changeFilters:Boolean = false;
+
+			private var _changeDate:Boolean = false;
+
+			private var _loading:Boolean = false;
+
+
+			[Bindable]
+			public function get loading():Boolean {
+				return _loading;
+			}
+
+			public function set loading(value:Boolean):void {
+				_loading = value;
+			}
+
+
+			[Bindable]
+			public function get maxrows():int {
+				return _maxrows;
+			}
+
+			public function set maxrows(value:int):void {
+				_maxrows = value;
+			}
+
+			public function get cliente():String {
+				return _cliente;
+			}
+
+			public function set cliente(value:String):void {
+				_cliente = value;
+			}
+
+
+			public function obtenerAntecedentes(fromDate:Date, toDate:Date):void {
+				loading = true;
+
+				remObjCat.getLineasCompraCliente(cliente, fromDate, toDate, maxrows);
+			}
+
+			private function result(event:ResultEvent):void {
+				antecedentes = event.result as ArrayCollection;
+
+				loading = false;
+
+				_changeDate = false;
+
+				filtrar();
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				loading = false;
+
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+				remObjCat = new RemoteObject();
+				remObjCat.destination = "CreatingRpc";
+				remObjCat.channelSet = ServerConfig.getInstance().channelSet;
+				remObjCat.addEventListener(ResultEvent.RESULT, result);
+				remObjCat.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjCat.showBusyCursor = true;
+
+				for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+					var familia:Object = new Object();
+					familia.codigo = Number(f.codigo);
+					familia.nombre = f.nombre;
+
+					if (Number(f.codigo) < 100) {
+						capitulos.addItem(familia);
+					} else if (Number(f.codigo) < 10000) {
+						subtitulos.addItem(familia);
+					} else if (Number(f.codigo) < 1000000) {
+						subfamilia.addItem(familia);
+					} else {
+						familias.addItem(familia);
+					}
+				}
+
+				for each (var contacto:Contacto in CatalogoFactory.getInstance().getContactosActivos()) {
+					if (contacto.ctoProveedor == "S") {
+						var proveedor:Object = new Object();
+						proveedor.codigo = Number(contacto.codigo);
+						proveedor.nombre = contacto.nombre;
+
+						proveedores.addItem(proveedor);
+					}
+				}
+
+			}
+
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			private function serieNumeroLabelFunction(item:Object, column:GridColumn):String {
+				var label:String = "";
+				if (item.documentoSerie) {
+					label += item.documentoSerie;
+				}
+				if (item.documentoNumero) {
+					label += item.documentoNumero;
+				}
+				return label;
+			}
+
+			private function articuloLabelFunction(item:Object, column:GridColumn):String {
+				var label:String = "";
+				if (item.articulo) {
+					label += item.articulo.codigo + "-" + item.articulo.nombre;
+				}
+				return label;
+			}
+
+			protected function txtCapitulos_changeHandler(event:Event):void {
+				if (familias) {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				subtitulos.removeAll();
+				subfamilia.removeAll();
+
+				for each (var o:Object in familias) {
+					o.selected = false;
+				}
+
+				if (txtCapitulos.selectedItem) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+
+						if (Number(f.codigo) >= 100 && Number(f.codigo) < 10000) {
+							if (f.codigo.toString().match(new RegExp("^" + txtCapitulos.selectedItem.codigo, 'i'))) {
+								subtitulos.addItem(familia);
+							}
+						}
+					}
+					familias.filterFunction = filterCapitulo;
+					familias.refresh();
+				} else {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				updateFamilias();
+
+			}
+
+			private function updateFamilias():void {
+				txtFamilia.clear();
+				var ac:ArrayCollection = new ArrayCollection();
+				for each (var o:Object in familias) {
+					ac.addItem(o);
+				}
+				txtFamilia.dataProvider = ac;
+
+				_changeFilters = true;
+
+				invalidateProperties();
+
+			}
+
+			protected function txtSubtitulo_changeHandler(event:Event):void {
+				if (familias) {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				subfamilia.removeAll();
+
+				for each (var o:Object in familias) {
+					o.selected = false;
+				}
+				if (txtSubtitulo.selectedItem) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+
+						if (Number(f.codigo) >= 10000 && Number(f.codigo) < 100000) {
+							if (f.codigo.toString().match(new RegExp("^" + txtSubtitulo.selectedItem.codigo, 'i'))) {
+								subfamilia.addItem(familia);
+							}
+						}
+					}
+					familias.filterFunction = filterSubTitulo;
+					familias.refresh();
+
+				} else {
+					txtCapitulos_changeHandler(event);
+				}
+				updateFamilias();
+
+			}
+
+			protected function txtSubfamilia_changeHandler(event:Event):void {
+				if (familias) {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				for each (var o:Object in familias) {
+					o.selected = false;
+				}
+				if (txtSubfamilia.selectedItem) {
+					familias.filterFunction = filterSubFamilia;
+					familias.refresh();
+				} else {
+					txtSubtitulo_changeHandler(event);
+				}
+
+				updateFamilias();
+			}
+
+
+			private function filterCapitulo(item:Object):Boolean {
+				var _filter:String = txtCapitulos.selectedItem ? txtCapitulos.selectedItem.codigo : null;
+				if (item["codigo"] && _filter) {
+					return item.codigo.toString().match(new RegExp("^" + _filter, 'i'));
+				}
+				return false;
+
+			}
+
+			private function filterSubTitulo(item:Object):Boolean {
+				var _filter:String = txtSubtitulo.selectedItem ? txtSubtitulo.selectedItem.codigo : null;
+				if (item["codigo"] && _filter) {
+					return item.codigo.toString().match(new RegExp("^" + _filter, 'i'));
+				}
+				return false;
+			}
+
+			private function filterSubFamilia(item:Object):Boolean {
+				var _filter:String = txtSubfamilia.selectedItem ? txtSubfamilia.selectedItem.codigo : null;
+				if (item["codigo"] && _filter) {
+					return item.codigo.toString().match(new RegExp("^" + _filter, 'i'));
+				}
+				return false;
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String = "";
+
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += "-" + item.nombre;
+				}
+				return label;
+			}
+
+			protected function txtFamilia_changeHandler(event:Event):void {
+				_changeFilters = true;
+
+				invalidateProperties();
+
+			}
+
+			override protected function commitProperties():void {
+				super.commitProperties();
+
+				if (_changeFilters) {
+					_changeFilters = false;
+
+				}
+
+			}
+
+			private function filtrar():void {
+				var elements:ArrayCollection = new ArrayCollection();
+
+				if (txtFamilia.selectedItem) { // Filtrar por familia
+					var familia:Object = txtFamilia.selectedItem;
+					for each (var a:AntecedentesArticulo in antecedentes) {
+						if (a.articulo && familia.codigo == a.articulo.familiaId) {
+							elements.addItem(a);
+						}
+					}
+				} else if (txtCapitulos.selectedItem || txtSubfamilia.selectedItem || txtSubtitulo.selectedItem) { // Filtrar por capitulo, subamilia o subTitulo
+					var familias:ArrayCollection = new ArrayCollection();
+					for each (var f:Object in txtFamilia.dataProvider) {
+						if (f.codigo) {
+							familias.addItem(f.codigo.toString());
+						}
+					}
+					for each (var a1:AntecedentesArticulo in antecedentes) {
+						if (a1.articulo && a1.articulo.familiaId && familias.contains(a1.articulo.familiaId)) {
+							elements.addItem(a1);
+						}
+					}
+				} else {
+					for each (var a2:AntecedentesArticulo in antecedentes) { // No filtrar por familia
+						elements.addItem(a2);
+					}
+				}
+
+				var result:ArrayCollection = new ArrayCollection();
+				var item:Object = txtProveedor.selectedItem as Object;
+				if (item && item.codigo) {
+					for each (var a3:AntecedentesArticulo in elements) {
+						if (a3.articulo && a3.articulo.proveedor && a3.articulo.proveedor.codigo == item.codigo.toString()) {
+							result.addItem(a3);
+						}
+					}
+				} else {
+					result = elements;
+				}
+
+				var articulo:Object = txtArticulo.selectedItem as Object;
+				if (articulo) {
+					var result2:ArrayCollection = new ArrayCollection();
+					for each (var a4:AntecedentesArticulo in result) {
+						if (a4.articulo && (a4.articulo.codigo == articulo.codigo.toString())) {
+							result2.addItem(a4);
+						}
+					}
+					dgAntecedentes.dataProvider = result2;
+				} else {
+					dgAntecedentes.dataProvider = result;
+				}
+
+			}
+
+			protected function txtProveedor_changeHandler(event:Event):void {
+				_changeFilters = true;
+				invalidateProperties();
+			}
+
+			protected function cmdFiltrar_clickHandler(event:MouseEvent):void {
+				if (_changeDate) {
+					_changeDate = false;
+					obtenerAntecedentes(txtFechaDesde.selectedDate, txtFechaHasta.selectedDate);
+				} else {
+					filtrar();
+				}
+			}
+
+			protected function cmdLimpiar_clickHandler(event:MouseEvent):void {
+				txtArticulo.clear();
+
+				txtCapitulos.clear();
+				txtFamilia.clear();
+				txtSubfamilia.clear();
+				txtSubtitulo.clear();
+
+				txtProveedor.clear();
+
+				txtFechaDesde.selectedDate = null;
+				txtFechaHasta.selectedDate = null;
+
+				callLater(function():void {
+						obtenerAntecedentes(null, null);
+					});
+			}
+
+			protected function txtArticulo_changeHandler(event:Event):void {
+				_changeFilters = true;
+				invalidateProperties();
+			}
+
+			protected function txtFechaDesde_creationCompleteHandler(event:FlexEvent):void {
+				var fechaDesde:Date = new Date();
+
+				fechaDesde = util.DateUtil.clone(fechaDesde).subtract(util.DateUtil.MONTH, 6).datetime;
+				txtFechaDesde.selectedDate = fechaDesde;
+
+				_changeDate = true;
+
+				callLater(function() {
+						obtenerAntecedentes(fechaDesde, new Date());
+					});
+			}
+
+			protected function txtFechaHasta_changeHandler(event:CalendarLayoutChangeEvent):void {
+				_changeDate = true;
+
+			}
+
+			protected function txtFechaDesde_changeHandler(event:CalendarLayoutChangeEvent):void {
+				_changeDate = true;
+			}
+			
+			public function esVendDist():Boolean {
+				var user:Usuario = GeneralOptions.getInstance().loggedUser;
+				if (user.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
+					return true;	
+				}
+				return false;
+			}
+
+		]]>
+	</fx:Script>
+
+	<s:layout>
+		<s:VerticalLayout paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" gap="0" />
+	</s:layout>
+	<s:Panel width="100%" title="Filtrar" dropShadowVisible="false">
+		<s:layout>
+			<s:HorizontalLayout paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" gap="1" />
+		</s:layout>
+
+		<s:VGroup height="100%">
+			<s:Panel height="100%" title="Rango de Fechas" styleName="pnlForm" dropShadowVisible="false" minHeight="0">
+				<s:BorderContainer height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" minHeight="0">
+					<s:layout>
+						<s:VerticalLayout horizontalAlign="left" paddingBottom="5" paddingLeft="15" paddingRight="15" paddingTop="5" verticalAlign="top" />
+					</s:layout>
+					<s:VGroup>
+						<s:HGroup verticalAlign="middle">
+							<s:Label width="90" text="Fecha Desde:" />
+							<mx:DateField id="txtFechaDesde" width="110" change="txtFechaDesde_changeHandler(event)" creationComplete="txtFechaDesde_creationCompleteHandler(event)"
+										  yearNavigationEnabled="true" focusEnabled="true" />
+						</s:HGroup>
+						<s:HGroup verticalAlign="middle">
+							<s:Label width="90" text="Fecha Hasta:" />
+							<mx:DateField id="txtFechaHasta" width="110" change="txtFechaHasta_changeHandler(event)" yearNavigationEnabled="true" focusEnabled="true" selectedDate="{new Date()}" />
+						</s:HGroup>
+					</s:VGroup>
+				</s:BorderContainer>
+			</s:Panel>
+		</s:VGroup>
+
+		<s:VGroup width="340" height="100%" gap="1">
+			<s:Panel width="100%" height="100%" title="Proveedor" styleName="pnlForm" dropShadowVisible="false" minHeight="0" visible="{!esVendDist()}" includeInLayout="{!esVendDist()}">
+				<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" minHeight="0">
+					<s:layout>
+						<s:VerticalLayout paddingBottom="5" paddingLeft="15" paddingRight="15" paddingTop="5" />
+					</s:layout>
+					<s:HGroup width="100%" verticalAlign="middle">
+						<components1:MyAutoComplete id="txtProveedor" width="100%" backgroundAlpha="1" change="txtProveedor_changeHandler(event)" dataProvider="{ proveedores }" matchType="anyPart"
+													prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" />
+					</s:HGroup>
+				</s:BorderContainer>
+			</s:Panel>
+			<s:Panel width="100%" height="100%" title="Artículo" styleName="pnlForm" dropShadowVisible="false" minHeight="0">
+				<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" minHeight="0">
+					<s:layout>
+						<s:VerticalLayout paddingBottom="5" paddingLeft="15" paddingRight="15" paddingTop="5" />
+					</s:layout>
+					<s:HGroup width="100%" paddingBottom="10" verticalAlign="middle">
+						<components1:MyAutoComplete id="txtArticulo" width="100%" backgroundAlpha="1" change="txtArticulo_changeHandler(event)"
+													dataProvider="{ CatalogoFactory.getInstance().articulos }" matchType="anyPart" prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}"
+													allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false"
+													dropDownRowCount="10" />
+					</s:HGroup>
+				</s:BorderContainer>
+			</s:Panel>
+		</s:VGroup>
+
+
+		<s:Panel width="100%" height="100%" title="Familias" styleName="pnlForm" dropShadowVisible="false">
+			<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+				<s:layout>
+					<s:VerticalLayout paddingLeft="15" paddingRight="5" paddingTop="5" />
+				</s:layout>
+				<s:VGroup width="100%" paddingBottom="10">
+					<s:HGroup width="100%" verticalAlign="middle">
+						<s:Label width="70" text="Capítulo:" />
+						<components1:MyAutoComplete id="txtCapitulos" width="240" change="txtCapitulos_changeHandler(event)" dataProvider="{ capitulos }" matchType="anyPart" contentBackgroundAlpha="1"
+													prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" />
+					</s:HGroup>
+					<s:HGroup width="100%" verticalAlign="middle">
+						<s:Label width="70" text="Subtítulo:" />
+						<components1:MyAutoComplete id="txtSubtitulo" width="240" change="txtSubtitulo_changeHandler(event)" dataProvider="{ subtitulos }" matchType="anyPart"
+													contentBackgroundAlpha="1" prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"
+													enabled="{txtCapitulos.selectedItem}" />
+					</s:HGroup>
+					<s:HGroup width="100%" verticalAlign="middle">
+						<s:Label width="70" text="Subfamilia:" />
+						<components1:MyAutoComplete id="txtSubfamilia" width="240" change="txtSubfamilia_changeHandler(event)" dataProvider="{ subfamilia }" matchType="anyPart"
+													contentBackgroundAlpha="1" prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"
+													enabled="{txtSubtitulo.selectedItem}" />
+					</s:HGroup>
+					<s:HGroup width="100%" verticalAlign="middle">
+						<s:Label width="70" text="Familia:" />
+						<components1:MyAutoComplete id="txtFamilia" width="240" change="txtFamilia_changeHandler(event)" dataProvider="{ familias }" matchType="anyPart" contentBackgroundAlpha="1"
+													prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" />
+					</s:HGroup>
+				</s:VGroup>
+			</s:BorderContainer>
+		</s:Panel>
+
+
+
+
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+				<s:Spacer width="100%" />
+				<s:Button id="cmdFiltrar" click="cmdFiltrar_clickHandler(event)" label="Filtrar" enabled="true" styleName="filtrarButton" />
+				<s:Button id="cmdLimpiar" click="cmdLimpiar_clickHandler(event)" label="Limpiar" toolTip="Limpiar Todos los Campos" styleName="clearButton16" />
+			</s:HGroup>
+		</s:controlBarContent>
+
+	</s:Panel>
+
+
+	<s:Panel width="100%" height="100%" title="Compras" dropShadowVisible="false">
+		<s:Group width="100%" height="100%">
+			<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{loading}" includeInLayout="{loading}">
+				<loader:LoadComponent label="Cargando" />
+			</s:VGroup>
+
+			<s:VGroup width="100%" height="100%" fontSize="10" horizontalAlign="center" visible="{!loading}" includeInLayout="{!loading}">
+				<s:DataGrid id="dgAntecedentes" width="100%" height="100%" fontSize="10" borderAlpha="0" rowHeight="22">
+					<s:columns>
+						<s:ArrayList>
+							<s:GridColumn width="75" dataField="fecha" headerText="Fecha" sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import mx.formatters.DateFormatter;
+
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														var fecha:Date = AntecedentesArticulo(data).fecha;
+														if (fecha) {
+															var formatter:DateFormatter = new DateFormatter();
+															formatter.formatString = "DD-MM-YYYY";
+
+															label = formatter.format(fecha);
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="90" dataField="comprobante.nombre" headerText="Tipo" sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														label = AntecedentesArticulo(data).comprobante ? AntecedentesArticulo(data).comprobante.nombre : "";
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="75" headerText="Serie/Nro." sortable="true" labelFunction="serieNumeroLabelFunction">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														label = "";
+														if (AntecedentesArticulo(data).documentoSerie) {
+															label += AntecedentesArticulo(data).documentoSerie;
+														}
+														if (AntecedentesArticulo(data).documentoNumero) {
+															label += AntecedentesArticulo(data).documentoNumero;
+														}
+
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+
+							</s:GridColumn>
+							<s:GridColumn width="40" dataField="cantidad" headerText="Cant." sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														if (AntecedentesArticulo(data).cantidad > 0) {
+															label = AntecedentesArticulo(data).cantidad.toString();
+														} else {
+															label = "";
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+
+							</s:GridColumn>
+							<s:GridColumn width="100" headerText="Artículo Código" sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														label = AntecedentesArticulo(data).articulo ? AntecedentesArticulo(data).articulo.codigo : "";
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn headerText="Concepto" sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														label = AntecedentesArticulo(data).concepto ? AntecedentesArticulo(data).concepto : "";
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="70" headerText="Proveedor" sortable="true" visible="{!esVendDist()}">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														if (AntecedentesArticulo(data).articulo && AntecedentesArticulo(data).articulo.proveedor) {
+															label = AntecedentesArticulo(data).articulo.proveedor.codigo + "-" + AntecedentesArticulo(data).articulo.proveedor.nombre;
+														} else {
+															label = "";
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="70" dataField="moneda.nombre" headerText="Moneda" sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														label = AntecedentesArticulo(data).moneda ? AntecedentesArticulo(data).moneda.nombre : "";
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+
+							<s:GridColumn width="80" dataField="precioUnitario" headerText="Precio U." sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer fontSize="10" textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+
+														if (AntecedentesArticulo(data).precioUnitario && AntecedentesArticulo(data).precioUnitario.length > 0) {
+															var precioUnitario:BigDecimal = new BigDecimal(AntecedentesArticulo(data).precioUnitario).setScale(2, MathContext.ROUND_HALF_UP);
+															label = precioUnitario ? precioUnitario.toString() : "";
+														} else {
+															label = "";
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+
+							<s:GridColumn dataField="neto" headerText="Neto" sortable="true">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+														
+														if (AntecedentesArticulo(data).neto) {
+															var neto:BigDecimal = new BigDecimal(AntecedentesArticulo(data).neto).setScale(2, MathContext.ROUND_HALF_UP);
+															label = neto.toString();
+														} else {
+															label = "";
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+
+							<s:GridColumn dataField="costo" headerText="Costo" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+														
+														if (AntecedentesArticulo(data).costo) {
+															var costo:BigDecimal = new BigDecimal(AntecedentesArticulo(data).costo).setScale(2, MathContext.ROUND_HALF_UP);
+															label = costo.toString();
+														} else {
+															label = "";
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+
+							<s:GridColumn dataField="renta" headerText="Renta" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR }">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (data == null) {
+															return;
+														}
+														setStyle("fontSize", 10);
+														
+														if (AntecedentesArticulo(data).renta) {
+															var renta:BigDecimal = new BigDecimal(AntecedentesArticulo(data).renta).setScale(2, MathContext.ROUND_HALF_UP);
+															label = renta.toString() + "%";
+														} else {
+															label = "";
+														}
+
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+						</s:ArrayList>
+					</s:columns>
+				</s:DataGrid>
+			</s:VGroup>
+		</s:Group>
+	</s:Panel>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingTop="5">
+			<mx:Image source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+		</s:HGroup>
+	</s:controlBarContent>
+
+</s:Panel>

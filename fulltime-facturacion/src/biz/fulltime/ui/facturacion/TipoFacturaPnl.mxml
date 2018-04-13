@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:util="biz.fulltime.util.*"
+		 width="100%" height="100%" backgroundAlpha="0.0" creationComplete="panel1_creationCompleteHandler(event)" title="Seleccionar comprobante">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.model.Caja;
+			import biz.fulltime.model.Comprobante;
+			import biz.fulltime.ui.components.HelpPnl;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.gridClasses.CellPosition;
+			import spark.events.GridSelectionEvent;
+			
+			import util.CatalogoFactory;
+
+			[Bindable]
+			public var myDP:ArrayCollection;
+
+			private var cellPos:CellPosition;
+
+			private var _selectedName:String = "";
+
+			private var _tipoFactura:Object;
+
+			private var _filter:String;
+			
+			private var _modoSolicitud:Boolean = false;
+			
+			private var _modoRecibo:Boolean = false;
+
+			public function get modoRecibo():Boolean {
+				return _modoRecibo;
+			}
+			
+			public function set modoRecibo(value:Boolean):void {
+				_modoRecibo = value;
+			}
+			
+			[Bindable]
+			public function get modoSolicitud():Boolean {
+				return _modoSolicitud;
+			}
+
+			public function set modoSolicitud(value:Boolean):void {
+				_modoSolicitud = value;
+			}
+
+			protected function panel1_creationCompleteHandler(event:FlexEvent):void {
+				dgTipoFactura.setFocus();
+				
+				myDP = new ArrayCollection();
+				
+				var comprobantes:ArrayCollection = CatalogoFactory.getInstance().comprobantesUsuario;
+				for each (var comprobante:Comprobante in comprobantes) {
+					if (modoSolicitud) {
+						if (comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
+							if (comprobante.codigo == "100" || comprobante.codigo == "110" || comprobante.codigo == "120") {
+								myDP.addItem(comprobante);
+							}
+						}
+					} else if (modoRecibo) {
+						if (comprobante.codigo == "30" || comprobante.codigo == "31" || comprobante.codigo == "32") {
+							myDP.addItem(comprobante);
+						}
+					} else {
+	 					if (comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
+							if (comprobante.codigo == "80" || comprobante.codigo == "90" || comprobante.codigo == "70" || comprobante.codigo == "130" ||  comprobante.codigo == "1" || comprobante.codigo == "10" || comprobante.codigo == "11" || comprobante.codigo == "14") {
+								myDP.addItem(comprobante);
+							}
+						} else {
+							if (comprobante.tipo != 21 && comprobante.tipo != 23 && comprobante.tipo != 5 && comprobante.codigo != "5" && comprobante.codigo != "8" && comprobante.codigo != "28") {
+								myDP.addItem(comprobante);
+								
+							}
+						}
+					}
+				}			
+				callLater(function():void {
+					dgTipoFactura.selectedIndex = 0;
+					if (dgTipoFactura.dataProviderLength > 0) {
+						dgTipoFactura.selectedCell = new CellPosition(0, 0);
+					}
+				});
+				if (myDP.length > 0) {
+					_tipoFactura = myDP.getItemAt(0);	
+				}
+				
+			}
+
+			[Bindable]
+			public function get tipoFactura():Object {
+				return _tipoFactura;
+			}
+
+			public function set tipoFactura(value:Object):void {
+				_tipoFactura = value;
+			}
+
+			public function reset():void {
+				if (dgTipoFactura.hasFilter()) {
+					dgTipoFactura.filterReset();
+				}
+				dgTipoFactura.setFocus();
+				dgTipoFactura.setSelectedCell(0, 0);
+
+			}
+
+			protected function vgroup1_showHandler(event:FlexEvent):void {
+				dgTipoFactura.setFocus()
+			}
+
+			protected function cmdNext_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new Event("next_step_"));
+			}
+
+			protected function dgTipoFactura_keyDownHandler(event:KeyboardEvent):void {
+				cellPos = dgTipoFactura.selectedCell;
+
+				if (event.keyCode == Keyboard.F1 || (event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) { // Se presiono la tecla 'F1' o A-Z o 1-9
+					var hlpPanel:HelpPnl = new HelpPnl();
+					hlpPanel.addEventListener(CloseEvent.CLOSE, closePnlHandler);
+
+					if (cellPos != null) {
+						hlpPanel.label = GridColumn(dgTipoFactura.columns.getItemAt(cellPos.columnIndex)).headerText;
+					} else {
+						hlpPanel.label = GridColumn(dgTipoFactura.columns.getItemAt(0)).headerText;
+					}
+					PopUpManager.addPopUp(hlpPanel, this, true);
+					PopUpManager.centerPopUp(hlpPanel);
+				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					if (dgTipoFactura.hasFilter()) {
+						dgTipoFactura.filterReset();
+					} else {
+						dispatchEvent(new Event("previous_step_"));
+					}
+				} else if (event.keyCode == Keyboard.ENTER) { // Se presiono la tecla 'ENTER'
+					_tipoFactura = null;
+					if (cellPos != null) {
+						_tipoFactura = dgTipoFactura.dataProvider.getItemAt(cellPos.rowIndex);
+						dispatchEvent(new Event("next_step_"));
+					}
+				} else if (event.keyCode == Keyboard.TAB) { // Se presiono la tecla 'TAB'
+					event.preventDefault();
+
+					cmdNext.setFocus();
+
+					this.invalidateDisplayList();
+					this.updateDisplayList(this.width, this.height);
+
+				}
+			}
+
+			private function closePnlHandler(event:CloseEvent):void {
+				var helpPnl:HelpPnl = HelpPnl(event.target);
+				var filter:String = helpPnl.getValue();
+				var colName:String = dgTipoFactura.columns.getItemAt(cellPos.columnIndex).dataField;
+
+				var posX:int = cellPos.columnIndex;
+
+				dgTipoFactura.filter(colName, filter);
+
+				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
+				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
+
+				callLater(function():void {
+					dgTipoFactura.setFocus();
+					if (dgTipoFactura.dataProviderLength > 0) {
+						dgTipoFactura.selectedCell = new CellPosition(0, posX);
+					}
+				});
+			}
+
+			protected function dgTipoFactura_selectionChangeHandler(event:GridSelectionEvent):void {
+				cellPos = dgTipoFactura.selectedCell;
+
+				if (cellPos != null) {
+					_tipoFactura = dgTipoFactura.dataProvider.getItemAt(cellPos.rowIndex);
+				} else {
+					_tipoFactura = null;
+				}
+			}
+
+			protected function dgTipoFactura_doubleClickHandler(event:MouseEvent):void {
+				if (cellPos != null) {
+					_tipoFactura = dgTipoFactura.dataProvider.getItemAt(cellPos.rowIndex);
+					dispatchEvent(new Event("next_step_"));
+				}
+			}
+
+			protected function cmdPrevious_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new Event("previous_step_"));
+			}
+
+			private function tipo_labelFunction(item:Object, column:GridColumn):String {
+				return item.tipo + " - " + item.cmptiponom;
+			}
+
+			private function aster_labelFunction(item:Object, column:GridColumn):String {
+				if (item.aster) {
+					return "*";
+				} else {
+					return "";
+				}
+			}
+			
+			private function caja_labelFunction(item:Object, column:GridColumn):String {
+				var comprobante:Comprobante = item as Comprobante; 
+				if (comprobante.getCajaId() == Caja.CAJA_COBRANZA) {
+					return "Cobranza";
+				} else if (comprobante.getCajaId() == Caja.CAJA_PRINCIPAL) {
+					return "Principal";
+				} else {
+					return "";
+				}
+			}
+
+		]]>
+	</fx:Script>
+
+
+	<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="5" paddingTop="5" show="vgroup1_showHandler(event)">
+		<util:FilteredDataGrid id="dgTipoFactura" width="700" height="100%" doubleClick="dgTipoFactura_doubleClickHandler(event)" keyDown="dgTipoFactura_keyDownHandler(event)"
+							   doubleClickEnabled="true" selectionChange="dgTipoFactura_selectionChangeHandler(event)" dataProvider="{myDP}" editable="false"
+							   selectionMode="singleCell">
+			<util:columns>
+				<s:ArrayList>
+					<s:GridColumn width="65" dataField="codigo" headerText="Código" sortable="true" />
+					<s:GridColumn dataField="nombre" headerText="Descripción" sortable="true" />
+					<s:GridColumn width="220" dataField="tipo" headerText="Tipo comprobante" sortable="true" labelFunction="tipo_labelFunction" />
+					<s:GridColumn width="80" dataField="tipo" headerText="Caja" sortable="false" labelFunction="caja_labelFunction" />
+					<s:GridColumn width="32" dataField="aster" headerText="" sortable="false" labelFunction="aster_labelFunction" />
+				</s:ArrayList>
+			</util:columns>
+		</util:FilteredDataGrid>
+	</s:VGroup>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="center" paddingBottom="0" paddingTop="0">
+			<s:HGroup width="640" horizontalAlign="right">
+				<s:Button id="cmdPrevious" height="32" click="cmdPrevious_clickHandler(event)" label="&lt;&lt; Anterior" styleName="textButton" toolTip="Ir selector de facturas" />
+				<s:Spacer width="100%" />
+				<s:Button id="cmdNext" height="32" click="cmdNext_clickHandler(event)" label="Siguiente >>" styleName="textButton" toolTip="Ir a editar la nueva factura" />
+			</s:HGroup>
+		</s:HGroup>
+	</s:controlBarContent>
+</s:Panel>

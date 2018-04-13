@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.AgendaTarea;
+			import biz.fulltime.model.Usuario;
+			
+			import com.adobe.utils.DateUtil;
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import util.CatalogoFactory;
+			import util.DateUtil;
+			import util.ErrorPanel;
+			
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+			
+			private var _tarea:AgendaTarea;
+			
+			private var _usuarioAsignado:Usuario;
+			
+			private var remObj:RemoteObject;
+			
+			private var _cancelPressed:Boolean = true;
+			
+			private var _notaOriginal:String;
+
+			public var matutino:Boolean = true;
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(ResultEvent.RESULT, onResult);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+			}
+
+			[Bindable]
+			public function get tarea():AgendaTarea {
+				return _tarea;
+			}
+			
+			public function set tarea(value:AgendaTarea):void {
+				_tarea = value;
+				_usuarioAsignado = _tarea.usuarioAsignado;
+			}
+			
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				var hours:int = tarea.fechaHora.hours;
+				var minutes:int = tarea.fechaHora.minutes;
+				var seconds:int = tarea.fechaHora.seconds;
+				
+				nuevaFecha.hours = hours;
+				nuevaFecha.minutes = minutes;
+				nuevaFecha.seconds = seconds;
+				
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD/MM/YYYY";
+				_notaOriginal = _tarea.notas;
+				
+				tarea.notas = txtNotas.text;
+				if (_tarea.notas == null) {
+					tarea.notas = "";
+				}				
+				tarea.notas += "\n[" + dateFormatter.format(new Date()) + "] Reagendada de " + 
+					dateFormatter.format(_tarea.fechaHora) + " al " + dateFormatter.format(nuevaFecha) + "."; 
+
+				remObj.reagendarTarea(tarea, com.adobe.utils.DateUtil.getUTCDate(nuevaFecha), _usuarioAsignado, matutino);
+			}
+			
+			private function onResult(event:ResultEvent):void {
+				var info:ErrorPanel = new ErrorPanel();
+				info.cornerRadius = 10;
+				info.backgroundAlpha = .65;
+				info.showButtons = false;
+				info.type = 2;
+				info.errorText = "La tarea fué reagendada para el " + dt.format(txtFecha.selectedDate) + ".";
+				
+				PopUpManager.addPopUp(info, this, true);
+				PopUpManager.centerPopUp(info);
+				
+				_cancelPressed = false;
+				
+				setTimeout(function():void {
+					PopUpManager.removePopUp(info);
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}, 1000);
+			}
+			
+			private function onFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+			}
+			
+			public function get nuevaFecha():Date {
+				return txtFecha.selectedDate;
+			}
+			
+			public function get cancelPressed():Boolean {
+				return _cancelPressed;
+			}
+			
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				_cancelPressed = true;
+				
+				_tarea.notas = _notaOriginal;
+				
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			protected function cmbUsrAsignado_changeHandler(event:Event):void {
+				_usuarioAsignado = cmbUsrAsignado.selectedItem as Usuario;
+			}
+			
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+			
+			public function getEndDate():Date {
+				var fecha:Date = new Date();
+				var now:util.DateUtil = new util.DateUtil(fecha);
+				
+				now.subtract(util.DateUtil.DAY, 1);
+				return now.date;
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+		
+		<mx:DateFormatter id="dt" formatString="DD/MM/YYYY" />
+		<mx:DateFormatter id="dateFormatter" formatString="EEEE, DD de MMMM de YYYY" />
+	</fx:Declarations>
+	
+	<s:Panel width="100%" height="100%" backgroundAlpha="0.0" title="Nueva Tarea" styleName="pntLineasVenta">
+		<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" minHeight="40">
+			<s:VGroup width="100%" height="100%" verticalAlign="top" gap="0">
+				<s:Form width="100%" >
+					<s:layout>
+						<s:FormLayout gap="-12"/>
+					</s:layout>    
+					<s:FormItem label="Usuario Asignado:" fontWeight="bold" textAlign="right">
+						<s:Label fontSize="14" fontWeight="bold" alpha=".8" text="{tarea.usuarioAsignado.nombre ? tarea.usuarioAsignado.nombre : 'No Tiene' }" />
+					</s:FormItem>
+					<s:FormItem label="Fecha Actual:" fontWeight="bold" textAlign="right">
+						<s:Label fontSize="14" fontWeight="bold" alpha=".8" text="{dt.format(tarea.fechaHora)}" />
+					</s:FormItem>
+				</s:Form>
+
+				<mx:HRule width="100%" />
+				
+				<s:HGroup width="100%" height="100%" paddingTop="10" paddingLeft="10" paddingRight="10" paddingBottom="5">
+					<s:VGroup>
+						<s:Group width="100%" height="32">
+							<s:Rect width="100%" height="100%" alpha=".65">
+								<s:fill>
+									<s:SolidColor color="#666666" />
+								</s:fill>
+								<s:stroke>
+									<s:SolidColorStroke color="0x333333" weight="1" />
+								</s:stroke>
+							</s:Rect>
+							<s:Label bottom="6" color="white" fontSize="12" fontStyle="normal" fontWeight="bold" left="10" top="6" verticalAlign="middle" text="Nueva Fecha (*)" />
+						</s:Group>
+						<mx:DateChooser id="txtFecha" yearNavigationEnabled="true" disabledRanges="{[ {rangeEnd: getEndDate()} ]}" />
+						<s:Label fontSize="10" text="{dateFormatter.format(txtFecha.selectedDate)}" />
+					</s:VGroup>
+					<s:VGroup width="100%" height="100%">
+						<s:Group width="100%" height="32">
+							<s:Rect width="100%" height="100%" alpha=".65">
+								<s:fill>
+									<s:SolidColor color="#666666" />
+								</s:fill>
+								<s:stroke>
+									<s:SolidColorStroke color="0x333333" weight="1" />
+								</s:stroke>
+							</s:Rect>
+							<s:Label bottom="6" color="white" fontSize="12" fontStyle="normal" fontWeight="bold" left="10" top="6" verticalAlign="middle"
+									 text="Nuevo Usuario Asignado" />
+						</s:Group>
+						<components:MyAutoComplete id="cmbUsrAsignado" width="100%" textAlign="left" change="cmbUsrAsignado_changeHandler(event)" 
+												   dataProvider="{ catalogs.usuarios }" labelField="nombre" matchType="anyPart" prompt="Nuevo Usuario Asignado"
+												   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }"
+												   allowMultipleSelection="{ false }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+												   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownRowCount="10" selectedItem="{tarea.usuarioAsignado}"/>
+						
+						<s:VGroup width="100%" height="100%" gap="0" paddingTop="0" paddingLeft="0" paddingBottom="0" paddingRight="0">
+							<s:Group width="100%" height="32">
+								<s:Rect width="100%" height="100%" alpha=".65">
+									<s:fill>
+										<s:SolidColor color="#666666" />
+									</s:fill>
+									<s:stroke>
+										<s:SolidColorStroke color="0x333333" weight="1" />
+									</s:stroke>
+								</s:Rect>
+								<s:Label bottom="6" color="white" fontSize="12" fontStyle="normal" fontWeight="bold" left="10" top="6" verticalAlign="middle"
+										 text="Nota" />
+							</s:Group>
+							<s:TextArea id="txtNotas" width="100%" height="100%" prompt="Nota" text="{tarea.notas}"/>
+						</s:VGroup>
+					</s:VGroup>
+				</s:HGroup>
+			</s:VGroup>
+		</s:BorderContainer>
+		
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+				<s:Spacer width="100%" />
+				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Aceptar" toolTip="Aceptar" focusEnabled="true"
+						  enabled="{txtFecha.selectedDate != null}" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cerrarButton" label="Cancelar" toolTip="Cancelar" focusEnabled="true" />
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+	
+	
+</s:Group>

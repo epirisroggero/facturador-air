@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:components1="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:s="library://ns.adobe.com/flex/spark"  gap="0"
+		 width="100%" height="100%" creationComplete="panel1_creationCompleteHandler(event)" xmlns:loader="biz.fulltime.util.loader.*">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.CodigoNombre;
+			import biz.fulltime.dto.ReportParameters;
+			import biz.fulltime.dto.TableReportResult;
+			import biz.fulltime.event.ExportToCSVEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ICollectionView;
+			import mx.collections.XMLListCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.utils.StringUtil;
+			
+			import org.alivepdf.display.Display;
+			import org.alivepdf.layout.Orientation;
+			import org.alivepdf.layout.Size;
+			import org.alivepdf.layout.Unit;
+			import org.alivepdf.pdf.PDF;
+			
+			import spark.components.TitleWindow;
+			
+			import util.ErrorPanel;
+
+			private var _cotizacionesXML:XML;
+
+			[Bindable]
+			public var moneyDP:ArrayCollection;
+
+			private var myPDF:PDF;
+
+			private var helpWindow:TitleWindow;
+
+			private var repParameters:ReportParameters;
+
+			[Embed(source = "/assets/MyriadWebPro.TTF", mimeType = "application/octet-stream")]
+			private var fontStream:Class;
+
+			[Embed(source = "/assets/myriad.afm", mimeType = "application/octet-stream")]
+			private var afmStream:Class;
+
+			private var remObj:RemoteObject;
+
+			[Bindable]
+			public var loading:Boolean = false;
+			
+			[Bindable]
+			public var started:Boolean = false;
+
+
+			protected function panel1_creationCompleteHandler(event:FlexEvent):void {
+				var fechaDesde:Date = new Date();
+				if (fechaDesde.date <= 15) {
+					fechaDesde = util.DateUtil.clone(fechaDesde).subtract(util.DateUtil.MONTH, 1).datetime;
+				}
+				fechaDesde.date = Math.min(fechaDesde.date, 15);
+				txtFechaDesde.selectedDate = fechaDesde;	
+				
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(ResultEvent.RESULT, onResult);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+			}
+			
+			[Bindable]
+			public var byteArray:ByteArray = null;
+			
+			private function onResult(event:ResultEvent):void {
+				byteArray = event.result as ByteArray;
+				loading = false;				
+				
+				lblFechaMod.text = dateFormatter.format(new Date());
+				lblTamano.text = sizeFormatter.format(String(byteArray.bytesAvailable)) + " bytes";
+			}
+
+			[Bindable]
+			public function get cotizacionesXML():XML {
+				return _cotizacionesXML;
+			}
+
+			public function set cotizacionesXML(value:XML):void {
+				_cotizacionesXML = value;
+			}
+
+			protected function resetFields():void {
+			}
+
+			protected function cmdGenerar_clickHandler(event:MouseEvent):void {
+				loading = true;
+				started = true;
+				
+				remObj.getReporteControlPlus(txtFechaDesde.selectedDate, txtFechaHasta.selectedDate, txtRentasMayoresA.text, txtMenoresQue.text);
+			}
+
+			protected function exportarPDF(reportResult:TableReportResult):void {
+				// we create the PDF
+				myPDF = new PDF(Orientation.PORTRAIT, Unit.MM, Size.A4);
+				// we set the zoom to 100%
+				myPDF.setDisplayMode(Display.FULL_WIDTH);
+
+				// we add a page
+				myPDF.addPage();
+
+				var msg:String = "Listado de control +";
+
+				var filtros:String;
+
+			}
+
+			private function resultQuery(repResult:TableReportResult):void {
+				exportarPDF(repResult);
+			}
+
+			private function resultQueryXLS(repResult:TableReportResult):void {
+				exportarExcel(repResult);
+			}
+
+			/**
+			 *
+			 * Export to Excell
+			 *
+			 * @param obj        Objeto simple, XML, XMLList, Array, ArrayCollection o XMLListCollection
+			 *                   que se quiere exportar a excel
+			 * @colsValues       Listado de objetos que indican cual es el nombre de la columna
+			 *                   y que propiedad del objeto se utiliza para sacar los datos de la columna
+			 *                   {header:"nombre del header", value:"propiedad del objeto que contiene el valor"}
+			 * @param defaultName   Nombre default con el que se genera el excel
+			 *
+			 */
+			public function export(obj:Object, colsValues:Array, defautlName:String):void {
+			}
+
+			//----------------------------- 
+			// Private function 
+			//----------------------------- 
+			/**
+			 *
+			 * A partir de un elemento pasado se genera un ICollectionView
+			 * para su correcto recorrido
+			 *
+			 * @param obj         Objeto a convertir a ICollectionView
+			 *
+			 *
+			 * @return referencia a un ICollectionView.
+			 *
+			 */
+			static private function getDataProviderCollection(obj:Object):ICollectionView {
+				if ((obj is Number && isNaN(obj as Number)) || (!(obj is Number) && obj == null)) {
+					return null;
+				} else if (obj is ICollectionView) {
+					return obj as ICollectionView;
+				} else if (obj is Array) {
+					return new ArrayCollection(obj as Array);
+				} else if (obj is XMLList) {
+					return new XMLListCollection(obj as XMLList);
+				} else if (obj is XML) {
+					var col:XMLListCollection = new XMLListCollection();
+					col.addItem(obj);
+					return col;
+				} else if (obj is Object) {
+					return new ArrayCollection([obj]);
+				} else {
+					return null;
+				}
+			}
+
+			protected function exportarExcel(reportResult:TableReportResult):void {
+
+				// create a columns Array
+				var columns:Array = new Array();
+				var repColumns:ArrayCollection = new ArrayCollection(reportResult.columns);
+				repColumns.addItemAt("Codigo", 1);
+
+				var col:int = 0;
+				for each (var colName:String in repColumns) {
+					var column:Object = new Object();
+					column.header = StringUtil.trim(colName).toUpperCase();
+					column.value = "col_" + col;
+					columns.push(column);
+					col++;
+				}
+
+				var dataProvider:Array = new Array();
+
+				var obj:Object = reportResult.rowsWithData;
+
+				for (var i:int = 0; i < obj.length; i++) {
+					var row:Object = obj[i];
+
+					var data:Object = new Object();
+					data.col_0 = row[0];
+					data.col_1 = StringUtil.trim(CodigoNombre(row[1]).codigo);
+					data.col_2 = StringUtil.trim(CodigoNombre(row[1]).nombre);
+					data.col_3 = row[2] != null ? new BigDecimal(row[2]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "0.00";
+
+					for (var k:int = 4; k < repColumns.length + 1; k++) {
+						data["col_" + k] = row[k - 1] ? new BigDecimal(row[k - 1]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "";
+					}
+
+					dataProvider.push(data);
+				}
+
+				export(dataProvider, columns, "reporte_stock_precio.xls");
+			}
+
+			private function onFault(event:FaultEvent):void {
+				loading = false;
+				
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Error";
+					helpWindow.width = 360;
+
+					var errorPanel:ErrorPanel = new ErrorPanel();
+					errorPanel.errorText = event.fault.faultString + "[" + event.fault.faultCode + "]";
+					errorPanel.detailsText = event.fault.toString();
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+					errorPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+					helpWindow.y = 60;
+
+					helpWindow.addElement(errorPanel);
+				}
+
+			}
+
+			private function closeHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+			
+			
+
+			protected function cmdExcel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new ExportToCSVEvent(ExportToCSVEvent.EXPORT_TO_CSV, byteArray, "listado-control-plus.csv"));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:NumberFormatter id="sizeFormatter" useThousandsSeparator="true" />
+		<mx:DateFormatter id="dateFormatter" formatString="MM/DD/YYYY L:NN A" />
+	</fx:Declarations>
+
+	<s:VGroup width="100%">
+		<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+			<s:layout>
+				<s:HorizontalLayout paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" gap="0" />
+			</s:layout>
+			<s:Panel title="Intervalo de fechas" borderColor="0x666666" dropShadowVisible="false" borderAlpha=".5" backgroundColor="#ebfafa" backgroundAlpha=".06" >
+				<s:Form id="form1" width="100%" height="100%">
+					<s:layout>
+						<s:FormLayout gap="-12" />
+					</s:layout>
+					<s:FormItem label="Fecha desde">
+						<mx:DateField id="txtFechaDesde" yearNavigationEnabled="true"/>
+					</s:FormItem>
+					<s:FormItem label="Fecha hasta">
+						<mx:DateField id="txtFechaHasta" selectedDate="{new Date()}" yearNavigationEnabled="true"/>
+					</s:FormItem>
+				</s:Form>
+			</s:Panel>
+			<s:Panel title="Omitir rentas" width="100%" borderColor="0x666666" dropShadowVisible="false" borderAlpha=".5" backgroundColor="#ebfafa" backgroundAlpha=".06">
+				<s:Form id="form2" width="100%">
+					<s:layout>
+						<s:FormLayout gap="-12" />
+					</s:layout>
+					<s:FormItem label="Mayores que">
+						<s:HGroup verticalAlign="middle">
+							<s:TextInput id="txtRentasMayoresA" width="60" restrict="0-9" maxChars="3" textAlign="right"/>
+							<s:Label text="%"/>
+						</s:HGroup>
+					</s:FormItem>
+					<s:FormItem label="Menores que">
+						<s:HGroup verticalAlign="middle">
+							<s:TextInput id="txtMenoresQue" width="60" restrict="0-9" maxChars="3" textAlign="right"/>
+							<s:Label text="%"/>
+						</s:HGroup>
+					</s:FormItem>
+				</s:Form>
+			</s:Panel>
+		</s:BorderContainer>
+		
+		<s:HGroup width="100%" paddingBottom="5"  paddingLeft="5" paddingRight="5" paddingTop="0" verticalAlign="middle">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<components1:IconButton id="cmdGenerar" click="cmdGenerar_clickHandler(event)" styleName="exportButton" label="Generar CSV" />
+		</s:HGroup>
+	</s:VGroup>
+	
+	<s:Panel width="100%" height="100%" title="Resultado" borderAlpha="0">
+		<s:Group width="100%" height="100%">
+			<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{loading}">
+				<loader:LoadComponent label="Generando..."/>
+			</s:VGroup>			
+			
+			<s:VGroup width="100%" height="100%" gap="0" visible="{!loading &amp;&amp; started}">
+				<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0" minHeight="40">
+					<s:layout>
+						<s:VerticalLayout horizontalAlign="left" gap="0" />
+					</s:layout>
+					<s:Form>
+						<s:layout>
+							<s:FormLayout gap="-12" />
+						</s:layout>					
+						<s:FormItem label="Nombre:">
+							<s:Label id="lblName" text="listado-control-plus.csv"/>
+						</s:FormItem>
+						<s:FormItem label="Tamaño:">
+							<s:Label id="lblTamano" />
+						</s:FormItem>
+						<s:FormItem label="Fecha última modificación:">
+							<s:Label id="lblFechaMod"/>
+						</s:FormItem>
+					</s:Form>
+					
+					<s:HGroup width="400" horizontalAlign="right" paddingTop="20">
+						<s:Button id="cmdExcel" click="cmdExcel_clickHandler(event)" label="Abrir en Excel" styleName="exportExcel" />
+					</s:HGroup>
+				</s:BorderContainer>
+			</s:VGroup>			
+		</s:Group>
+		<s:controlBarContent>
+			<s:HGroup width="100%" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+				<mx:Image source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+				<s:Spacer width="100%" />
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+	
+
+</s:VGroup>

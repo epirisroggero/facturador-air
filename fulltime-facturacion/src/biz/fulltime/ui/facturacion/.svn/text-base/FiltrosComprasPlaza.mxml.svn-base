@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components2:PanelShowHide xmlns:components="com.hillelcoren.components.*" xmlns:components1="biz.fulltime.ui.components.*" xmlns:components2="components.*"
+						   xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*"
+						   xmlns:s="library://ns.adobe.com/flex/spark" 
+						   backgroundAlpha=".98" backgroundColor="0xfafafa" title="Filtrar" creationComplete="panelshowhide1_creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.DocumentoQuery;
+			import biz.fulltime.event.FilterEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.TitleWindow;
+			
+			import util.DateUtil;
+			
+			private var _lineasCompraPlaza:ArrayCollection;
+			
+			
+			public function get lineasCompraPlaza():ArrayCollection {
+				return _lineasCompraPlaza;
+			}
+
+			public function set lineasCompraPlaza(value:ArrayCollection):void {
+				_lineasCompraPlaza = value;
+			}
+
+			protected function cmdFilter_clickHandler(event:MouseEvent):void {
+				loadLines();
+			}
+			
+			public function loadLines():void {
+				var fechaDesde:Date = txtFechaDesde.selectedDate;
+				var fechaHasta:Date = txtFechaHasta.selectedDate;
+				
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.showBusyCursor = true;
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, onResult);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+				
+				remObj.getCompraVentaCostos(fechaDesde, fechaHasta, chbMostrarTodas.selected);
+			}
+			
+			private function onResult(event:ResultEvent):void {
+				lineasCompraPlaza = event.result as ArrayCollection;
+				
+				dispatchEvent(new Event("_changeComprasPlaza", true, true));
+			}
+			
+			private function onFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+			}
+			
+			protected function cmdLimpiar_clickHandler(event:MouseEvent):void {
+				txtFechaDesde.data = null;
+				txtFechaHasta.data = null;
+				
+				lineasCompraPlaza = new ArrayCollection();
+				
+				dispatchEvent(new Event("_changeComprasPlaza", true, true));
+			}
+						
+			public function codigoNombreLabelFunction(item:Object):String {
+				var lblCliente:String;
+				
+				if (item != null && item.hasOwnProperty("codigo")) {
+					lblCliente = item.codigo;
+				}
+				if (item != null && item.hasOwnProperty("nombre")) {
+					lblCliente += " - " + item.nombre;
+				}
+				return lblCliente;
+			}
+						
+			
+			protected function panelshowhide1_creationCompleteHandler(event:FlexEvent):void {
+				var startDate:DateUtil = new DateUtil(new Date());
+				startDate.subtract(DateUtil.DAY, 15);
+				txtFechaDesde.selectedDate =  startDate.date;
+				
+				loadLines();
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations />
+	
+	<s:VGroup width="100%" height="100%">
+		<s:HGroup height="100%" paddingBottom="0">
+			<mx:Form>
+				<mx:FormItem label="Fecha desde" fontSize="13" fontWeight="normal">
+					<mx:DateField id="txtFechaDesde" width="110" yearNavigationEnabled="true"  focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
+				</mx:FormItem>
+				<mx:FormItem label="Fecha hasta" fontSize="13" fontWeight="normal">
+					<mx:DateField id="txtFechaHasta" width="110" yearNavigationEnabled="true" selectedDate="{new Date()}" focusEnabled="true" formatString="DD/MM/YYYY" locale="es" />
+				</mx:FormItem>
+			</mx:Form>
+			<s:VGroup paddingLeft="25" paddingTop="20" paddingBottom="20">
+				<s:CheckBox id="chbMostrarTodas" label="Todas las compras" selected="false" />
+			</s:VGroup>
+		</s:HGroup>
+	</s:VGroup>
+	
+	<components2:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<s:Button id="cmdFiltrar" click="cmdFilter_clickHandler(event)" width="100" label="Filtrar" enabled="true" toolTip="Filtrar " styleName="filtrarButton" />
+		</s:HGroup>
+	</components2:controlBarContent>
+</components2:PanelShowHide>

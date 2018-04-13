@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" creationComplete="vgroup1_creationCompleteHandler(event)" initialize="init()" gap="0">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.Proveedor;
+			
+			import com.adobe.images.JPGEncoder;
+			import com.adobe.images.PNGEncoder;
+			import com.hillelcoren.utils.StringUtils;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.graphics.ImageSnapshot;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.utils.StringUtil;
+			
+			import util.CatalogoFactory;
+			import util.ErrorPanel;
+
+
+			[Bindable]
+			private var _emails:ArrayCollection;
+
+			[Bindable]
+			private var _contactos:ArrayCollection;
+
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+
+			private var _cliente:Cliente;
+
+			private var _proveedor:Proveedor;
+
+			[Bindable]
+			private var byteArray:ByteArray;
+
+			private var _clienteSel:Boolean = false;
+			
+			private var _proveedorSel:Boolean = false;
+
+			private var _contactosCargados:Boolean = false;
+
+			[Bindable]
+			private var _selectedContact:Object;
+
+			private var _asunto:String = "Fulltime - Envío de Mail";
+
+			private var remObj:RemoteObject;
+
+			private var remObjC:RemoteObject;
+
+			private var addresses:Array;
+
+
+			[Bindable]
+			public function get asunto():String {
+				return _asunto;
+			}
+
+			public function set asunto(value:String):void {
+				_asunto = value;
+			}
+
+			public function init():void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+
+				remObj.addEventListener(ResultEvent.RESULT, resultSendEMail);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = false;
+
+				_contactos = catalogs.contactos;
+
+				cargarContactos();
+
+				// Remote object
+				remObjC = new RemoteObject();
+				remObjC.destination = "CreatingRpc";
+				remObjC.channelSet = ServerConfig.getInstance().channelSet;
+				remObjC.addEventListener(ResultEvent.RESULT, resultContacto);
+				remObjC.addEventListener(FaultEvent.FAULT, handleFault);
+
+			}
+
+			private function cargarContactos():void {
+				_emails = new ArrayCollection();
+
+				for each (var contacto:Contacto in _contactos) {
+					var value:String = contacto.ctoEmail1;
+					if (value && value != "") {
+						var email1:Object = new Object();
+						email1.codigo = contacto.codigo;
+						email1.name = StringUtil.trim(contacto.nombre);
+						email1.email = value;
+						_emails.addItem(email1);
+					}
+
+					value = contacto.ctoEmail2;
+					if (value && value != "") {
+						var email2:Object = new Object();
+						email2.codigo = contacto.codigo;
+						email2.name = StringUtil.trim(contacto.nombre);
+						email2.email = value;
+						_emails.addItem(email2);
+					}
+				}
+
+				_contactosCargados = true;
+
+				invalidateProperties();
+			}
+
+
+			override protected function commitProperties():void {
+				super.commitProperties();
+
+				if (_clienteSel && _contactosCargados) {
+					_clienteSel = false;
+					_contactosCargados = false;
+
+					_selectedContact = cliente.contacto;
+
+					var email1:String = _selectedContact.ctoEmail1;
+					var email2:String = _selectedContact.ctoEmail2;
+
+					addresses = new Array();
+					if (email1 && email1.length > 3) {
+						addresses[addresses.length] = email1;
+					} else if (email2 && email2.length > 3) {
+						addresses[addresses.length] = email2;
+					} else {
+						_selectedContact = null;
+					}
+				}
+				
+				if (_proveedorSel && _contactosCargados) {
+					_proveedorSel = false;
+					_contactosCargados = false;
+					
+					_selectedContact = proveedor.contacto;
+					
+					var email1:String = _selectedContact.ctoEmail1;
+					var email2:String = _selectedContact.ctoEmail2;
+					
+					addresses = new Array();
+					if (email1 && email1.length > 3) {
+						addresses[addresses.length] = email1;
+					} else if (email2 && email2.length > 3) {
+						addresses[addresses.length] = email2;
+					} else {
+						_selectedContact = null;
+					}
+					
+				}
+
+			}
+
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+
+			public function set cliente(value:Cliente):void {
+				_cliente = value;
+
+				_clienteSel = true;
+
+				invalidateProperties();
+			}
+			
+			public function get proveedor():Proveedor {
+				return _proveedor;
+			}
+			
+			public function set proveedor(value:Proveedor):void {
+				_proveedor = value;
+				_proveedorSel = true;
+				invalidateProperties();
+			}
+
+			private function resultSendEMail(event:ResultEvent):void {
+				var result:String = event.result as String;
+				var resultXML:XML = new XML(result);
+				
+				var error:ErrorPanel = new ErrorPanel();
+				error.backgroundAlpha = .87;
+				error.width = 440;
+				
+				if (resultXML.state == "true") {
+					error.showButtons = false;
+					error.type = 2;
+					error.errorText = "El correo se ha enviado correctamente.";
+					
+					PopUpManager.addPopUp(error, this, true);
+					PopUpManager.centerPopUp(error);
+					
+					setTimeout(function():void {
+						PopUpManager.removePopUp(error);
+					}, 3000);
+				} else {
+					error.showButtons = true;
+					error.type = 0;
+					error.errorText = "Error al enviar correo.";
+					error.detailsText = resultXML.message[0].toString();
+					error.addEventListener(CloseEvent.CLOSE, function(evt:Event):void {
+						PopUpManager.removePopUp(error);
+					});
+					PopUpManager.addPopUp(error, this, true);
+					PopUpManager.centerPopUp(error);
+				}
+
+
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				trace(event.message.toString());
+			}
+
+			public function takeSnapshot(source:IBitmapDrawable):void {
+				var image:ImageSnapshot = ImageSnapshot.captureImage(source, 0, null, false);
+				byteArray = image.data;
+			}
+
+			protected function cmdEnviar_clickHandler(event:MouseEvent):void {
+				enviarEMail();
+			}
+
+			public function enviarEMail():void {
+				byteArray.position = 0;
+				remObj.sendEmail(addresses, txtSubject.text, txtBody.text, byteArray);
+
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			public function dropDownLabelFunction(item:Object):String {
+				var string:String = item.codigo + " - " + item.nombre; // + "-[" + item.email + "]";
+				var searchStr:String = autocomplete.searchText;
+				var returnStr:String = StringUtils.highlightMatch(string, searchStr);
+
+				if (autocomplete.selectedItems.getItemIndex(item) >= 0) {
+					returnStr = "<font color='" + Consts.COLOR_TEXT_DISABLED + "'>" + returnStr + "</font>";
+				}
+
+				return returnStr;
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
+				autocomplete.setFocus();
+			}
+
+			protected function autocomplete_changeHandler(event:Event):void {
+				addresses = new Array();
+
+				var i:int = 0;
+				for each (var address:Object in autocomplete.selectedItems) {
+					if (address is String) {
+						addresses[i] = address;
+					} else {
+						// Obtener todos los dataos del cliente ...
+						remObjC.findCatalogEntity("Contacto", address.codigo);
+					}
+					i++;
+				}
+
+			}
+
+			private function resultContacto(event:ResultEvent):void {
+				var result:* = event.result;
+
+				if (result == null) {
+					trace("Advertencia: ", " El resultado de la consulta fue vacio.");
+				}
+
+				if (result is Contacto) {
+					var cont:Contacto = result as Contacto;
+					var email1:String = cont.ctoEmail1;
+					var email2:String = cont.ctoEmail2;
+
+					if (email1 && email1.length > 3) {
+						addresses[addresses.length] = email1;
+					} else if (email2 && email2.length > 3) {
+						addresses[addresses.length] = email2;
+					} else {
+						Alert.show(cont.nombre + " no tiene dirección de correo asociado.", "Advertencia", 4, null, closeHandler);
+					}
+
+				}
+
+			}
+
+			private function closeHandler(event:Event):void {
+				autocomplete.selectedItems.removeItemAt(autocomplete.selectedItems.length - 1);
+				autocomplete.setFocus();
+
+
+			}
+		]]>
+	</fx:Script>
+
+	<s:Form width="100%">
+		<s:layout>
+			<s:FormLayout gap="-12" />
+		</s:layout>
+		<s:FormItem width="100%" fontWeight="normal" textAlign="right" label="Para">
+			<components:MyAutoComplete id="autocomplete" width="100%" textAlign="left" change="autocomplete_changeHandler(event)" dataProvider="{ _contactos }" allowMultipleSelection="true"
+									   allowNewValues="true" allowEditingNewValues="true" labelField="nombre" dropDownLabelFunction="dropDownLabelFunction" matchType="word"
+									   selectedItemStyleName="macMail" next_focus="{txtSubject}" selectedItem="{_selectedContact}" />
+		</s:FormItem>
+		<s:FormItem width="100%" fontWeight="normal" textAlign="right" label="Asunto">
+			<s:TextInput id="txtSubject" width="100%" textAlign="left" text="{asunto}" enter="{txtBody.setFocus()}" />
+		</s:FormItem>
+		<s:FormItem width="100%" label="Texto">
+			<s:TextArea id="txtBody" width="100%" height="50" textAlign="left" prompt="Ingrese texto del mensaje." />
+		</s:FormItem>
+	</s:Form>
+	<s:HGroup paddingTop="10" verticalAlign="middle">
+		<mx:Image id="loader1" source="@Embed(source='/assets/general/mail_attachment.png')" />
+		<s:Label fontWeight="normal" text="Documento Adjunto" />
+	</s:HGroup>
+
+	<s:Group width="100%" height="100%">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="0" paddingLeft="10" paddingRight="0" paddingTop="0" />
+		</s:layout>
+		<s:Scroller width="100%" height="100%" minHeight="0">
+			<s:Group width="100%" height="100%">
+				<s:SWFLoader id="swfLoader" source="{byteArray}">
+					<s:filters>
+						<s:DropShadowFilter />
+					</s:filters>
+				</s:SWFLoader>
+			</s:Group>
+		</s:Scroller>
+	</s:Group>
+
+
+	<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" />
+		</s:layout>
+		<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+		<s:Spacer width="100%" />
+
+		<s:Button id="cmdEnviar" click="cmdEnviar_clickHandler(event)" label="Enviar" styleName="eMailButton" toolTip="Enviar correo" />
+		<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cerrar" styleName="cerrarButton" toolTip="Cerrar" />
+	</s:BorderContainer>
+
+</s:VGroup>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- http://blog.flexexamples.com/2009/03/22/setting-a-background-image-on-an-fxapplication-in-flex-gumbo/ -->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" name="CustomApplicationSkin" alpha.disabled="0.5">
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="normalAndInactive" />
+	</s:states>
+	
+	<fx:Metadata>
+		<![CDATA[ 
+		[HostComponent("spark.components.Application")]
+		]]>
+	</fx:Metadata>
+	
+	<!-- fill -->
+	<s:BitmapImage id="img"
+				   source="@Embed('assets/background/fuzz_blue.jpg')"
+				   smooth="true"
+				   alpha=".42"
+				   left="0" right="0"
+				   top="0" bottom="0"  />
+	<s:Group id="contentGroup" bottom="0" left="0" right="0" top="0" minWidth="0" minHeight="0" />
+</s:Skin>

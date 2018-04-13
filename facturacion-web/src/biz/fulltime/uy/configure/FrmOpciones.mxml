@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" initialize="vgroup1_initializeHandler(event)" gap="0">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.CodigoNombre;
+			import biz.fulltime.model.CotizacionesMonedas;
+			import biz.fulltime.model.Deposito;
+			import biz.fulltime.model.Fanfold;
+			import biz.fulltime.model.ParametrosAdministracion;
+			import biz.fulltime.model.PreciosVenta; 
+			import biz.fulltime.model.Usuario;
+
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.validators.Validator;
+
+			import util.CatalogoFactory;
+			import util.EncryptUtils;
+
+			[Bindable]
+			private var arrPrinters:ArrayCollection;
+
+			[Bindable]
+			private var prnFacturacion:String;
+
+			[Bindable]
+			private var prnRemitos:String;
+
+			[Bindable]
+			private var prnNotasEnvio:String;
+
+			[Bindable]
+			private var prnOtros:String;
+
+			[Bindable]
+			private var fanfoldF:Fanfold;
+
+			[Bindable]
+			private var fanfoldR:Fanfold;
+
+			[Bindable]
+			private var modoMostrador:Boolean;
+
+			[Bindable]
+			private var envioAutMail:Boolean;
+
+			[Bindable]
+			private var abrirPDFEFactura:Boolean;
+
+			[Bindable]
+			private var usarCajaPrincipal:Boolean;
+
+			[Bindable]
+			private var claveSupervisora:String;
+
+			[Bindable]
+			private var validatorArr:Array;
+
+			private var remObjCotizaciones:RemoteObject;
+
+			private var remObjAdministracion:RemoteObject;
+
+			protected function cmdGuardar_clickHandler(event:MouseEvent):void {
+				if (validatorArr && validatorArr.length > 0) {
+					var validatorErrorArray:Array = Validator.validateAll(validatorArr);
+
+					var isValidForm:Boolean = validatorErrorArray.length == 0;
+					if (!isValidForm) {
+						tn.selectedIndex = 2;
+						return;
+					} else {
+						var remObj:RemoteObject = new RemoteObject();
+						remObj.destination = "CreatingRpc";
+						remObj.channelSet = ServerConfig.getInstance().channelSet;
+						remObj.updateEmail(GeneralOptions.getInstance().loggedUser.codigo, txtEmail.text);
+					}
+
+					if (chbChangePassword && chbChangePassword.selected) {
+						var oldPsw:String = EncryptUtils.encryptString(txtOldPsw.text);
+						var value:Boolean = claveSupervisora != oldPsw;
+
+						if (claveSupervisora && value) {
+							Alert.show("La contraseña actual no coincide", "Cambio de contraseña");
+							callLater(function():void {
+									txtOldPsw.selectAll();
+									txtOldPsw.setFocus();
+								});
+							return;
+						} else if (txtNewPsw.text.length < 6) {
+							Alert.show("La contraseña debe tener al menos 6 caracters.", "Cambio de contraseña");
+							callLater(function():void {
+									txtNewPsw.setFocus();
+								});
+							return;
+						} else if (txtNewPsw.text != txtConfirmPsw.text) {
+							Alert.show("Error al confirmar la contraseña.", "Cambio de contraseña");
+							callLater(function():void {
+									txtConfirmPsw.text = "";
+									txtNewPsw.setFocus();
+									txtNewPsw.selectAll();
+								});
+							return;
+						} else {
+							claveSupervisora = txtNewPsw.text;
+
+							var remObj:RemoteObject = new RemoteObject();
+							remObj.destination = "CreatingRpc";
+							remObj.channelSet = ServerConfig.getInstance().channelSet;
+							remObj.updateClaveSup(GeneralOptions.getInstance().loggedUser.codigo, EncryptUtils.encryptString(claveSupervisora));
+						}
+					}
+
+				}
+
+				if (ddlFacturacion) {
+					GeneralOptions.getInstance().opciones.impresoras.facturacion = ddlFacturacion.selectedItem;
+				}
+				if (ddlremitos) {
+					GeneralOptions.getInstance().opciones.impresoras.remitos = ddlremitos.selectedItem;
+				}
+				if (ddlOtros) {
+					GeneralOptions.getInstance().opciones.impresoras.otros = ddlOtros.selectedItem;
+				}
+				if (ddlNotasEnvio) {
+					GeneralOptions.getInstance().opciones.impresoras.notasEnvio = ddlNotasEnvio.selectedItem;
+				}
+				if (chbModoMostrador) {
+					GeneralOptions.getInstance().opciones.modoMostrador = chbModoMostrador.selected;
+					GeneralOptions.getInstance().dispatchEvent(new Event("_changeModoMostrador"));
+				}
+				if (chbEnvioAutomaticoMail) {
+					GeneralOptions.getInstance().opciones.envioAutomaticoMail = chbEnvioAutomaticoMail.selected;
+				}
+				if (chbUsarCajaPrincipal) {
+					GeneralOptions.getInstance().opciones.usarCajaPrincipal = chbUsarCajaPrincipal.selected;
+				}
+
+				
+//				var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Opciones.xml");
+//				var newXMLStr:String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" + GeneralOptions.getInstance().opciones.toXMLString();
+//
+//				trace(newXMLStr);
+//				var fs:FileStream = new FileStream();
+//				fs.open(file, FileMode.WRITE);
+//				fs.writeUTFBytes(newXMLStr);
+//				fs.close();
+
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function vgroup1_initializeHandler(event:FlexEvent):void {
+//				var printers:Vector.<String> = PrintJob.printers;
+//				arrPrinters = new ArrayCollection();
+//
+//				for (var i:int = 0; i < printers.length; i++) {
+//					arrPrinters.addItem(printers[i]);
+//				}
+
+				prnFacturacion = GeneralOptions.getInstance().opciones.impresoras.facturacion;
+				prnRemitos = GeneralOptions.getInstance().opciones.impresoras.remitos;
+				prnOtros = GeneralOptions.getInstance().opciones.impresoras.otros;
+				prnNotasEnvio = GeneralOptions.getInstance().opciones.impresoras.notasEnvio;
+
+				modoMostrador = GeneralOptions.getInstance().opciones.modoMostrador == "true";
+				usarCajaPrincipal = GeneralOptions.getInstance().opciones.usarCajaPrincipal == "true";
+				envioAutMail = GeneralOptions.getInstance().opciones.envioAutomaticoMail == "true";
+				abrirPDFEFactura = GeneralOptions.getInstance().opciones.eFactura.abrirPDF == "true";
+
+//				for (var k:int = 0; k < printers.length; k++) {
+//					arrPrinters.addItem(printers[k]);
+//				}
+
+				var fanfoldFacturas:String = GeneralOptions.getInstance().opciones.fanfold.facturas;
+				var fanfoldRemitos:String = GeneralOptions.getInstance().opciones.fanfold.remitos;
+
+				for each (var fanfold:Fanfold in CatalogoFactory.getInstance().fanfold) {
+					if (fanfoldFacturas == fanfold.codigo) {
+						fanfoldF = fanfold;
+					}
+					if (fanfoldRemitos == fanfold.codigo) {
+						fanfoldR = fanfold;
+					}
+
+				}
+
+			}
+
+			protected function formitem1_creationCompleteHandler(event:FlexEvent):void {
+				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
+				if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR || loggedUser.permisoId == Usuario.USUARIO_TITO) {
+					frmItemModoMostrador.visible = false;
+				} else {
+					frmItemModoMostrador.visible = true;
+				}
+
+			}
+
+			protected function adminitracion_creationCompleteHandler(event:FlexEvent):void {
+				var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
+
+				var depPpal:String = param.depIdParAdm.toString();
+				for each (var deposito:Deposito in CatalogoFactory.getInstance().depositos) {
+					if (depPpal == deposito.codigo) {
+						txtDepPpal.text = deposito.nombre;
+					}
+				}
+
+				var precioVta:String = param.precioVentaIdParAdm.toString();
+				for each (var precioVenta:PreciosVenta in CatalogoFactory.getInstance().preciosVenta) {
+					if (precioVta == precioVenta.codigo) {
+						txtPV.text = precioVenta.nombre;
+					}
+				}
+
+			}
+
+			protected function usuarioData_creationCompleteHandler(event:FlexEvent):void {
+				var clave:String = GeneralOptions.getInstance().loggedUser.claveSup;
+				if (clave) {
+					claveSupervisora = clave;
+				} else {
+					claveSupervisora = null;
+				}
+
+				validatorArr = new Array();
+				validatorArr.push(email_emailValidator1);
+
+			}
+
+			protected function cmdSaveCotizacion_clickHandler(event:MouseEvent):void {
+				var cotizacion:CotizacionesMonedas = new CotizacionesMonedas();
+
+				cotizacion.dia = txtFecha.selectedDate;
+				cotizacion.empId = "FULLTIME2";
+
+				cotizacion.dolarCompra = txtDolarCompra.text;
+				cotizacion.dolarVenta = txtDolarVenta.text;
+				cotizacion.euroCompra = txtEuroCompra.text;
+				cotizacion.euroVenta = txtEuroVenta.text;
+
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var result:Boolean = evt.result as Boolean;
+
+						remObjCotizaciones.getCotizacion(txtFecha.selectedDate);
+					});
+				remObj.altaCotizacion(cotizacion);
+
+			}
+
+			protected function txtFecha_changeHandler(event:CalendarLayoutChangeEvent):void {
+				remObjCotizaciones.getCotizacion(txtFecha.selectedDate);
+			}
+
+			protected function cotizaciones_creationCompleteHandler(event:FlexEvent):void {
+				remObjCotizaciones = new RemoteObject();
+				remObjCotizaciones.destination = "CreatingRpc";
+				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
+				remObjCotizaciones.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var cotizacion:CotizacionesMonedas = evt.result as CotizacionesMonedas;
+
+						txtDolarCompra.text = new BigDecimal(cotizacion.dolarCompra).setScale(4).toString();
+						txtDolarVenta.text = new BigDecimal(cotizacion.dolarVenta).setScale(4).toString();
+						txtEuroCompra.text = new BigDecimal(cotizacion.euroCompra).setScale(4).toString();
+						txtEuroVenta.text = new BigDecimal(cotizacion.euroVenta).setScale(4).toString();
+
+						txtCotizacionesError.text = "";
+					});
+				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
+						txtDolarCompra.text = BigDecimal.ZERO.setScale(4).toString();
+						txtDolarVenta.text = BigDecimal.ZERO.setScale(4).toString();
+						txtEuroCompra.text = BigDecimal.ZERO.setScale(4).toString();
+						txtEuroVenta.text = BigDecimal.ZERO.setScale(4).toString();
+
+						if (txtCotizacionesError) {
+							txtCotizacionesError.text = "* " + evt.fault.rootCause.message;
+						}
+
+					});
+
+				remObjCotizaciones.getCotizacion(new Date());
+
+			}
+
+			public function getStartDate():Date {
+				var fecha:Date = new Date();
+				var now:util.DateUtil = new util.DateUtil(fecha);
+
+				now.add(util.DateUtil.DAY, 1);
+				return now.date;
+			}
+
+
+			protected function txtConfirmPsw_enterHandler(event:FlexEvent):void {
+				cmdGuardar.setFocus();
+
+			}
+
+			protected function cmdGuardarPsw_clickHandler(event:MouseEvent):void {
+
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<mx:DateFormatter id="dt" formatString="DD/MM/YYYY" />
+		<mx:DateFormatter id="dateFormatter" formatString="EEEE, DD de MMMM de YYYY" />
+
+		<mx:EmailValidator id="email_emailValidator1" source="{txtEmail}" required="false" property="text" />
+	</fx:Declarations>
+
+
+	<s:BorderContainer width="100%" height="100%" backgroundColor="#DADADA" borderAlpha="0" minHeight="25">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" />
+		</s:layout>
+
+		<mx:TabNavigator id="tn" width="100%" height="100%" backgroundColor="0xFAFAFA" verticalGap="0">
+			<mx:VBox width="100%" height="100%" label="General">
+				<s:Panel width="100%" height="100%" title="Opciones Generales" styleName="pnlForm" dropShadowVisible="false">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingRight="5" />
+						</s:layout>
+
+						<s:Form width="100%" height="100%">
+							<s:layout>
+								<s:FormLayout gap="-12" />
+							</s:layout>
+							<s:FormItem id="frmItemModoMostrador" width="100%" creationComplete="formitem1_creationCompleteHandler(event)" label="Modo mostrador">
+								<s:CheckBox id="chbModoMostrador" selected="{modoMostrador}" />
+							</s:FormItem>
+							<s:FormItem width="100%" label="Envío automático de correo">
+								<s:CheckBox id="chbEnvioAutomaticoMail" selected="{envioAutMail}" />
+							</s:FormItem>
+						</s:Form>
+					</s:BorderContainer>
+				</s:Panel>
+			</mx:VBox>
+
+			<mx:VBox width="100%" height="100%" paddingTop="0" verticalGap="0" label="Impresoras">
+				<s:Panel width="100%" height="60%" title="Configuración de impresoras" styleName="pnlForm" dropShadowVisible="false">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingRight="5" />
+						</s:layout>
+
+						<s:Form width="100%" height="100%">
+							<s:layout>
+								<s:FormLayout gap="-12" />
+							</s:layout>
+							<s:FormItem width="100%" label="Facturas">
+								<s:DropDownList id="ddlFacturacion" width="100%" dataProvider="{arrPrinters}" selectedItem="{prnFacturacion}" />
+							</s:FormItem>
+							<s:FormItem width="100%" label="Remitos">
+								<s:DropDownList id="ddlremitos" width="100%" dataProvider="{arrPrinters}" selectedItem="{prnRemitos}" />
+							</s:FormItem>
+							<s:FormItem width="100%" label="Notas de envío">
+								<s:DropDownList id="ddlNotasEnvio" width="100%" dataProvider="{arrPrinters}" selectedItem="{prnNotasEnvio}" />
+							</s:FormItem>
+							<s:FormItem width="100%" label="Otros">
+								<s:DropDownList id="ddlOtros" width="100%" dataProvider="{arrPrinters}" selectedItem="{prnOtros}" />
+							</s:FormItem>
+
+						</s:Form>
+
+					</s:BorderContainer>
+				</s:Panel>
+
+			</mx:VBox>
+
+			<mx:VBox width="100%" height="100%" verticalGap="0" creationComplete="usuarioData_creationCompleteHandler(event)" label="Datos del usuario">
+				<s:Panel width="100%" title="Clave Supervisora" styleName="pnlForm" dropShadowVisible="false"
+						 visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}"
+						 includeInLayout="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
+					<s:BorderContainer width="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingBottom="20" paddingLeft="5" paddingRight="5" paddingTop="5" />
+						</s:layout>
+						<s:HGroup paddingLeft="20">
+							<s:CheckBox id="chbChangePassword" left="10" label="Cambiar contraseña supervisora" selected="false" />
+						</s:HGroup>
+						<s:VGroup width="100%" height="100%" paddingLeft="20">
+							<s:Form width="100%" height="100%" visible="{chbChangePassword.selected}">
+								<s:layout>
+									<s:FormLayout paddingBottom="-10" paddingTop="-10" gap="-12" />
+								</s:layout>
+								<s:FormItem width="100%" label="Contraseña actual" visible="{claveSupervisora != null}">
+									<s:TextInput id="txtOldPsw" width="100" displayAsPassword="true" maxChars="16" enter="{txtNewPsw.setFocus()}" />
+								</s:FormItem>
+								<s:FormItem width="100%" label="Nueva contraseña">
+									<s:TextInput id="txtNewPsw" width="100" displayAsPassword="true" maxChars="16" enter="{txtConfirmPsw.setFocus()}" />
+								</s:FormItem>
+								<s:FormItem width="100%" label="Repetir nueva contraseña">
+									<s:TextInput id="txtConfirmPsw" width="100" displayAsPassword="true" maxChars="16" enter="txtConfirmPsw_enterHandler(event)" />
+								</s:FormItem>
+							</s:Form>
+						</s:VGroup>
+					</s:BorderContainer>
+				</s:Panel>
+
+				<s:Panel width="100%" height="100%" title="Dirección de e-mail" styleName="pnlForm" dropShadowVisible="false">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" />
+						</s:layout>
+						<s:VGroup width="100%" height="100%" paddingTop="10">
+							<s:Form width="100%" height="100%">
+								<s:layout>
+									<s:FormLayout paddingBottom="-10" paddingTop="-20" gap="-12" />
+								</s:layout>
+								<s:FormItem width="100%" label="Email">
+									<s:TextInput id="txtEmail" width="100%" maxChars="50" text="{GeneralOptions.getInstance().loggedUser.usuEmail}" />
+								</s:FormItem>
+							</s:Form>
+						</s:VGroup>
+					</s:BorderContainer>
+				</s:Panel>
+			</mx:VBox>
+
+			<mx:VBox width="100%" height="100%" label="Administración">
+				<s:Panel width="100%" height="100%" creationComplete="adminitracion_creationCompleteHandler(event)" title="Administración" styleName="pnlForm" dropShadowVisible="false">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" />
+						</s:layout>
+
+						<s:Form width="100%" height="100%">
+							<s:layout>
+								<s:FormLayout paddingBottom="-10" paddingTop="-10" gap="-12" />
+							</s:layout>
+							<s:FormItem width="100%" label="Trabado de comprobantes">
+								<mx:DateField id="chbFechaTrabado" locale="es_ES" selectedDate="{CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado}" enabled="false" />
+							</s:FormItem>
+							<s:FormItem width="100%" label="Depósito principal del local">
+								<s:TextInput id="txtDepPpal" width="100%" enabled="false" />
+							</s:FormItem>
+							<s:FormItem width="100%" label="Precio de venta predeterminado">
+								<s:TextInput id="txtPV" width="100%" enabled="false" />
+							</s:FormItem>
+						</s:Form>
+					</s:BorderContainer>
+				</s:Panel>
+			</mx:VBox>
+
+			<mx:VBox width="100%" height="100%" label="Cajas">
+				<s:Panel width="100%" height="100%" title="Cajas" styleName="pnlForm" dropShadowVisible="false">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingRight="5" />
+						</s:layout>
+						<s:Form width="100%" height="100%">
+							<s:layout>
+								<s:FormLayout gap="-12" />
+							</s:layout>
+							<s:FormItem width="100%" label="Usar caja principal">
+								<s:CheckBox id="chbUsarCajaPrincipal" selected="{usarCajaPrincipal}" />
+							</s:FormItem>
+						</s:Form>
+
+					</s:BorderContainer>
+				</s:Panel>
+			</mx:VBox>
+
+			<mx:VBox width="100%" height="100%" label="Tipo cambio"
+					 enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}">
+				<s:Panel width="100%" height="100%" creationComplete="cotizaciones_creationCompleteHandler(event)" title="Cotizaciones" styleName="pnlForm" dropShadowVisible="false">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:HorizontalLayout paddingLeft="0" paddingRight="0" paddingTop="3" gap="0" />
+						</s:layout>
+
+						<mx:DateChooser id="txtFecha" change="txtFecha_changeHandler(event)" yearNavigationEnabled="true" selectedDate="{new Date()}" borderAlpha=".2" contentBackgroundAlpha="0.1"
+										disabledRanges="{[ {rangeStart: getStartDate()} ]}" />
+						<s:VGroup width="100%">
+							<s:Panel width="100%" title="{dateFormatter.format(txtFecha.selectedDate)}" styleName="pnlCotizaciones">
+								<s:Form width="100%" height="100%">
+									<s:layout>
+										<s:FormLayout paddingBottom="-10" paddingTop="-10" gap="-12" />
+									</s:layout>
+									<s:FormItem width="100%" label="Dolar compra">
+										<s:TextInput id="txtDolarCompra" width="100" textAlign="right" restrict="0-9." enter="{txtDolarVenta.setFocus()}" />
+									</s:FormItem>
+									<s:FormItem width="100%" label="Dolar venta">
+										<s:TextInput id="txtDolarVenta" width="100" textAlign="right" restrict="0-9." enter="{txtEuroCompra.setFocus()}" />
+									</s:FormItem>
+									<s:FormItem width="100%" label="Euro compra">
+										<s:TextInput id="txtEuroCompra" width="100" textAlign="right" restrict="0-9." enter="{txtEuroVenta.setFocus()}" />
+									</s:FormItem>
+									<s:FormItem width="100%" label="Euro venta">
+										<s:TextInput id="txtEuroVenta" width="100" textAlign="right" restrict="0-9." enter="{cmdSaveCotizacion.setFocus()}" />
+									</s:FormItem>
+								</s:Form>
+								<s:controlBarContent>
+									<s:HGroup width="100%" horizontalAlign="right">
+										<s:Button id="cmdSaveCotizacion" click="cmdSaveCotizacion_clickHandler(event)" label="Guardar" styleName="textButton" />
+									</s:HGroup>
+								</s:controlBarContent>
+							</s:Panel>
+							<s:Label id="txtCotizacionesError" width="100%" fontSize="12" text="" maxDisplayedLines="1" />
+						</s:VGroup>
+
+					</s:BorderContainer>
+				</s:Panel>
+
+
+			</mx:VBox>
+
+		</mx:TabNavigator>
+	</s:BorderContainer>
+
+	<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" />
+		</s:layout>
+		<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+		<s:Spacer width="100%" />
+
+		<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" label="Guardar" styleName="saveButton" toolTip="Guardar" />
+		<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cerrar" styleName="cerrarButton" toolTip="Cerrar" />
+	</s:BorderContainer>
+
+</s:VGroup>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:personas="biz.fulltime.ui.personas.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:viewStackEffects="org.efflex.mx.viewStackEffects.*"
+		 width="400" height="300" xmlns:contactos="biz.fulltime.ui.contactos.*">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.ContactoEvent;
+			import biz.fulltime.model.Contacto;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+
+			private var _contacto:Contacto = null;
+
+			private var _personas:ArrayCollection;
+
+			private var remObj:RemoteObject;
+
+			[Bindable]
+			public function get contacto():Contacto {
+				return _contacto;
+			}
+
+			public function set contacto(value:Contacto):void {
+				_contacto = value;
+
+				var timer:Timer = new Timer(200);
+				timer.addEventListener(TimerEvent.TIMER, function():void {
+					viewPanel.contacto = contacto;
+					timer.stop();
+				});
+				timer.start();
+
+				viewStack.selectedIndex = 0;
+			}
+
+			public function setNuevoContacto(value:Contacto):void {
+				viewStack.selectedIndex = 1;
+
+				_contacto = value;
+
+				var timer:Timer = new Timer(200);
+				timer.addEventListener(TimerEvent.TIMER, function():void {
+					editPanel.contacto = contacto;
+					timer.stop();
+				});
+				timer.start();
+			}
+
+			protected function itemClickHandler(event:ItemClickEvent):void {
+				var index:int = event.index;
+
+				viewStack.selectedIndex = index;
+
+				if (index == 1) {
+					var timer2:Timer = new Timer(200);
+					timer2.addEventListener(TimerEvent.TIMER, function():void {
+						editPanel.contacto = contacto;
+						timer2.stop();
+					});
+					timer2.start();
+				}
+			}
+
+			protected function editPanel_creationCompleteHandler(event:FlexEvent):void {
+				editPanel.addEventListener(ContactoEvent.FINALIZAR_EDICION, function():void {
+					viewStack.selectedIndex = 0;
+
+					callLater(function():void {
+						var contactoRemObj:RemoteObject = new RemoteObject();
+						contactoRemObj.destination = "CreatingRpc";
+						contactoRemObj.channelSet = ServerConfig.getInstance().channelSet;
+						contactoRemObj.addEventListener(ResultEvent.RESULT, resultContacto);
+						contactoRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+
+						contactoRemObj.showBusyCursor = true;
+						contactoRemObj.findCatalogEntity("Contacto", contacto.codigo);
+					});
+				});
+
+				editPanel.addEventListener("_FinalizarModoEdicion_cancel", function():void {
+					viewStack.selectedIndex = 0;
+				});
+			}
+
+			private function resultContacto(event:ResultEvent):void {
+				var result:* = event.result;
+
+				if (result is Contacto) {
+					callLater(function():void {
+						contacto = result as Contacto;
+					});
+				}
+			}
+
+			private function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error");
+			}
+
+			protected function viewPanel_creationCompleteHandler(event:FlexEvent):void {
+				viewPanel.addEventListener("_editarPersona", function():void {
+					viewStack.selectedIndex = 1;
+				});
+			}
+
+			[Bindable]
+			public function get personas():ArrayCollection {
+				return _personas;
+			}
+
+			public function set personas(value:ArrayCollection):void {
+				_personas = value;
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<viewStackEffects:Grid id="effect" transparent="true" />
+	</fx:Declarations>
+
+	<s:Panel x="0" y="0" width="100%" height="100%" title="Contacto" dropShadowVisible="false" borderAlpha=".25">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="0" />
+		</s:layout>
+		<s:VGroup width="100%" height="100%" horizontalAlign="center">
+			<mx:ViewStack id="viewStack" width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+				<mx:Canvas width="100%" height="100%" showEffect="effect" hideEffect="effect">
+					<s:HGroup bottom="5" right="25">
+						<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".45" scaleY=".45" />
+					</s:HGroup>
+					<contactos:InfoContacto id="viewPanel" width="100%" height="100%" creationComplete="viewPanel_creationCompleteHandler(event)" contacto="{contacto}"
+										  visible="{contacto != null}" personas="{personas}" />
+				</mx:Canvas>
+				<mx:Canvas showEffect="effect" hideEffect="effect">
+					<s:HGroup bottom="5" right="25">
+						<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".45" scaleY=".45" />
+					</s:HGroup>
+					<contactos:EditarContacto id="editPanel" width="100%" height="100%" creationComplete="editPanel_creationCompleteHandler(event)" contacto="{contacto}" />
+				</mx:Canvas>
+			</mx:ViewStack>
+		</s:VGroup>
+	</s:Panel>
+
+</s:Group>

@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:tabBar="skin.components.tabBar.*"
+		 width="100%" height="100%" xmlns:loader="biz.fulltime.util.loader.*">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.DocumentoDTO;
+			import biz.fulltime.dto.DocumentoQuery;
+			import biz.fulltime.event.AbrirFacturaEvent;
+			import biz.fulltime.model.Articulo;
+			import biz.fulltime.model.Cliente;
+
+			private var _cotizacionesPendientes:ArrayCollection;
+
+			private var _cliente:Cliente;
+
+			private var _articulo:Articulo;
+			
+			private var _showButtons:Boolean = true;
+
+
+			private var remCotizacionesPendientes:RemoteObject;
+			
+
+			[Bindable]
+			private var loading:Boolean = true;
+			
+			[Bindable]
+			private var lineasCotizadas:ArrayCollection = new ArrayCollection();
+
+
+			[Bindable]
+			public function get showButtons():Boolean {
+				return _showButtons;
+			}
+
+			public function set showButtons(value:Boolean):void {
+				_showButtons = value;
+			}
+
+			[Bindable]
+			public function get articulo():Articulo {
+				return _articulo;
+			}
+
+			public function set articulo(value:Articulo):void {
+				_articulo = value;
+			}
+
+			[Bindable]
+			public function get cotizacionesPendientes():ArrayCollection {
+				return _cotizacionesPendientes;
+			}
+
+			public function set cotizacionesPendientes(value:ArrayCollection):void {
+				_cotizacionesPendientes = value;
+			}
+
+			[Bindable]
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+
+			public function set cliente(value:Cliente):void {
+				_cliente = value;
+			}
+
+			protected function dgFacturas_doubleClickHandler(event:MouseEvent):void {
+				var selectedItem:DocumentoDTO = dgFacturas.selectedItem as DocumentoDTO;
+			}
+
+			protected function dgFacturas_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER) {
+					var selectedItem:DocumentoDTO = dgFacturas.selectedItem as DocumentoDTO;
+					dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO_CLIENTE, selectedItem.docId));
+				}
+			}
+
+			public function abrirCotizacion(docId:String):void {
+				dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO_CLIENTE, docId));
+			}
+
+
+			private function moneda_labelFunction(item:Object, column:GridColumn):String {
+				return item.moneda.codigo + " - " + item.moneda.nombre;
+			}
+
+			private function comprobante_labelFunction(item:Object, column:GridColumn):String {
+				return item.comprobante.nombre;
+			}
+			
+			private function cliente_labelFunction(item:Object, column:spark.components.gridClasses.GridColumn):String {
+				return item.cliente.codigo + " - " + item.cliente.nombre;
+			}
+
+			private function comprobante_cod_labelFunction(item:Object, column:GridColumn):String {
+				return item.comprobante.codigo + " - " + item.comprobante.nombre;
+			}
+
+			private function date_labelFunction(item:Object, column:GridColumn):String {
+				return item.fecha;
+			}
+
+
+			protected function cmdClose_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function cmdSelectAll_clickHandler(event:MouseEvent):void {
+				for each (var cotizacion:DocumentoDTO in cotizacionesPendientes) {
+					cotizacion.selected = true;
+				}
+			}
+
+			protected function cmdUnselectAll_clickHandler(event:MouseEvent):void {
+				for each (var cotizacion:DocumentoDTO in cotizacionesPendientes) {
+					cotizacion.selected = false;
+				}
+
+			}
+
+			protected function cmdRemove_clickHandler(event:MouseEvent):void {
+				Alert.buttonWidth = 60;
+
+				var alert:Alert = Alert.show("¿Esta seguro de borrar las cotizaciones seleccionadas?", "Borrar cotizaciones", Alert.YES + Alert.NO, null, myCloseHandler);
+				alert.width = 340;
+				alert.height = 180
+
+
+			}
+
+			private function myCloseHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					var selectedItems:String = "";
+					for each (var cotizacion:DocumentoDTO in cotizacionesPendientes) {
+						if (cotizacion.selected) {
+							selectedItems += cotizacion.docId + ",";
+						}
+					}
+					selectedItems = selectedItems.substring(0, selectedItems.length - 1);
+
+					var remObj:RemoteObject = new RemoteObject();
+					remObj.destination = "CreatingRpc";
+					remObj.showBusyCursor = true;
+					remObj.channelSet = ServerConfig.getInstance().channelSet;
+					remObj.addEventListener(ResultEvent.RESULT, resultRemove);
+					remObj.addEventListener(FaultEvent.FAULT, onFault);
+
+					remObj.borrarCotizaciones(selectedItems);
+				}
+			}
+
+			private function resultRemove(event:ResultEvent):void {
+				if (!remCotizacionesPendientes) {
+					remCotizacionesPendientes = new RemoteObject();
+					remCotizacionesPendientes.destination = "CreatingRpc";
+					remCotizacionesPendientes.channelSet = ServerConfig.getInstance().channelSet;
+					remCotizacionesPendientes.addEventListener(ResultEvent.RESULT, resultCotizacionesPendientes);
+					remCotizacionesPendientes.addEventListener(FaultEvent.FAULT, onFault);
+				}
+
+				var _docQuery:DocumentoQuery = new DocumentoQuery();
+				_docQuery.start = 0;
+				_docQuery.limit = 20;
+				_docQuery.pendiente = true;
+				_docQuery.tipoComprobante = 1;
+				_docQuery.cliente = cliente ? cliente.codigo : null;
+				_docQuery.articulo = articulo ? articulo.codigo : null;
+
+				remCotizacionesPendientes.queryDocumentos(_docQuery);
+			}
+			
+			[Bindable]
+			private var _tipo:Number = 1;
+
+			public function obtenerFactuasPendientes(tipo:Number):void {
+				this._tipo = tipo; 
+				 
+				if (!remCotizacionesPendientes) {
+					remCotizacionesPendientes = new RemoteObject();
+					remCotizacionesPendientes.destination = "CreatingRpc";
+					remCotizacionesPendientes.channelSet = ServerConfig.getInstance().channelSet;
+					remCotizacionesPendientes.addEventListener(ResultEvent.RESULT, resultCotizacionesPendientes);
+					remCotizacionesPendientes.addEventListener(FaultEvent.FAULT, onFault);
+				}
+
+				var _docQuery:DocumentoQuery = new DocumentoQuery();
+				_docQuery.start = 0;
+				_docQuery.limit = 100;
+				_docQuery.pendiente = true;
+				_docQuery.tipoComprobante = tipo;
+				_docQuery.cliente = cliente ? cliente.codigo : null;
+				_docQuery.articulo = articulo ? articulo.codigo : null;
+
+				loading = true;
+				remCotizacionesPendientes.queryDocumentos(_docQuery);
+			}
+
+			private function resultCotizacionesPendientes(event:ResultEvent):void {
+				cotizacionesPendientes = event.result as ArrayCollection;
+				loading = false;
+			}
+
+			protected function myTabBar_creationCompleteHandler(event:FlexEvent):void {
+				myTabBar.setCloseableTab(0, false);
+				myTabBar.setCloseableTab(1, false);
+			}
+
+			private function onFault(event:FaultEvent):void {
+				loading = false;
+				Alert.show(event.fault.faultString, 'Error');
+			}
+
+			protected function lineas_creationCompleteHandler(event:FlexEvent):void {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, resultLineasCotizadas);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+				
+				loading = true;
+				
+				remObj.getLineasCotizadas(cliente ? cliente.codigo : null, articulo ? articulo.codigo : null, null, null);
+			}
+
+
+			private function resultLineasCotizadas(event:ResultEvent):void {
+				lineasCotizadas = event.result as ArrayCollection;
+				loading = false;
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<s:ArrayList id="cols">
+			<s:GridColumn width="70" dataField="selected" headerText="">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer>
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+
+									protected function checkBox_changeHandler(event:Event):void {
+										DocumentoDTO(data).selected = checkBox.selected;
+									}
+								]]>
+							</fx:Script>
+
+							<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
+								<s:CheckBox id="checkBox" x="5" y="5" verticalCenter="0" change="checkBox_changeHandler(event)" selected="{DocumentoDTO(data).selected}" />
+							</s:VGroup>
+						</s:GridItemRenderer>
+
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn width="80" dataField="numero" headerText="S/N">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="left">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+									import biz.fulltime.model.Moneda;
+
+									import util.CatalogoFactory;
+
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {
+											var serie:String = DocumentoDTO(data).serie;
+											var nro:String = DocumentoDTO(data).numero;
+											if (serie && nro) {
+												label = serie.toUpperCase() + nro
+											} else if (serie) {
+												label = serie.toUpperCase();
+											} else {
+												label = nro;
+											}
+										}
+									}
+								]]>
+							</fx:Script>
+						</s:DefaultGridItemRenderer>
+
+					</fx:Component>
+				</s:itemRenderer>
+
+			</s:GridColumn>
+			<s:GridColumn width="85" dataField="fecha" headerText="Fecha" labelFunction="date_labelFunction" />
+			<s:GridColumn width="120" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
+			<s:GridColumn width="250" dataField="cliente" headerText="Cliente" labelFunction="cliente_labelFunction" />
+			<s:GridColumn dataField="total" headerText="Total">
+				<s:headerRenderer>
+					<fx:Component>
+						<s:DefaultGridHeaderRenderer width="90" textAlign="right" textAlignLast="end" textJustify="distribute">
+							<fx:Script>
+								<![CDATA[
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										super.labelDisplay.setStyle("textAlign", "end");
+										super.prepare(hasBeenRecycled);
+									}
+								]]>
+							</fx:Script>
+						</s:DefaultGridHeaderRenderer>
+					</fx:Component>
+				</s:headerRenderer>
+				<s:itemRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="right">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+									import biz.fulltime.model.Moneda;
+
+									import util.CatalogoFactory;
+
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {
+											var moneda:String = DocumentoDTO(data).moneda.codigo;
+											var simbolo:String = "";
+											for each (var m:Moneda in CatalogoFactory.getInstance().monedas) {
+												if (m.codigo == moneda) {
+													simbolo = m.simbolo;
+												}
+											}
+											if (DocumentoDTO(data).total) {
+												label = simbolo + " " + outerDocument.nf_Espanol_Espanol.format(DocumentoDTO(data).total);
+											} else {
+												label = simbolo + " " + outerDocument.nf_Espanol_Espanol.format(0);
+											}
+										}
+									}
+								]]>
+							</fx:Script>
+						</s:DefaultGridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn width="32" headerText="">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer>
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+
+									protected function cmdAbrir_clickHandler(event:MouseEvent):void {
+										var docId:String = DocumentoDTO(data).docId;
+
+										outerDocument.abrirCotizacion(docId);
+									}
+								]]>
+							</fx:Script>
+
+							<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
+								<s:Button id="cmdOpen" width="100%" height="100%" icon="@Embed('/assets/general/Open.png')" click="cmdAbrir_clickHandler(event)" toolTip="Ver Cotización" />
+							</s:VGroup>
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+
+		</s:ArrayList>
+
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+
+		<s:NumberFormatter id="nf_Espanol_Espanol2" fractionalDigits="2" locale="es_ES" />
+	</fx:Declarations>
+
+
+	<s:VGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" gap="0">
+		<s:HGroup width="100%" paddingLeft="10" paddingTop="5">
+			<tabBar:MyTabBar2 id="myTabBar" creationComplete="myTabBar_creationCompleteHandler(event)" dataProvider="{myViewStack}" requireSelection="true" />
+		</s:HGroup>
+
+		<s:HGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="0">
+			<s:BorderContainer width="100%" height="100%" backgroundAlpha=".75" backgroundColor="0xFAFAFA" cornerRadius="4">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" />
+				</s:layout>
+				<mx:ViewStack id="myViewStack" width="100%" height="100%" paddingTop="0">
+					<s:NavigatorContent width="100%" height="100%" label="Documentos">
+						<s:Group width="100%" height="100%">
+							<s:VGroup width="100%" height="100%">
+								<s:HGroup width="100%" height="100%" gap="10">
+									<s:DataGrid id="dgFacturas" width="100%" height="100%" doubleClick="dgFacturas_doubleClickHandler(event)" keyDown="dgFacturas_keyDownHandler(event)"
+												sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" dataProvider="{cotizacionesPendientes}">
+									</s:DataGrid>
+									<s:VGroup width="140" paddingRight="10" paddingTop="32" visible="{showButtons}" includeInLayout="{showButtons}">
+										<s:Button id="cmdSelectAll" width="100%" height="32" click="cmdSelectAll_clickHandler(event)" label="Marcar todos" styleName="textButton" />
+										<s:Button id="cmdUnselectAll" width="100%" height="32" click="cmdUnselectAll_clickHandler(event)" label="Desmarcar todos" styleName="textButton" />
+										<s:Spacer height="16" />
+										<s:Button id="cmdRemove" width="100%" height="32" click="cmdRemove_clickHandler(event)" label="Borrar marcados" styleName="textButton" />
+									</s:VGroup>
+								</s:HGroup>
+							</s:VGroup>
+							<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{loading}" includeInLayout="{loading}">
+								<loader:LoadComponent label="" />
+							</s:VGroup>
+						</s:Group>
+					</s:NavigatorContent>
+					
+					<s:NavigatorContent width="100%" height="100%" label="Líneas" enabled="{_tipo == 1}">
+						<s:Group width="100%" height="100%">
+							<s:VGroup width="100%" height="100%" creationComplete="lineas_creationCompleteHandler(event)" visible="{_tipo == 1}" includeInLayout="{_tipo == 1}">
+								<s:HGroup width="100%" height="100%" gap="0">
+									<s:DataGrid id="dgLineasVenta" width="100%" height="100%" fontSize="12" dataProvider="{lineasCotizadas}" selectionMode="singleRow" sortableColumns="true">
+										<s:columns>
+											<s:ArrayList>
+												<s:GridColumn width="80" dataField="documento.numero" headerText="Cotización">
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="left">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "start");
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer textAlign="left">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																			label = LineaDocumento(data).documento.serie.toUpperCase() + LineaDocumento(data).documento.numero;
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+												</s:GridColumn>
+												
+												<s:GridColumn width="80" dataField="cantidad" headerText="Cantidad">
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "start");
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer textAlign="right">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																			label = outerDocument.nf_Espanol_Espanol2.format(LineaDocumento(data).getCantidad());
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+												</s:GridColumn>
+												
+												<s:GridColumn width="250" dataField="cliente" headerText="Cliente" >
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "start");
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer fontSize="11" textAlign="left">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																			var art:String = data.documento.cliente ? data.documento.cliente.codigo + "-" + data.documento.cliente.nombre : "";
+																			if (art) {
+																				label = art;
+																			}
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+													
+												</s:GridColumn>
+												
+												
+												<s:GridColumn width="130" dataField="articulo" headerText="Artículo">
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "start");
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer fontSize="11" textAlign="left">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																			var art:String = data.articulo ? data.articulo.codigo : "";
+																			if (art) {
+																				label = art;
+																			}
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+												</s:GridColumn>
+												<s:GridColumn dataField="concepto" headerText="Descripción">
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "start");
+																			
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer fontSize="11" textAlign="left" verticalCenter="0">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+												</s:GridColumn>
+												<s:GridColumn width="80" dataField="precio" headerText="P. Unitario">
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "end");
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer textAlign="right">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																			label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getPrecio());
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+												</s:GridColumn>
+												
+												<s:GridColumn width="80" headerText="Importe" editable="false">
+													<s:headerRenderer>
+														<fx:Component>
+															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
+																<fx:Script>
+																	<![CDATA[
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			super.labelDisplay.setStyle("textAlign", "end");
+																			super.prepare(hasBeenRecycled);
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridHeaderRenderer>
+														</fx:Component>
+													</s:headerRenderer>
+													<s:itemRenderer>
+														<fx:Component>
+															<s:DefaultGridItemRenderer textAlign="right">
+																<fx:Script>
+																	<![CDATA[
+																		import biz.fulltime.model.LineaDocumento;
+																		
+																		override public function prepare(hasBeenRecycled:Boolean):void {
+																			if (!data) {
+																				return;
+																			}
+																			var importe:BigDecimal = LineaDocumento(data).getSubTotal();
+																			label = outerDocument.nf_Espanol_Espanol.format(importe);
+																			
+																		}
+																	]]>
+																</fx:Script>
+															</s:DefaultGridItemRenderer>
+														</fx:Component>
+													</s:itemRenderer>
+												</s:GridColumn>
+											</s:ArrayList>
+										</s:columns>
+									</s:DataGrid>
+								</s:HGroup>
+							</s:VGroup>							
+							<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{loading}" includeInLayout="{loading}">
+								<loader:LoadComponent label="" />
+							</s:VGroup>
+
+						</s:Group>
+					</s:NavigatorContent>
+				</mx:ViewStack>
+			</s:BorderContainer>
+		</s:HGroup>
+
+		<s:BorderContainer width="100%" backgroundColor="0xFAFAFA" borderAlpha="0" minHeight="0">
+			<s:layout>
+				<s:VerticalLayout paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="5" />
+			</s:layout>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalAlign="middle">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+				<s:Spacer width="100%" />
+				<s:Button id="cmdClose" width="80" height="32" click="cmdClose_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" />
+			</s:HGroup>
+		</s:BorderContainer>
+	</s:VGroup>
+
+</s:Group>

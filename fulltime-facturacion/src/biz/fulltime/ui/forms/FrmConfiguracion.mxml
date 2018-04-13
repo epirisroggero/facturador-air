@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)" keyDown="group1_keyDownHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+
+			private var _configuracion:XML;
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+				txtServidor.setFocus();
+			}
+
+			[Bindable]
+			public function get configuracion():XML {
+				return _configuracion;
+			}
+
+			public function set configuracion(value:XML):void {
+				_configuracion = value;
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new Event("_save_configuration"));
+			}
+
+			protected function group1_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+		]]>
+	</fx:Script>
+
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+		<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
+			<s:VGroup width="100%" height="100%" paddingTop="10">
+				<mx:Form width="100%" height="100%">
+					<mx:FormItem width="100%" label="Servidor">
+						<s:TextInput id="txtServidor" width="100%" textAlign="left" enter="txtPuerto.setFocus()" prompt="Ingrese Servidor" text="@{configuracion.server.host}" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Puerto">
+						<s:TextInput id="txtPuerto" width="100" textAlign="left" enter="cmdAceptar.setFocus()" prompt="Por Defecto" text="@{configuracion.server.port}"
+									 restrict="0-9" maxChars="4" />
+					</mx:FormItem>
+				</mx:Form>
+			</s:VGroup>
+
+			<s:controlBarContent>
+				<s:HGroup width="100%">
+					<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+					<s:Spacer width="100%" />
+					<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="textButton" width="90"/>
+				</s:HGroup>
+			</s:controlBarContent>
+		</s:Panel>
+	</s:BorderContainer>
+</s:Group>

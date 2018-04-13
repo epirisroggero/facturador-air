@@ -1,0 +1,725 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:components="components.*" xmlns:components1="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" creationComplete="creationCompleteHandler(event)" backgroundAlpha="0.85" backgroundColor="0xfafafa">
+	
+	<s:layout>
+		<s:VerticalLayout gap="0" />
+	</s:layout>
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.AbrirFacturaEvent;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.Usuario;
+			import biz.fulltime.model.Vendedor;
+			import biz.fulltime.model.Zona;
+			import biz.fulltime.model.deudores.DocPendientesCliente;
+			import biz.fulltime.model.deudores.DocumentoDeudor;
+
+			import com.hillelcoren.components.AutoComplete;
+
+			import components.IconButton;
+
+			import flashx.textLayout.formats.VerticalAlign;
+
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.graphics.SolidColor;
+			import mx.graphics.SolidColorStroke;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+
+			import spark.components.BorderContainer;
+			import spark.components.CheckBox;
+			import spark.components.HGroup;
+			import spark.components.Label;
+			import spark.events.IndexChangeEvent;
+			import spark.layouts.HorizontalAlign;
+			import spark.layouts.HorizontalLayout;
+			import spark.layouts.VerticalLayout;
+
+			import util.CatalogoFactory;
+
+			private var _dataProvider:ArrayCollection;
+
+			private var _changeDataProvider:Boolean;
+
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+
+			[Bindable]
+			private var monedas:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			private var goclientes:ArrayCollection = new ArrayCollection();
+
+			private var remObj:RemoteObject;
+
+			private var _filter:String;
+
+			private var _codigoCliente:String;
+
+			private var _codigoVendedor:String;
+
+			private var _codigoZona:String;
+
+			private var dateFormatter:DateFormatter = new DateFormatter();
+
+			private var _clientesImprimir:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var myDP:ArrayCollection = new ArrayCollection([{filtro:"Cliente", valor:1}, {filtro:"Vendedor", valor:2}, {filtro:"Zona", valor:3}, {filtro:"Grupo", valor:4}]);
+
+			override protected function commitProperties():void {
+				super.commitProperties();
+
+				if (_changeDataProvider) {
+					_changeDataProvider = false;
+
+					mainList.dataProvider = _dataProvider;
+
+					var totalFacturado:BigDecimal = BigDecimal.ZERO;
+					var totalCancelado:BigDecimal = BigDecimal.ZERO;
+					var totalAdeudado:BigDecimal = BigDecimal.ZERO;
+					var totalAdeudadoNeto:BigDecimal = BigDecimal.ZERO;
+
+					var _monedaActual:Moneda = cmbMoneda.selectedItem as Moneda;
+
+					goclientes.removeAll();
+					for each (var data:DocPendientesCliente in _dataProvider) {
+						data.moneda = _monedaActual;
+
+						data.getTotalFacturado(_monedaActual.codigo);
+						data.getTotalCancelado(_monedaActual.codigo);
+						data.getTotalAdeudado(_monedaActual.codigo);
+						data.getTotalAdeudadoNeto(_monedaActual.codigo);
+
+						goclientes.addItem(data.cliente);
+					}
+
+					for each (var data2:DocPendientesCliente in _dataProvider) {
+						totalFacturado = totalFacturado.add(data2.totalFacturado);
+						totalCancelado = totalCancelado.add(data2.totalCancelado);
+						totalAdeudado = totalAdeudado.add(data2.totalAdeudado);
+						totalAdeudadoNeto = totalAdeudadoNeto.add(data2.totalAdeudadoNeto);
+					}
+
+					try {
+						var lblTotalMoneda:Label = new Label();
+						lblTotalMoneda.width = 80;
+						lblTotalMoneda.maxDisplayedLines = 1;
+						lblTotalMoneda.text = Moneda(cmbMoneda.selectedItem).nombre;
+						lblTotalMoneda.styleName = "totalLabelRight";
+
+						var lblTotalFacturado:Label = new Label();
+						lblTotalFacturado.width = 80;
+						lblTotalFacturado.text = nf_Espanol_Espanol.format(totalFacturado.numberValue());
+						lblTotalFacturado.styleName = "totalLabelRight";
+
+						var lblTotalCancelado:Label = new Label();
+						lblTotalCancelado.width = 80;
+						lblTotalCancelado.text = nf_Espanol_Espanol.format(totalCancelado.numberValue());
+						lblTotalCancelado.styleName = "totalLabelRight";
+
+						var lblTotalAdeudado:Label = new Label();
+						lblTotalAdeudado.width = 80;
+						lblTotalAdeudado.text = nf_Espanol_Espanol.format(totalAdeudado.setScale(2).toString());
+						lblTotalAdeudado.styleName = "totalLabelRight";
+
+						var lblTotalAdeudadoNeto:Label = new Label();
+						lblTotalAdeudadoNeto.width = 116;
+						lblTotalAdeudadoNeto.text = nf_Espanol_Espanol.format(totalAdeudadoNeto.setScale(2));
+						lblTotalAdeudadoNeto.styleName = "totalLabelRight";
+
+						var lblTotales:Label = new Label();
+						lblTotales.width = 110;
+						lblTotales.text = "Totales:";
+						lblTotales.styleName = "totalLabelLeft";
+
+						var rule0:VRule = new VRule();
+						rule0.height = 30;
+						rule0.rotation = 15;
+						var rule1:VRule = new VRule();
+						rule1.height = 30;
+						rule1.rotation = 15;
+						var rule2:VRule = new VRule();
+						rule2.height = 30;
+						rule2.rotation = 15;
+						var rule3:VRule = new VRule();
+						rule3.height = 30;
+						rule3.rotation = 15;
+						var rule4:VRule = new VRule();
+						rule4.height = 30;
+						rule4.rotation = 15;
+
+						var hgTotalFacturas:HGroup = new HGroup();
+						hgTotalFacturas.percentWidth = 100;
+						hgTotalFacturas.height = 22;
+						hgTotalFacturas.horizontalAlign = HorizontalAlign.RIGHT;
+						hgTotalFacturas.verticalAlign = VerticalAlign.MIDDLE;
+						hgTotalFacturas.gap = 0;
+						hgTotalFacturas.paddingTop = 2;
+
+						hgTotalFacturas.addElement(lblTotales);
+						hgTotalFacturas.addElement(rule0);
+						hgTotalFacturas.addElement(lblTotalMoneda);
+						hgTotalFacturas.addElement(rule4);
+						hgTotalFacturas.addElement(lblTotalFacturado);
+						hgTotalFacturas.addElement(rule1);
+						hgTotalFacturas.addElement(lblTotalCancelado);
+						hgTotalFacturas.addElement(rule2);
+						hgTotalFacturas.addElement(lblTotalAdeudado);
+						hgTotalFacturas.addElement(rule3);
+						hgTotalFacturas.addElement(lblTotalAdeudadoNeto);
+
+						bcTotales.removeAllElements();
+						bcTotales.addElement(hgTotalFacturas);
+
+					} catch (error:Error) {
+						Alert.show(error.getStackTrace());
+					}
+
+					currentState = "default";
+
+				}
+			}
+
+			public function set dataProvider(data:ArrayCollection):void {
+				this._dataProvider = data;
+
+				_changeDataProvider = true;
+
+				this.invalidateProperties();
+			}
+
+			protected function cmdImprimir_clickHandler(event:MouseEvent):void {
+				var _pendientesParaImprimir:ArrayCollection = new ArrayCollection();
+				for each (var item:DocPendientesCliente in _dataProvider) {
+					if (item.print) {
+						_pendientesParaImprimir.addItem(item);
+					}
+				}
+				var pjDeudores:PrintJobDeudores = new PrintJobDeudores();
+				if (_pendientesParaImprimir.length > 0) {
+					pjDeudores.documetosPendientes = _pendientesParaImprimir;
+				} else {
+					pjDeudores.documetosPendientes = _dataProvider;
+				}
+
+				pjDeudores.setMoneda(Moneda(cmbMoneda.selectedItem));
+				pjDeudores.print();
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				monedas = new ArrayCollection();
+				for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+					if (moneda.nombre.indexOf("*") <= 0) { // Agrega las monedas oficiales.
+						monedas.addItem(moneda);
+					}
+				}
+
+				cmbMoneda.selectedItem = monedas.getItemAt(1) as Moneda;
+
+				// 
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+
+				remObj.addEventListener(ResultEvent.RESULT, resultDocumentosDeudores);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = true;
+
+				currentState = "cargando";
+				remObj.getDocumentosDeudores();
+			}
+
+			/**
+			 * Agrupar todas las facturas para cada cliente ...
+			 */
+			private function resultDocumentosDeudores(event:ResultEvent):void {
+				currentState = "default";
+
+				var data:ArrayCollection = event.result as ArrayCollection;
+
+				var clientes:ArrayCollection = CatalogoFactory.getInstance().clientes;
+
+				var result:ArrayCollection = new ArrayCollection();
+
+				for each (var doc:DocumentoDeudor in data) {
+					_filter = doc.deudor.codigo;
+					result.filterFunction = filterCliente;
+					result.refresh();
+
+					if (result.length > 0) {
+						var pendiente:DocPendientesCliente = result.getItemAt(0) as DocPendientesCliente;
+						pendiente.documentos.addItem(doc);
+
+					} else {
+						var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
+						docsDeudores.codCliente = doc.deudor.codigo;
+						docsDeudores.cliente = doc.deudor;
+						docsDeudores.documentos.addItem(doc);
+
+						result.addItem(docsDeudores);
+					}
+				}
+
+				result.filterFunction = null;
+				result.refresh();
+
+				dataProvider = sort(result, "codCliente", true);
+			}
+
+			private function filterCliente(item:Object):Boolean {
+				return item["codCliente"] == _filter;
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				// Handle operation fault.
+				currentState = "default";
+
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+
+			protected function cmbClient_changeHandler(event:Event):void {
+				var client:Cliente = cmbClient.selectedItem as Cliente;
+				if (client) {
+					_codigoCliente = client.nombre;
+				} else {
+					_codigoCliente = null;
+				}
+			}
+
+			protected function cmbVendedor_changeHandler(event:Event):void {
+				var vendedor:Vendedor = cmbVendedor.selectedItem as Vendedor;
+				if (vendedor) {
+					_codigoVendedor = vendedor.nombre;
+				} else {
+					_codigoVendedor = null;
+				}
+			}
+
+			protected function cmbZona_changeHandler(event:Event):void {
+				var zona:Zona = cmbZona.selectedItem as Zona;
+				if (zona) {
+					_codigoZona = zona.codigo;
+				} else {
+					_codigoZona = null;
+				}
+
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+
+			public function codigoNombreLabelClientFunction(item:Object):String {
+				var label:String;
+
+				var docPendienteCliente:DocPendientesCliente = item as DocPendientesCliente;
+
+				if (docPendienteCliente.cliente && docPendienteCliente.cliente.hasOwnProperty("codigo")) {
+					label = docPendienteCliente.cliente.codigo;
+				}
+				if (docPendienteCliente.cliente && docPendienteCliente.cliente.hasOwnProperty("nombre")) {
+					label += " - " + docPendienteCliente.cliente.nombre;
+				}
+				return label;
+			}
+
+
+			protected function cmbMoneda_changeHandler(event:Event):void {
+				currentState = "cargando";
+				_changeDataProvider = true;
+				invalidateProperties();
+
+				//				var _monedaActual:Moneda = cmbMoneda.selectedItem as Moneda;
+				//				for each (var data:DocPendientesCliente in _dataProvider) {
+				//					data.moneda = _monedaActual;
+				//				}
+
+
+			}
+
+			private function sort(arrColl:ArrayCollection, fieldName:String, numerico:Boolean = false):ArrayCollection {
+				/* Create the SortField object for the "data" field in the ArrayCollection object, and make sure we do a numeric sort. */
+				var dataSortField:SortField = new SortField();
+				dataSortField.name = fieldName;
+				dataSortField.numeric = numerico;
+
+				/* Create the Sort object and add the SortField object created earlier to the array of fields to sort on. */
+				var numericDataSort:Sort = new Sort();
+				numericDataSort.fields = [dataSortField];
+
+				/* Set the ArrayCollection object's sort property to our custom sort, and refresh the ArrayCollection. */
+				arrColl.sort = numericDataSort;
+				arrColl.refresh();
+
+				return arrColl;
+			}
+
+
+
+			protected function bbOrder_changeHandler(event:IndexChangeEvent):void {
+				currentState = "cargando";
+
+				setTimeout(function():void {
+						switch (event.newIndex) {
+							case 0:
+								sort(_dataProvider, "codCliente", true);
+								break;
+							case 1:
+								sort(_dataProvider, "vendedorCodigo", true);
+								break;
+							case 2:
+								sort(_dataProvider, "zona", false);
+								break;
+							case 3:
+								sort(_dataProvider, "grupo", false);
+								break;
+						}
+						_changeDataProvider = true;
+
+						invalidateProperties();
+					}, 250);
+
+			}
+
+			protected function cmdRefrescar_clickHandler(event:MouseEvent):void {
+				currentState = "cargando";
+
+				if (cmbClient) {
+					cmbClient.clear();
+				}
+				if (cmbVendedor) {
+					cmbVendedor.clear();
+				}
+				if (cmbZona) {
+					cmbZona.clear();
+				}
+				if (txtGrupo) {
+					txtGrupo.text = "";
+				}
+
+				var timer:Timer = new Timer(1000, 1);
+				timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:TimerEvent):void {
+						_dataProvider.filterFunction = null;
+						_dataProvider.refresh();
+
+						_changeDataProvider = true;
+						invalidateProperties();
+
+					});
+
+				timer.start();
+
+
+			}
+
+			protected function cmdEMail_clickHandler(event:MouseEvent):void {
+				var _pendientesParaImprimir:ArrayCollection = new ArrayCollection();
+				for each (var item:DocPendientesCliente in _dataProvider) {
+					if (item.print) {
+						_pendientesParaImprimir.addItem(item);
+					}
+				}
+
+				var pDeudores:PrintJobDeudores = new PrintJobDeudores(false);
+				if (_pendientesParaImprimir.length > 0) {
+					pDeudores.documetosPendientes = _pendientesParaImprimir;
+				} else {
+					pDeudores.documetosPendientes = _dataProvider;
+				}
+				pDeudores.setMoneda(Moneda(cmbMoneda.selectedItem));
+
+				pDeudores.createSMSImage();
+			}
+
+			protected function cmdFiltrar_clickHandler(event:MouseEvent):void {
+				currentState = "cargando";
+
+				var timer:Timer = new Timer(1000, 1);
+				timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:TimerEvent):void {
+						var client:Cliente = cmbClient.selectedItem as Cliente;
+						_codigoCliente = client ? client.codigo : null;
+
+						var vendedor:Vendedor = cmbVendedor.selectedItem as Vendedor;
+						_codigoVendedor = vendedor ? vendedor.codigo : null;
+
+						var zona:Zona = cmbZona.selectedItem as Zona;
+						_codigoZona = zona ? zona.codigo : null;
+
+						if (_codigoCliente || _codigoVendedor || _codigoZona || (txtGrupo.text && txtGrupo.text.length > 0)) {
+							_dataProvider.filterFunction = filtrar;
+							_dataProvider.refresh();
+						} else {
+							_dataProvider.filterFunction = null;
+							_dataProvider.refresh();
+						}
+
+						_changeDataProvider = true;
+						invalidateProperties();
+					});
+				timer.start();
+
+
+			}
+
+			private function filtrar(item:Object):Boolean {
+				var docPend:DocPendientesCliente = item as DocPendientesCliente;
+
+				var cliente:String = docPend.cliente ? docPend.cliente.codigo : "";
+				var zona:String = docPend.zona ? docPend.cliente.contacto.zonaIdCto : "";
+				var vendedor:String = docPend.cliente.vendedor ? docPend.cliente.vendedor.codigo : "";
+				var encargadoCuenta:String = docPend.cliente.encargadoCuenta ? docPend.cliente.encargadoCuenta : "";
+				var grupo:String = docPend.grupo ? docPend.grupo : "";
+
+				var filtrar:Boolean = false;
+
+				if (_codigoCliente && _codigoCliente.length > 0) {
+					filtrar = (cliente == _codigoCliente);
+					if (!filtrar) {
+						return false;
+					}
+				}
+				if (_codigoVendedor && _codigoVendedor.length > 0) {
+					filtrar = ((vendedor == _codigoVendedor) || (encargadoCuenta == _codigoVendedor));
+					if (!filtrar) {
+						return false;
+					}
+				}
+				if (_codigoZona && _codigoZona.length > 0) {
+					filtrar = (zona.toLowerCase() == _codigoZona.toLowerCase());
+					if (!filtrar) {
+						return false;
+					}
+				}
+				if (txtGrupo.text && txtGrupo.text.length > 0) {
+					filtrar = grupo.toLowerCase().match(new RegExp(txtGrupo.text.toLowerCase(), 'i'));
+					if (!filtrar) {
+						return false;
+					}
+				}
+
+				return filtrar;
+
+			}
+
+			protected function cmbGoToClient_changeHandler(event:Event):void {
+				var index:int = 0;
+				for each (var doc:DocPendientesCliente in mainList.dataProvider) {
+					if (cmbGoToClient.selectedItem && doc.cliente.codigo == cmbGoToClient.selectedItem.codigo) {
+						break;
+					}
+					index++;
+				}
+
+				callLater(function():void {
+						mainList.selectedIndex = index;
+						mainList.ensureCellIsVisible(index);
+					});
+
+			}
+
+			protected function cmdSeleccionarTodos_clickHandler(event:MouseEvent):void {
+				for each (var item:DocPendientesCliente in _dataProvider) {
+					item.print = true;
+				}
+
+			}
+
+			protected function cmdSeleccionarNinguno_clickHandler(event:MouseEvent):void {
+				for each (var item:DocPendientesCliente in _dataProvider) {
+					item.print = false;
+				}
+
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void {
+				callLater(function():void {
+					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+				});				
+				currentState = cmdMaximizar.selected ? "maximizado" : "default";
+				stage.addEventListener(FullScreenEvent.FULL_SCREEN, function(event:FullScreenEvent):void {
+					if (event.fullScreen) {
+						currentState = "maximizado";
+						cmdMaximizar.selected = true;
+					} else {
+						currentState = "default";
+						cmdMaximizar.selected = false;
+					}
+				});
+				
+			}
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+	</fx:Declarations>
+
+	<s:states>
+		<s:State name="default" />
+		<s:State name="maximizado" />
+		<s:State name="cargando" />
+	</s:states>
+
+	<components:PanelShowHide width="100%" height="152" title="CRITERIO DE SELECCIÓN" styleName="pnlInterno" defaultHeight="152" excludeFrom="maximizado">
+		<s:VGroup width="100%" height="100%">
+			<s:HGroup width="100%" fontWeight="bold" paddingLeft="10" paddingRight="10" verticalAlign="top">
+				<s:Form>
+					<s:layout>
+						<s:FormLayout paddingTop="-10" gap="-14" />
+					</s:layout>
+
+					<s:FormItem label="Cliente" fontWeight="normal">
+						<components1:MyAutoComplete id="cmbClient" width="320" textAlign="left" change="cmbClient_changeHandler(event)" dataProvider="{ catalogs.getClientesVendedor(true) }" labelField="nombre"
+													matchType="anyPart" prompt="Filtrar por Cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+													allowDuplicates="{ false }" allowMultipleSelection="{ false }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
+					</s:FormItem>
+					<s:FormItem label="Grupo" fontWeight="normal">
+						<s:TextInput id="txtGrupo" width="220" prompt="Filtrar por Grupo" />
+					</s:FormItem>
+				</s:Form>
+				<s:Form>
+					<s:layout>
+						<s:FormLayout paddingTop="-10" gap="-14"/>
+					</s:layout>
+					<s:FormItem label="Vendedor y/o enc. de cuenta" visible="{GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR}"
+								includeInLayout="{GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR}">
+						<components1:MyAutoComplete id="cmbVendedor" width="320" textAlign="left" change="cmbVendedor_changeHandler(event)" dataProvider="{ catalogs.vendedores }" labelField="nombre"
+													matchType="anyPart" prompt="Filtrar por Vendedor" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+													allowDuplicates="{ false }" allowMultipleSelection="{ false }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
+					</s:FormItem>
+					<s:FormItem label="Zona">
+						<components1:MyAutoComplete id="cmbZona" width="320" textAlign="left" change="cmbZona_changeHandler(event)" dataProvider="{ catalogs.zonas }" labelField="nombre"
+													matchType="anyPart" prompt="Filtrar por Zona" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+													allowDuplicates="{ false }" allowMultipleSelection="{ false }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
+					</s:FormItem>
+				</s:Form>
+			</s:HGroup>
+		</s:VGroup>
+
+		<components:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".2" scaleY=".2" />
+				<s:Spacer width="100%" />
+				<s:Button id="cmdFiltrar" click="cmdFiltrar_clickHandler(event)" label="Filtrar" enabled="true" styleName="filtrarButton" />
+				<s:Button id="cmdLimpiar" click="cmdRefrescar_clickHandler(event)" label="Limpiar" toolTip="Limpiar Todos los Campos" styleName="clearButton16" />
+			</s:HGroup>
+		</components:controlBarContent>
+
+	</components:PanelShowHide>
+
+	<components:PanelShowHide width="100%" height="80" title="CRITERIO DE ORDEN" styleName="pnlInterno" defaultHeight="90" excludeFrom="maximizado">
+		<s:BorderContainer width="100%" minHeight="0" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+			<s:HGroup width="100%" paddingLeft="10" verticalAlign="middle">
+				<s:ButtonBar id="bbOrder" change="bbOrder_changeHandler(event)" requireSelection="true" selectedIndex="0">
+					<mx:ArrayCollection>
+						<fx:String>Ordenar por Cliente</fx:String>
+						<fx:String>Ordenar por Vendedor</fx:String>
+						<fx:String>Ordenar por Zona</fx:String>
+						<fx:String>Ordenar por Grupo</fx:String>
+					</mx:ArrayCollection>
+				</s:ButtonBar>
+				<s:Spacer width="100%" />
+				
+				<mx:VRule height="40" />
+				<s:HGroup verticalAlign="middle" paddingLeft="10" paddingRight="10">
+						<s:Label text="Moneda" fontSize="14"/>
+						<components1:MyAutoComplete id="cmbMoneda" width="160" textAlign="left" change="cmbMoneda_changeHandler(event)" dataProvider="{ monedas }" labelField="nombre"
+													matchType="anyPart" prompt="Moneda" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+													allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+													labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="200" />
+				</s:HGroup>
+			</s:HGroup>
+		</s:BorderContainer>
+	</components:PanelShowHide>
+
+	<s:Group width="100%" height="100%">
+		<s:VGroup id="mainPnl" width="100%" height="100%" horizontalAlign="center" gap="5" includeIn="[maximizado,default]">
+			<s:HGroup width="{mainList.width}" horizontalAlign="left" paddingBottom="5" paddingLeft="10" paddingTop="5" verticalAlign="middle">
+				<s:Label fontSize="14" text="Seleccionar" />
+				<s:Button id="cmdSeleccionarTodos" click="cmdSeleccionarTodos_clickHandler(event)" width="80" label="Todos"  styleName="textToggleButton" />
+				<s:Button id="cmdSeleccionarNinguno" click="cmdSeleccionarNinguno_clickHandler(event)"  width="80" label="Ninguno" styleName="textToggleButton" />
+				<s:Spacer width="100%" />
+				<s:ToggleButton id="cmdMaximizar" label.maximizado="Restaurar" label.default="Maximizar" click="button1_clickHandler(event)" excludeFrom="cargando" height="32" styleName="textToggleButton"/>
+				<s:Spacer width="10" />
+				<s:Label fontSize="14" text="Ir a"/>
+				<components1:MyAutoComplete id="cmbGoToClient" width="320" textAlign="left" change="cmbGoToClient_changeHandler(event)" dataProvider="{ goclientes }" labelField="nombre"
+											matchType="anyPart" prompt="Seleccionar cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }"
+											allowMultipleSelection="{ false }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+											labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
+
+			</s:HGroup>
+			<s:DataGrid id="mainList" height="100%" variableRowHeight="true" borderAlpha="0" contentBackgroundAlpha="1.0">
+				<s:columns>
+					<s:ArrayList>
+						<s:GridColumn headerText="Listado de deudores" itemRenderer="biz.fulltime.ui.deudores.DeudorRenderer" />
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+			<s:BorderContainer id="bcTotales" width="{mainList.width}" backgroundAlpha=".87" backgroundColor="0x333333" minHeight="0" borderAlpha="0">
+				<s:layout>
+					<s:HorizontalLayout paddingBottom="3" paddingLeft="3" paddingRight="16" paddingTop="2" verticalAlign="middle" gap="0" />
+				</s:layout>
+			</s:BorderContainer>
+		</s:VGroup>
+
+
+		<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" gap="5" includeIn="cargando">
+			<s:BorderContainer backgroundColor="#FAFAFA" borderColor="#5a5a5a" borderStyle="solid" cornerRadius="4" minHeight="0" minWidth="0">
+				<s:layout>
+					<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="middle" />
+				</s:layout>
+				<components:AnimatedGIFImage width="32" height="32" />
+
+			</s:BorderContainer>
+			<s:Label text="Cargando" />
+		</s:VGroup>
+
+	</s:Group>
+	<s:Spacer height="5"/>
+	<s:BorderContainer width="100%" minHeight="0" borderAlpha="0" backgroundAlpha=".16" backgroundColor="0x666666" >
+		<s:layout>
+			<s:HorizontalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalAlign="middle" gap="10" />
+		</s:layout>
+		<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+		<s:Spacer width="100%" />
+		<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" />
+		<s:Button id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" />
+	</s:BorderContainer>
+
+</s:BorderContainer>

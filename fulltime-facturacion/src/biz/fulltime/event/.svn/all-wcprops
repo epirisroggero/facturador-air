@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/tmwc_f25flex/!svn/ver/1021/fulltime-facturacion/src/biz/fulltime/event
+END
+FinalizarTareaEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/tmwc_f25flex/!svn/ver/653/fulltime-facturacion/src/biz/fulltime/event/FinalizarTareaEvent.as
+END
+ClaveSupervisoraEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/tmwc_f25flex/!svn/ver/1161/fulltime-facturacion/src/biz/fulltime/event/ClaveSupervisoraEvent.as
+END
+ExportToPDFEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tmwc_f25flex/!svn/ver/1231/fulltime-facturacion/src/biz/fulltime/event/ExportToPDFEvent.as
+END
+MenuEventFT.as
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/tmwc_f25flex/!svn/ver/1285/fulltime-facturacion/src/biz/fulltime/event/MenuEventFT.as
+END
+ExportToCSVEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/tmwc_f25flex/!svn/ver/781/fulltime-facturacion/src/biz/fulltime/event/ExportToCSVEvent.as
+END
+AbrirFacturaEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tmwc_f25flex/!svn/ver/964/fulltime-facturacion/src/biz/fulltime/event/AbrirFacturaEvent.as
+END
+ExportToExcelEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/tmwc_f25flex/!svn/ver/1011/fulltime-facturacion/src/biz/fulltime/event/ExportToExcelEvent.as
+END
+FilterEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/tmwc_f25flex/!svn/ver/352/fulltime-facturacion/src/biz/fulltime/event/FilterEvent.as
+END
+UsuarioEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/tmwc_f25flex/!svn/ver/794/fulltime-facturacion/src/biz/fulltime/event/UsuarioEvent.as
+END
+ListadoFacturasEvent.as
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/tmwc_f25flex/!svn/ver/1306/fulltime-facturacion/src/biz/fulltime/event/ListadoFacturasEvent.as
+END

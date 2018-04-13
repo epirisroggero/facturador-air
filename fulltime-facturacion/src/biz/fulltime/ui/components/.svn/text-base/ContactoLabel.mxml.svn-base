@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+		   width="100%" creationComplete="updateLabel()" verticalScrollPolicy="off" horizontalScrollPolicy="off" xmlns:s="library://ns.adobe.com/flex/spark">
+	
+	<mx:Script>
+		<![CDATA[
+			import biz.fulltime.dto.ContactoDTO;
+			import biz.fulltime.event.ContactoEvent;
+			
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.PropertyChangeEvent;
+			import mx.managers.ISystemManager;
+			
+			private var _listenersInstalled:Boolean = false;
+			
+			
+			[Bindable]
+			private var _codigo:String;
+			
+			[Bindable]
+			private var _nombre:String;
+			
+			[Bindable]
+			private var _razonSocial:String;
+			
+			[Bindable]
+			private var _value:ContactoDTO;
+			
+			[Bindable]
+			private var _fontSize:Number = 12;
+			
+			[Bindable]
+			private var _color:uint = 0x000000;
+			
+			[Bindable]
+			private var _removeEnabled:Boolean = false;
+			
+			override public function set data(value:Object):void {
+				_value = value as ContactoDTO;
+				
+				if (_value) {
+					_value.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:Event):void {
+						updateLabel();
+					});
+					updateLabel();
+				}
+			}
+			
+			override public function get data():Object {
+				return _value;
+			}
+			
+			public function set removeEnabled(val:Boolean):void {
+				_removeEnabled = val;
+			}
+			
+			public function set fontSize(size:Number):void {
+				this._fontSize = size;
+			}
+			
+			public function updateLabel():void {
+				var item:ContactoDTO = ContactoDTO(_value);
+				if (item != null) {
+					_codigo = item.codigo;
+					_nombre = item.nombre;
+					_razonSocial = item.razonSocial ? item.razonSocial.toUpperCase() : "";
+					_color = item.activo ? 0x000000 : 0xff0000;
+					return;
+				}
+				_codigo = "";
+				_nombre = "";
+				_razonSocial = "";
+				_color = 0x000000;
+				
+				
+			}
+			
+			public function remove(evt:Event):void {
+				var parent:Sprite;
+				
+				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+				// no types so no dependencies
+				var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+				if (mp && mp.useSWFBridge()) {
+					parent = Sprite(sm.getSandboxRoot());
+				} else {
+					parent = Sprite(FlexGlobals.topLevelApplication);
+				}
+				
+				Alert.show("¿Esta seguro de Borrar el contacto '" + _nombre + "'?", "Borrar contacto", Alert.YES + Alert.NO, parent, alertClickHandler);
+				
+			}
+			
+			// Event handler function for displaying the selected Alert button.
+			private function alertClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					dispatchEvent(new ContactoEvent(ContactoEvent.BORRAR_CONTACTO, null, _value));
+				} 
+			}
+		]]>
+	</mx:Script>
+	
+	<s:BorderContainer width="100%" height="42" styleName="advancedLabel" minHeight="0">
+		<s:layout>
+			<s:VerticalLayout horizontalAlign="left" paddingLeft="10" verticalAlign="middle" />
+		</s:layout>
+		<s:HGroup id="mainBox" width="100%" height="32" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
+			<!-- mx:Image id="img" source="{StyleManager.getStyleManager(null).getStyleDeclaration('.icons').getStyle('personaIcon')}" width="32" height="32"/-->
+			<s:HGroup width="42" horizontalAlign="center">
+				<s:Label id="lblCodigo" fontSize="{_fontSize + 1}" text="{_codigo}" showTruncationTip="true" maxDisplayedLines="1"  color="{_color}"/>
+			</s:HGroup>	
+			
+			
+			<mx:VRule height="100%" />
+			<s:VGroup width="100%" height="100%" verticalAlign="middle" paddingLeft="4" paddingTop="5" paddingBottom="5">
+				<s:Label id="lblNombre" width="100%" fontSize="{_fontSize}" text="{_nombre}" showTruncationTip="true" maxDisplayedLines="1" color="{_color}"/>
+				<s:Label id="lblRazonSocial" width="100%" fontSize="{_fontSize - 2}" text="{_razonSocial}" fontStyle="italic" showTruncationTip="true" maxDisplayedLines="1" color="{_color}"/>
+			</s:VGroup>
+			<s:VGroup width="20" height="100%" horizontalAlign="center" paddingRight="10" verticalAlign="middle">
+				<mx:Button id="btnRemove" width="8" height="8" click="remove(event)" styleName="buttonRemoveIcon" visible="{_removeEnabled}" toolTip="Borrar contacto"/>
+			</s:VGroup>
+		</s:HGroup>
+	</s:BorderContainer>
+	
+</mx:Canvas>

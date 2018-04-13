@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" xmlns:expediciones="biz.fulltime.ui.expediciones.*">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.dto.AgendaTareaDTO;
+			import biz.fulltime.model.AgendaTarea;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TitleWindow;
+
+			private var _tareas:ArrayCollection;
+			
+			private const WINDOW_WIDTH:Number = 600;
+			
+			private const WINDOW_HEIGHT:Number = 580;
+
+
+			protected function hgroup1_creationCompleteHandler(event:FlexEvent):void {
+			}
+
+			[Bindable]
+			public function get tareas():ArrayCollection {
+				return _tareas;
+			}
+
+			public function set tareas(value:ArrayCollection):void {
+				_tareas = value;
+			}
+			
+			protected function cmdEditarTarea_clickHandler(event:MouseEvent):void {
+				var wndTarea:TitleWindow = new TitleWindow();
+				wndTarea.title = "Editar Tarea";
+				wndTarea.width = WINDOW_WIDTH;
+				wndTarea.height = WINDOW_HEIGHT;
+				
+				var tarea:AgendaTarea = dgTareas.currentSelected as AgendaTarea;
+				
+				var frmNuevaTarea:FrmNuevaTarea = new FrmNuevaTarea();
+				frmNuevaTarea.nueva = false;
+				frmNuevaTarea.tarea = tarea;
+				frmNuevaTarea.matutina = true;
+				
+				PopUpManager.addPopUp(wndTarea, this, false);
+				PopUpManager.centerPopUp(wndTarea);
+				
+				wndTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
+				frmNuevaTarea.addEventListener(CloseEvent.CLOSE, function():void {
+					wndTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+					PopUpManager.removePopUp(wndTarea as IFlexDisplayObject);
+					
+				});
+				
+				frmNuevaTarea.addEventListener("_savedOk", function():void {
+					wndTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+					PopUpManager.removePopUp(wndTarea as IFlexDisplayObject);
+				});				
+				
+				wndTarea.addElement(frmNuevaTarea);
+			}
+			
+			protected function cmdReagendar_clickHandler(event:MouseEvent):void {
+				var wndReagendarTarea:TitleWindow = new TitleWindow();
+				wndReagendarTarea.title = "Reagendar Tarea";
+				wndReagendarTarea.width = WINDOW_WIDTH;
+				wndReagendarTarea.height = WINDOW_HEIGHT - 140;
+				
+				var tarea:AgendaTarea = dgTareas.currentSelected as AgendaTarea;
+				
+				var frmReagendarTarea:FrmReagendarTareas = new FrmReagendarTareas();
+				frmReagendarTarea.tarea = tarea;
+				frmReagendarTarea.matutino = true;
+				
+				PopUpManager.addPopUp(wndReagendarTarea, this, false);
+				PopUpManager.centerPopUp(wndReagendarTarea);
+				
+				wndReagendarTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
+				frmReagendarTarea.addEventListener(CloseEvent.CLOSE, function():void {
+					wndReagendarTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+					PopUpManager.removePopUp(wndReagendarTarea as IFlexDisplayObject);
+					
+					if (!frmReagendarTarea.cancelPressed) {
+						var nuevaFecha:Date = frmReagendarTarea.nuevaFecha;
+						tarea.estado = "C";
+						tarea.fechaHoraFin = null;
+					}
+				});
+				
+				wndReagendarTarea.addElement(frmReagendarTarea);
+			}
+
+			private function closeHandler(event:Event):void {
+				var ttlWnd:TitleWindow = event.target as TitleWindow;
+				ttlWnd.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(ttlWnd as IFlexDisplayObject);
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+
+	<s:VGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" creationComplete="hgroup1_creationCompleteHandler(event)">
+		<expediciones:ExpedicionesDataGrid id="dgTareas" width="100%" height="100%" tareas="{tareas}" showDateColumn="true" />
+		<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" />
+			</s:layout>
+			<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<s:Button id="cmdEditarTarea" width="100" height="100%" click="cmdEditarTarea_clickHandler(event)" label="Editar" toolTip="Editar tarea"
+					  enabled="{dgTareas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgTareas.grid.selectedItem).estado == 'P'}" styleName="editarButton" focusEnabled="false" />
+			<s:Button id="cmdReagendar" width="100" height="100%" click="cmdReagendar_clickHandler(event)" label="Reagendar" toolTip="Reagendar tarea"
+					  enabled="{dgTareas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgTareas.grid.selectedItem).estado == 'P'}" styleName="textButton" focusEnabled="false" />
+			<s:Spacer width="12" />
+			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cerrar" styleName="cerrarButton" toolTip="Cerrar" />
+		</s:BorderContainer>
+
+	</s:VGroup>
+
+</s:Group>

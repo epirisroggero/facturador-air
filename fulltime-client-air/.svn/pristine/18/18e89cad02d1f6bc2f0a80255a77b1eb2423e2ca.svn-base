@@ -1,0 +1,676 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+/* FLEX4 */
+@namespace components "com.hillelcoren.components.*";
+
+/*
+//------------------------------
+//
+//  Global
+//
+//------------------------------
+*/
+
+mx|LinkButton
+{
+	font-family: "Myriad Pro";
+	fontLookup: embeddedCFF;
+	font-weight: normal;
+	font-size: 14;
+	
+	color:					#000000;
+	text-selected-color:	#333333;
+	roll-over-color:		#333333;
+	text-roll-over-color:	#FFFFFF;
+	
+	cornerRadius: 5;
+}
+
+.myLabel
+{
+	font-family: "Myriad Pro";
+	fontLookup: embeddedCFF;
+	font-weight: normal;
+	font-size: 14;
+	
+}
+
+s|WindowedApplication
+{	 
+	background-blend:			difference;	
+	background-position: 		center;
+	
+	skinClass:  				ClassReference("skin.components.CustomApplicationSkin");
+}
+
+.cotizacionSkin {
+	skinClass: ClassReference("skin.components.CotizacionTitleWindow");
+}
+
+
+s|TextInput:normalWithPrompt {
+	color: #C1C1C1;
+}
+
+s|TextInput:disabledWithPrompt {
+	color: #CCFFFF;
+}
+
+s|Panel {
+	skinClass: ClassReference("skin.components.MyPanelSkin");
+	fontLabelTitle: 18;
+}
+	
+
+s|DataGrid {
+	selectionColor: #CEDBEF;
+	borderAlpha: 0.4;
+	caretColor: #333333;
+	alternatingRowColors: #FAFBFF, #FFFFFF;
+	/*alternatingRowColors: #FFFFFF, #EDEFF5;*/
+}
+
+s|DefaultGridItemRenderer
+{	
+	color: #000000;
+	font-family: Arial,Verdana,Tahoma;
+	font-size: 12;
+	font-weight: normal;
+}
+
+
+.txtCotizaciones {
+	skinClass: ClassReference("skin.components.CotizacioesTextInput");
+	
+	borderVisible: false;
+}
+
+.pntLineasVenta {
+	skinClass: ClassReference("skin.components.PnlSinTituloSkin");
+	
+	backgroundAlpha: 0;
+	borderVisible: false;
+}
+
+.pnlInterno {
+	skinClass: ClassReference("skin.components.MyPanelSkin");
+	
+	dropShadowVisible: false;
+	backgroundColor: #EFEFEF;
+	backgroundAlpha: 0.1;
+	headerTitleAlpha:.87;
+	borderColor: #879ABF;
+	borderAlpha: .16;
+	borderVisible: true;
+	fontLabelTitle: 16;
+}
+
+
+
+
+components|AutoComplete
+{
+	selected-item-style-name: macMail;
+}
+
+.none 
+{
+	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	up-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	down-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-over-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-up-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-down-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 0;
+	font-weight: normal;
+	selected-font-weight: bold;
+	show-comma: yes;
+}
+
+.underline
+{
+	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	up-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	down-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-over-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-up-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-down-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 0;
+	text-decoration: underline;
+	font-weight: normal;
+	selected-font-weight: bold;
+	show-comma: yes;
+}
+
+.macMail 
+{
+	over-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
+	up-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
+	down-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
+	selected-over-skin : ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
+	selected-up-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
+	selected-down-skin : ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
+	padding-top: 0;
+	padding-bottom: 0;
+	text-selected-color: #FFFFFF;
+	padding-left: 8;
+	padding-right: 8;
+	font-weight: normal; 
+}
+
+.facebook 
+{
+	over-skin: ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
+	up-skin: ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
+	down-skin: ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
+	selected-over-skin : ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
+	selected-up-skin : ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
+	selected-down-skin : ClassReference("com.hillelcoren.assets.skins.FacebookSkin");        
+	padding-top: 0;
+	padding-bottom: 0;
+	text-selected-color: #FFFFFF;
+	padding-left: 2;
+	padding-right: 5;
+	font-weight: normal;                
+}
+
+.actionsMenuButton
+{
+	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	up-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	down-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-over-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-up-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	selected-down-skin : ClassReference("com.hillelcoren.assets.skins.BlankSkin");
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 4;			
+}
+
+
+.saveButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+		
+	iconUp: 		Embed("/assets/general/icon24/Save.png");
+	iconOver: 		Embed("/assets/general/icon24/Save.png");
+	iconDown:		Embed("/assets/general/icon24/Save.png");
+	iconDisabled:	Embed("/assets/general/icon24/Save.png");
+		
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.eMailButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Email.png");
+	iconOver: 		Embed("/assets/general/icon24/Email.png");
+	iconDown:		Embed("/assets/general/icon24/Email.png");
+	iconDisabled:	Embed("/assets/general/icon24/Email.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.emitirButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Info.png");
+	iconOver: 		Embed("/assets/general/icon24/Info.png");
+	iconDown:		Embed("/assets/general/icon24/Info.png");
+	iconDisabled:	Embed("/assets/general/icon24/Info.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.salirButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Exit.png");
+	iconOver: 		Embed("/assets/general/icon24/Exit.png");
+	iconDown:		Embed("/assets/general/icon24/Exit.png");
+	iconDisabled:	Embed("/assets/general/icon24/Exit.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+}
+
+.cerrarButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Close.png");
+	iconOver: 		Embed("/assets/general/icon24/Close.png");
+	iconDown:		Embed("/assets/general/icon24/Close.png");
+	iconDisabled:	Embed("/assets/general/icon24/Close.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+	
+}
+
+
+.refrescarButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Refrescar.png");
+	iconOver: 		Embed("/assets/general/icon24/Refrescar.png");
+	iconDown:		Embed("/assets/general/icon24/Refrescar.png");
+	iconDisabled:	Embed("/assets/general/icon24/Refrescar.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.editarButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+
+	iconUp: 		Embed("/assets/general/icon24/Modify.png");
+	iconOver: 		Embed("/assets/general/icon24/Modify.png");
+	iconDown:		Embed("/assets/general/icon24/Modify.png");
+	iconDisabled:	Embed("/assets/general/icon24/Modify.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+	
+}
+
+.imprimirButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Print.png");
+	iconOver: 		Embed("/assets/general/icon24/Print.png");
+	iconDown:		Embed("/assets/general/icon24/Print.png");
+	iconDisabled:	Embed("/assets/general/icon24/Print.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+
+	paddingLeft: 6;
+	paddingRight: 6;
+
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+
+.nuevaButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	fontFamily:myFontFamily;
+	
+	iconUp: 		Embed("/assets/general/icon24/Add.png");
+	iconOver: 		Embed("/assets/general/icon24/Add.png");
+	iconDown:		Embed("/assets/general/icon24/Add.png");
+	iconDisabled:	Embed("/assets/general/icon24/Add.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+    
+}
+
+
+.bajarButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	fontFamily:myFontFamily;
+	
+	iconUp: 		Embed("/assets/general/icon24/Down.png");
+	iconOver: 		Embed("/assets/general/icon24/Down.png");
+	iconDown:		Embed("/assets/general/icon24/Down.png");
+	iconDisabled:	Embed("/assets/general/icon24/Down.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+	
+	
+}
+
+.aceptarButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Apply.png");
+	iconOver: 		Embed("/assets/general/icon24/Apply.png");
+	iconDown:		Embed("/assets/general/icon24/Apply.png");
+	iconDisabled:	Embed("/assets/general/icon24/Apply.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.cancelarButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Cancelar.png");
+	iconOver: 		Embed("/assets/general/icon24/Cancelar.png");
+	iconDown:		Embed("/assets/general/icon24/Cancelar.png");
+	iconDisabled:	Embed("/assets/general/icon24/Cancelar.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+
+
+.firstButton
+{
+	skin-class: ClassReference("skin.components.IconButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/control-first.png");
+	iconOver: 		Embed("/assets/general/icon24/control-first.png");
+	iconDown:		Embed("/assets/general/icon24/control-first.png");
+	iconDisabled:	Embed("/assets/general/icon24/control-first.png");
+	
+	iconWidth: 16;
+	iconHeight: 16;
+}
+
+.lastButton
+{
+	skin-class: ClassReference("skin.components.IconButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/control-last.png");
+	iconOver: 		Embed("/assets/general/icon24/control-last.png");
+	iconDown:		Embed("/assets/general/icon24/control-last.png");
+	iconDisabled:	Embed("/assets/general/icon24/control-last.png");
+	
+	iconWidth: 16;
+	iconHeight: 16;
+}
+
+
+.previousButton
+{
+	skin-class: ClassReference("skin.components.IconButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/control-prev.png");
+	iconOver: 		Embed("/assets/general/icon24/control-prev.png");
+	iconDown:		Embed("/assets/general/icon24/control-prev.png");
+	iconDisabled:	Embed("/assets/general/icon24/control-prev.png");
+	
+	iconWidth: 16;
+	iconHeight: 16;
+}
+
+.nextButton
+{
+	skin-class: ClassReference("skin.components.IconButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/control-next.png");
+	iconOver: 		Embed("/assets/general/icon24/control-next.png");
+	iconDown:		Embed("/assets/general/icon24/control-next.png");
+	iconDisabled:	Embed("/assets/general/icon24/control-next.png");
+	
+	iconWidth: 16;
+	iconHeight: 16;
+}
+
+.saveButtonNotas
+{
+	skin-class: ClassReference("skin.components.IconButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/Save.png");
+	iconOver: 		Embed("/assets/general/icon24/Save.png");
+	iconDown:		Embed("/assets/general/icon24/Save.png");
+	iconDisabled:	Embed("/assets/general/icon24/Save.png");
+
+	iconWidth: 16;
+	iconHeight: 16;
+
+}
+
+.textButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+
+	paddingTop: 6;
+	paddingBottom: 6;
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.exportButton
+{
+	skin-class: ClassReference("skin.components.ButtonSkin"); 
+	
+	iconUp: 		Embed("/assets/general/icon24/table-export.png");
+	iconOver: 		Embed("/assets/general/icon24/table-export.png");
+	iconDown:		Embed("/assets/general/icon24/table-export.png");
+	iconDisabled:	Embed("/assets/general/icon24/table-export.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+	paddingLeft: 6;
+	paddingRight: 6;
+	
+	focusThickness: 5px;
+	focusedTextSelectionColor:true;
+
+}
+
+.icons32
+{
+	ErrorIcon:       Embed('/assets/general/icon32/cross-circle.png');
+	WarningIcon:     Embed('/assets/general/icon32/exclamation.png');
+	InformationIcon: Embed('/assets/general/icon32/information.png');
+
+}
+
+
+.icons48
+{
+	OkIcon:       Embed('/assets/general/icon48/Ok.png');
+}
+
+.hideShowButton
+{
+	skin-class: ClassReference("skin.components.IconShowSkin"); 
+	
+	iconUp: Embed("/assets/general/icon24/Minimize.png");
+	iconUpAndSelected:Embed("/assets/general/icon24/Maximize.png");
+	
+	iconWidth: 24;
+	iconHeight: 24;
+	
+}
+
+mx|ToolTip {
+	backgroundColor: black;
+	backgroundAlpha: .87;
+	cornerRadius: 3;
+	color: white;
+	
+	fontSize: 12;
+}
+
+#dgClients {
+	alternating-item-colors: #FFFFFF, #EDEFF5;
+}	
+
+s|DataGrid {
+	alternating-item-colors: #FFFFFF, #EDEFF5;
+}
+
+
+.titleLabel {
+	color: #ffffff;
+	fontWeight:bold;
+}
+
+.titleNumberLabel {
+	color: #ffffff;
+	fontWeight:bold;
+	textAlign: right;
+}
+
+.numberLabel {
+	textAlign: right;
+}
+
+.subtotalLabelName {
+	textAlign: left;
+	fontWeight:bold;
+	fontSize: 13;
+	paddingLeft: 10;
+}
+
+.subtotalLabel {
+	textAlign: left;
+	fontWeight:bold;
+	fontSize: 13;
+}
+
+.clienteLabel {
+	textAlign: left;
+	fontWeight:normal;
+	fontSize: 11;
+}
+
+.clienteLabelNegrita {
+	textAlign: left;
+	fontWeight:bold;
+	fontSize: 11;
+}
+
+.subtotalLabelRight {
+	textAlign: right;
+	fontWeight:bold;
+	fontSize: 13;
+}
+
+.totalLabelLeft {
+	color: #ffffff;
+	
+	textAlign: left;
+	fontWeight:bold;
+	fontSize: 13;
+}
+
+.totalLabelRight {
+	color: #ffffff;
+	
+	textAlign: right;
+	fontWeight:bold;
+	fontSize: 13;
+}
+
+mx|VRule {
+	color: #ffffff;
+	
+}
+
+s|ButtonBar s|ButtonBarButton:upAndSelected,
+s|ButtonBar s|ButtonBarButton:overAndSelected,
+s|ButtonBar s|ButtonBarButton:downAndSelected,
+s|ButtonBar s|ButtonBarButton:disabledAndSelected {
+	chromeColor: #0000FF;
+	color: #FFFFFF;
+}
+s|ButtonBar { 
+	chromeColor: #FFFFFF;
+	color: #000000;
+	fontWeight:bold;
+}
+
+
+

@@ -1,0 +1,905 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:components="biz.fulltime.ui.components.*" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:renderers="biz.fulltime.ui.renderers.*"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   width="100%" height="100%" preinitialize="preinitializeHandler(event)" creationComplete="init()" show="showPanel()" label="Editor de artículo">
+	
+	<mx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.ArticuloDTO;
+			import biz.fulltime.event.ArticuloEvent;
+			import biz.fulltime.model.Articulo;
+			import biz.fulltime.model.ArticuloPrecio;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.FamiliaArticulos;
+			import biz.fulltime.model.Iva;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.PreciosVenta;
+			import biz.fulltime.model.Proveedor;
+			import biz.fulltime.model.Usuario;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.ProgressBarMode;
+			import mx.events.FlexEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.validators.Validator;
+			
+			import util.CatalogoFactory;
+			
+			private var _articulo:Articulo;
+						
+			[Bindable]
+			private var ultimoDisponible:String;
+			
+			[Bindable]
+			private var validatorArr:Array;
+			
+			private var imagesFilter:FileFilter = new FileFilter("Images", "*.jpg;*.gif;*.png");
+			
+			private var mFileReference:FileReference = new FileReference();
+			
+			[Bindable]
+			private var monedas:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var _precioMinorista:String = "";
+			
+			[Bindable]
+			public var _precioMayorista:String = "";
+
+			[Bindable]
+			public var _precioDistribuidor:String = "";
+			
+			[Bindable]
+			public var _precioReventa:String = "";
+
+			[Bindable]
+			public var _precioFabrica:String = "";
+
+			[Bindable]
+			public var _costo:String = "";
+
+
+			[Bindable]
+			public var _pbMinoristaIVA:Boolean;
+			
+			[Bindable]
+			public var _pbMayoristaIVA:Boolean;
+			
+			[Bindable]
+			public var _pbDistribuidorIVA:Boolean;
+			
+			[Bindable]
+			public var _pbReventaIVA:Boolean;
+			
+			[Bindable]
+			public var _pbFabricaIVA:Boolean;
+
+			
+			private var remObj:RemoteObject;
+			
+			private var remObjPSMin:RemoteObject;
+			
+			private var remObjPSMay:RemoteObject;
+			
+			private var remObjPSDist:RemoteObject;
+			
+			private var artPrecios:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var capitulos:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var subtitulos:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var subfamilia:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var familias:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var proveedores:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var ivas:ArrayCollection = new ArrayCollection();
+
+
+			[Bindable]
+			private var _capitulo:Object = new Object();
+			
+			[Bindable]
+			private var _subtitulo: Object = new Object();
+			
+			[Bindable]
+			private var _subfamilia: Object = new Object();
+			
+			[Bindable]
+			private var _familia: Object = new Object();
+
+			
+			protected function preinitializeHandler(event:FlexEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, resultPrecios);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = false;
+				
+				
+				for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+					monedas.addItem(moneda);
+				}
+				
+				for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+					var familia:Object = new Object();
+					familia.codigo = Number(f.codigo);
+					familia.nombre = f.nombre;
+					
+					if (Number(f.codigo) < 100) {
+						capitulos.addItem(familia);
+					} else if (Number(f.codigo) < 10000) {
+						//subtitulos.addItem(familia);
+					} else if (Number(f.codigo) < 1000000) {
+						//subfamilia.addItem(familia);
+					} else {
+						familias.addItem(familia);
+					}
+				}
+				
+				for each (var contacto:Contacto in CatalogoFactory.getInstance().contactos) {
+					if (contacto.ctoProveedor == "S") {
+						var proveedor:Proveedor = new Proveedor();
+						proveedor.codigo = contacto.codigo;
+						proveedor.nombre = contacto.nombre;
+
+						proveedores.addItem(proveedor);
+					}
+				}
+
+			}
+
+			private function init():void {
+				validatorArr = new Array();
+				validatorArr.push(fname_stringValidator);
+			}
+			
+			private function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error");
+			}
+			
+			private function onFileSelected(event:Event):void {
+			}
+						
+			[Bindable]
+			public function get articulo():Articulo {
+				return _articulo;
+			}
+			
+			public function set articulo(value:Articulo):void {
+				this._articulo = value;
+								
+				_articulo.addEventListener("_savedArticuloOk", function():void {
+					lblMsg.visible = true;
+					
+					var timer:Timer = new Timer(1000, 1);
+					timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:Event):void {
+						lblMsg.visible = false;
+						resultMerge();
+					});
+					timer.start();
+				});
+				
+				_costo = _articulo.costo;
+				
+				var aux:ArrayCollection = new ArrayCollection();
+				for each (var v:Contacto in CatalogoFactory.getInstance().contactos) {
+					var o:Number = Number(v.codigo);
+					aux.addItem(o);
+				}
+				var lastId:Number = 1;
+				for (lastId; lastId < Number.MAX_VALUE; lastId++) {
+					if (!aux.contains(lastId)) {
+						break;
+					}
+				}
+				
+				ultimoDisponible = lastId.toString();
+				
+				updateFamiliaSelection();
+				
+				remObj.getArticuloPrecio(_articulo.codigo);
+				
+				txtIva.selectedItem = _articulo.iva;
+				
+			}
+			
+			public function getArtPrecio(artId:String, precio:String, monedaId:String, precioBaseId:String, precioBaseConIVA:Boolean):ArticuloPrecio {
+				var artPrecio:ArticuloPrecio = new ArticuloPrecio();
+				artPrecio.artId = artId;
+				artPrecio.precio = precio;
+				artPrecio.mndIdPrecio = monedaId; 
+				artPrecio.precioBaseId = precioBaseId;
+				artPrecio.precioBaseConIVA = precioBaseConIVA;	
+				
+				return artPrecio;
+				
+			}
+			
+			public function validateForm(evt:MouseEvent):void {
+				var validatorErrorArray:Array = Validator.validateAll(validatorArr);
+				
+				var isValidForm:Boolean = validatorErrorArray.length == 0;
+				if (isValidForm) {
+					
+					var changeCosto:Boolean = false;
+					if (articulo.costo != txtCosto.text) {
+						var c1:Number = new Number(articulo.costo);
+						var c2:Number = new Number(txtCosto.text);
+						changeCosto = c1 != c2;
+					}
+					if (changeCosto) {
+						articulo.fechaCosto = new Date();
+					}					
+					articulo.costo = (txtCosto.text != null && txtCosto.text.length > 0) ? txtCosto.text : "0.0";
+					articulo.monedaCosto = cmbMoneyCosto.selectedItem;
+					articulo.mndIdArtCosto = new Number((cmbMoneyCosto.selectedItem as Moneda).codigo);
+					articulo.proveedor = txtProveedor.selectedItem;
+					
+					if (txtFamilia.selectedItem != null) {
+						var familia:FamiliaArticulos = new FamiliaArticulos();
+						familia.codigo = txtFamilia.selectedItem.codigo;
+						familia.nombre = txtFamilia.selectedItem.nombre;
+						articulo.familia =  familia;
+					} else {
+						articulo.familia =  null;
+					}
+					
+					articulo.notas = txtNotas.text;
+					
+					articulo.artNotasInt = txtNotaInterna.text;
+					
+					articulo.mergeArticulo();
+					
+					if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {						
+						var pFabrica:ArticuloPrecio;
+						var pDistribuidor:ArticuloPrecio;
+						var pReventa:ArticuloPrecio;
+						var pMayorista:ArticuloPrecio;
+						var pMinorista:ArticuloPrecio;
+						
+						for each(var precio:ArticuloPrecio in artPrecios) {
+							switch (precio.precioBaseId) {
+								case "01":
+									pFabrica = precio;
+									break;
+								case "02":
+									pDistribuidor = precio;
+									break;
+								case "03":
+									pReventa = precio;
+									break;
+								case "04":
+									pMayorista = precio;
+									break;
+								case "05":
+									pMinorista = precio;
+									break;
+							}	
+						}					
+						
+						if (_precioFabrica.length > 0) { // hay precio
+							if (!pFabrica) { // no esta en el arreglo agrego uno nuevo
+								artPrecios.addItem(getArtPrecio(articulo.codigo, _precioFabrica, cmbMoneyFabrica.selectedItem ? Moneda(cmbMoneyFabrica.selectedItem).codigo : Moneda.DOLARES, "01", _pbFabricaIVA));
+							} else { // en caso de estar lo modifico
+								pFabrica.precio = _precioFabrica;
+								pFabrica.precioBaseConIVA = _pbFabricaIVA;
+								pFabrica.mndIdPrecio = cmbMoneyFabrica.selectedItem ? Moneda(cmbMoneyFabrica.selectedItem).codigo : Moneda.DOLARES;
+							}
+						}					
+						if (_precioDistribuidor.length > 0) {
+							if (!pDistribuidor) {
+								artPrecios.addItem(getArtPrecio(articulo.codigo, _precioDistribuidor, cmbMoneyDist.selectedItem ? Moneda(cmbMoneyDist.selectedItem).codigo : Moneda.DOLARES, "02", _pbDistribuidorIVA));
+							} else {
+								pDistribuidor.precio = _precioDistribuidor;
+								pDistribuidor.precioBaseConIVA = _pbDistribuidorIVA;
+								pDistribuidor.mndIdPrecio = cmbMoneyDist.selectedItem ? Moneda(cmbMoneyDist.selectedItem).codigo : Moneda.DOLARES;
+							}
+						}					
+						if (_precioReventa.length > 0) {
+							if (!pReventa) {
+								artPrecios.addItem(getArtPrecio(articulo.codigo, _precioReventa, cmbMoneyReventa.selectedItem ? Moneda(cmbMoneyReventa.selectedItem).codigo : Moneda.DOLARES, "03", _pbReventaIVA));
+							} else {
+								pReventa.precio = _precioReventa;
+								pReventa.precioBaseConIVA = _pbReventaIVA;
+								pReventa.mndIdPrecio = cmbMoneyReventa.selectedItem ? Moneda(cmbMoneyReventa.selectedItem).codigo : Moneda.DOLARES;
+							}
+						}			
+						if (_precioMayorista.length > 0) {
+							if (!pReventa) {
+								artPrecios.addItem(getArtPrecio(articulo.codigo, _precioMayorista, cmbMoneyIndustria.selectedItem ? Moneda(cmbMoneyIndustria.selectedItem).codigo : Moneda.DOLARES, "04", _pbMayoristaIVA));
+							} else {
+								pMayorista.precio = _precioMayorista;
+								pMayorista.precioBaseConIVA = _pbMayoristaIVA;
+								pMayorista.mndIdPrecio = cmbMoneyIndustria.selectedItem ? Moneda(cmbMoneyIndustria.selectedItem).codigo : Moneda.DOLARES;
+							}
+						}
+						if (_precioMinorista.length > 0) {
+							if (!pMinorista) {
+								artPrecios.addItem(getArtPrecio(articulo.codigo, _precioMinorista, cmbMoneyMinorista.selectedItem ? Moneda(cmbMoneyMinorista.selectedItem).codigo : Moneda.DOLARES, "05", _pbMinoristaIVA));
+							} else {
+								pMinorista.precio = _precioMinorista;
+								pMinorista.precioBaseConIVA = _pbMinoristaIVA;
+								pMinorista.mndIdPrecio = cmbMoneyMinorista.selectedItem ? Moneda(cmbMoneyMinorista.selectedItem).codigo : Moneda.DOLARES;
+							}
+						}
+						
+						articulo.updatePrecios(artPrecios);
+					}
+					
+				} else {
+					var err:ValidationResultEvent;
+					var errorMessageArray:Array = [];
+					for each (err in validatorErrorArray) {
+						errorMessageArray.push(err.message);
+					}
+					
+					Alert.show(errorMessageArray.join("\n\n"), "Los datos no son validos...", Alert.OK);
+				}
+			}
+			
+			private function resultMerge():void {
+				var c:ArticuloDTO = new ArticuloDTO();
+				c.codigo = articulo.codigo;
+				c.nombre = articulo.nombre;
+				
+				dispatchEvent(new ArticuloEvent(ArticuloEvent.FINALIZAR_EDICION_ART, null, c));
+			}
+			
+			private function cancelValues(evt:MouseEvent):void {
+				var c:ArticuloDTO = new ArticuloDTO();
+				c.codigo = articulo.codigo;
+				c.nombre = articulo.nombre;
+				
+				dispatchEvent(new ArticuloEvent(ArticuloEvent.CANCELAR_EDICION_ART, null, c));
+			}
+			
+			private function showPanel():void {
+				fname.setFocus();
+			}
+			
+			private function buscarImagen():void {
+				mFileReference.browse([imagesFilter]);
+			}
+			
+			private function onError(event:IOErrorEvent):void {
+				Alert.show("Error al subir la Imagen: " + String(event.errorID));
+			}
+			
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String = "";
+				
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += "-" + item.nombre;
+				}
+				return label;
+			}
+			
+			
+			[Bindable(event = "_changeArticulo")]
+			public function hasPerm():Boolean {
+				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
+				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+					return true;
+				}
+				return articulo.esNuevo;
+				
+			}
+			
+			
+			private function resultPrecios(event:ResultEvent):void {
+				artPrecios = event.result as ArrayCollection;	
+				
+				_precioFabrica = "";
+				_precioDistribuidor = "";
+				_precioReventa = "";
+				_precioMayorista = "";
+				_precioMinorista = "";
+
+				cmbMoneyFabrica.clear();
+				cmbMoneyDist.clear(); 
+				cmbMoneyReventa.clear(); 
+				cmbMoneyIndustria.clear(); 
+				cmbMoneyMinorista.clear(); 
+				
+				_pbFabricaIVA = false;
+				_pbDistribuidorIVA = false;
+				_pbReventaIVA = false;
+				_pbMinoristaIVA = false;
+				_pbMayoristaIVA = false;
+				
+				for each (var p:ArticuloPrecio in artPrecios) {
+					switch (p.precioBaseId) {
+						case "01":
+							_precioFabrica = p.precio;
+							_pbFabricaIVA = p.precioBaseConIVA;
+							cmbMoneyFabrica.selectedItem = getMoneda(p.mndIdPrecio); 
+							break;
+						case "02":
+							_precioDistribuidor = p.precio;
+							_pbDistribuidorIVA = p.precioBaseConIVA;
+							cmbMoneyDist.selectedItem = getMoneda(p.mndIdPrecio); 
+							break;
+						case "03":
+							_precioReventa = p.precio;
+							_pbReventaIVA = p.precioBaseConIVA;
+							cmbMoneyReventa.selectedItem = getMoneda(p.mndIdPrecio); 
+							break;
+						case "04":
+							_precioMayorista = p.precio;
+							_pbMayoristaIVA = p.precioBaseConIVA;
+							cmbMoneyIndustria.selectedItem = getMoneda(p.mndIdPrecio); 
+							break;
+						case "05":
+							_precioMinorista = p.precio;
+							_pbMinoristaIVA = p.precioBaseConIVA;
+							cmbMoneyMinorista.selectedItem = getMoneda(p.mndIdPrecio); 
+							break;
+					}
+				}
+			}
+			
+			private function getMoneda(mdaId:String):Moneda {
+				for each (var m:Moneda in monedas) {
+					if (m.codigo == mdaId) {
+						return m;
+					}					
+				}
+				return null;
+				
+			}
+			
+			protected function txtCapitulos_changeHandler(event:Event):void {
+				subtitulos.removeAll();
+				subfamilia.removeAll();
+				familias.removeAll();
+				
+				txtSubtitulo.clear();
+				txtSubfamilia.clear();
+				txtFamilia.clear();
+				
+				if (_capitulo) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+						
+						if (Number(f.codigo) >= 100 && Number(f.codigo) < 10000) {
+							if (f.codigo.toString().match(new RegExp("^" + _capitulo.codigo, 'i'))) {
+								subtitulos.addItem(familia);
+							} 
+						} else if (Number(f.codigo) >= 100000) {
+							if (f.codigo.toString().match(new RegExp("^" + _capitulo.codigo, 'i'))) {
+								familias.addItem(familia);
+							}
+						}	
+					}
+				} else {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+						
+						if (Number(f.codigo) >= 100000) {
+							familias.addItem(familia);
+						}	
+					}
+
+				}
+				
+			}
+			
+			protected function txtSubtitulo_changeHandler(event:Event):void {
+				subfamilia.removeAll();
+				familias.removeAll();
+				
+				txtSubfamilia.clear();
+				txtFamilia.clear();
+
+				if (_subtitulo) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+						
+						if (Number(f.codigo) >= 10000 && Number(f.codigo) < 100000) {
+							if (f.codigo.toString().match(new RegExp("^" + _subtitulo.codigo, 'i'))) {
+								subfamilia.addItem(familia);
+							}
+						} else if (Number(f.codigo) >= 100000) {
+							if (f.codigo.toString().match(new RegExp("^" + _subtitulo.codigo, 'i'))) {
+								this.familias.addItem(familia);
+								
+							}
+						}	
+
+					}
+				} else {
+					txtCapitulos_changeHandler(null);
+				}
+				
+			}
+			
+			protected function txtSubfamilia_changeHandler(event:Event):void {
+				familias.removeAll();
+				
+				txtFamilia.clear();
+				
+				if (_subfamilia) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+						
+						if (Number(f.codigo) >= 100000) {
+							if (f.codigo.toString().match(new RegExp("^" + _subfamilia.codigo, 'i'))) {
+								this.familias.addItem(familia);
+								
+							}
+						}			
+						
+					}
+				} else {
+					txtSubtitulo_changeHandler(null);
+				}
+			}
+						
+			protected function updateFamiliaSelection():void {
+				if (articulo.familia != null) {
+					var codigo:String = articulo.familia.codigo;
+					
+					var capitulo:String = codigo.substr(0, 1);
+					var subtitulo:String = codigo.substr(0, 3);
+					var subfamilia:String = codigo.substr(0, 5);
+					
+					var _capitulo:Object = new Object();
+					var _subtitulo: Object = new Object();
+					var _subfamilia: Object = new Object();
+
+					var _familia: Object = new Object();
+					_familia.codigo = Number(codigo);
+					_familia.nombre = articulo.familia.nombre;
+					
+					
+					this.subtitulos.removeAll();
+					this.subfamilia.removeAll();
+					this.familias.removeAll();
+						
+
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						if (f.codigo == capitulo) {
+							_capitulo.codigo = Number(f.codigo);
+							_capitulo.nombre = f.nombre;
+						}
+						if (f.codigo == subtitulo) {
+							_subtitulo.codigo = Number(f.codigo);
+							_subtitulo.nombre = f.nombre;
+						}
+						if (f.codigo == subfamilia) {
+							_subfamilia.codigo = Number(f.codigo);
+							_subfamilia.nombre = f.nombre;
+						}
+					}
+					
+					for each (var f2:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.codigo = Number(f2.codigo);
+						familia.nombre = f2.nombre;
+
+						if (Number(f2.codigo) >= 100 && Number(f2.codigo) < 10000) {
+							if (f2.codigo.toString().match(new RegExp("^" + _capitulo.codigo, 'i'))) {								
+								this.subtitulos.addItem(familia);
+							}
+						} else
+						if (Number(f2.codigo) >= 10000 && Number(f2.codigo) < 100000) {
+							if (f2.codigo.toString().match(new RegExp("^" + _subtitulo.codigo, 'i'))) {								
+								this.subfamilia.addItem(familia);
+							}
+						} else
+						if (Number(f2.codigo) >= 100000) {
+							if (f2.codigo.toString().match(new RegExp("^" + _subfamilia.codigo, 'i'))) {
+								this.familias.addItem(familia);
+								
+							}
+						}			
+					}
+					
+					this._capitulo = _capitulo;
+					this._subtitulo = _subtitulo;
+					this._subfamilia = _subfamilia;
+					this._familia = _familia;
+					
+				}
+				
+			}
+			
+			private function updateFamilias():void {
+				txtFamilia.clear();
+				var ac:ArrayCollection = new ArrayCollection();
+				for each (var o:Object in familias) {
+					ac.addItem(o);
+				}
+				familias = ac;
+				txtFamilia.dataProvider = ac;
+
+			}
+			
+			protected function txtIva_changeHandler(event:Event):void {
+				var iva:Iva = txtIva.selectedItem;
+				articulo.iva = iva;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		
+		.myClass {
+		fontFamily: sans-serif, "_typewriter";
+		color: black;
+		fontSize: 12;
+		}
+	</mx:Style>
+
+	<mx:Component id="dropDownItemRenderer">
+		<renderers:CodigoNombreItemRenderer />
+	</mx:Component>
+	
+	<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+	
+	<mx:StringValidator id="fname_stringValidator" source="{fname}" required="true" property="text" requiredFieldError="El 'Nombre' no puede quedar vacio." minLength="2"
+						tooShortError="El 'Nombre' debe tener al menos 2 caracteres." />
+	
+		
+	<s:Label id="lblMsg" x="0" width="100%" bottom="45" color="red" fontWeight="bold" paddingBottom="5" textAlign="center" text="Grabación Exitosa" visible="false"
+			 maxDisplayedLines="1" />
+
+	<s:VGroup width="100%" height="100%">
+		<s:Scroller width="100%" height="100%">
+			<s:VGroup>
+				<mx:VBox width="100%" height="100%" verticalGap="0">
+					<mx:HBox width="100%" height="100%" horizontalAlign="left" verticalAlign="top">
+						<s:VGroup width="100%" height="100%">
+							<s:HGroup width="100%">
+								<s:Panel width="100%" title="Generales" styleName="pnlInternoArticulo" dropShadowVisible="false">
+									<mx:Form width="100%" height="100%" fontWeight="bold" creationComplete="{fname.setFocus()}" maxWidth="800">
+										<s:Label fontSize="16" fontWeight="normal" text="Datos Generales" />
+										<mx:HRule width="100%" />
+										<s:Spacer height="10" />
+										<mx:FormItem width="100%" label="Nombre" styleName="ItemStyle">
+											<s:TextInput id="fname" width="100%" text="@{articulo.nombre}" enter="txtWebpage.setFocus()" maxChars="50"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Página Web" styleName="ItemStyle">
+											<s:TextInput id="txtWebpage" width="100%" text="@{articulo.web}" enter="txtVideoYoutube.setFocus()" maxChars="100"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Video Youtube 1" styleName="ItemStyle">
+											<s:TextInput id="txtVideoYoutube" width="100%" text="@{articulo.videoYoutube}" enter="txtVideoYoutube2.setFocus()" maxChars="50"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Video Youtube 2" styleName="ItemStyle">
+											<s:TextInput id="txtVideoYoutube2" width="100%" text="@{articulo.videoYoutube2}" enter="txtVideoYoutube3.setFocus()" maxChars="50"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Video Youtube 3" styleName="ItemStyle">
+											<s:TextInput id="txtVideoYoutube3" width="100%" text="@{articulo.videoYoutube3}" enter="txtProveedor.setFocus()" maxChars="50"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Proveedor" styleName="ItemStyle">
+											<components:MyAutoComplete id="txtProveedor" width="70%" backgroundAlpha="1" dataProvider="{ proveedores }" matchType="anyPart" prompt=""
+																	   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction"
+																	   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" selectedItem="@{articulo.proveedor}" next_focus="{txtNotas}"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Notas" styleName="ItemStyle">
+											<s:TextArea id="txtNotas" width="100%" height="60" text="{articulo.notas}" maxChars="4096" styleName="myClass"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Nota interna" styleName="ItemStyle">
+											<s:TextArea id="txtNotaInterna" width="100%" height="40" text="{articulo.artNotasInt}" maxChars="4096" styleName="myClass"/>
+										</mx:FormItem>
+										
+									</mx:Form>
+								</s:Panel>
+								<s:VGroup height="100%" >
+									<s:Panel height="100%" title="Familia" styleName="pnlInternoArticulo" dropShadowVisible="false">
+										<s:VGroup width="100%" paddingBottom="10" paddingLeft="5" paddingRight="5" paddingTop="5">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:Label width="70" text="Capítulo" />
+												<components:MyAutoComplete id="txtCapitulos" width="270" change="txtCapitulos_changeHandler(event)" dataProvider="{ capitulos }" matchType="anyPart" contentBackgroundAlpha="1"
+																		   prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																		   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
+																		   selectedItem="@{_capitulo}" />
+											</s:HGroup>
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:Label width="70" text="Subtítulo" />
+												<components:MyAutoComplete id="txtSubtitulo" width="270" change="txtSubtitulo_changeHandler(event)" dataProvider="{ subtitulos }" matchType="anyPart" contentBackgroundAlpha="1"
+																		   prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																		   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" enabled="{txtCapitulos.selectedItem}" 
+																		   selectedItem="@{_subtitulo}"/>
+											</s:HGroup>
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:Label width="70" text="Subfamilia" />
+												<components:MyAutoComplete id="txtSubfamilia" width="270" change="txtSubfamilia_changeHandler(event)" dataProvider="{ subfamilia }" matchType="anyPart"
+																		   contentBackgroundAlpha="1" prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																		   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" enabled="{txtSubtitulo.selectedItem}" 
+																		   selectedItem="@{_subfamilia}"/>
+											</s:HGroup>
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:Label width="70" text="Familia" />
+												<components:MyAutoComplete id="txtFamilia" width="270" dataProvider="{ familias }" matchType="anyPart" contentBackgroundAlpha="1" prompt="Todos"
+																		   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"
+																		   selectedItem="@{_familia}"/>
+											</s:HGroup>
+										</s:VGroup>
+									</s:Panel>
+									<s:Panel height="100%" title="Contabilidad" styleName="pnlInternoArticulo" dropShadowVisible="false">
+										<s:VGroup width="100%" paddingBottom="10" paddingLeft="5" paddingRight="5" paddingTop="5">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:Label width="70" text="IVA" />
+												<components:MyAutoComplete id="txtIva" width="270" dataProvider="{ CatalogoFactory.getInstance().ivas }" matchType="anyPart" contentBackgroundAlpha="1"
+																		   prompt="[Exento]" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																		   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
+																		   change="txtIva_changeHandler(event)"/>
+											</s:HGroup>
+										</s:VGroup>
+									</s:Panel>
+									
+								</s:VGroup>
+								
+							</s:HGroup>
+							
+							<s:HGroup width="100%">
+								<s:Panel title="Costo &amp; Precios" width="100%" styleName="pnlInternoArticulo" visible="{hasPerm()}">
+									<s:layout>
+										<s:VerticalLayout gap="10" paddingRight="10" paddingLeft="0"/>
+									</s:layout>
+									
+									<s:Form>
+										<s:layout>
+											<s:FormLayout paddingLeft="0" paddingTop="-10" verticalAlign="middle" gap="-16" />
+										</s:layout>
+										<s:FormItem>
+											<s:HGroup gap="2" verticalAlign="middle">
+												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">
+													<s:layout>
+														<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
+													</s:layout>
+													<s:Label width="100%" fontSize="14" textAlign="right" text="COSTO" maxDisplayedLines="1" />
+												</s:BorderContainer>
+												<s:TextInput id="txtCosto" width="100" fontSize="14" textAlign="right" text="@{_costo}" restrict="0-9." enter="{txtFabrica.setFocus()}" focusIn="{txtCosto.selectAll()}" />
+												<components:MyAutoComplete id="cmbMoneyCosto" width="150" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().getMonedas(false) }" labelField="nombre" matchType="anyPart" prompt="Moneda"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ false }"
+																		   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus" selectedItem="{articulo.monedaCosto}"/>
+											</s:HGroup>
+										</s:FormItem>
+										<s:Spacer height="18"/>
+										<s:FormItem>
+											<s:HGroup gap="2" verticalAlign="middle">
+												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">
+													<s:layout>
+														<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
+													</s:layout>
+													<s:Label width="100%" fontSize="14" textAlign="right" text="FABRICA" maxDisplayedLines="1" />
+												</s:BorderContainer>
+												<s:TextInput id="txtFabrica" width="100" fontSize="14" textAlign="right" text="@{_precioFabrica}" restrict="0-9." enter="{txtDistribuidor.setFocus()}" focusIn="{txtFabrica.selectAll()}" />
+												<components:MyAutoComplete id="cmbMoneyFabrica" width="150" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().getMonedas(false) }" labelField="nombre" matchType="anyPart" prompt="Moneda"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ false }"
+																		   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus"/>
+												<s:Spacer width="5"/>
+												<s:CheckBox id="chbPrecioBaseFabricaConIVA" label="Precio base con iva" selected="@{_pbFabricaIVA}" />
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem>
+											<s:HGroup gap="2" verticalAlign="middle">
+												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">
+													<s:layout>
+														<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
+													</s:layout>
+													<s:Label width="100%" fontSize="14" textAlign="right" text="DISTRIBUIDOR" maxDisplayedLines="1" />
+												</s:BorderContainer>
+												<s:TextInput id="txtDistribuidor" width="100" fontSize="14" textAlign="right" text="@{_precioDistribuidor}" restrict="0-9." enter="{txtReventa.setFocus()}" focusIn="{txtReventa.selectAll()}" />
+												<components:MyAutoComplete id="cmbMoneyDist" width="150" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().getMonedas(false) }" labelField="nombre" matchType="anyPart" prompt="Moneda"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ false }"
+																		   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus"/>
+												<s:Spacer width="5"/>
+												<s:CheckBox id="chbPrecioBaseDistConIVA" label="Precio base con iva" selected="@{_pbDistribuidorIVA}" />
+											</s:HGroup>
+										</s:FormItem>					
+										<s:FormItem>
+											<s:HGroup gap="2" verticalAlign="middle">
+												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">
+													<s:layout>
+														<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
+													</s:layout>
+													<s:Label width="100%" fontSize="14" textAlign="right" text="REVENTA" maxDisplayedLines="1" />
+												</s:BorderContainer>
+												<s:TextInput id="txtReventa" width="100" fontSize="14" textAlign="right" text="@{_precioReventa}" restrict="0-9." enter="{txtMinorista.setFocus()}" focusIn="{txtDistribuidor.selectAll()}" />
+												<components:MyAutoComplete id="cmbMoneyReventa" width="150" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().getMonedas(false) }" labelField="nombre" matchType="anyPart" prompt="Moneda"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ false }"
+																		   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus"/>
+												<s:Spacer width="5"/>
+												<s:CheckBox id="chbPrecioBaseReventaConIVA" label="Precio base con iva" selected="@{_pbReventaIVA}" />
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem>
+											<s:HGroup gap="2" verticalAlign="middle">
+												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">
+													<s:layout>
+														<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
+													</s:layout>
+													<s:Label width="100%" fontSize="14" textAlign="right" text="MINORISTA" maxDisplayedLines="1" />
+												</s:BorderContainer>
+												<s:TextInput id="txtMinorista" width="100" fontSize="14" textAlign="right" text="@{_precioMinorista}" restrict="0-9." enter="{txtMayorista.setFocus()}" focusIn="{txtMinorista.selectAll()}" />
+												<components:MyAutoComplete id="cmbMoneyMinorista" width="150" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().getMonedas(false) }" labelField="nombre" matchType="anyPart" prompt="Moneda"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ false }"
+																		   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus"/>
+												<s:Spacer width="5"/>
+												<s:CheckBox id="chbPrecioBaseMinoristaConIVA" label="Precio base con iva" selected="@{_pbMinoristaIVA}" />
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem>
+											<s:HGroup gap="2" verticalAlign="middle">
+												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">
+													<s:layout>
+														<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
+													</s:layout>
+													<s:Label width="100%" fontSize="14" textAlign="right" text="INDUSTRIA" maxDisplayedLines="1" />
+												</s:BorderContainer>
+												<s:TextInput id="txtMayorista" width="100" fontSize="14" textAlign="right" text="@{_precioMayorista}" restrict="0-9." enter="{apply.setFocus()}" focusIn="{txtMayorista.selectAll()}" />
+												<components:MyAutoComplete id="cmbMoneyIndustria" width="150" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().getMonedas(false) }" labelField="nombre" matchType="anyPart" prompt="Moneda"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ false }"
+																		   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus"/>
+												<s:Spacer width="5"/>
+												<s:CheckBox id="chbPrecioBaseMayoristaConIVA" label="Precio base con iva" selected="@{_pbMayoristaIVA}" />
+											</s:HGroup>
+										</s:FormItem>
+									</s:Form>
+								</s:Panel>
+								<s:Panel title="Otros datos" height="100%" styleName="pnlInternoArticulo" fontWeight="normal" width="300">
+									<s:VGroup paddingLeft="10" paddingRight="25" paddingTop="10">
+										<s:CheckBox id="chbActivo" label="El artículo esta activo" selected="@{articulo.activo}" />
+										<s:CheckBox id="chbContabilizarStock" label="Contablizar stock" selected="@{articulo.inventario}" />
+										<s:CheckBox id="chbListaPrecios" label="Incluir en lista de precios" selected="@{articulo.listaPrecios}" />
+										<s:CheckBox id="chbWeb" label="Incluir en catálogo web" selected="@{articulo.artGXPortal}" />
+									</s:VGroup>
+								</s:Panel>
+							</s:HGroup>
+						</s:VGroup>
+					</mx:HBox>
+				</mx:VBox>
+			</s:VGroup>
+		</s:Scroller>
+		<mx:ControlBar id="buttons" width="100%" height="54" horizontalAlign="center" verticalAlign="middle" backgroundAlpha="1" contentBackgroundColor="0xFF0000">
+			<s:Button id="apply" click="validateForm(event)" label="Guardar" styleName="aceptarButton" />
+			<s:Button id="cancel" click="cancelValues(event)" label="Cerrar" styleName="cerrarButton" />
+		</mx:ControlBar>
+		
+	</s:VGroup>
+</mx:Canvas>

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="creationCompleteHandler(event)" keyDown="keyDownHandler2(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.Departamento;
+			import biz.fulltime.model.Documento;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.events.TextOperationEvent;
+			
+			import util.CatalogoFactory;
+			import util.ErrorPanel;
+
+			private var _factura:Documento;
+			
+			private var remObj:RemoteObject;
+			
+			private var error:ErrorPanel;
+			
+			[Bindable]
+			private var _localidad:String;
+			
+			[Bindable]
+			private var _departamento:String;
+
+			[Bindable]
+			private var _dirEntrega:String;
+
+			[Bindable]
+			private var _agencia:String;
+
+			[Bindable]
+			public function get factura():Documento {
+				return _factura;
+			}
+
+			public function set factura(value:Documento):void {
+				_factura = value;
+				
+				if (_factura.localidad && _factura.localidad.length > 0) {
+					_localidad = _factura.localidad;
+				} else if (_factura.cliente) {
+					_localidad = _factura.cliente.contacto.ctoLocalidad;
+				}	
+				
+				if (_factura.departamento && _factura.departamento.length > 0) {
+					_departamento = _factura.departamento;
+				} else {
+					var dptoCodigo:String = _factura.cliente.contacto.deptoIdCto;
+					for each (var dpto:Object in CatalogoFactory.getInstance().departamentos) {
+						if (dptoCodigo == dpto.codigo) {
+							_departamento = dpto.nombre;
+							break;
+						}
+					}
+				}
+				
+				if (_factura.dirEntrega && _factura.dirEntrega.length > 0) {
+					_dirEntrega = _factura.dirEntrega;
+				} else if (_factura.cliente) {
+					if (_factura.cliente.lugarEntrega && _factura.cliente.lugarEntrega.length > 0) {
+						_dirEntrega = _factura.cliente.lugarEntrega;
+					} else {
+						_dirEntrega = _factura.cliente.contacto.ctoDireccion;
+					}
+				}
+				
+			    if (_factura.agencia && _factura.agencia.length > 0) {	
+					_agencia = _factura.agencia;
+				} else if (_factura.cliente) {
+					if (_factura.cliente.agencia && _factura.cliente.agencia.length > 0) {
+						_agencia = _factura.cliente.agencia;
+					} else {
+						_agencia = _factura.agencia;
+					}
+				}   
+		
+			}
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				txtBultos.setFocus();
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function keyDownHandler2(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+
+			protected function cmdImprimir_clickHandler(event:MouseEvent):void {
+				var pjNota:PrintJobNotaEnvio = new PrintJobNotaEnvio();
+				pjNota.factura = factura;
+				pjNota.print();
+			}
+
+			protected function txtBultos_changeHandler(event:TextOperationEvent):void {
+				_factura.cantidadBultos = Number(txtBultos.text);
+			}
+			
+			protected function cmdGuardarNroEnvio_clickHandler(event:MouseEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, resultGuardarNroEnvio);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				
+				remObj.showBusyCursor = true;
+				
+				// Guardar el número de envío en la factura.
+				remObj.guardar(_factura);
+			}
+			
+			private function resultGuardarNroEnvio(event:ResultEvent):void {
+				error = new ErrorPanel();
+				error.cornerRadius = 10;
+				error.backgroundAlpha = .95;
+				error.showButtons = false;
+				error.type = 2;
+				
+				error.errorText = "El Nro. de envío ha sido guardado correctamente.";
+				
+				PopUpManager.addPopUp(error, this, true);
+				PopUpManager.centerPopUp(error);
+				
+				setTimeout(function():void {
+					PopUpManager.removePopUp(error);
+				}, 3000);
+
+			}
+			
+			public function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+			
+			protected function txtLocalidad_changeHandler(event:TextOperationEvent):void {
+				_factura.localidad = txtLocalidad.text;
+			}
+			
+			protected function txtAgencia_changeHandler(event:TextOperationEvent):void {
+				_factura.agencia = txtAgencia.text;
+			}
+
+			protected function txtDireccionEntrega_changeHandler(event:TextOperationEvent):void {
+				_factura.dirEntrega = txtDireccionEntrega.text;
+			}
+			
+			protected function txtDepartamento_changeHandler(event:TextOperationEvent):void {
+				_factura.departamento = txtDepartamento.text;				
+			}
+			
+		]]>
+	</fx:Script>
+
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+		<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
+			<s:VGroup width="100%" height="100%">
+				<mx:Form width="100%" height="100%">
+					<mx:FormItem width="100%" label="Bultos">
+						<s:TextInput id="txtBultos" width="60" textAlign="right" change="txtBultos_changeHandler(event)" enter="txtAgencia.setFocus()" prompt="Nro. Bultos"
+									 restrict="0-9" text="{factura.cantidadBultos}" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Agencia">
+						<s:TextInput id="txtAgencia" width="100%" textAlign="left" enter="txtLocalidad.setFocus()" prompt="Agencia" text="{_agencia}" change="txtAgencia_changeHandler(event)"/>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Localidad">
+						<s:TextInput id="txtLocalidad" width="100%" textAlign="left" enter="txtDepartamento.setFocus()" prompt="Localidad" text="{_localidad}" change="txtLocalidad_changeHandler(event)"/>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Departamento">
+						<s:TextInput id="txtDepartamento" width="100%" textAlign="left" enter="txtDireccionEntrega.setFocus()" prompt="Departamento" text="{_departamento}" change="txtDepartamento_changeHandler(event)"/>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Dirección de Entrega">
+						<s:TextInput id="txtDireccionEntrega" width="100%" textAlign="left" enter="txtChofer.setFocus()" prompt="Dirección de Entrega" text="{_dirEntrega}" change="txtDireccionEntrega_changeHandler(event)"/>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Chofer">
+						<s:TextInput id="txtChofer" width="100%" textAlign="left" enter="txtOrderVenta.setFocus()" prompt="Chofer" text="@{factura.chofer}" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Orden Venta">
+						<s:TextInput id="txtOrderVenta" width="100%" textAlign="left" enter="txtOrdenCompra.setFocus()" prompt="Orden Venta" text="@{factura.ordenVenta}" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Orden Compra">
+						<s:TextInput id="txtOrdenCompra" width="100%" textAlign="left" enter="txtNroEnvio.setFocus()" prompt="Orden Compra" text="@{factura.ordenCompra}" />
+					</mx:FormItem>
+					<s:Spacer height="5" />
+					<s:Group width="100%">
+						<s:Line width="100%" height="1" left="0">
+							<s:stroke>
+								<s:SolidColorStroke id="lineStroke" color="blue" alpha="0.4" />
+							</s:stroke>
+						</s:Line>
+					</s:Group>
+					<s:Spacer height="5" />
+					<mx:FormItem width="100%" label="Número de Envío">
+						<s:HGroup width="100%" verticalAlign="middle">
+								<s:TextInput id="txtNroEnvio" width="100%" textAlign="left" enter="cmdImprimir.setFocus()" prompt="Ingrese Nº Envio" text="@{factura.nroEnvio}" restrict="0-9"/>	
+								<components:IconButton id="cmdGuardarNroEnvio" width="24" height="24" cornerRadius="0" click="cmdGuardarNroEnvio_clickHandler(event)"
+												   styleName="saveButtonNotas" toolTip="Guardar Nº Envío" enabled="{txtNroEnvio.text.length > 0 &amp;&amp; factura.docId}" />
+						</s:HGroup>
+						<s:Label text="Número dado por la agencia" fontSize="10" fontStyle="italic"/>
+						
+					</mx:FormItem>
+
+				</mx:Form>
+			</s:VGroup>
+
+			<s:controlBarContent>
+				<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+					<components:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" />
+					<s:Spacer width="100%" />
+					<components:IconButton id="cmdCerrar" click="cmdAceptar_clickHandler(event)" styleName="cerrarButton" label="Cerrar" />
+				</s:HGroup>
+			</s:controlBarContent>
+		</s:Panel>
+	</s:BorderContainer>
+</s:Group>

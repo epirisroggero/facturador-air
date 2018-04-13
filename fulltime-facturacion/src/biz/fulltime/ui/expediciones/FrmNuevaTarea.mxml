@@ -1,0 +1,1170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)" xmlns:tabBar="skin.components.tabBar.*">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.AgendaTarea;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.Usuario;
+			import biz.fulltime.ui.expediciones.asignados.AsignadosEditor;
+			
+			import com.adobe.images.JPGEncoder;
+			import com.adobe.utils.DateUtil;
+			import com.hillelcoren.components.AutoComplete;
+			
+			import flash.desktop.Clipboard;
+			import flash.desktop.ClipboardFormats;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.DropDownList;
+			import spark.components.TitleWindow;
+			import spark.events.IndexChangeEvent;
+			import spark.formatters.DateTimeFormatter;
+			
+			import util.CatalogoFactory;
+			import util.ErrorPanel;
+
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+
+			private var _tarea:AgendaTarea = new AgendaTarea();
+
+			private var remObj:RemoteObject;
+
+			private var _matutina:Boolean;
+
+			private var _nueva:Boolean = false;
+
+			private var _fecha:Date;
+			
+			private var _showFecha:Boolean = false;
+			
+			public var showNavigationButton:Boolean = false;
+			
+
+			[Bindable]
+			public var myDP:ArrayCollection = new ArrayCollection([{value:"B", label:"Baja"}, {value:"M", label:"Media"}, {value:"A", label:"Alta"}]);
+
+			private var imageFilter:FileFilter = new FileFilter("Images", "*.jpg;*.jpeg;*.gif;*.png");
+
+			private var fileR:FileReference = new FileReference();
+
+			private var photoShop:FileFilter = new FileFilter("Archivos Photoshop", "*.psd");
+			
+			[Bindable]
+			private var ageBlob:ByteArray;
+
+			[Bindable]
+			private var ageBlobExt:String;
+			
+			[Bindable]
+			private var scaleImage:Number = 0;
+			
+			private var usuariosCopiados:ArrayCollection = new ArrayCollection();
+			
+			private var usuariosResponsables:ArrayCollection = new ArrayCollection();
+
+			private var bitmapData:BitmapData
+
+			private var _changeTarea:Boolean = false;
+			
+			[Bindable]
+			private var _fechaInicio:String;
+			
+			private var _contacto:Contacto;
+			
+			private var _descripcion:String;
+			
+			private var _usuarioAsignado:Usuario;
+			
+			[Bindable]
+			private var notifyEnabled:Boolean = true;
+
+			private var loader : Loader = new Loader();
+
+			public var periodosDP:ArrayCollection = new ArrayCollection(
+				[   {periodo:"Todos los días hábiles", value:1},
+					{periodo:"Todos los días miercoles", value:2},
+					{periodo:"Todos los días 26 de cada mes", value:3},
+					{periodo:"Todos los 26 de marzo", value:4},
+					{periodo:"El primer día de cada mes", value:5},
+					{periodo:"El último día de cada mes", value:6} ]);			
+			
+			[Bindable]
+			public function get usuarioAsignado():Usuario {
+				return _usuarioAsignado;
+			}
+
+			public function set usuarioAsignado(value:Usuario):void {
+				_usuarioAsignado = value;
+				
+				tarea.usuarioAsignado = value;
+			}
+
+			[Bindable]
+			public function get descripcion():String {
+				return _descripcion;
+			}
+
+			public function set descripcion(value:String):void {
+				_descripcion = value;
+				tarea.descripcion = value;
+			}
+
+			[Bindable]
+			public function get showFecha():Boolean {
+				return _showFecha;
+			}
+
+			public function set showFecha(value:Boolean):void {
+				_showFecha = value;
+			}
+
+			[Bindable]
+			public function get contacto():Contacto {
+				return _contacto;
+			}
+
+			public function set contacto(value:Contacto):void {
+				_contacto = value;
+				_tarea.contacto = value;
+			}
+
+			[Bindable]
+			public function get nueva():Boolean {
+				return _nueva;
+			}
+
+			public function set nueva(value:Boolean):void {
+				_nueva = value;
+			}
+
+			public function get fecha():Date {
+				return _fecha;
+			}
+
+			public function set fecha(value:Date):void {
+				_fecha = value;
+			}
+
+			public function get matutina():Boolean {
+				return _matutina;
+			}
+
+			public function set matutina(value:Boolean):void {
+				_matutina = value;
+			}
+
+			[Bindable]
+			public function get tarea():AgendaTarea {
+				return _tarea;
+			}
+			
+			public function set tarea(value:AgendaTarea):void {
+				_tarea = value;
+				
+				ageBlob = _tarea.ageBlob;
+				ageBlobExt = _tarea.ageBlobExt;
+				contacto = _tarea.contacto;
+				
+				if (tarea.usuarioSolicitante) {
+					notifyEnabled = GeneralOptions.getInstance().loggedUser.codigo == _tarea.usuarioSolicitante.codigo;
+				} else {
+					notifyEnabled = false;
+				}
+				
+
+				callLater(function():void {
+					for each (var o:Object in myDP) {
+						if (o.value == _tarea.prioridad) {
+							ddlPrioridad.selectedItem = o;
+						}
+					}
+				});
+
+				if (_tarea.fechaInicio) {
+					var dateFormatter:DateFormatter = new DateFormatter();
+					dateFormatter.formatString = "DD-MM-YYYY";
+					_fechaInicio = dateFormatter.format(_tarea.fechaInicio);
+				} else {
+					_fechaInicio = null;
+				}
+				
+				_changeTarea = true;
+				
+				invalidateProperties();
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				if (!cmbUsuarioAsignado.selectedItem) {
+					Alert.show("Debe ingresar el usuario asignado", "Error");
+					return;
+				}
+				
+				tarea.estado = "P";
+				if (tarea.prioridad == null) {
+					tarea.prioridad = "M";
+				}
+				if (tarea.fechaHora == null) {
+					if (matutina) {
+						fecha.hours = 9;
+						fecha.minutes = 0;
+						fecha.seconds = 0;
+					} else {
+						fecha.hours = 14;
+						fecha.minutes = 0;
+						fecha.seconds = 0;
+					}
+					tarea.fechaHora = DateUtil.getUTCDate(fecha);
+				}
+
+				// Datos de la tarea				
+				tarea.vinculo = txtVinculo.text;
+				tarea.descripcion = txtDescription.text;
+				tarea.notas = txtNotas.text;
+				
+				if (txtTextoAdjunto != null) {
+					tarea.textoAdjunto = txtTextoAdjunto.text;
+				}
+				
+				tarea.ageBlobExt = "jpg";
+				tarea.ageBlob = ageBlob;
+				
+				var value:String = Object(ddlPrioridad.selectedItem).value;
+				tarea.prioridad = value;
+
+				tarea.tarea = cmbTarea.selectedItem;
+				tarea.contacto = cmbContacto.selectedItem;
+				tarea.usuarioAsignado = cmbUsuarioAsignado.selectedItem;
+				
+				if (usuariosResponsables.length > 0) {
+					for (var i:int = 0; i < usuariosResponsables.length; i++) {
+						var user:Usuario = usuariosResponsables.getItemAt(i) as Usuario;
+						if (i == 0) {
+							tarea.supervisor1 = user.codigo;
+						} else if (i == 1) {
+							tarea.supervisor2 = user.codigo;
+						} else if (i == 2) {
+							tarea.supervisor3 = user.codigo;
+						} 
+					}
+				}
+
+				if (tarea.ageId) {
+					nueva = false;
+					remObj.modificar(tarea, matutina);
+				} else {
+					nueva = true;
+					tarea.usuarioSolicitante = GeneralOptions.getInstance().loggedUser;
+					remObj.alta(tarea, matutina);
+					
+				}
+				
+			}
+			
+			protected function copiarTarea():AgendaTarea {
+				var tareaCopia:AgendaTarea = new AgendaTarea(); 
+				
+				tareaCopia.contacto = cmbContacto.selectedItem;
+				tareaCopia.tarea = cmbTarea.selectedItem;
+
+				tareaCopia.estado = "P";
+				if (tareaCopia.prioridad == null) {
+					tareaCopia.prioridad = "M";
+				}
+				if (tareaCopia.fechaHora == null) {
+					fecha.hours = matutina ? 9 : 0;
+					fecha.minutes = 0;
+					fecha.seconds = 0;
+					tareaCopia.fechaHora = DateUtil.getUTCDate(fecha);
+				}
+				// Datos de la tareaCopia				
+				tareaCopia.vinculo = txtVinculo.text;
+				tareaCopia.descripcion = txtDescription.text;
+				tareaCopia.notas = txtNotas.text;
+				
+				tareaCopia.ageBlobExt = "jpg";
+				tareaCopia.ageBlob = ageBlob;
+				
+				var value:String = Object(ddlPrioridad.selectedItem).value;
+				tareaCopia.prioridad = value;
+				
+				if (usuariosResponsables.length > 0) {
+					for (var i:int = 0; i < usuariosResponsables.length; i++) {
+						var user2:Usuario = usuariosResponsables.getItemAt(i) as Usuario;
+						if (i == 0) {
+							tareaCopia.supervisor1 = user2.codigo;
+						} else if (i == 1) {
+							tareaCopia.supervisor2 = user2.codigo;
+						} else if (i == 2) {
+							tareaCopia.supervisor3 = user2.codigo;
+						} 
+					}
+				}
+				
+				return tareaCopia;
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(ResultEvent.RESULT, onResult);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+
+				fileR.addEventListener(Event.CANCEL, cancelHandler);
+				fileR.addEventListener(Event.SELECT, selectHandler);
+				fileR.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+				fileR.addEventListener(Event.COMPLETE, completeHandler);
+				
+			}
+			
+			private function error(event:IOErrorEvent):void {
+				var error:String = resourceManager.getString("ImageController", "error");
+				Alert.show(error);
+			}
+
+			private function onResult(event:ResultEvent):void {
+				var error:ErrorPanel = new ErrorPanel();
+				error.cornerRadius = 10;
+				error.backgroundAlpha = .65;
+				error.showButtons = false;
+				error.type = 2;
+				
+				if (nueva) {
+					var tareas:ArrayCollection = new ArrayCollection();
+					if (tarea.repetir) {
+						var dateFormatter:DateTimeFormatter = new DateTimeFormatter();
+						dateFormatter.setStyle("locale", "es-ES");
+						for each(var ddt:Date in tarea.repetirFechas) {
+							var tareaRepetir:AgendaTarea = copiarTarea();
+							tareaRepetir.usuarioAsignado = tarea.usuarioAsignado;
+							tareaRepetir.usuarioSolicitante = GeneralOptions.getInstance().loggedUser;
+							tareaRepetir.fechaHora = DateUtil.getUTCDate(ddt);
+							tareas.addItem(tareaRepetir);
+						}
+					}					
+					if (usuariosCopiados) {
+						for each(var user:Usuario in usuariosCopiados) {
+							var tareaCopia:AgendaTarea = copiarTarea();
+							tareaCopia.usuarioSolicitante = GeneralOptions.getInstance().loggedUser;
+							tareaCopia.usuarioAsignado = user;
+							tareas.addItem(tareaCopia);
+						}						
+					}
+					if (tareas.length > 0) {
+						var remObjRepeat:RemoteObject = new RemoteObject();
+						remObjRepeat.destination = "CreatingRpc";
+						remObjRepeat.channelSet = ServerConfig.getInstance().channelSet;
+						remObjRepeat.showBusyCursor = true;
+						remObjRepeat.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void { 
+							setTimeout(function():void {
+								error.errorText = "La Tarea ha sido GUARDADA con éxito.";
+								PopUpManager.removePopUp(error);
+								if (nueva && chbNotifyContacto.selected) {
+									sendEmailAsignado(tarea);
+								}
+								dispatchEvent(new Event("_savedOk"));
+							}, 1000);
+						});
+						remObjRepeat.addEventListener(FaultEvent.FAULT, onFault);
+						remObjRepeat.altaTareas(tareas, matutina);
+					} else {						
+						setTimeout(function():void {
+							error.errorText = "La Tarea ha sido GUARDADA con éxito.";
+							PopUpManager.removePopUp(error);
+							if (nueva && chbNotifyContacto.selected) {
+								sendEmailAsignado(tarea);
+							}
+							dispatchEvent(new Event("_savedOk"));
+						}, 1000);
+					}
+					
+					return;
+				} else {
+					error.errorText = "La Tarea ha sido MODIFICADA con éxito.";
+				}
+				PopUpManager.addPopUp(error, this, true);
+				PopUpManager.centerPopUp(error);
+
+				setTimeout(function():void {
+					PopUpManager.removePopUp(error);
+					dispatchEvent(new Event("_savedOk"));
+				}, 500);
+				
+			}
+			
+			private function sendEmailAsignado(agenda:AgendaTarea):void {
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY";
+				
+				var msg:String = "\n";
+				msg += "FECHA: " + dateFormatter.format(agenda.fechaHora) + "\n\n";
+				msg += "TAREA: " + agenda.tarea.nombre.toUpperCase() + " \n\n";
+				if (contacto && contacto.codigo && contacto.nombre) {
+					msg += "CONTACTO: " + contacto.codigo.toUpperCase()+ "-" + contacto.nombre.toUpperCase()  + "\n\n";
+				}
+				msg += "PRIORIDAD: " + (agenda.prioridad == "M" ? 'MEDIA' : (agenda.prioridad == "A" ? "ALTA" : "BAJA")) + "\n\n";
+				
+				if (agenda.usuarioSolicitante) {
+					msg += "SOLICITANTE: " + agenda.usuarioSolicitante.nombre + "\n\n";
+				}				
+				if (agenda.supervisor1 || agenda.supervisor2 || agenda.supervisor3) {
+					msg += "SUPERVISA: " +  agenda.supervisor1 +  
+						(agenda.supervisor2 ? ", " + agenda.supervisor2 : "") + 
+						(agenda.supervisor3 ? ", " + agenda.supervisor3 : "") + "\n\n";
+				}
+				
+				if (agenda.vinculo && agenda.vinculo.length > 0) {
+					msg += "VINCULO: " + agenda.vinculo + "\n\n";
+				}
+				
+				msg += "DESCRIPCIÓN:" + "\n---------------------\n";
+				if (agenda.descripcion && agenda.descripcion.length > 0) {
+					msg += agenda.descripcion + "\n";	
+				} else {
+					msg += "Sin descripción.";
+				}				
+								
+				if (tarea.usuarioAsignado.usuEmail && tarea.usuarioAsignado.usuEmail.length > 0) {
+					var addresses:Array = new Array();
+					addresses[0] = tarea.usuarioAsignado.usuEmail;
+	
+					var remObj:RemoteObject = new RemoteObject();
+					remObj = new RemoteObject();
+					remObj.destination = "CreatingRpc";
+					remObj.channelSet = ServerConfig.getInstance().channelSet;
+					remObj.addEventListener(ResultEvent.RESULT, resultSendEMail);
+					remObj.addEventListener(FaultEvent.FAULT, onFault);
+					remObj.showBusyCursor = false;
+					
+					remObj.sendEmail(addresses, "FULLTIME: NUEVA TAREA ASIGNADA (" + agenda.tarea.nombre.toUpperCase() + ") PARA EL DÍA " + dateFormatter.format(agenda.fechaHora) + (agenda.prioridad == "A" ? "(ALTA PRIORIDAD)" : ""), msg, null);
+				} else {
+					Alert.show("El Usuario asignado no tiene dirección de correo. Ingrese dirección de correo para el usuario '" + tarea.usuarioAsignado.nombre + "'.", "Información"); 
+				}
+			}
+			
+			private function resultSendEMail(event:ResultEvent):void {
+				var result:String = event.result as String;
+				var resultXML:XML = new XML(result);
+				
+				var error:ErrorPanel = new ErrorPanel();
+				error.backgroundAlpha = .75;
+				
+				if (resultXML.state == "true") {
+					error.showButtons = false;
+					error.type = 2;
+					error.errorText = "El correo se ha enviado correctamente.";
+					
+					PopUpManager.addPopUp(error, this, true);
+					PopUpManager.centerPopUp(error);
+					
+					setTimeout(function():void {
+						PopUpManager.removePopUp(error)
+					}, 3000);
+				} else {
+					error.showButtons = true;
+					error.type = 0;
+					error.errorText = "Error al enviar correo.";
+					error.detailsText = resultXML.message[0].toString();
+					
+					PopUpManager.addPopUp(error, this, true);
+					PopUpManager.centerPopUp(error);
+				}
+				
+				
+			}
+
+
+			private function onFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+			}
+
+			protected function cmbUsuarioAsignado_changeHandler(event:Event):void {
+				//tarea.usuarioAsignado = cmbUsuarioAsignado.selectedItem;
+			}
+			
+			protected function cmbContacto_changeHandler(event:Event):void {
+				contacto = cmbContacto.selectedItem;
+			}
+
+			protected function cmbTarea_changeHandler(event:Event):void {
+				//tarea.tarea = cmbTarea.selectedItem;
+			}
+
+			protected function adjunto_clickHandler(event:MouseEvent):void {
+				fileR.browse([imageFilter, photoShop]);
+			}
+
+			/**
+			 * cuando se ha seleccionado el archivo coloco el nombre en el text
+			 * y habilito el botón subir
+			 */
+			private function selectHandler(e:Event):void { // file selected
+				trace("selectHandler: " + fileR.name);
+				fileR.load(); // load file
+			}
+
+			private function cancelHandler(e:Event):void { // cancel select
+				trace("cancelHandler");
+			}
+
+			private function progressHandler(e:ProgressEvent):void { // progress event
+				trace("progressHandler: loaded=" + e.bytesLoaded + " total=" + e.bytesTotal);
+			}
+			
+			private function completeHandler(e:Event):void { // file loaded
+				trace("completeHandler: " + fileR.name);
+				//txtAdjunto.text = fileR.name;
+				
+				var ba:ByteArray = fileR.data; // get data
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaded);
+				loader.loadBytes(ba); // load with Loader
+
+			}
+
+			private function loaded(e:Event):void { // bitmap loaded
+				var bm:Bitmap = e.currentTarget.loader.content as Bitmap;
+				
+				// resize bitmap if larger than stage
+				if (bm.width > imgPreview.width || bm.height > imgPreview.height) {
+					var xscale:Number = (imgPreview.width) / bm.width;
+					var yscale:Number = (imgPreview.height) / bm.height;
+					if (xscale < yscale) {
+						pageViewer.scaleX = pageViewer.scaleY = xscale;
+					} else {
+						pageViewer.scaleX = pageViewer.scaleY = yscale;
+					}
+				}
+				
+				scaleImage = Math.round(pageViewer.scaleX * 100); 
+				
+				bitmapData = bm.bitmapData;
+					
+				var quality:int = 75;
+				var jpg:JPGEncoder = new JPGEncoder(quality);
+				ageBlob = jpg.encode(bm.bitmapData);
+				ageBlobExt = "jpg";
+				
+				pageViewer.source = bm;
+			}
+
+			
+			private function byteArrayToBitmapData(byteArray : ByteArray):void {
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, getBitmapData);
+				loader.loadBytes(byteArray);
+			}
+
+			private function getBitmapData(e:Event):void {
+				var content:* = loader.content;
+				bitmapData = new BitmapData(content.width,content.height,true,0x00000000);
+				 
+				var matrix:Matrix = new Matrix();
+				bitmapData.draw(content, matrix, null, null, null, true);
+				
+				pageViewer.source = new Bitmap( bitmapData );
+				
+				// resize bitmap if larger than stage
+				if (bitmapData.width > imgPreview.width || bitmapData.height > imgPreview.height) {
+					var xscale:Number = (imgPreview.width) / bitmapData.width;
+					var yscale:Number = (imgPreview.height) / bitmapData.height;
+					if (xscale < yscale) {
+						pageViewer.scaleX = pageViewer.scaleY = xscale;
+					} else {
+						pageViewer.scaleX = pageViewer.scaleY = yscale;
+					}
+				}
+				
+				scaleImage = Math.round(pageViewer.scaleX * 100); 
+				 
+			}
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				
+				if (_changeTarea && pageViewer) {
+					_changeTarea = false;
+					if (ageBlob) {
+						byteArrayToBitmapData(ageBlob);
+					} else {
+						pageViewer.source = null;
+					}
+				}
+			}
+
+			
+			protected function pageViewer_creationCompleteHandler(event:FlexEvent):void {
+				invalidateProperties();
+				
+			}
+			
+			protected function mySlider_changeHandler(event:Event):void {
+				var xscale:Number = mySlider.value / 100;
+
+				pageViewer.scaleX = pageViewer.scaleY = xscale;
+				
+				scaleImage = mySlider.value;
+				
+			}
+			
+			private function pasteFromClipboard():void {
+				if (Clipboard.generalClipboard.hasFormat(ClipboardFormats.BITMAP_FORMAT)) {					
+					bitmapData = Clipboard.generalClipboard.getData(ClipboardFormats.BITMAP_FORMAT) as BitmapData;
+					
+					if (bitmapData) {						
+						pageViewer.source = new Bitmap( bitmapData );
+						
+						var quality:int = 75;
+						var jpg:JPGEncoder = new JPGEncoder(quality);
+						ageBlob = jpg.encode(bitmapData);
+						ageBlobExt = "jpg";
+						
+						// resize bitmap if larger than stage
+						if (bitmapData.width > imgPreview.width || bitmapData.height > imgPreview.height) {
+							var xscale:Number = (imgPreview.width) / bitmapData.width;
+							var yscale:Number = (imgPreview.height) / bitmapData.height;
+							if (xscale < yscale) {
+								pageViewer.scaleX = pageViewer.scaleY = xscale;
+							} else {
+								pageViewer.scaleX = pageViewer.scaleY = yscale;
+							}
+						}
+						
+						scaleImage = Math.round(pageViewer.scaleX * 100); 
+						
+						callLater(function():void {
+							cursorManager.removeBusyCursor();
+						});
+					}
+				}
+
+			}
+
+			protected function paste_clickHandler(event:MouseEvent):void {
+				pasteFromClipboard();
+			}
+
+
+			protected function imgPreview_creationCompleteHandler(event:FlexEvent):void {
+				var editMenu: ContextMenu = new ContextMenu();
+				editMenu.hideBuiltInItems();
+				editMenu.clipboardMenu = true;
+				editMenu.clipboardItems.copy = false;
+				editMenu.clipboardItems.paste = true;
+				editMenu.clipboardItems.cut = false;
+				editMenu.clipboardItems.selectAll = false;
+				
+				imgPrv.contextMenu = editMenu;
+				imgPrv.addEventListener(Event.PASTE, handlePaste);
+			}
+			
+			protected function imgPreview2_creationCompleteHandler(event:FlexEvent):void {
+				var editMenu: ContextMenu = new ContextMenu();
+				editMenu.hideBuiltInItems();
+				editMenu.clipboardMenu = false;
+				
+				var customItem:ContextMenuItem = new ContextMenuItem("Borrar Imagen");
+				editMenu.customItems.push(customItem);
+				customItem.enabled = true;
+				customItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, menuItemHandler);
+				
+				pageViewer.contextMenu = editMenu;				
+				
+				invalidateProperties();				
+			}
+			
+			protected function handlePaste(event:Event):void {
+				var clipboard:Clipboard =  Clipboard.generalClipboard;
+				if (clipboard.hasFormat(ClipboardFormats.BITMAP_FORMAT)) {
+					cursorManager.setBusyCursor();
+					
+					pasteFromClipboard();	
+				}
+
+			}
+			
+			private function menuItemHandler(event:ContextMenuEvent):void{
+				ageBlob = null;
+			}
+			
+			protected function cmbUsuariosCopiados_changeHandler(event:Event):void {
+				usuariosCopiados = cmbUsuariosCopiados.selectedItems;
+			}
+			
+			protected function cmbUsuariosResponsables_changeHandler(event:Event):void {
+				usuariosResponsables = cmbUsuariosResponsables.selectedItems;
+			}
+			
+			protected function cmdUsers_clickHandler(event:MouseEvent):void {
+				var helpWindow:TitleWindow = new TitleWindow();
+				helpWindow.width = 600;
+				helpWindow.height = 580;
+				helpWindow.title = "Usuarios Copiados";
+				helpWindow.visible = true;
+				
+				var aux:ArrayCollection = new ArrayCollection();
+				for each (var v:Usuario in usuariosCopiados) {
+					aux.addItem(v);
+				}
+				var asignadosPnl:AsignadosEditor = new AsignadosEditor();
+				asignadosPnl.selectedItems = aux;
+				
+				helpWindow.addEventListener(CloseEvent.CLOSE, function closeHandler(event:CloseEvent):void {
+					helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+					helpWindow = null;
+				});
+				
+				asignadosPnl.addEventListener(CloseEvent.CLOSE, function(evt:CloseEvent):void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+					helpWindow = null;
+					
+					if (asignadosPnl.selectedItems != null) {
+						usuariosCopiados = new ArrayCollection();
+						for each (var item:Usuario in asignadosPnl.selectedItems) {
+							usuariosCopiados.addItem(item);
+						}
+						cmbUsuariosCopiados.selectedItems = usuariosCopiados;
+					}
+					
+				});
+				
+				helpWindow.addElement(asignadosPnl);
+				
+				PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
+				PopUpManager.centerPopUp(helpWindow);
+				
+			}
+
+			protected function cmdUsersR_clickHandler(event:MouseEvent):void {
+				var helpWindow:TitleWindow = new TitleWindow();
+				helpWindow.width = 600;
+				helpWindow.height = 580;
+				helpWindow.title = "Usuarios Responsables";
+				helpWindow.visible = true;
+				
+				var aux:ArrayCollection = new ArrayCollection();
+				for each (var v:Usuario in usuariosResponsables) {
+					aux.addItem(v);
+				}
+				var asignadosPnl:AsignadosEditor = new AsignadosEditor();
+				asignadosPnl.selectedItems = aux;
+				
+				helpWindow.addEventListener(CloseEvent.CLOSE, function closeHandler(event:CloseEvent):void {
+					helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+					helpWindow = null;
+				});
+				
+				asignadosPnl.addEventListener(CloseEvent.CLOSE, function(evt:CloseEvent):void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+					helpWindow = null;
+					
+					if (asignadosPnl.selectedItems != null) {
+						usuariosResponsables = new ArrayCollection();
+						for each (var item:Usuario in asignadosPnl.selectedItems) {
+							usuariosResponsables.addItem(item);
+						}
+						cmbUsuariosResponsables.selectedItems = usuariosResponsables;
+						
+					}
+					
+				});
+				
+				helpWindow.addElement(asignadosPnl);
+				
+				PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
+				PopUpManager.centerPopUp(helpWindow);
+
+			}
+			
+			protected function myTabBar_creationCompleteHandler(event:FlexEvent):void {
+				myTabBar.setCloseableTab(0, false);
+				myTabBar.setCloseableTab(1, false);
+				myTabBar.setCloseableTab(2, false);
+				myTabBar.setCloseableTab(3, false);
+			}
+			
+			protected function dfSelectedDate_changeHandler(event:CalendarLayoutChangeEvent):void {
+				fecha = dfSelectedDate.selectedDate; 				
+			}
+			
+			public function getEndDate():Date {
+				var fecha:Date = new Date();
+				var now:util.DateUtil = new util.DateUtil(fecha);
+				
+				now.subtract(util.DateUtil.DAY, 1);
+				return now.date;
+			}
+
+			private function updateSelection(e:IndexChangeEvent):void {
+				var ddList:DropDownList = e.target as DropDownList;
+				tarea.repetirModo = ddList.selectedItem.value;
+				
+				calcularFechas();
+			}
+			
+			protected function navigatorcontent1_creationCompleteHandler(event:FlexEvent):void	{					
+				if (matutina) {
+					fecha.hours = 9;
+					fecha.minutes = 0;
+					fecha.seconds = 0;
+				} else {
+					fecha.hours = 14;
+					fecha.minutes = 0;
+					fecha.seconds = 0;
+				}
+
+				for each (var p:Object in periodosDP) {
+					if (p.value == 2) {
+						var dateFormatter:DateTimeFormatter = new DateTimeFormatter();
+						dateFormatter.setStyle("locale", "es-ES");
+						dateFormatter.dateTimePattern = "EEEE";
+						p.periodo = "Todos los días " + dateFormatter.format(new Date(fecha));
+					} else if (p.value == 3) {
+						p.periodo = "Todos los días " + fecha.date  + " de cada mes";
+					} else if (p.value == 4) {
+						var df:DateTimeFormatter = new DateTimeFormatter();
+						df.setStyle("locale", "es-ES");
+						df.dateTimePattern = "dd  MMMM";
+						p.periodo = "Todos los " + df.format(new Date(fecha)) + " "; 
+					} 
+					
+				}
+				
+				
+			}
+			
+			protected function calcularFechas():void {
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "EEEE, DD de MMMM de YYYY";
+				
+				var dates:ArrayCollection = new ArrayCollection();
+
+				txtPreview.text = "La tarea se repetirá los siguinetes días:\n";
+				
+				var k:int = 0;
+				for (var i:int = 0; k < tarea.repetirCantidad; i++) {
+					if (tarea.repetirModo == 1) {
+						var dd:util.DateUtil = util.DateUtil.clone(fecha).add(util.DateUtil.DAY, i+1);
+						
+						if (dd.date.day != 0 &&  dd.date.day != 6) {
+							txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date); 
+							dates.addItem(dd.date);
+							k++;
+						}
+					} else if (tarea.repetirModo == 2) {
+						var dd:util.DateUtil = util.DateUtil.clone(fecha).add(util.DateUtil.DAY, (i+1)*7);
+						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
+						dates.addItem(dd.date);
+						k++;
+					} else if (tarea.repetirModo == 3) {
+						var fAux:Date = new Date(fecha);
+						var lastday:int = getDayCount(fAux.fullYear, (fAux.month+2)+i);
+						if (fecha.date > lastday) {
+							fAux.date = lastday;							
+						}						
+						var dd:util.DateUtil = util.DateUtil.clone(fAux).add(util.DateUtil.MONTH, i+1);
+						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
+						dates.addItem(dd.date);
+						k++;
+					} else if (tarea.repetirModo == 4) {
+						var dd:util.DateUtil = util.DateUtil.clone(fecha).add(util.DateUtil.YEAR, i+1);
+						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
+						dates.addItem(dd.date);
+						k++;
+					} else if (tarea.repetirModo == 5) {
+						var d1:util.DateUtil = util.DateUtil.clone(fecha);
+						var fecha1:Date = d1.date;
+						fecha1.date = 1;
+						var dd:util.DateUtil = util.DateUtil.clone(fecha1).add(util.DateUtil.MONTH, i+1);
+						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
+						dates.addItem(dd.date);
+						k++;
+					} else if (tarea.repetirModo == 6) {
+						var d1:util.DateUtil = util.DateUtil.clone(fecha);
+						var fecha1:Date = d1.date;
+						var dd:util.DateUtil = util.DateUtil.clone(fecha1).add(util.DateUtil.MONTH, i).add(util.DateUtil.DATE, getDayCount(fecha1.fullYear, fecha1.month));
+						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
+						dates.addItem(dd.date);
+						k++;
+						
+					} else {
+						k++;
+					}
+				}
+				
+				tarea.repetirFechas = dates;
+			}
+			
+			function getDayCount(year:int, month:int):int{
+				var d:Date = new Date(year, month, 0);
+				return d.getDate();
+			}
+
+			
+			protected function numericstepper1_changeHandler(event:Event):void {
+				calcularFechas();
+			}
+			
+			public function contactoLabelFunction(item:Object):String {
+				var contacto:Contacto = item as Contacto;
+				
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				if (contacto.ctoRSocial && contacto.ctoRSocial != contacto.nombre) {
+					label += " [" + contacto.ctoRSocial + "] ";
+				}
+				
+				return label;
+			}
+			
+			
+
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+	</fx:Declarations>
+
+	<s:Panel width="100%" height="100%" backgroundAlpha="0.0" title="Nueva Tarea" styleName="pntLineasVenta">
+		<s:layout>
+			<s:VerticalLayout horizontalAlign="left" gap="0" paddingTop="0" />
+		</s:layout>
+		<s:BorderContainer width="100%" backgroundAlpha=".16" backgroundColor="0xcccccc" borderAlpha="0.5" minHeight="20" visible="false" includeInLayout="false">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="left" gap="0" paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5"/>
+			</s:layout>
+			<s:Button label="&lt; Anterior" styleName="textButton"/>
+			<s:Spacer width="100%" />
+			<s:Button label="Siguiente >" styleName="textButton"/>
+		</s:BorderContainer>
+
+		<s:Spacer height="5" />
+		<tabBar:MyTabBar2 id="myTabBar" dataProvider="{myViewStack}" requireSelection="true" creationComplete="myTabBar_creationCompleteHandler(event)"/>	
+		<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0" minHeight="40">
+			<s:layout>
+				<s:VerticalLayout horizontalAlign="center" gap="0" />
+			</s:layout>
+
+			<mx:ViewStack id="myViewStack" width="100%" height="100%" paddingTop="5">
+				<s:NavigatorContent label="General" width="100%" height="100%">
+					<s:VGroup width="100%" height="100%" paddingTop="-10">
+						<s:Form width="100%" height="100%" fontFamily="Verdana" fontStyle="normal" fontSize="13">
+							<s:layout>
+								<s:FormLayout paddingBottom="5" gap="-12"/>
+							</s:layout>
+							<s:FormItem fontWeight="bold" textAlign="right" label="Fecha" includeInLayout="{showFecha}" visible="{showFecha}">
+								<mx:DateField id="dfSelectedDate" selectedDate="{fecha}" width="140" change="dfSelectedDate_changeHandler(event)" yearNavigationEnabled="true" disabledRanges="{[ {rangeEnd: getEndDate()} ]}"/>
+							</s:FormItem>
+							
+							<s:FormItem width="100%" color="red" textAlign="right" fontWeight="bold" label="Fecha Inicio:" includeInLayout="{!nueva &amp;&amp; tarea.fechaInicio != null}"
+										visible="{!nueva &amp;&amp; tarea.fechaInicio != null}">
+								<s:Label text="{_fechaInicio}" />
+							</s:FormItem>
+							<s:FormItem width="100%" textAlign="right" label="Tarea">
+								<components:MyAutoComplete id="cmbTarea" width="100%" textAlign="left" change="cmbTarea_changeHandler(event)"
+														   dataProvider="{ catalogs.tareas }" labelField="nombre" matchType="anyPart"
+														   prompt="Tarea" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+														   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10"
+														   selectedItem="{tarea.tarea}" next_focus="{txtDescription}" />
+							</s:FormItem>
+							<s:FormItem width="100%" textAlign="right" label="Descripción">
+								<s:layout>
+									<s:BasicLayout />
+								</s:layout>
+								<s:TextArea id="txtDescription" width="100%" height="60" textAlign="left" text="{tarea.descripcion}" />
+							</s:FormItem>
+							<s:FormItem textAlign="right" label="Asignado">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<components:MyAutoComplete id="cmbUsuarioAsignado" width="100%" textAlign="left" change="cmbUsuarioAsignado_changeHandler(event)"
+															   dataProvider="{ catalogs.usuarios }" labelField="nombre"
+															   matchType="anyPart" prompt="Asignado" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+															   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+															   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+															   dropDownWidth="320" dropDownRowCount="10" next_focus="{nueva ? null : cmbUsuariosCopiados}"  selectedItem="{tarea.usuarioAsignado}" />
+									<s:CheckBox id="chbNotifyContacto" label="Notificar por correo" color="0x000000" fontWeight="bold" visible="{nueva}" selected="false"/>
+								</s:HGroup>
+							</s:FormItem>
+							<s:FormItem textAlign="right" label="Copiados" visible="{nueva}" includeInLayout="{nueva}">
+								<s:HGroup width="100%">
+									<components:MyAutoComplete id="cmbUsuariosCopiados" width="100%" textAlign="left" change="cmbUsuariosCopiados_changeHandler(event)"
+															   dataProvider="{ catalogs.usuarios }" labelField="nombre"
+															   matchType="anyPart" prompt="Usuarios Copiados" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+															   allowDuplicates="false" allowMultipleSelection="true" allowEditingNewValues="false"
+															   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+															   dropDownWidth="320" dropDownRowCount="10" next_focus="{nueva ? null : ddlPrioridad}" selectedItems="{usuariosCopiados}" />
+
+									<s:Button id="cmdUsers" width="32" height="100%" label="..." click="cmdUsers_clickHandler(event)"/>
+								</s:HGroup>
+							</s:FormItem>
+							<s:FormItem textAlign="right" label="Responsables" visible="{nueva}" includeInLayout="{nueva}">
+								<s:HGroup width="100%">
+									<components:MyAutoComplete id="cmbUsuariosResponsables" width="100%" textAlign="left" change="cmbUsuariosResponsables_changeHandler(event)"
+															   dataProvider="{ catalogs.usuarios }" labelField="nombre"
+															   matchType="anyPart" prompt="Usuarios Responsables" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+															   allowDuplicates="false" allowMultipleSelection="true" allowEditingNewValues="false"
+															   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+															   dropDownWidth="320" dropDownRowCount="10" next_focus="{nueva ? null : ddlPrioridad}"  selectedItems="{usuariosResponsables}" />
+									
+									<s:Button id="cmdUsersR" width="32" height="100%" label="..." click="cmdUsersR_clickHandler(event)"/>
+								</s:HGroup>
+							</s:FormItem>
+
+
+							<s:FormItem textAlign="right" label="Prioridad">
+								<s:DropDownList id="ddlPrioridad" textAlign="left" labelField="label" dataProvider="{myDP}" selectedIndex="1" />
+							</s:FormItem>
+							<s:FormItem textAlign="right" label="Contacto" enabled="{ nueva }">
+								<components:MyAutoComplete id="cmbContacto" width="100%" textAlign="left" change="cmbContacto_changeHandler(event)"
+														   dataProvider="{ catalogs.getContactosActivos()}" labelField="nombre" matchType="anyPart"
+														   prompt="Contacto" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="contactoLabelFunction" backspaceAction="focus"
+														   dropDownWidth="320" dropDownRowCount="10" selectedItem="{tarea.contacto}" next_focus="{txtVinculo}" />
+							</s:FormItem>
+
+							<s:FormItem width="100%" includeInLayout="{contacto}" visible="{contacto}">
+								<s:VGroup width="100%" paddingBottom="0" paddingTop="0" gap="-12">
+									<s:FormItem width="100%" fontWeight="normal" label="Dirección:" visible="{contacto.ctoDireccion}"
+												includeInLayout="{contacto.ctoDireccion}">
+										<s:Label text="{contacto ? contacto.ctoDireccion : ''}" />
+									</s:FormItem>
+									<s:FormItem width="100%" fontWeight="normal" label="Teléfono:" visible="{contacto.ctoTelefono}"
+												includeInLayout="{contacto.ctoTelefono}">
+										<s:Label text="{contacto.ctoTelefono}" />
+									</s:FormItem>
+								</s:VGroup>
+							</s:FormItem>
+
+							<s:FormItem width="100%" textAlign="right" label="Vínculo">
+								<s:TextArea id="txtVinculo" width="100%" height="50" textAlign="left" text="{tarea.vinculo}" prompt="Vínculo" />
+							</s:FormItem>
+							<s:FormItem width="100%" height="100%" textAlign="right" label="Nota">
+								<s:TextArea id="txtNotas" width="100%" height="{showFecha ? 50 : 100}" textAlign="left" text="{tarea.notas}" prompt="Nota" />
+							</s:FormItem>
+						</s:Form>
+					</s:VGroup>
+				</s:NavigatorContent>
+				<s:NavigatorContent label="Repetir" enabled="{nueva}" >
+					<s:VGroup width="100%" height="100%" gap="10" paddingLeft="10" paddingTop="10" creationComplete="navigatorcontent1_creationCompleteHandler(event)">
+						<s:CheckBox id="chbRepetir" label="Repetir" selected="@{tarea.repetir}"/>
+						<s:HGroup width="100%" height="28" paddingTop="20" visible="{chbRepetir.selected}"  verticalAlign="middle">
+							<s:Label text="Período" />
+							<s:DropDownList  width="240" dataProvider="{periodosDP}" labelField="periodo"
+											change="updateSelection(event);" prompt="Seleccionar opción"/>
+							<s:Label text="Cantidad de veces" paddingLeft="20"/>
+							<s:NumericStepper minimum="1" maximum="99" value="@{tarea.repetirCantidad}" width="48" textAlign="right" change="numericstepper1_changeHandler(event)"/>
+						</s:HGroup>
+
+						<s:VGroup width="100%" height="100%" paddingTop="25" visible="{chbRepetir.selected}" >
+							<s:Label text="Vista Previa"/>
+							<s:TextArea id="txtPreview" width="100%" height="100%" />
+						</s:VGroup>
+					</s:VGroup>
+					
+				</s:NavigatorContent>
+					
+				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta">
+					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">
+						<s:HGroup width="100%" verticalAlign="middle" paddingLeft="10" paddingRight="10">
+							<s:Label text="Adjuntar Imagen:" />
+							<s:Button width="24" height="24" icon="@Embed(source='/assets/general/attach.png')" click="adjunto_clickHandler(event)"
+									  toolTip="Adjuntar imagen" />
+							
+							<s:Button id="cmdCopyToClipboard" width="24" height="24" icon="@Embed(source='/assets/general/clipboard_paste_image.png')" click="paste_clickHandler(event)"
+									  toolTip="Pegar el contenido del portapapeles" />
+
+						</s:HGroup>
+
+						<s:Group width="100%" height="100%" mouseEnabled="true">
+							<s:BorderContainer width="100%" height="100%" backgroundColor="0xffffff" borderColor="0x666666" backgroundAlpha=".7" mouseEnabled="true" >
+								<s:VGroup width="100%" height="100%" paddingLeft="0" paddingTop="0" paddingBottom="0" paddingRight="0" gap="0" visible="{ageBlob != null}">
+									<s:VGroup id="imgPreview" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
+										<s:Scroller width="100%" height="100%">
+											<s:VGroup top="0" left="0" bottom="0" right="0" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
+												<s:SWFLoader id="pageViewer" mouseEnabled="true" creationComplete="imgPreview2_creationCompleteHandler(event)">
+													<s:filters>
+														<s:DropShadowFilter/>
+													</s:filters>
+												</s:SWFLoader>
+											</s:VGroup>
+										</s:Scroller>
+									</s:VGroup>
+									<s:BorderContainer width="100%" backgroundColor="0xDADADA" borderColor="0x666666" visible="{ageBlob != null}" minHeight="0">
+										<s:layout>
+											<s:HorizontalLayout paddingTop="5" paddingLeft="10" paddingBottom="5"/>
+										</s:layout>
+										<s:HSlider id="mySlider" liveDragging="true" dataTipPrecision="0" change="mySlider_changeHandler(event)" value="{scaleImage}" minimum="10" maximum="200"/>
+										<s:Label text="Zoom: {scaleImage}%" />
+									</s:BorderContainer>
+								</s:VGroup>
+							</s:BorderContainer >
+							<s:VGroup id="imgPrv" width="100%" height="100%" visible="{ageBlob == null}" verticalAlign="middle" horizontalAlign="center" mouseEnabled="true" creationComplete="imgPreview_creationCompleteHandler(event)">
+								<s:Label width="100%" height="100%" verticalAlign="middle" textAlign="center" horizontalCenter="0" text="No hay Imagen"  fontWeight="bold" fontSize="20" color="0x888888" />
+							</s:VGroup>
+						</s:Group>
+					</s:VGroup>
+				</s:NavigatorContent>
+				<s:NavigatorContent label="{tarea.textoAdjunto ? ' * ' : ''}Texto Adjunto">
+					<s:VGroup width="100%" height="100%" >
+						<s:TextArea id="txtTextoAdjunto" width="100%" height="100%" text="{tarea.textoAdjunto}" borderAlpha="0" prompt="Pegar texto aquí !!!"/>
+					</s:VGroup>
+				</s:NavigatorContent>
+			</mx:ViewStack>
+		</s:BorderContainer>
+
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" verticalAlign="middle" paddingBottom="0" paddingTop="0">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+				<s:Spacer width="20" />
+				<s:CheckBox id="chbNotify" label="Notificarme por mail al finalizar tarea" color="0x000000" fontWeight="bold" selected="{tarea.notify}" change="{tarea.notify = chbNotify.selected}" enabled="{notifyEnabled}"/>
+				<s:Spacer width="100%" />
+				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" styleName="aplicarButton16" label="Aceptar" toolTip="Aceptar" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cancelar" focusEnabled="true" />
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+</s:Group>

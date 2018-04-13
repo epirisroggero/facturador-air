@@ -1,0 +1,924 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:components="components.*" xmlns:facturacion="biz.fulltime.ui.facturacion.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" preinitialize="init()" creationComplete="vgroup1_creationCompleteHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.CreditoInfo;
+			import biz.fulltime.dto.DocumentoDTO;
+			import biz.fulltime.dto.DocumentoQuery;
+			import biz.fulltime.event.FacturasGrabadasEvent;
+			import biz.fulltime.event.FacturasPendientesEvent;
+			import biz.fulltime.event.FilterEvent;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Comprobante;
+			import biz.fulltime.model.Documento;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.deudores.DocPendientesCliente;
+			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
+			import biz.fulltime.ui.forms.FrmFacturasGrabadas;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.CursorManager;
+			import mx.managers.ISystemManager;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.TitleWindow;
+			
+			import util.CatalogoFactory;
+
+			private static const DOCUMENTOS_POR_PAGINA:int = 20;
+
+			private var facturasGuardadas:ArrayCollection;
+
+			[Bindable]
+			private var _mostrarFacturasGuardadas:Boolean = false;
+
+			[Bindable]
+			private var _mostrandoFacturasGuardadas:Boolean = false;
+
+			[Bindable]
+			private var _tieneFacturasPendientes:Boolean = false;
+
+			[Bindable]
+			private var _limiteCreditoExcedido:Boolean = false;
+			
+			private var _modoSolicitud:Boolean = false;
+
+			private var frmFacturasGrabadas:FrmFacturasGrabadas;
+			
+			[Bindable]
+			private var facturas:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var _factura:Documento;
+
+			[Bindable]
+			private var _pages:int = 0;
+
+			[Bindable]
+			private var _current:int = 1;
+
+			private var _query:DocumentoQuery;
+
+			private var remObj:RemoteObject;
+
+			private var remObjQuery:RemoteObject;
+
+			private var remObjCount:RemoteObject;
+
+			private var _cargarDocumentos:Boolean = false;
+
+			[Bindable]
+			public function get modoSolicitud():Boolean {
+				return _modoSolicitud;
+			}
+			
+			public function set modoSolicitud(value:Boolean):void {
+				_modoSolicitud = value;
+			}
+
+			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
+				_cargarDocumentos = true; 				
+				invalidateProperties();
+			}
+
+			public function init():void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(ResultEvent.RESULT, result);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+
+				remObjQuery = new RemoteObject();
+				remObjQuery.destination = "CreatingRpc";
+				remObjQuery.showBusyCursor = true;
+				remObjQuery.channelSet = ServerConfig.getInstance().channelSet;
+				remObjQuery.addEventListener(ResultEvent.RESULT, resultQuery);
+				remObjQuery.addEventListener(FaultEvent.FAULT, onFault);
+
+				remObjCount = new RemoteObject();
+				remObjCount.destination = "CreatingRpc";
+				remObjCount.showBusyCursor = true;
+				remObjCount.channelSet = ServerConfig.getInstance().channelSet;
+				remObjCount.addEventListener(ResultEvent.RESULT, resultCount);
+				remObjCount.addEventListener(FaultEvent.FAULT, onFault);
+
+			}
+
+
+
+			private function closeHandler(event:Event):void {
+				event.target.removeEventListener("close", closeHandler);
+				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new Event("_close_factura"));
+			}
+
+			protected function dgRecibos_doubleClickHandler(event:MouseEvent):void {
+				cargarFactura();
+			}
+
+			protected function pnlFact_creationCompleteHandler(event:FlexEvent):void {
+				pnlFact.addEventListener("_cancel_", cancel);
+				pnlFact.addEventListener("_nuevo_", nuevoDocumento);
+				
+				pnlFact.addEventListener("_saveF", nuevoDocumento);
+			}
+
+			private function cancel(evt:Event):void {
+				viewStack.selectedIndex = 0;
+			}
+
+			private function nuevoDocumento(evt:Event):void {
+				var oldComprobante:Comprobante = _factura.comprobante;
+				if (_factura != null) {
+					_factura.removeEventListener("_changeCliente", obtenerDatosCliente);
+					if (_factura.cliente) { 
+						_factura.cliente.removeEventListener(FacturasGrabadasEvent.FACTURAS_GRABADAS_CHANGED, facturasGrabadasListener);
+						_factura.cliente.removeEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+					}
+				}
+				_factura = Documento.getNuevoDocumento(oldComprobante);
+				_factura.addEventListener("_changeCliente", obtenerDatosCliente);
+
+				facturasGuardadas = null;
+				//facturasPendientes = null;
+				
+				_limiteCreditoExcedido = false;
+				
+				callLater(function():void {
+					// Seleccionar la vista con la factura
+					viewStack.selectedIndex = 2;
+				});
+
+			}
+
+			
+			protected function cmdNueva_clickHandler(event:MouseEvent):void {
+				// Crear una nueva factura
+				viewStack.selectedIndex = 1;
+
+				_mostrarFacturasGuardadas = false;
+				_tieneFacturasPendientes = false;
+				_limiteCreditoExcedido = false;
+
+				callLater(function():void {
+					tipoFactura.reset();
+				});
+
+			}
+
+			protected function cmdEditar_clickHandler(event:MouseEvent):void {
+				cargarFactura();
+			}
+
+			/**
+			 *  Al dar enter hacer lo mismo que al precionar el boton editar
+			 */
+			protected function dgRecibos_keyDownHandler(event:KeyboardEvent):void {
+				// Editar una factura existente
+				if (event.keyCode == Keyboard.ENTER) {
+					cargarFactura();
+				} else if (event.keyCode == Keyboard.TAB) {
+					event.preventDefault();
+					cmdNueva.setFocus();
+				}
+			}
+			
+			public function abrirDocumento(docId:String):void {
+				_mostrarFacturasGuardadas = false;
+				_tieneFacturasPendientes = false;
+				_limiteCreditoExcedido = false;
+
+				facturasGuardadas = null;
+				//facturasPendientes = null;
+				
+				remObj.getDocumento(docId);
+				
+			}
+
+			private function cargarFactura():void {
+				_mostrarFacturasGuardadas = false;
+				_tieneFacturasPendientes = false;
+				_limiteCreditoExcedido = false;
+
+				facturasGuardadas = null;
+
+				if (dgRecibos.selectedItem != null) {
+					var _doc:DocumentoDTO = DocumentoDTO(dgRecibos.selectedItem);
+					remObj.getDocumento(_doc.docId);
+				}
+			}
+			
+			public function obtenerCotizacionVenta(cliente:Cliente):void {
+				var comprobantes:ArrayCollection = CatalogoFactory.getInstance().comprobantesUsuario;
+				for each (var comprobante:Comprobante in comprobantes) {
+					if (comprobante.codigo == "1") {
+						_factura = Documento.getNuevoDocumento(comprobante);
+						_factura.addEventListener("_changeCliente", obtenerDatosCliente);
+						
+						callLater(function():void {
+							// Seleccionar la vista con la factura
+							viewStack.selectedIndex = 2;
+							
+							callLater(function():void {
+								_factura.tomarCamposDelCliente(cliente.codigo);
+							});
+							
+							
+						});
+						break;
+					}
+				}
+
+			}
+
+			public function obtenerOrdenVenta(cliente:Cliente):void {
+				var comprobantes:ArrayCollection = CatalogoFactory.getInstance().comprobantesUsuario;
+				for each (var comprobante:Comprobante in comprobantes) {
+					if (comprobante.codigo == "10") {
+						_factura = Documento.getNuevoDocumento(comprobante);
+						_factura.addEventListener("_changeCliente", obtenerDatosCliente);
+						
+						callLater(function():void {
+							// Seleccionar la vista con la factura
+							viewStack.selectedIndex = 2;
+							
+							callLater(function():void {
+								_factura.tomarCamposDelCliente(cliente.codigo);
+							});
+						});
+						break;
+					}
+				}
+				
+			}
+
+			protected function tipoFactura_creationCompleteHandler(event:FlexEvent):void {
+				tipoFactura.addEventListener("next_step_", function():void {
+					if (_factura != null) {
+						_factura.removeEventListener("_changeCliente", obtenerDatosCliente);
+						if (_factura.cliente) { 
+							_factura.cliente.removeEventListener(FacturasGrabadasEvent.FACTURAS_GRABADAS_CHANGED, facturasGrabadasListener);
+							_factura.cliente.removeEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+						}
+					}
+
+					var selectFacturaPnl:TipoFacturaPnl = event.target as TipoFacturaPnl;
+
+					_factura = Documento.getNuevoDocumento(Comprobante(selectFacturaPnl.tipoFactura));
+					_factura.addEventListener("_changeCliente", obtenerDatosCliente);
+
+					callLater(function():void {
+						// Seleccionar la vista con la factura
+						viewStack.selectedIndex = 2;
+					});
+				});
+
+				tipoFactura.addEventListener("previous_step_", function():void {
+					viewStack.selectedIndex = 0;
+				});
+
+			}
+
+			// Abrir una factura existente...
+			private function result(event:ResultEvent):void {
+				CursorManager.removeBusyCursor();
+				
+				if (_factura != null) {
+					_factura.removeEventListener("_changeCliente", obtenerDatosCliente);
+					if (_factura.cliente) { 
+						_factura.cliente.removeEventListener(FacturasGrabadasEvent.FACTURAS_GRABADAS_CHANGED, facturasGrabadasListener);
+						_factura.cliente.removeEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+					}
+				}
+
+				_factura = event.result as Documento;
+				
+				facturasGuardadas = null;
+				//facturasPendientes = null;
+				_limiteCreditoExcedido = false;
+				
+				//_factura.addEventListener(FacturasPendientesEvent.LIMITE_CREDITO_EXCEDIDO, creditoExcedido);
+				if (!modoSolicitud) {
+					_factura.addEventListener("_changeCliente", obtenerDatosCliente);
+					_factura.cliente.addEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+					
+					// Cuando abro una factura nos fijamos si el cliente tiene facturas pendientes y/o limite de crédito excedido...
+					if (_factura.cliente) {
+						_factura.cliente.obtenerDocumentosPendientes();
+					}
+				}
+
+				viewStack.selectedIndex = 2;
+			}
+			
+			private function obtenerDatosCliente(event:Event):void {
+				var cliente:Cliente = _factura.cliente;
+				if (cliente != null) {
+					cliente.addEventListener(FacturasGrabadasEvent.FACTURAS_GRABADAS_CHANGED, facturasGrabadasListener);
+					cliente.addEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+
+					//cliente.obtenerDocumentosPendientes();
+				}					
+			}
+
+			private function queryDocumentos():void {
+				_query.start = DOCUMENTOS_POR_PAGINA * (_current - 1);
+				_query.limit = DOCUMENTOS_POR_PAGINA;
+				
+				_query.esSolicitud = modoSolicitud;
+				
+				remObjQuery.queryDocumentos(_query);
+			}
+			
+			private function resultQuery(event:ResultEvent):void {
+				facturas = event.result as ArrayCollection;
+
+				if (!dgRecibos) {
+					return;
+				}
+
+				callLater(function():void {
+					if (dgRecibos.dataProvider.length > 0) {
+						dgRecibos.setFocus();
+						dgRecibos.selectedIndex = 0;
+					}
+				});
+
+			}
+
+			private function countDocumentos():void {
+				_query.start = 0;
+				_query.limit = DOCUMENTOS_POR_PAGINA;
+
+				_query.esSolicitud = modoSolicitud;
+				
+				remObjCount.countDocumentos(_query);
+			}
+
+			private function resultCount(event:ResultEvent):void {
+				var count:Number = event.result as Number;
+				_pages = count / DOCUMENTOS_POR_PAGINA;
+				if (count % DOCUMENTOS_POR_PAGINA != 0) {
+					_pages += 1;
+				}
+			}
+
+			private function date_labelFunction(item:Object, column:GridColumn):String {
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY";
+
+				return dateFormatter.format(item.fecha);
+			}
+
+			private function cliente_labelFunction(item:Object, column:GridColumn):String {
+				return /*item.cliente.codigo + " - " + */item.cliente.nombre;
+			}
+
+			private function moneda_labelFunction(item:Object, column:GridColumn):String {
+				var moneda:String = item.moneda.codigo;
+				var simbolo:String = "";
+				for each (var m:Moneda in CatalogoFactory.getInstance().monedas) {
+					if (m.codigo == moneda) {
+						simbolo = m.simbolo;
+						break;
+					}
+				}	
+				return simbolo;
+			}
+
+			private function comprobante_labelFunction(item:Object, column:GridColumn):String {
+				return item.comprobante.nombre;
+			}
+
+			private function comprobante_cod_labelFunction(item:Object, column:GridColumn):String {
+				return /*item.comprobante.codigo + " - " + */item.comprobante.nombre;
+			}
+
+			private function cae_labelFunction(item:Object, column:GridColumn):String {
+				var cae:String = DocumentoDTO(item).caeNombre;
+				return cae ? cae : "";
+				
+			}
+
+			private function emitido_labelFunction(item:Object, column:GridColumn):String {
+				if (item.tipoComprobante != "21" && item.tipoComprobante != "23" && item.tipoComprobante != "31" && item.tipoComprobante != "32") {
+					return item.emitido ? "SI" : "NO";
+				}
+				return "";
+			}
+			
+			private function pendiente_labelFunction(item:Object, column:GridColumn):String {
+				if (item.tipoComprobante == "21" || item.tipoComprobante == "23" || item.tipoComprobante == "31" || item.tipoComprobante == "32") {
+					return item.pendiente ? "SI" : "NO";
+				}
+				return "";
+			}
+
+
+			public function refrescar():void {
+				if (remObjQuery) {
+					_current = 1;
+					queryDocumentos();
+				}
+				if (remObjCount) {
+					_pages = 0;
+					countDocumentos();
+				}
+			}
+
+			protected function onAddedToStageHandler(event:Event):void {
+				refrescar();
+			}
+
+			private function onFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+			}
+
+			protected function cmdFacturasPend_clickHandler(event:MouseEvent):void {
+				mostrarFacturasPendientes();
+			}
+
+			protected function cmdCreditoExedido_clickHandler(event:MouseEvent):void {
+				mostrarFacturasPendientes();
+			}
+
+			protected function pnlFilters_creationCompleteHandler(event:FlexEvent):void {
+				pnlFilters.addEventListener(FilterEvent.FILTRAR_DOCUMENTOS, filtrarDocumentos);
+				pnlFilters.addEventListener(FilterEvent.BORRAR_FILTROS, borrarFiltros);
+			}
+
+			private function filtrarDocumentos(event:FilterEvent):void {
+				_query = event.docQuery as DocumentoQuery;
+
+				_current = 1;
+
+				_query.start = 0;
+				_query.limit = DOCUMENTOS_POR_PAGINA;
+
+				remObjCount.countDocumentos(_query);
+				remObjQuery.queryDocumentos(_query);
+			}
+
+			private function borrarFiltros(event:FilterEvent):void {
+				_query = event.docQuery as DocumentoQuery;
+				if (!_query) {
+					_query = new DocumentoQuery();	
+				}
+				_query.start = 0;
+				_query.limit = DOCUMENTOS_POR_PAGINA;
+
+				_current = 1;
+
+				remObjCount.countDocumentos(_query);
+				remObjQuery.queryDocumentos(_query);
+			}
+
+			
+			///////////////////////////
+			/// FACTURAS GRABADAS   ///
+			///////////////////////////
+			
+			private function facturasGrabadasListener(event:FacturasGrabadasEvent):void {
+				if (event.data is ArrayCollection) {
+					facturasGuardadas = event.data as ArrayCollection;
+
+					var codigo:String = _factura.comprobante.codigo;	
+					if (_factura.esCotizacionDeVenta) {						
+						var cotizaciones:ArrayCollection = new ArrayCollection();
+						for each (var doc:DocumentoDTO in facturasGuardadas) {
+							if (doc.comprobante.codigo == codigo) {
+								cotizaciones.addItem(doc);
+							}
+						}
+						if (cotizaciones.length > 0) {
+							_mostrarFacturasGuardadas = true;
+							facturasGuardadas = cotizaciones;
+						}
+					}  else if (_factura.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE) {
+						var movimientoStockCliente:ArrayCollection = new ArrayCollection();
+						for each (var doc:DocumentoDTO in facturasGuardadas) {
+							if ((doc.comprobante.codigo == codigo || (codigo == '10' && doc.comprobante.codigo == '1')) && doc.pendiente) {
+								movimientoStockCliente.addItem(doc);
+							}
+						}
+						if (movimientoStockCliente.length > 0) {
+							facturasGuardadas = movimientoStockCliente;
+						}
+						_mostrarFacturasGuardadas = movimientoStockCliente.length > 0 && !_factura.emitido;
+
+					} else {
+						_mostrarFacturasGuardadas = (facturasGuardadas != null && facturasGuardadas.length > 0 && !_factura.emitido);	
+					}				
+					
+					invalidateProperties();
+					commitProperties();
+				}
+				
+			}
+			
+			private function mostrarFacturasGrabadas():void {
+				_mostrandoFacturasGuardadas = true;
+				
+				var facGrabWindow:TitleWindow = new TitleWindow();
+				facGrabWindow.title = (_factura.esCotizacionDeVenta ? "Cotizaciones Grabadas: " : "Documentos Grabados: ") + _factura.cliente.nombre;
+				facGrabWindow.width = 790;
+				facGrabWindow.height = 320;
+				
+				frmFacturasGrabadas = new FrmFacturasGrabadas();
+				var index:int = -1;
+				var i:int = -1;
+				for each(var doc:DocumentoDTO in facturasGuardadas) {
+					i++;
+					if (doc.docId == _factura.docId) {
+						index = i;
+						break;
+					}
+				}
+				if (index >= 0) {
+					facturasGuardadas.removeItemAt(index);
+				}
+				frmFacturasGrabadas.facturasPendientes = facturasGuardadas;
+				
+				if (facturasGuardadas.length < 1) {
+					return;
+				}
+				
+				var parent:Sprite;
+				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+				// no types so no dependencies
+				var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+				if (mp && mp.useSWFBridge()) {
+					parent = Sprite(sm.getSandboxRoot());
+				} else {
+					parent = Sprite(FlexGlobals.topLevelApplication);
+				}
+				
+				PopUpManager.addPopUp(facGrabWindow, parent, true);
+				PopUpManager.centerPopUp(facGrabWindow);
+				
+				frmFacturasGrabadas.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facGrabWindow as IFlexDisplayObject);
+					facGrabWindow = null;
+					
+					if (frmFacturasGrabadas.factura) {
+						if (_factura != null) {
+							_factura.cliente.removeEventListener(FacturasGrabadasEvent.FACTURAS_GRABADAS_CHANGED, facturasGrabadasListener);
+							_factura.cliente.removeEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+						}
+						_factura = frmFacturasGrabadas.factura;
+						
+						_factura.cliente.addEventListener(FacturasGrabadasEvent.FACTURAS_GRABADAS_CHANGED, facturasGrabadasListener);
+						_factura.cliente.addEventListener(FacturasPendientesEvent.FACTURAS_PENDIENTES_CHANGED, facturasPendientesListener);
+					}
+					
+					// Sacar el cartel de facturas grabadas una vez revisadas las mismas...
+					_mostrandoFacturasGuardadas = false;
+					
+					invalidateProperties();
+					commitProperties();
+				});
+				
+				facGrabWindow.addElement(frmFacturasGrabadas);
+				
+				facGrabWindow.closeButton.visible = false;
+			}
+			
+			///////////////////////////
+			/// FACTURAS PENDIENTES   ///
+			///////////////////////////
+			
+			private function facturasPendientesListener(event:FacturasPendientesEvent):void {
+				if (_factura && (_factura.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE && _factura.comprobante.codigo != "10" ) || _factura.emitido) {
+					_limiteCreditoExcedido = false;
+					return;
+				}
+				
+				if (event.data == null) { 
+					_limiteCreditoExcedido = false;					
+				} else if (event.data is DocPendientesCliente) {
+					var facturasPendientes:DocPendientesCliente = event.data as DocPendientesCliente;
+					
+					_tieneFacturasPendientes = true;
+					
+					var _monedaCliente:String = _factura.cliente.moneda ? _factura.cliente.moneda.codigo : Moneda.PESOS;
+					
+					var idDocumento:String = _factura.docId;
+					var codCliente:String = _factura.cliente.codigo;
+					var totalAdeudado:String = facturasPendientes.getTotalAdeudado(_monedaCliente, idDocumento);
+					
+					var totalFactura:BigDecimal = new BigDecimal(_factura.total);
+					// Convertir el total a la moneda del cliente
+					var totalFacturaActual:BigDecimal = BigDecimal.ZERO;
+					if (_factura.moneda) {
+						totalFacturaActual = DocPendientesCliente.convertir(totalFactura, _factura.moneda.codigo, _monedaCliente);
+					}
+					
+					var creditoInfo:CreditoInfo = new CreditoInfo();
+					creditoInfo.topeCredito = _factura.cliente.cliTopeCredito;
+					creditoInfo.solicitado = totalFacturaActual.toString();
+					creditoInfo.cliente = codCliente;
+					creditoInfo.deuda = totalAdeudado;
+					
+					if (!creditoInfo.tieneCredito()) {
+						_limiteCreditoExcedido = true;
+					}
+					
+					invalidateProperties();
+					commitProperties();
+				}
+			}
+			
+			private function mostrarFacturasPendientes():void {
+				var facPendWindow:TitleWindow = new TitleWindow();
+				facPendWindow.title = "Facturas Pendientes: " + _factura.cliente.nombre;
+				facPendWindow.width = 860;
+				facPendWindow.height = 600;
+				
+				var frmListadoDeudores:ListadoDeudoresCliente = new ListadoDeudoresCliente();
+				
+				var docPendientes:ArrayCollection = new ArrayCollection();
+				docPendientes.addItem(_factura.cliente.documentsPendientes);
+				
+				frmListadoDeudores.dataProvider = docPendientes;
+				frmListadoDeudores.codigoCliente = _factura.cliente.codigo;
+
+				var parent:Sprite;
+				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+				// no types so no dependencies
+				var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+				if (mp && mp.useSWFBridge()) {
+					parent = Sprite(sm.getSandboxRoot());
+				} else {
+					parent = Sprite(FlexGlobals.topLevelApplication);
+				}
+
+				PopUpManager.addPopUp(facPendWindow, parent, true);
+				PopUpManager.centerPopUp(facPendWindow);
+				
+				frmListadoDeudores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+					
+					// Sacar el cartel de facturas pendientes una vez revisadas las mismas...
+					_tieneFacturasPendientes = false;
+				});
+				
+				facPendWindow.addElement(frmListadoDeudores);
+				
+				facPendWindow.closeButton.visible = false;
+			}
+
+			//--------------------------------------------------------------------------
+			//
+			//  Overridden methods: UIComponent
+			//
+			//--------------------------------------------------------------------------
+
+			/**us
+			 *  @private
+			 */
+			override protected function commitProperties():void {
+				super.commitProperties();
+
+				if (_mostrarFacturasGuardadas) {
+					_mostrarFacturasGuardadas = false;
+					mostrarFacturasGrabadas();
+				} 
+				
+				if (_tieneFacturasPendientes && !_mostrandoFacturasGuardadas) {
+					_tieneFacturasPendientes = false;
+					if (_factura.nuevo) {
+						mostrarFacturasPendientes();
+					}
+				}
+				
+				if (_cargarDocumentos) {
+					_cargarDocumentos = false;
+
+					_query = new DocumentoQuery();
+					queryDocumentos();
+					countDocumentos();
+				}
+			}
+			
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<s:ArrayList id="cols">
+			<s:GridColumn width="200" dataField="comprobante" headerText="Tipo" labelFunction="comprobante_cod_labelFunction" />
+			<s:GridColumn width="90" dataField="comprobante" headerText="Tipo CFE" labelFunction="cae_labelFunction" visible="{!modoSolicitud &amp;&amp; !pnlFilters.soloPendientes}"/>
+			<s:GridColumn width="90" dataField="numero" headerText="Comprobante">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="right">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {	
+											var serie:String = DocumentoDTO(data).serie ? DocumentoDTO(data).serie : "";
+											var numero:String = DocumentoDTO(data).numero ? DocumentoDTO(data).numero : "";
+											
+											label = serie + numero;
+										}
+										
+									}
+								]]>
+							</fx:Script>
+							
+						</s:DefaultGridItemRenderer>
+						
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn width="60" dataField="emitido" headerText="Emitido" visible="{!modoSolicitud}">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer clipAndEnableScrolling="true">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {
+											var item:DocumentoDTO = data as DocumentoDTO;
+											if (item.tipoComprobante != "21" && item.tipoComprobante != "23" && item.tipoComprobante != "31" && item.tipoComprobante != "32") {
+												chbState.setVisible(true);
+											} else {
+												chbState.setVisible(false);
+											}											
+										}
+									}
+
+								]]>
+							</fx:Script>
+							<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+								<s:CheckBox id="chbState" selected="{DocumentoDTO(data).emitido}" enabled="false"/>
+							</s:HGroup>
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn width="60" dataField="pendiente" headerText="Pend.">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer clipAndEnableScrolling="true">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {
+											var item:DocumentoDTO = data as DocumentoDTO;
+											if (item.tipoComprobante == "21" || item.tipoComprobante == "23" || item.tipoComprobante == "31" || item.tipoComprobante == "32") {
+												chbState.setVisible(true);
+											} else {
+												chbState.setVisible(false);
+											}											
+										}
+									}
+								]]>
+							</fx:Script>
+							<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+								<s:CheckBox id="chbState" selected="{DocumentoDTO(data).pendiente}" enabled="false" alpha="1"/>
+							</s:HGroup>
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+
+			</s:GridColumn>
+			<s:GridColumn width="85" dataField="fecha" headerText="Fecha" />
+			<s:GridColumn width="60" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
+			<s:GridColumn width="100" dataField="total" headerText="Total">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="right">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+									
+									import util.CatalogoFactory;
+									
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {											
+											if (DocumentoDTO(data).total) {
+												label = outerDocument.nf_Espanol_Espanol.format(DocumentoDTO(data).total);
+											} else {
+												label = outerDocument.nf_Espanol_Espanol.format(0);
+											}
+										}
+									}
+								]]>
+							</fx:Script>
+
+						</s:DefaultGridItemRenderer>
+						
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn dataField="cliente" headerText="{modoSolicitud ? 'Proveedor' : 'Cliente'}" labelFunction="cliente_labelFunction"/>
+			<s:GridColumn dataField="razonSocial" headerText="Razón Social" />
+		</s:ArrayList>
+		
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES"/>
+
+	</fx:Declarations>
+
+
+	<mx:ViewStack id="viewStack" width="100%" height="100%">
+		<s:NavigatorContent show="onAddedToStageHandler(event)">
+			<s:VGroup width="100%" height="100%" gap="0">
+				<facturacion:FiltrosPnl id="pnlFilters" width="100%" creationComplete="pnlFilters_creationCompleteHandler(event)" modoSolicitudes="{modoSolicitud}"/>
+				<s:Panel width="100%" height="100%" backgroundAlpha="0.0" title="{modoSolicitud ? 'Listado solicitudes' : 'Listado facturas'}">
+					<s:VGroup width="100%" height="100%">
+						<s:DataGrid id="dgRecibos" width="100%" height="100%"  doubleClick="dgRecibos_doubleClickHandler(event)" keyDown="dgRecibos_keyDownHandler(event)"
+									dataProvider="{facturas}" sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" >
+						</s:DataGrid>
+
+						<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle">
+							<s:Button id="cmdFirst" width="32" height="24" cornerRadius="6" click="{_current=1; queryDocumentos()}" enabled="{_current&gt;1}"
+												   styleName="firstButton" />
+							<s:Button id="cmdPrevious" width="32" height="24" cornerRadius="6" click="{_current--; queryDocumentos()}" enabled="{_current&gt;1}"
+												   styleName="previousButton" />
+							<s:Label width="90" fontSize="16" fontWeight="bold" paddingLeft="5" paddingRight="5" paddingTop="4" textAlign="center" verticalAlign="middle"
+									 styleName="myLabel" text="{_current} de {_pages}">
+							</s:Label>
+							<s:Button id="cmdNext" width="32" height="24" cornerRadius="6" click="{_current++; queryDocumentos()}" enabled="{_current &lt; _pages}"
+												   styleName="nextButton" />
+							<s:Button id="cmdLast" width="32" height="24" cornerRadius="6" click="{_current = _pages; queryDocumentos()}"
+												   enabled="{_current &lt; _pages}" styleName="lastButton" />
+						</s:HGroup>
+						<s:Spacer height="5" />
+
+					</s:VGroup>
+
+					<s:controlBarContent>
+						<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+							<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+							<s:Spacer width="100%" />
+							
+							<s:Button id="cmdNueva" click="cmdNueva_clickHandler(event)" styleName="nuevaButton" label="Nueva" focusEnabled="true"  toolTip="Crear una nueva factura"/>
+							<s:Button id="cmdEditar" click="cmdEditar_clickHandler(event)" styleName="editarButton" label="Editar" focusEnabled="true" toolTip="Editar factura seleccionada"/>
+						</s:HGroup>
+					</s:controlBarContent>
+
+				</s:Panel>
+			</s:VGroup>
+		</s:NavigatorContent>
+
+		<s:NavigatorContent>
+			<facturacion:TipoFacturaPnl id="tipoFactura" creationComplete="tipoFactura_creationCompleteHandler(event)" modoSolicitud="{modoSolicitud}"/>
+		</s:NavigatorContent>
+
+		<s:NavigatorContent>
+			<s:Group id="pnlDocumento" width="100%" height="100%">
+				<facturacion:FacturacionPnl id="pnlFact" creationComplete="pnlFact_creationCompleteHandler(event)" factura="{_factura}" modoSolicitud="{modoSolicitud}" />
+				<!--components:IconButton  top="110" left="327" visible="{_factura.cliente &amp;&amp; _factura.cliente.documentsPendientes}" 
+						  click="{mostrarFacturasPendientes()}" styleName="moneyButton" width="22" height="22" toolTip="Facturas Pendientes" /-->
+				<s:Group id="grpWarning" width="100%" height="30" left="0" top="0" showEffect="Fade" includeInLayout="{_limiteCreditoExcedido}"
+						 visible="{_limiteCreditoExcedido}">
+					<s:Rect id="topMaskRect" x="240" width="{grpWarning.width - 480}" height="28" bottomLeftRadiusX="14" bottomRightRadiusY="14" bottomRightRadiusX="14"
+							bottomLeftRadiusY="14">
+						<s:fill>
+							<s:SolidColor color="red" alpha="0.87" />
+						</s:fill>
+						<s:stroke>
+							<s:SolidColorStroke id="borderStroke" color="black" weight="2" alpha=".5" />
+						</s:stroke>
+					</s:Rect>
+				</s:Group>
+				
+				<s:HGroup width="100%" height="100%" horizontalAlign="center" paddingTop="2" showEffect="Fade" includeInLayout="{_limiteCreditoExcedido}"
+						  visible="{_limiteCreditoExcedido}">
+					<mx:LinkButton id="cmdCreditoExedido" color="white" fontWeight="bold" icon="@Embed('/assets/general/Warning.png')" click="cmdCreditoExedido_clickHandler(event)"
+								   label="{_factura.cliente.nombre} exedió el límite de crédito."/>
+				</s:HGroup>
+			</s:Group>
+		</s:NavigatorContent>
+		
+		<s:NavigatorContent>
+			<s:Group id="pnlSolicitud" width="100%" height="100%">
+				<facturacion:FacturacionPnl id="pnlSol" creationComplete="pnlFact_creationCompleteHandler(event)" factura="{_factura}" />
+			</s:Group>
+		</s:NavigatorContent>
+	</mx:ViewStack>
+</s:VGroup>

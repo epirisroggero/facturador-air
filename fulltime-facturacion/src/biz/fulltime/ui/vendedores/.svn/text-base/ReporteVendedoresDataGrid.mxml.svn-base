@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" initialize="initializeHandler(event)" gap="0">
+	
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.AdvancedDataGridEvent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.formatters.DateFormatter;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.utils.ObjectUtil;
+			
+			import util.CatalogoFactory;
+						
+			private var _tareas:ArrayCollection;
+			
+			[Bindable]
+			public var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+			
+			[Bindable]
+			private var _dataProvider:ArrayCollection;
+			
+			
+			private var _changeTareas:Boolean;						
+			
+			private var _currentSelected:Object; 
+			
+			[Bindable]
+			public var modoVizualizacion:Boolean = false; 
+			
+			private var _editableC:Boolean = true;
+			
+			private var remObj:RemoteObject;
+			
+			[Bindable]
+			public function get currentSelected():Object {
+				return _currentSelected;
+			}
+			
+			public function set currentSelected(value:Object):void {
+				_currentSelected = value;
+			}
+			
+			[Bindable]
+			public function get editableC():Boolean {
+				return _editableC;
+			}
+			
+			public function set editableC(value:Boolean):void {
+				_editableC = value;
+			}
+			
+						
+			[Bindable]
+			public function get tareas():ArrayCollection {
+				return _tareas;
+			}
+			
+			public function set tareas(value:ArrayCollection):void {
+				_tareas = value;
+				_changeTareas = true;
+				invalidateProperties();
+			}
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				
+				if (_changeTareas) {
+					actualizarTareas();
+					_changeTareas = false;
+				}
+			}
+			
+			private function actualizarTareas():void {
+				_dataProvider = new ArrayCollection();
+			}
+			
+			private function asignado_labelFunction(item:Object, column:AdvancedDataGridColumn):String {
+				return item.usuarioAsignado ? item.usuarioAsignado.codigo + "-" + item.usuarioAsignado.nombre : "";
+			}
+			
+			private function solicitante_labelFunction(item:Object, column:AdvancedDataGridColumn):String {
+				return item.usuSolicitante ? item.usuSolicitante : "";
+			}
+			
+			private function contacto_labelFunction(item:Object, column:AdvancedDataGridColumn):String {
+				return item.contacto ? item.contacto.nombre : "";
+			}
+			
+			private function fecha_labelFunction(item:Object, column:AdvancedDataGridColumn):String {
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY";
+				
+				return item.fechaHora ? dateFormatter.format(item.fechaHora) : "";
+			}
+			
+			private function fechaInicio_labelFunction(item:Object, column:AdvancedDataGridColumn):String {
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY";
+				
+				return item.fechaInicio ? dateFormatter.format(item.fechaInicio) : dateFormatter.format(item.fechaHora);
+			}
+			
+			private function tarea_labelFunction(item:Object, column:AdvancedDataGridColumn):String {
+				return item.tarea ? item.tarea.codigo + "-" + item.tarea.nombre.toUpperCase() : "";
+			}
+						
+			protected function grid_itemEditEndHandler(event:AdvancedDataGridEvent):void {
+				var rowIndex:int = event.rowIndex;
+				
+				/*
+				if (rowIndex < 0 || _dataProvider.length < rowIndex) {
+					return;
+				}
+				var tarea:AgendaTareaDTO = _dataProvider.getItemAt(rowIndex) as AgendaTareaDTO;
+				
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+				
+				remObj.modificarTareaDTO(tarea);
+				*/
+			}
+			
+									
+			
+			private function onFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+			}
+			
+			
+			protected function grid_itemEditBeginningHandler(event:AdvancedDataGridEvent):void {
+				var rowIndex:Number = event.rowIndex;
+				var dg:AdvancedDataGrid = event.currentTarget as AdvancedDataGrid;
+				
+			}
+						
+			
+			protected function initializeHandler(event:FlexEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, result);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = true;
+			}
+			
+			protected function grid_changeHandler(event:ListEvent):void {
+				var selectedRow:Object = grid.selectedItem as Object;
+				//remObj.getAgendaTarea(selectedRow ? selectedRow.ageId : null);
+			}
+			
+			private function result(event:ResultEvent):void {
+				//currentSelected = event.result as AgendaTarea;
+			}
+			
+			public function handleFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultDetail);
+			}
+			
+			
+		]]>
+	</fx:Script>
+		
+	<mx:AdvancedDataGrid id="grid" width="100%" height="100%" fontSize="12" dataProvider="{_dataProvider}" borderAlpha="0.2" editable="true" verticalGridLines="false"
+						 itemEditBeginning="grid_itemEditBeginningHandler(event)" itemEditEnd="grid_itemEditEndHandler(event)"
+						 variableRowHeight="false" rowHeight="28" wordWrap="true" headerWordWrap="true" headerHeight="24" change="grid_changeHandler(event)" 
+						 alternatingItemColors="[0xFFFFFF, 0xFFFFFF]">
+		
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn id="colFecha" width="80" minWidth="70" sortable="false" headerText="Fecha" editable="false" dataField="fechaHora" resizable="false" labelFunction="fecha_labelFunction" />
+			<mx:AdvancedDataGridColumn id="colTarea" width="130" dataField="tarea" headerText="Acción" editable="false" sortable="true" />
+			<mx:AdvancedDataGridColumn id="colContacto" width="160" dataField="ctoNombre" headerText="Contacto" sortable="true" editable="false" />
+			<mx:AdvancedDataGridColumn id="colDescripcion" dataField="descripcion" headerText="Descripción" />
+		</mx:groupedColumns>
+		
+		<mx:rendererProviders>
+			<mx:AdvancedDataGridRendererProvider renderer="biz.fulltime.ui.expediciones.renderers.DescriptionColumnRenderer" column="{colFecha}" />
+			<mx:AdvancedDataGridRendererProvider renderer="biz.fulltime.ui.expediciones.renderers.DescriptionColumnRenderer" column="{colTarea}" />
+			<mx:AdvancedDataGridRendererProvider renderer="biz.fulltime.ui.expediciones.renderers.DescriptionColumnRenderer" column="{colContacto}" />
+			<mx:AdvancedDataGridRendererProvider renderer="biz.fulltime.ui.expediciones.renderers.DescriptionColumnRenderer" column="{colDescripcion}" />
+		</mx:rendererProviders>
+	</mx:AdvancedDataGrid>
+	
+	<s:HGroup width="100%" height="32" paddingLeft="10" paddingRight="10" verticalAlign="middle">
+		<s:Label fontSize="14" fontFamily="Verdana" text="Cantidad de registros: " alpha=".76" />
+		<s:Label fontSize="14" fontFamily="Verdana" text="{_dataProvider.length}" />
+	</s:HGroup>
+</s:VGroup>

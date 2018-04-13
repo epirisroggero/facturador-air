@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:util="biz.fulltime.util.*"
+		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.model.Articulo;
+			import biz.fulltime.ui.components.HelpPnl;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.gridClasses.CellPosition;
+
+			private var _articulo:Articulo;
+
+			private var _selectedName:String = "";
+
+			private var _filter:String;
+
+			private var cellPos:CellPosition;
+
+			private var changeDocumento:Boolean = true;
+			
+			private var dirty:Boolean = true;
+			
+			private var _articulos:ArrayCollection;
+
+			[Bindable]
+			public function get articulos():ArrayCollection {
+				return _articulos;
+			}
+
+			public function set articulos(value:ArrayCollection):void {
+				_articulos = value;
+			}
+
+			public function get articulo():Articulo {
+				return _articulo;
+			}
+
+			public function set articulo(value:Articulo):void {
+				_articulo = value;
+			}
+			
+			protected override function commitProperties():void {
+				super.commitProperties();
+				
+				if (dirty) {					
+					dgArticulos.filterReset();					
+					dirty = false;
+				}
+			}
+
+			protected function dgArticulos_keyDownHandler(event:KeyboardEvent):void {
+				cellPos = dgArticulos.selectedCell;
+
+				if (event.keyCode == Keyboard.F1 || (event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) { // Se presiono la tecla 'F1' o A-Z o 1-9
+					var hlpPanel:HelpPnl = new HelpPnl();
+					hlpPanel.addEventListener(CloseEvent.CLOSE, closePnlHandler);
+
+					if (cellPos != null) {
+						hlpPanel.label = GridColumn(dgArticulos.columns.getItemAt(cellPos.columnIndex)).headerText;
+					} else {
+						hlpPanel.label = GridColumn(dgArticulos.columns.getItemAt(0)).headerText;
+					}
+
+					PopUpManager.addPopUp(hlpPanel, this, true);
+					PopUpManager.centerPopUp(hlpPanel);
+
+				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					if (dgArticulos.hasFilter()) {
+						dgArticulos.filterReset();
+					} else {
+						cancelHandler();
+					}
+
+				} else if (event.keyCode == Keyboard.ENTER) {
+					var rowIndex:int = dgArticulos.selectedCell.rowIndex;
+					_articulo = dgArticulos.dataProvider.getItemAt(rowIndex) as Articulo;
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+
+
+			//
+			// Grid Filter. Tratar de sacar para un componente Genérico
+			// 
+			private function closePnlHandler(event:CloseEvent):void {
+				var helpPnl:HelpPnl = HelpPnl(event.target);
+				var filter:String = helpPnl.getValue();
+				var colName:String = dgArticulos.columns.getItemAt(cellPos.columnIndex).dataField;
+
+				var posX:int = cellPos.columnIndex;
+
+				dgArticulos.filter(colName, filter);
+
+				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
+				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
+
+				callLater(function():void {
+					dgArticulos.setFocus();
+					if (dgArticulos.dataProviderLength > 0) {
+						dgArticulos.selectedCell = new CellPosition(0, posX);
+					}
+				});
+
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				var rowIndex:int = dgArticulos.selectedCell.rowIndex;
+				_articulo = dgArticulos.dataProvider.getItemAt(rowIndex) as Articulo;
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function cancelHandler():void {
+				_articulo = null;
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+				callLater(function():void {
+					dgArticulos.setFocus();
+					dgArticulos.selectedCell = new CellPosition(0, 0);
+				});
+			}
+
+			protected function dgArticulos_doubleClickHandler(event:MouseEvent):void {
+				var rowIndex:int = dgArticulos.selectedCell.rowIndex;
+				_articulo = dgArticulos.dataProvider.getItemAt(rowIndex) as Articulo;
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<s:ArrayList id="cols">
+			<s:GridColumn width="140" dataField="codigo" headerText="Código" />
+			<s:GridColumn width="140" dataField="codigoOrigen" headerText="Cód. Origen" />
+			<s:GridColumn dataField="nombre" headerText="Descripción" />
+		</s:ArrayList>
+	</fx:Declarations>
+
+	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
+		<s:HGroup width="100%" height="100%" gap="0">
+			<util:FilteredDataGrid id="dgArticulos" width="100%" height="100%" doubleClick="dgArticulos_doubleClickHandler(event)" keyDown="dgArticulos_keyDownHandler(event)"
+								   doubleClickEnabled="true" dataProvider="{articulos}" editable="false" selectionMode="singleCell"
+								   columns="{cols}">
+			</util:FilteredDataGrid>
+		</s:HGroup>
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingTop="5">
+				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+</s:Group>

@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:components="biz.fulltime.ui.components.*" xmlns:components1="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:loader="biz.fulltime.util.loader.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:reportes="biz.fulltime.ui.facturacion.reportes.*" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:tabBar="skin.components.tabBar.*"
+		 width="100%" height="100%" creationComplete="creationCompleteHandler(event)" styleName="pntLineasVenta" title="Liquidación Vendedores">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.ExportToCSVEvent;
+			import biz.fulltime.model.Comprobante;
+
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+
+			import nochump.util.zip.ZipEntry;
+			import nochump.util.zip.ZipFile;
+
+			import spark.events.GridSelectionEvent;
+
+			import util.CatalogoFactory;
+			import util.DateUtil;
+
+			[Bindable]
+			public var comprobantes:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var comprobantesSelected:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var loading:Boolean = false;
+
+			private var remObj:RemoteObject;
+
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(ResultEvent.RESULT, onResult);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+
+				for each (var c:Comprobante in CatalogoFactory.getInstance().comprobantes) {
+					if (c.tipo == 1 || c.tipo == 2 || c.tipo == 3 || c.tipo == 4 || c.codigo == '98') {
+						var comprobante:Object = new Object();
+						comprobante.codigo = Number(c.codigo);
+						comprobante.nombre = c.nombre;
+						comprobantes.addItem(comprobante);
+
+					}
+
+				}
+			}
+
+			protected function txtFechaDesde_creationCompleteHandler(event:FlexEvent):void {
+				var fechaDesde:Date = new Date();
+				if (fechaDesde.date <= 15) {
+					fechaDesde = util.DateUtil.clone(fechaDesde).subtract(util.DateUtil.MONTH, 1).datetime;
+				}
+				fechaDesde.date = Math.min(fechaDesde.date, 15);
+				txtFechaDesde.selectedDate = fechaDesde;
+
+			}
+
+			protected function cmdExportar_clickHandler(event:MouseEvent):void {
+				loading = true;
+
+				var selectedComp:String = "";
+				for each (var o:Object in comprobantesSelected) {
+					selectedComp += o.codigo + ",";
+				}
+				selectedComp = selectedComp.substring(0, selectedComp.length - 1);
+
+				remObj.getLiquidacionVendedores(txtFechaDesde.selectedDate, txtFechaHasta.selectedDate, selectedComp, null);
+			}
+
+			[Bindable]
+			private var _zipFile:ZipFile;
+
+			private function onResult(event:ResultEvent):void {
+				loading = false;
+				var byteArray:ByteArray = event.result as ByteArray;
+				if (byteArray) {
+					_zipFile = new ZipFile(byteArray);
+				} else {
+					_zipFile = new ZipFile(new ByteArray());
+				}
+
+			}
+
+			private function onFault(event:FaultEvent):void {
+				loading = false;
+			}
+
+
+			private function showComprobanteButton(evt:Event):void {
+				btnCloseSearchComprobantes.visible = filterComprobante.text.length > 0;
+
+				if (filterComprobante.text.length == 0) {
+					comprobantes.filterFunction = null;
+					comprobantes.refresh();
+				} else {
+					comprobantes.filterFunction = filterComprobantes;
+					comprobantes.refresh();
+				}
+
+			}
+
+			private function filterComprobantes(item:Object):Boolean {
+				var filter:String = filterComprobante.text;
+				var code:String = String(item.codigo);
+				var name:String = String(item.nombre);
+
+				if (code.toLowerCase().match(new RegExp(filter.toLowerCase(), 'i'))) {
+					return true;
+				}
+				if (name.toLowerCase().match(new RegExp(filter.toLowerCase(), 'i'))) {
+					return true;
+				}
+				return false;
+			}
+
+			protected function filterComprobante_creationCompleteHandler(event:FlexEvent):void {
+			}
+
+			protected function resetSearchComprobantes(event:MouseEvent):void {
+				btnCloseSearchComprobantes.visible = false;
+
+				comprobantes.filterFunction = null;
+				comprobantes.refresh();
+
+				filterComprobante.text = '';
+				filterComprobante.setFocus();
+
+			}
+
+			protected function comprobantesList_selectionChangeHandler(event:GridSelectionEvent):void {
+				updateButtons();
+			}
+
+			protected function comprobantesListSelected_selectionChangeHandler(event:GridSelectionEvent):void {
+				updateButtons();
+			}
+
+			private function updateButtons():void {
+				if (comprobantesList.selectedItems && comprobantesList.selectedItems.length > 0) {
+					cmdAdd.enabled = true;
+				} else {
+					cmdAdd.enabled = false;
+				}
+				if (comprobantesListSelected.selectedItems && comprobantesListSelected.selectedItems.length > 0) {
+					cmdRemove.enabled = true;
+				} else {
+					cmdRemove.enabled = false;
+				}
+			}
+
+			protected function addSelected_clickHandler(event:MouseEvent):void {
+				var selectedIndex:int = comprobantesList.selectedIndex;
+				var v:Vector.<Object> = comprobantesList.selectedItems;
+				for each (var item:Object in v) {
+					comprobantesSelected.addItem(item);
+					comprobantes.removeItemAt(comprobantes.getItemIndex(item));
+				}
+
+				callLater(function():void {
+					var index:int;
+					if (selectedIndex <= comprobantes.length - 1) {
+						index = comprobantesList.selectedIndex = selectedIndex;
+					} else {
+						index = comprobantes.length - 1;
+					}
+					comprobantesList.selectedIndex = index;
+					comprobantesList.ensureCellIsVisible(index);
+
+					comprobantesListSelected.selectedIndex = comprobantesSelected.length - 1;
+					comprobantesListSelected.ensureCellIsVisible(comprobantesSelected.length - 1);
+				});
+
+				callLater(function():void {
+					updateButtons();
+				});
+
+			}
+
+			protected function addAll_clickHandler(event:MouseEvent):void {
+				comprobantesList.selectAll();
+
+				callLater(function():void {
+					var v:Vector.<Object> = comprobantesList.selectedItems;
+					for each (var item:Object in v) {
+						comprobantesSelected.addItem(item);
+						comprobantes.removeItemAt(comprobantes.getItemIndex(item));
+					}
+					updateButtons();
+
+				});
+
+				callLater(function():void {
+					comprobantesListSelected.selectAll();
+				});
+
+
+			}
+
+			protected function removeSelected_clickHandler(event:MouseEvent):void {
+				var selectedIndex:int = comprobantesListSelected.selectedIndex;
+				var v:Vector.<Object> = comprobantesListSelected.selectedItems;
+				for each (var item:Object in v) {
+					comprobantes.addItem(item);
+					comprobantesSelected.removeItemAt(comprobantesSelected.getItemIndex(item));
+				}
+
+				callLater(function():void {
+					var index:int;
+					if (selectedIndex <= comprobantesSelected.length - 1) {
+						index = selectedIndex;
+					} else {
+						index = comprobantesSelected.length - 1;
+					}
+					comprobantesListSelected.selectedIndex = index;
+					comprobantesListSelected.ensureCellIsVisible(index);
+
+					comprobantesList.selectedIndex = comprobantes.length - 1;
+					comprobantesList.ensureCellIsVisible(comprobantes.length - 1);
+				});
+
+				callLater(function():void {
+					updateButtons();
+				});
+
+			}
+
+			protected function removeAll_clickHandler(event:MouseEvent):void {
+				comprobantesListSelected.selectAll();
+
+				callLater(function():void {
+					var v:Vector.<Object> = comprobantesListSelected.selectedItems;
+					for each (var item:Object in v) {
+						comprobantes.addItem(item);
+						comprobantesSelected.removeItemAt(comprobantesSelected.getItemIndex(item));
+					}
+					updateButtons();
+				});
+
+				callLater(function():void {
+					comprobantesList.selectAll();
+				});
+
+			}
+
+			private function labelSize(item:Object, column:GridColumn):String {
+				return sizeFormatter.format(item[column.dataField]);
+			}
+
+			private function labelModified(item:Object, column:GridColumn):String {
+				return dateFormatter.format(new Date(item.time));
+			}
+
+			private function labelCrc(item:Object, column:GridColumn):String {
+				return item.crc.toString(16).toUpperCase();
+			}
+
+			public function abrirArchivoZip():void {
+				var index:int = dgEntries.selectedIndex;
+				var entry:ZipEntry = _zipFile.entries[index];
+
+				trace(entry.name);
+				// extract the entry's data from the zip
+				var byteArray:ByteArray = _zipFile.getInput(entry);
+
+				dispatchEvent(new ExportToCSVEvent(ExportToCSVEvent.EXPORT_TO_CSV, byteArray, entry.name));
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:NumberFormatter id="sizeFormatter" useThousandsSeparator="true" />
+		<mx:DateFormatter id="dateFormatter" formatString="MM/DD/YYYY L:NN A" />
+	</fx:Declarations>
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="5" paddingLeft="0" paddingRight="0" paddingTop="0" gap="5" />
+		</s:layout>
+		<s:HGroup width="100%" height="100%" paddingTop="0" gap="0">
+			<s:Panel width="240" height="100%" borderColor="0x666666" title="Rango Fechas" dropShadowVisible="false" borderAlpha=".5">
+				<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+					<s:layout>
+						<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" />
+					</s:layout>
+					<mx:Form id="formFecha" width="100%" height="100%">
+						<mx:FormItem label="Desde:">
+							<mx:DateField id="txtFechaDesde" creationComplete="txtFechaDesde_creationCompleteHandler(event)" yearNavigationEnabled="true" />
+						</mx:FormItem>
+						<mx:FormItem label="Hasta:">
+							<mx:DateField id="txtFechaHasta" selectedDate="{new Date()}" yearNavigationEnabled="true" />
+						</mx:FormItem>
+					</mx:Form>
+				</s:BorderContainer>
+			</s:Panel>
+
+			<s:Panel width="100%" height="100%" borderColor="0x666666" title="Comprobantes" dropShadowVisible="false" borderAlpha=".5">
+				<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+					<s:layout>
+						<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" />
+					</s:layout>
+					<s:HGroup width="100%" height="100%" paddingBottom="5" gap="0">
+						<s:VGroup width="100%" height="100%">
+							<s:HGroup width="360" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="5">
+								<s:Label id="lblFilterComprobante" fontSize="12" left="5" text="Filtrar" />
+								<s:SkinnableContainer width="100%" styleName="filterTextInput">
+									<s:layout>
+										<s:HorizontalLayout horizontalAlign="center" paddingBottom="1" paddingLeft="2" paddingRight="5" paddingTop="1" verticalAlign="middle" />
+									</s:layout>
+									<s:TextInput id="filterComprobante" width="100%" change="showComprobanteButton(event)" creationComplete="filterComprobante_creationCompleteHandler(event)"
+												 styleName="filter" prompt="Ver todos" />
+									<s:Button id="btnCloseSearchComprobantes" width="8" height="8" click="resetSearchComprobantes(event)" styleName="buttonCloseSearch" visible="false" />
+								</s:SkinnableContainer>
+							</s:HGroup>
+							<s:DataGrid id="comprobantesList" width="100%" height="100%" dataProvider="{comprobantes}" contentBackgroundColor="0xFFFFFF" contentBackgroundAlpha=".8"
+										selectionMode="multipleRows" selectionChange="comprobantesList_selectionChangeHandler(event)">
+								<s:columns>
+									<s:ArrayList>
+										<s:GridColumn width="60" headerText="Código" dataField="codigo" itemRenderer="biz.fulltime.ui.facturacion.stockprecio.NumberItemRenderer" />
+										<s:GridColumn headerText="Nombre" dataField="nombre" />
+									</s:ArrayList>
+								</s:columns>
+							</s:DataGrid>
+						</s:VGroup>
+						<s:VGroup height="100%" paddingLeft="5" paddingRight="5" paddingTop="25" verticalAlign="middle">
+							<s:Button id="cmdAddAll" width="42" height="32" cornerRadius="16" fontWeight="bold" click="addAll_clickHandler(event)" label=">>" chromeColor="0xFFFFFF"
+									  toolTip="Agregar todos" enabled="true" />
+							<s:Button id="cmdAdd" width="42" height="32" cornerRadius="16" fontWeight="bold" click="addSelected_clickHandler(event)" label=">" chromeColor="0xFFFFFF"
+									  toolTip="Agregar seleccionados" enabled="false" />
+							<s:Button id="cmdRemove" width="42" height="32" cornerRadius="16" fontWeight="bold" click="removeSelected_clickHandler(event)" label="&lt;" chromeColor="0xFFFFFF"
+									  toolTip="Remover seleccionados" enabled="false" />
+							<s:Button id="cmdRemoveAll" width="42" height="32" cornerRadius="16" fontWeight="bold" click="removeAll_clickHandler(event)" label="&lt;&lt;" chromeColor="0xFFFFFF"
+									  toolTip="Remover todos" enabled="true" />
+						</s:VGroup>
+						<s:VGroup width="100%" height="100%">
+							<s:Label paddingTop="12" text="Comprobantes seleccionados" />
+							<s:DataGrid id="comprobantesListSelected" width="100%" height="100%" dataProvider="{comprobantesSelected}" contentBackgroundColor="0xFFFFFF" contentBackgroundAlpha=".8"
+										selectionMode="multipleRows" selectionChange="comprobantesListSelected_selectionChangeHandler(event)">
+								<s:columns>
+									<s:ArrayList>
+										<s:GridColumn width="60" headerText="Código" dataField="codigo" itemRenderer="biz.fulltime.ui.facturacion.stockprecio.NumberItemRenderer" />
+										<s:GridColumn headerText="Nombre" dataField="nombre" />
+									</s:ArrayList>
+								</s:columns>
+							</s:DataGrid>
+
+						</s:VGroup>
+
+					</s:HGroup>
+				</s:BorderContainer>
+			</s:Panel>
+		</s:HGroup>
+
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingLeft="10" paddingRight="10" paddingTop="0" verticalAlign="middle">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<components1:IconButton id="cmdExportar" click="cmdExportar_clickHandler(event)" styleName="exportButton" label="Generar" />
+		</s:HGroup>
+
+		<s:Panel width="100%" height="100%" title="Resultado">
+			<s:Group width="100%" height="100%">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{loading}">
+					<loader:LoadComponent label="Generando Archivos" />
+				</s:VGroup>
+				<s:Group width="100%" height="100%" visible="{!loading}">
+					<s:DataGrid id="dgEntries" width="100%" height="100%" dataProvider="{new ArrayCollection(_zipFile.entries)}" rowHeight="32">
+						<s:columns>
+							<s:ArrayList>
+								<s:GridColumn headerText="Nombre" dataField="name" />
+								<s:GridColumn width="140" headerText="Tamaño (bytes)" dataField="size" labelFunction="labelSize">
+									<s:itemRenderer>
+										<fx:Component>
+											<s:DefaultGridItemRenderer textAlign="right" />
+										</fx:Component>
+									</s:itemRenderer>
+								</s:GridColumn>
+								<s:GridColumn headerText="Fecha de Modificacón" labelFunction="labelModified" width="160" />
+								<s:GridColumn width="32" headerText="">
+									<s:itemRenderer>
+										<fx:Component>
+											<s:GridItemRenderer>
+												<fx:Script>
+													<![CDATA[
+														protected function cmdAbrir_clickHandler(event:MouseEvent):void {
+															outerDocument.abrirArchivoZip();
+														}
+													]]>
+												</fx:Script>
+
+												<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
+													<s:Button id="cmdOpen" width="100%" height="100%" icon="@Embed('/assets/general/Open.png')" click="cmdAbrir_clickHandler(event)"
+															  toolTip="Abrir Excel" />
+												</s:VGroup>
+											</s:GridItemRenderer>
+										</fx:Component>
+									</s:itemRenderer>
+								</s:GridColumn>
+							</s:ArrayList>
+						</s:columns>
+					</s:DataGrid>
+				</s:Group>
+			</s:Group>
+		</s:Panel>
+
+
+	</s:BorderContainer>
+
+</s:Panel>

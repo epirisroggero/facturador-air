@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%" horizontalAlign="left" verticalAlign="top" 
+		  creationComplete="creationCompleteHandler(event)"
+		  preinitialize="preinitializeHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.CotizacionesModel;
+			import biz.fulltime.model.UserModel;
+			import biz.fulltime.model.Usuario;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.collections.ItemResponder;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.AsyncToken;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			import spark.components.TitleWindow;
+
+			private var _model:UserModel = UserModel.getInstance();
+
+			private var helpWindow:TitleWindow;
+
+			[Bindable]
+			private var _usuarioAsignado:Usuario;
+ 
+			[Bindable]
+			private var enabledButtons:Boolean = false;
+			
+			[Bindable]
+			private var error_visible:Boolean;
+			
+			[Bindable]
+			private var error_text:String;
+			
+			[Embed(source = "/assets/general/configuracion.png")]
+			private var configIcon:Class;
+
+			[Bindable]
+			private var _configuracion:XML =
+				<configuracion>
+					<server>
+						<host>localhost</host>
+						<port>8080</port>
+					</server>
+				</configuracion>
+				;
+
+			public static const LOGED_OK:String = "loged_ok";
+
+			private var _configuracionChanged:Boolean;
+
+			private var lastConnectedUserLoadded:Boolean;
+			
+			private var lastConnectedUser:String;
+
+			protected function preinitializeHandler(event:FlexEvent):void {
+			}
+
+			override protected function commitProperties():void {
+				super.commitProperties();
+			}
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				GeneralOptions.getInstance().addEventListener("_changeUsuarios", function(evt:Event):void {
+					tiUsr.dataProvider = GeneralOptions.getInstance().usuarios;
+					
+					lastConnectedUserLoadded = true;
+					invalidateProperties();
+					enabledButtons = true;
+				});
+				GeneralOptions.getInstance().cargarUsuarios();
+
+				tiUsr.setFocus();
+			}
+			
+			public function logout():void {
+				remObjLogin.logout();
+			}
+
+			protected function loginButton_clickHandler(event:Event):void {
+				enabledButtons = false;
+
+				remObjLogin.channelSet = ServerConfig.getInstance().channelSet;
+				_usuarioAsignado = tiUsr.selectedItem as Usuario;
+				
+				var codigo:String = _usuarioAsignado ? _usuarioAsignado.codigo : ""; 
+
+				var future:AsyncToken = remObjLogin.channelSet.login(codigo, tiPwd.text);
+				future.addResponder(new ItemResponder(function(resulto:Object, token:Object = null):void {
+					result(true);
+				}, function(error:FaultEvent, token:Object = null):void {
+					if (error.fault.faultCode == "Client.Authentication") {
+						result(false);
+					} else if (error.fault) {
+						Alert.show(error.fault.faultString, "Error inesperado ejecutando login", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+					}
+				}));
+
+			}
+
+			protected function tiUsr_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER) { // Si se presionó enter, pasar el foco al pass...
+					tiPwd.setFocus();
+				}
+			}
+
+			protected function tiPwd_keyDownHandler(event:KeyboardEvent):void {
+				lblError.visible = false;
+
+				if (event.keyCode == Keyboard.ENTER) { // Si se presionó enter, pasar el foco al pass...
+					loginButton_clickHandler(event);
+				}
+			}
+
+			private function closeHandler(event:CloseEvent):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				Alert.show(event.message.toString());
+			}
+
+			private function result(res:Object):void {
+				var logedOk:Boolean = res as Boolean;
+				enabledButtons = true;
+
+				if (logedOk) {
+					var remObj:RemoteObject = new RemoteObject();
+					remObj.destination = "CreatingRpc";
+					remObj.channelSet = ServerConfig.getInstance().channelSet;
+					remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var user:Usuario = evt.result as Usuario;
+
+						GeneralOptions.getInstance().cargarLocalesComerciales();
+						GeneralOptions.getInstance().loggedUser = user;
+
+						_model.user = user;
+
+						CotizacionesModel.getInstance().loadCotizacionesMonedas();
+						
+						lblError.visible = false;
+						dispatchEvent(new Event(LOGED_OK));
+					});					
+					remObj.addEventListener(FaultEvent.FAULT, handleFault);
+					remObj.showBusyCursor = true;
+					remObj.getUsuarioLogin(); 
+
+				} else {
+					lblError.visible = true;
+					lblError.text = "Usuario o Contraseña inválida.";
+
+					callLater(function():void {
+						tiPwd.setFocus();
+						tiPwd.selectAll();
+					});
+				}
+
+			}
+
+			private function loginFault(event:FaultEvent):void {
+				lblError.visible = true;
+				lblError.text = event.fault.faultString;
+
+				enabledButtons = true;
+
+				callLater(function():void {
+					tiPwd.setFocus();
+					tiPwd.selectAll();
+				});
+
+			}
+
+			protected function tiUsr_changeHandler(event:Event):void {
+
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+						
+			protected function tiLocalComercial_changeHandler(event:Event):void {
+				invalidateProperties();
+			}
+			
+			protected function tiLocalComercial_creationCompleteHandler(event:FlexEvent):void {
+			}
+			
+			protected function linkbutton2_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new Event("checkUpdates"));
+				
+			}
+			
+		]]>
+	</fx:Script>
+
+
+	<fx:Declarations>
+		<s:RemoteObject id="remObjLogin" destination="CreatingRpc" result="result(event.result);" fault="loginFault(event)" />
+
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+	</fx:Declarations>
+
+	<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="top">
+		<mx:Image id="loader1" source="@Embed(source='assets/logo/logo_oscuro.gif')" scaleX=".75" scaleY=".75" />
+	</s:HGroup>
+
+	<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="75" verticalAlign="middle">
+		<s:BorderContainer width="440" borderColor="#999999" borderStyle="inset" cornerRadius="1" dropShadowVisible="false">
+			<s:backgroundFill>
+				<mx:LinearGradient rotation="90">
+					<mx:entries>
+						<mx:GradientEntry color="0xC5C5C5" ratio="0.0" alpha="0.3" />
+						<mx:GradientEntry color="0xC5C5C5" ratio="0.6" alpha="0.2" />
+						<mx:GradientEntry color="0xECECEC" ratio="1.0" alpha="0.4" />
+					</mx:entries>
+				</mx:LinearGradient>
+			</s:backgroundFill>
+			<s:layout>
+				<s:VerticalLayout horizontalAlign="center" paddingBottom="20" paddingLeft="30" paddingRight="30" paddingTop="30" verticalAlign="middle" />
+			</s:layout>
+
+			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
+				<s:Label text="Usuario" width="80" styleName="myLabel" />
+				<components:MyAutoComplete id="tiUsr" width="100%" textAlign="left" change="tiUsr_changeHandler(event)" dataProvider="{ GeneralOptions.getInstance().usuarios }"
+										   labelField="nombre" matchType="anyPart" prompt="Ingrese Usuario" allowNewValues="false"
+										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+										   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" enabled="{enabledButtons}"
+										   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownRowCount="10" next_focus="{tiPwd}" />
+
+
+			</s:HGroup>
+			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
+				<s:Label text="Contraseña" width="80" styleName="myLabel" />
+				<s:TextInput id="tiPwd" width="100%" keyDown="tiPwd_keyDownHandler(event)" displayAsPassword="true" text="" maxChars="16" enabled="{enabledButtons}" focusEnabled="true" enter="{loginButton.setFocus()}"/>
+			</s:HGroup>
+			<mx:Spacer height="10" />
+			<s:HGroup width="100%" horizontalAlign="center">
+				<s:Label id="lblError" color="#CD0000" visible="{error_visible}" text="{error_text}" styleName="myLabel" maxDisplayedLines="2" />
+			</s:HGroup>
+
+			<s:HGroup width="100%" horizontalAlign="center" paddingTop="10">
+				<s:Button id="loginButton" click="loginButton_clickHandler(event)" label="Ingresar" enabled="{enabledButtons &amp;&amp; _configuracion != null}"
+						  styleName="loginButton16" />
+			</s:HGroup>
+		</s:BorderContainer>
+
+	</s:VGroup>
+</s:VGroup>

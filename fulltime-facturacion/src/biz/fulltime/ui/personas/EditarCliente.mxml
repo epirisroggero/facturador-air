@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:components="biz.fulltime.ui.components.*" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:renderers="biz.fulltime.ui.renderers.*"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   width="100%" height="100%" creationComplete="init()" show="showPanel()" label="Editor de cliente" xmlns:util="biz.fulltime.util.*">
+
+	<mx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.ClienteDTO;
+			import biz.fulltime.event.ClienteEvent;
+			import biz.fulltime.model.CategoriasClientes;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.Departamento;
+			import biz.fulltime.model.Giro;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.Pais;
+			import biz.fulltime.model.PlanPagos;
+			import biz.fulltime.model.PreciosVenta;
+			import biz.fulltime.model.Usuario;
+			import biz.fulltime.model.Vendedor;
+			import biz.fulltime.model.Zona;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.controls.ProgressBarMode;
+			import mx.events.CloseEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.validators.Validator;
+			
+			import spark.components.TitleWindow;
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			import util.CatalogoFactory;
+			import util.WarningPnl;
+
+			private var _cliente:Cliente = new Cliente();
+
+			[Bindable]
+			private var _zona:Zona;
+
+			[Bindable]
+			private var _pais:Pais;
+
+			[Bindable]
+			private var _departamento:Departamento;
+
+			[Bindable]
+			private var _giro:Giro;
+
+			[Bindable]
+			private var _encCuenta:Vendedor = null;
+
+			[Bindable]
+			private var _especialista1:Vendedor = null;
+
+			[Bindable]
+			private var _especialista2:Vendedor = null;
+
+			[Bindable]
+			private var _preciosVenta:PreciosVenta = null;
+
+			[Bindable]
+			private var _categoria:CategoriasClientes = null;
+			
+			[Bindable]
+			private var _tipoDoc:Object = null;
+
+			[Bindable]
+			private var primeroDisponible:String;
+			
+			[Bindable]
+			private var ultimoDisponible:String;
+
+			[Bindable]
+			private var validatorArr:Array;
+
+			private var imagesFilter:FileFilter = new FileFilter("Images", "*.jpg;*.gif;*.png");
+
+			private var mFileReference:FileReference = new FileReference();
+
+			[Bindable]
+			private var monedas:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var eeList:ArrayCollection = new ArrayCollection([
+				"","MONOFÁSICA","TRIFÁSICA 220","TRIFÁSICA 380"]);
+
+			[Bindable]
+			public var showStockList:ArrayCollection = new ArrayCollection([
+				"Ninguno",
+				"Disponible",
+				"Disponible y en transito"]);
+			
+			[Bindable]
+			public var tipodDocList:ArrayCollection = new ArrayCollection([
+				{value:"C", label:"C.I."}, 
+				{value:"R", label:"RUT"}, 
+				{value:"D", label:"DNI"},
+				{value:"P", label:"PASAPORTE"},
+				{value:"E", label:"OTRO"}				
+			]);
+
+			
+			[Bindable]
+			public var showPreciosList:ArrayCollection = new ArrayCollection([
+				{code:"0", label:"NINGUNO", action:"No ve ningún precio"}, 
+				{code:"1", label:"MINORISTA", action:"Ve solo precio minorista"}, 
+				{code:"2", label:"INDUSTRIA", action:"Ve solo precio industria"},
+				{code:"3", label:"REVENDEDOR", action:"Ve solo precio revendedor"},
+				{code:"4", label:"DISTRIBUIDOR", action:"Ve solo precio distribuidor"}, 
+				{code:"5", label:"DISTRIBUIDOR + MINORISTA", action:"Ve precio revendedor y minorista"}, 
+				{code:"6", label:"REVENDEDOR + INDUSTRIA + MINORISTA", action:"Ve precio revendedor, industria y minorista"}, 
+				{code:"7", label:"DISTRIBUIDOR + REVENTA + INDUSTRIA + MINORISTA", action:"Ve todos los precios"}				
+			]);
+
+			private function init():void {
+				validatorArr = new Array();
+
+				validatorArr.push(codigo_stringValidator);
+				
+				validatorArr.push(fname_stringValidator);
+				validatorArr.push(email_emailValidator1);
+				validatorArr.push(email_emailValidator2);
+
+				validatorArr.push(razonSocial_Validator);
+				validatorArr.push(localidad_Validator);
+				validatorArr.push(direccion_Validator);
+
+				validatorArr.push(telefono_Validator);
+				validatorArr.push(celular_Validator);
+
+				validatorArr.push(pais_Validator);
+				//validatorArr.push(departamento_Validator);
+				
+				validatorArr.push(rut_stringValidator);
+
+				mFileReference.addEventListener(Event.SELECT, onFileSelected);
+
+				for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+					monedas.addItem(moneda);
+				}
+				
+				Validator.validateAll(validatorArr);
+
+			}
+
+			private function onFileSelected(event:Event):void {
+				trace("onFileSelected");
+				// This callback will be called when the file is uploaded and ready to use
+				mFileReference.addEventListener(Event.COMPLETE, onFileLoaded);
+
+				// This callback will be called if there's error during uploading
+				mFileReference.addEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
+
+				// Optional callback to track progress of uploading
+				mFileReference.addEventListener(ProgressEvent.PROGRESS, onProgress);
+
+				// Tells the FileReference to load the file
+				mFileReference.load();
+
+				// Show progress bar
+				progressBar.visible = true;
+				progressBar.mode = ProgressBarMode.MANUAL;
+				progressBar.minimum = 0;
+				progressBar.maximum = 100;
+
+			}
+
+			// This function is called to notify us of the uploading progress
+			private function onProgress(event:ProgressEvent):void {
+				var percentLoaded:Number = event.bytesLoaded / event.bytesTotal * 100;
+				trace("loaded: " + percentLoaded + "%");
+				progressBar.setProgress(percentLoaded, 100);
+			}
+
+			// This function is called after the file has been uploaded.
+			private function onFileLoaded(event:Event):void {
+				var fileReference:FileReference = event.target as FileReference;
+
+				// These steps below are to pass the data as DisplayObject
+				// These steps below are specific to this example.
+				var data:ByteArray = fileReference["data"];
+
+				cliente.contacto.ctoBlob = data;
+				cliente.contacto.ctoBlobExt = "jpg";
+
+				mFileReference.removeEventListener(Event.COMPLETE, onFileLoaded);
+				mFileReference.removeEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
+				mFileReference.removeEventListener(ProgressEvent.PROGRESS, onProgress);
+
+				var movieClipLoader:Loader = new Loader();
+				movieClipLoader.loadBytes(data);
+				movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+
+			}
+
+			// This function below is specific to this example.
+			// It does the processing required to display the swf/png/jpeg file that we have just loaded.
+			private function onMovieClipLoaderComplete(event:Event):void {
+				// Hide progress bar
+				progressBar.visible = false;
+				var loadedContent:DisplayObject = event.target.content;
+				var loader:Loader = event.target.loader as Loader;
+				// Fit to stage
+//				loadedContent.scaleX = container.width / Math.max(loadedContent.width, loadedContent.height);
+//				loadedContent.scaleY = container.height / Math.max(loadedContent.width, loadedContent.height);
+//
+//				container.addChild(loader);
+			}
+
+			private function onFileLoadError(event:Event):void {
+				// Hide progress bar
+				progressBar.visible = false;
+
+				mFileReference.removeEventListener(Event.COMPLETE, onFileLoaded);
+				mFileReference.removeEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
+				mFileReference.removeEventListener(ProgressEvent.PROGRESS, onProgress);
+				trace("File load error");
+			}
+
+			[Bindable]
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+
+			public function set cliente(value:Cliente):void {
+				this._cliente = value;
+
+				if (!_cliente.contacto) {
+					_cliente.contacto = new Contacto();
+				}
+				
+				_cliente.nombre = _cliente.contacto.ctoNom;
+
+				if (_cliente.contacto.ctoBlob && _cliente.contacto.ctoBlob.length > 0) { // Revisar contacto
+					var movieClipLoader:Loader = new Loader();
+					movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+					movieClipLoader.loadBytes(value.contacto.ctoBlob);
+				}
+
+				if (cmbDepartamento) {
+					cmbDepartamento.clear();
+				}
+				if (cmbGiro) {
+					cmbGiro.clear();
+				}
+				if (cmbFormaPago) {
+					cmbFormaPago.clear();
+				}
+				if (cmbListaPrecios) {
+					cmbListaPrecios.clear();
+				}
+				if (cmbZona) {
+					cmbZona.clear();
+				}
+				if (cmbEncCuenta) {
+					cmbEncCuenta.clear();
+				}
+				if (cmbVendedor) {
+					cmbVendedor.clear();
+				}
+				if (cmbEspecialista1) {
+					cmbEspecialista1.clear();
+				}
+				if (cmbEspecialista2) {
+					cmbEspecialista2.clear();
+				}
+				if (ddlTipoDoc) {
+					ddlTipoDoc.selectedItem = null;
+				}
+				
+				var ctoDocumentoTipo:String = cliente.contacto.ctoDocumentoTipo;
+				if (ctoDocumentoTipo) {
+					for each (var o:Object in tipodDocList) {
+						if (ctoDocumentoTipo == o.value) {
+							_tipoDoc = o;
+							if (ddlTipoDoc) {
+								ddlTipoDoc.selectedItem = _tipoDoc;
+							}
+							break;
+						}
+					}
+				}
+
+				_zona = null;
+				var zonaCodigo:String = cliente.contacto.zonaIdCto;
+				if (zonaCodigo) {
+					for each (var zna:Zona in CatalogoFactory.getInstance().zonas) {
+						if (zonaCodigo == zna.codigo) {
+							_zona = zna;
+							break;
+						}
+					}
+				}
+				
+				_pais = null;
+				if (cliente.contacto.paisIdCto == null || cliente.contacto.paisIdCto.length < 1) {
+					cliente.contacto.paisIdCto = "UY";
+				}
+				var paisCodigo:String = cliente.contacto.paisIdCto;
+				for each (var p:Pais in CatalogoFactory.getInstance().paises) {
+					if (paisCodigo == p.codigo) {
+						_pais = p;
+						break;
+					}
+				}
+
+				_departamento = null;
+				if (cliente.contacto.deptoIdCto == null || cliente.contacto.deptoIdCto.length < 1) {
+					cliente.contacto.deptoIdCto = "MO";
+				}
+				var deptoCodigo:String = cliente.contacto.deptoIdCto;
+				for each (var depto:Departamento in CatalogoFactory.getInstance().departamentos) {
+					if (deptoCodigo == depto.codigo) {
+						_departamento = depto;
+						break;
+					}
+				}
+
+				_giro = null;
+				var giroCodigo:String = cliente.contacto.girIdCto;
+				if (giroCodigo) {
+					for each (var gro:Giro in CatalogoFactory.getInstance().giros) {
+						if (giroCodigo == gro.codigo) {
+							_giro = gro;
+							break;
+						}
+					}
+				}
+
+				_categoria = null;
+				var categCodigo:String = cliente.categCliId;
+				if (categCodigo) {
+					for each (var categ:CategoriasClientes in CatalogoFactory.getInstance().categoriasClientes) {
+						if (categCodigo == categ.codigo) {
+							_categoria = categ;
+							break;
+						}
+					}
+				}
+
+
+				_encCuenta = null
+				var encCodigo:String = cliente.encargadoCuenta;
+				if (encCodigo) {
+					for each (var usr:Vendedor in CatalogoFactory.getInstance().vendedores) {
+						if (encCodigo == usr.codigo) {
+							_encCuenta = usr;
+							break;
+						}
+					}
+				}
+
+				_especialista1 = null;
+				var esp1Codigo:String = cliente.especialista1;
+				if (esp1Codigo) {
+					for each (var ven:Vendedor in CatalogoFactory.getInstance().vendedores) {
+						if (esp1Codigo == ven.codigo) {
+							_especialista1 = ven;
+							break;
+						}
+					}
+				}
+
+				_especialista2 = null;
+				var esp2Codigo:String = cliente.especialista2;
+				if (esp2Codigo) {
+					for each (var ven2:Vendedor in CatalogoFactory.getInstance().vendedores) {
+						if (esp2Codigo == ven2.codigo) {
+							_especialista2 = ven2;
+							break;
+						}
+					}
+				}
+
+				cliente.addEventListener("_savedClientOk", function():void {
+					lblMsg.visible = true;
+
+					var timer:Timer = new Timer(1000, 1);
+					timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:Event):void {
+						lblMsg.visible = false;
+						resultMerge();
+					});
+					timer.start();
+				});
+
+				cliente.addEventListener("_addedClientOk", function():void {
+					lblMsg.visible = true;
+
+					var timer:Timer = new Timer(1000, 1);
+					timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:Event):void {
+						lblMsg.visible = false;
+						resultSave();
+					});
+					timer.start();
+				});
+
+				callLater(function():void {
+					if (myToggleButton) {
+						myToggleButton.selectedIndex = 0;
+					}
+					if (myViewStack) {
+						myViewStack.selectedIndex = 0;
+					}
+				});
+				
+				obtenerUltimoDisponible();
+
+				dispatchEvent(new Event("_changeCliente", true, true));
+			}
+			
+			private function obtenerUltimoDisponible() {
+				var clienteObj:RemoteObject = new RemoteObject();
+				clienteObj.destination = "CreatingRpc";
+				clienteObj.channelSet = ServerConfig.getInstance().channelSet;
+				clienteObj.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+					var code:Number = new Number(event.result.toString());
+					ultimoDisponible = (code + 1).toString();
+					
+				});
+				clienteObj.addEventListener(FaultEvent.FAULT, handleFault);					
+				clienteObj.showBusyCursor = true;				
+				clienteObj.getLastId();
+			}
+			
+			private function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+			
+			public function validateForm(evt:MouseEvent):void {
+				var validatorErrorArray:Array = Validator.validateAll(validatorArr);
+				if (txtRUT.text.length > 0) {
+					var resultEvent:ValidationResultEvent = rut_stringValidator.validate();
+					
+					if (resultEvent.type != ValidationResultEvent.VALID) {
+						validatorErrorArray.push(resultEvent);
+					}
+				}
+
+				var isValidForm:Boolean = validatorErrorArray.length == 0;
+				if (isValidForm) {
+					if (!cliente.esNuevo) {
+						cliente.mergeCliente();
+					} else {
+						if (esVendedorJunior()) {
+							var user:Usuario = GeneralOptions.getInstance().loggedUser;
+							for each (var v:Vendedor in CatalogoFactory.getInstance().vendedores) {
+								if (v.codigo == user.venId ) {
+									cliente.vendedor = v;		
+								}
+							}								
+						}
+						cliente.verificarDatosCliente();
+					}
+
+				} else {
+					/////////////////////////////////////
+					// Voler a calcular los contactos. //
+					/////////////////////////////////////
+//					CatalogoFactory.getInstance().addEventListener("changeContactos", function(evt:Event):void {
+//						obtenerUltimoDisponible();	
+//					});
+//					CatalogoFactory.getInstance().loadCatalogo("Contacto");
+					
+					var err:ValidationResultEvent;
+					var resultXML:XML = <errors/>;
+					for each (err in validatorErrorArray) {
+						resultXML.appendChild(<error>{err.message}</error>);
+					}
+					
+					var warningPnl:WarningPnl = new WarningPnl();
+					warningPnl.warningText = "Los datos no son validos.";
+					warningPnl.dataProvider = new XMLListCollection(resultXML.error);
+					warningPnl.showButtons = true;
+					warningPnl.showButtonDetails = false;
+					
+					var helpWindow2:TitleWindow = new TitleWindow();
+					helpWindow2.title = "Errores";
+					helpWindow2.width = 480;
+					helpWindow2.visible = true;
+					
+					helpWindow2.addElement(warningPnl);
+					warningPnl.addEventListener(CloseEvent.CLOSE, function (event:Event):void {
+						PopUpManager.removePopUp(helpWindow2);
+					});
+					helpWindow2.addEventListener(CloseEvent.CLOSE, function (event:Event):void {
+						PopUpManager.removePopUp(helpWindow2);
+					});			
+					PopUpManager.addPopUp(helpWindow2, parent, true);
+					PopUpManager.centerPopUp(helpWindow2);			
+				}
+			}
+
+			private function resultSave():void {
+				var c:ClienteDTO = new ClienteDTO();
+				c.codigo = cliente.codigo;
+				c.nombre = cliente.nombre;
+
+				dispatchEvent(new ClienteEvent(ClienteEvent.CLIENTE_NUEVO, null, c));
+			}
+
+			private function resultMerge():void {
+				var c:ClienteDTO = new ClienteDTO();
+				c.codigo = cliente.codigo;
+				c.nombre = cliente.nombre;
+
+				dispatchEvent(new ClienteEvent(ClienteEvent.FINALIZAR_EDICION, null, c));
+			}
+
+			private function cancelValues(evt:MouseEvent):void {
+				var c:ClienteDTO = new ClienteDTO();
+				c.codigo = cliente.codigo;
+				c.nombre = cliente.nombre;
+
+				dispatchEvent(new ClienteEvent(ClienteEvent.CANCELAR_EDICION, null, c));
+			}
+
+			private function showPanel():void {
+				fname.setFocus();
+
+				myToggleButton.selectedIndex = 0;
+				myViewStack.selectedIndex = 0;
+			}
+
+			private function buscarImagen():void {
+				mFileReference.browse([imagesFilter]);
+			}
+
+			private function onError(event:IOErrorEvent):void {
+				Alert.show("Error al subir la Imagen: " + String(event.errorID));
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+
+			protected function cmbZona_changeHandler(event:Event):void {
+				_zona = cmbZona.selectedItem as Zona;
+				if (_zona) {
+					cliente.contacto.zonaIdCto = _zona.codigo;
+				} else {
+					cliente.contacto.zonaIdCto = null;
+				}
+			}
+
+			protected function cmbDepartamento_changeHandler(event:Event):void {
+				_departamento = cmbDepartamento.selectedItem as Departamento;
+				if (_departamento) {
+					cliente.contacto.deptoIdCto = _departamento.codigo;
+				} else {
+					cliente.contacto.deptoIdCto = null;
+				}
+			}
+
+			protected function cmbGiro_changeHandler(event:Event):void {
+				_giro = cmbGiro.selectedItem as Giro;
+				if (_giro) {
+					cliente.contacto.girIdCto = _giro.codigo;
+				} else {
+					cliente.contacto.girIdCto = null;
+				}
+			}
+
+			protected function cmbEncCuenta_changeHandler(event:Event):void {
+				_encCuenta = cmbEncCuenta.selectedItem as Vendedor;
+				if (_encCuenta) {
+					cliente.encargadoCuenta = _encCuenta.codigo;
+				} else {
+					cliente.encargadoCuenta = null;
+				}
+			}
+
+			protected function cmbEspecialista1_changeHandler(event:Event):void {
+				_especialista1 = cmbEspecialista1.selectedItem as Vendedor;
+				if (_especialista1) {
+					cliente.especialista1 = _especialista1.codigo;
+				} else {
+					cliente.especialista1 = null;
+				}
+
+			}
+
+			protected function cmbEspecialista2_changeHandler(event:Event):void {
+				_especialista2 = cmbEspecialista2.selectedItem as Vendedor;
+				if (_especialista2) {
+					cliente.especialista2 = _especialista2.codigo;
+				} else {
+					cliente.especialista2 = null;
+				}
+
+			}
+
+			protected function cmbListaPrecios_changeHandler(event:Event):void {
+				cliente.preciosVenta = cmbListaPrecios.selectedItem as PreciosVenta;
+			}
+
+			protected function cmbFormaPago_changeHandler(event:Event):void {
+				cliente.planPagos = cmbFormaPago.selectedItem as PlanPagos;
+			}
+
+			protected function cmbMoney_changeHandler(event:Event):void {
+				cliente.moneda = cmbMoney.selectedItem as Moneda;
+			}
+
+			protected function cmbVendedor_changeHandler(event:Event):void {
+				cliente.vendedor = cmbVendedor.selectedItem as Vendedor;
+
+			}
+
+			protected function cmbCategoria_changeHandler(event:Event):void {
+				_categoria = cmbCategoria.selectedItem as CategoriasClientes;
+				if (_categoria) {
+					cliente.categCliId = _categoria.codigo;
+				} else {
+					cliente.categCliId = null;
+				}
+
+			}
+
+			protected function txtCelular_changeHandler(event:TextOperationEvent):void {
+				telefono_Validator.required = txtCelular.text.length == 0;
+			}
+
+			protected function txtTelefono_changeHandler(event:TextOperationEvent):void {
+				celular_Validator.required = txtTelefono.text.length == 0;
+
+			}
+
+			[Bindable(event = "_changeCliente")]
+			public function hasPerm():Boolean {
+				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
+				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+					return true;
+				}
+				if (esVendedorJunior()) {
+					return false;
+				} 
+				return cliente.esNuevo;
+
+			}
+			
+			protected function cmbPais_changeHandler(event:Event):void {
+				_pais = cmbPais.selectedItem as Pais;
+				cliente.contacto.paisIdCto = _pais ? _pais.codigo : null;
+				
+			}
+			
+			protected function ddlEnergiaElectrica_changeHandler(event:IndexChangeEvent):void {
+				cliente.energiaElectrica = ddlEnergiaElectrica.selectedItem as String;
+			}
+						
+			public function esVendedorJunior():Boolean {
+				var user:Usuario = GeneralOptions.getInstance().loggedUser;
+				if (user.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR) {
+					return true;	
+				}
+				return false;
+			}
+			
+			protected function ddlStockPerm_changeHandler(event:IndexChangeEvent):void {
+				cliente.permisoStock = event.newIndex.toString();
+			}
+
+			protected function ddlPreciosPerm_changeHandler(event:IndexChangeEvent):void {
+				cliente.permisoPrecios = showPreciosList.getItemAt(event.newIndex).code;
+				
+			}
+
+			protected function fname_changeHandler(event:TextOperationEvent):void {
+				var nombre:String = fname.text;
+				
+				cliente.nombre = nombre;
+				cliente.contacto.ctoNom = nombre;
+			}
+			
+			protected function ddlTipoDoc_changeHandler(event:IndexChangeEvent):void {
+				var selectedItem:Object = ddlTipoDoc.selectedItem;
+				
+				cliente.contacto.ctoDocumentoTipo = selectedItem.value as String;
+				cliente.contacto.ctoDocumentoSigla = selectedItem.label as String;
+				cliente.contacto.ctoDocumento = "";
+			}
+			
+			protected function txtCodigo_changeHandler(event:TextOperationEvent):void {
+				if (txtCodigo.text != null && txtCodigo.text.length > 0) {
+					var code:Number = Number(txtCodigo.text);
+					cliente.codigo = code.toString();
+					txtCodigo.text = code.toString();
+				} else {
+					cliente.codigo = null;
+				}
+			}
+			
+		]]>
+	</mx:Script>
+
+	<mx:Component id="dropDownItemRenderer">
+		<renderers:CodigoNombreItemRenderer />
+	</mx:Component>
+	
+	<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="12" maxLength="12" tooShortError="El RUT esta incorrecto." checkRut="true"/>
+
+	<mx:StringValidator id="codigo_stringValidator" source="{txtCodigo}" required="true" property="text" requiredFieldError="El 'Código' no puede quedar vacio." minLength="1"
+						tooShortError="El 'Código' no puede ser vacio." />
+	<mx:StringValidator id="fname_stringValidator" source="{fname}" required="true" property="text" requiredFieldError="El 'Nombre' no puede quedar vacio." minLength="2"
+						tooShortError="El 'Nombre' debe tener al menos 2 caracteres." />
+
+	<mx:StringValidator id="razonSocial_Validator" source="{txtRazonSocial}" required="true" property="text" requiredFieldError="La 'Razon Social' no puede quedar vacia." />
+	<mx:StringValidator id="localidad_Validator" source="{txtLocalidad}" required="true" property="text" requiredFieldError="Debe ingresar la 'Localidad'." />
+	<mx:StringValidator id="direccion_Validator" source="{txtDireccion}" required="true" property="text" requiredFieldError="La 'Dirección' no puede quedar vacia." />
+
+	<mx:StringValidator id="telefono_Validator" source="{txtTelefono}" required="{txtCelular.text.length == 0}" property="text"
+						requiredFieldError="Debe ingresar 'Teléfono' y/o 'Celular', no pueden quedar ambos datos vacios." />
+	<mx:StringValidator id="celular_Validator" source="{txtCelular}" required="{txtTelefono.text.length == 0}" property="text"
+						requiredFieldError="Debe ingresar 'Celular' y/o 'Teléfono', no pueden quedar ambos datos vacios." />
+
+	<mx:EmailValidator id="email_emailValidator1" source="{txtEmail1}" required="false" property="text" />
+	<mx:EmailValidator id="email_emailValidator2" source="{txtEmail2}" required="false" property="text" />
+
+	<mx:StringValidator id="departamento_Validator" source="{cmbDepartamento}" required="true" property="text" requiredFieldError="El 'Departamento' no puede quedar vacio." />
+	<mx:StringValidator id="pais_Validator" source="{cmbPais}" required="true" property="text" requiredFieldError="El 'País' no puede quedar vacio." />
+
+	<s:Label id="lblMsg" x="0" width="100%" bottom="45" color="red" fontWeight="normal" paddingBottom="5" textAlign="center" text="Grabación Exitosa" visible="false"
+			 maxDisplayedLines="1" />
+
+	<mx:VBox width="100%" height="100%" verticalGap="0">
+		<mx:HBox width="100%" height="100%" horizontalAlign="left" verticalAlign="top">
+			<mx:VBox horizontalAlign="center" paddingLeft="0" includeInLayout="false" visible="false">
+				<s:SkinnableContainer width="130" height="130" styleName="photoFramework">
+					<s:layout>
+						<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+					</s:layout>
+				</s:SkinnableContainer>
+				<mx:LinkButton click="buscarImagen()" label="Imagen" />
+				<mx:ProgressBar id="progressBar" visible="false" minimum="0" maximum="100" mode="manual" />
+			</mx:VBox>
+			<s:Group width="100%" height="100%">
+				<mx:ToggleButtonBar id="myToggleButton" left="700" top="5" dataProvider="myViewStack" selectedIndex="0" />
+
+				<mx:ViewStack id="myViewStack" width="100%" height="100%">
+					<mx:Canvas width="100%" height="100%" label="Generales">
+						<mx:Form width="100%" height="100%" fontWeight="normal" creationComplete="{txtCodigo.setFocus()}" maxWidth="860">
+							<s:Label fontSize="16" fontWeight="normal" text="Datos Generales" />
+							<mx:HRule width="100%" />
+							<s:Spacer height="10" />
+							<mx:FormItem width="100%" label="Código" styleName="ItemStyle">
+								<s:VGroup width="100%">
+									<s:HGroup width="100%" verticalAlign="middle">
+										<s:TextInput id="txtCodigo" width="60" textAlign="right" text="{cliente.codigo}" change="txtCodigo_changeHandler(event)" restrict="0-9" enter="fname.setFocus()"
+													 editable="{cliente.esNuevo}" maxChars="10" />
+										<s:Label fontSize="12" fontWeight="normal" text="Nombre1" />
+										<s:TextInput id="fname" width="100%" text="{cliente.contacto.ctoNom}" maxChars="50" enter="txtTelefono.setFocus()" change="fname_changeHandler(event)"/>
+									</s:HGroup>
+									<s:HGroup width="100%" verticalAlign="middle" visible="{cliente.esNuevo}">
+										<s:Label fontSize="10" text="Primero disponible después del último utilizado:" />
+										<s:Label fontSize="12" text="{ultimoDisponible}" />
+									</s:HGroup>
+								</s:VGroup>
+							</mx:FormItem>
+
+							<mx:FormItem width="100%" label="Notas" styleName="ItemStyle">
+								<s:TextArea id="txtNotas" width="100%" height="48" fontSize="12" text="@{cliente.contacto.ctoNotas}" maxChars="1024"/>
+							</mx:FormItem>
+
+							<mx:FormItem width="100%" label="Teléfono" styleName="ItemStyle">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:TextInput id="txtTelefono" width="100%" change="txtTelefono_changeHandler(event)" text="@{cliente.contacto.ctoTelefono}"
+												 enter="txtFax.setFocus()" maxChars="50" />
+									<s:Label fontSize="12" fontWeight="normal" text="Fax" />
+									<s:TextInput id="txtFax" width="100%" text="@{cliente.contacto.ctoFax}" enter="txtRazonSocial.setFocus()" maxChars="50" />
+								</s:HGroup>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Razón Social" styleName="ItemStyle">
+								<s:TextInput id="txtRazonSocial" width="100%" text="@{cliente.contacto.ctoRSocial}" enter="txtRUT.setFocus()" maxChars="100"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
+								<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="RUT" styleName="ItemStyle">
+								<s:TextInput id="txtRUT" width="46%" text="@{cliente.contacto.ctoRUT}" enter="txtDireccion.setFocus()" restrict="0-9" maxChars="12" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="{cliente.contacto.ctoDocumentoSigla}" styleName="ItemStyle">
+								<s:TextInput id="txtDocument" width="46%" text="@{cliente.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Dirección" styleName="ItemStyle">
+								<s:TextInput id="txtDireccion" width="100%" text="@{cliente.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" maxChars="50"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Localidad" styleName="ItemStyle">
+								<s:TextInput id="txtLocalidad" width="100%" text="@{cliente.contacto.ctoLocalidad}" enter="txtCelular.setFocus()" maxChars="40"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Celular" styleName="ItemStyle">
+								<s:TextInput id="txtCelular" width="46%" change="txtCelular_changeHandler(event)" text="@{cliente.contacto.ctoCelular}" enter="txtWebpage.setFocus()"
+											 restrict="0-9.-;," maxChars="50" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Página Web" styleName="ItemStyle">
+								<s:TextInput id="txtWebpage" width="100%" text="@{cliente.contacto.ctoWeb}" enter="txtGoogleMaps.setFocus()" maxChars="256"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Google maps" styleName="ItemStyle">
+								<s:TextInput id="txtGoogleMaps" width="100%" text="@{cliente.googleMaps}" enter="txtEmail1.setFocus()" maxChars="256"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Energía Electrica" styleName="ItemStyle">
+								<s:DropDownList id="ddlEnergiaElectrica" width="202" dataProvider="{eeList}" selectedItem="{cliente.energiaElectrica}" change="ddlEnergiaElectrica_changeHandler(event)"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="E-Mail 1" styleName="ItemStyle">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:TextInput id="txtEmail1" width="202" text="@{cliente.contacto.ctoEmail1}" enter="txtEmail2.setFocus()" maxChars="50" />
+									<s:Label fontSize="12" fontWeight="normal" paddingLeft="25" text="E-Mail 2" />
+									<s:TextInput id="txtEmail2" width="100%" text="@{cliente.contacto.ctoEmail2}" enter="cmbPais.setFocus()" maxChars="50" />
+								</s:HGroup>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="País" styleName="ItemStyle">
+								<components:MyAutoComplete id="cmbPais" width="200" textAlign="left" change="cmbPais_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().paises }" labelField="nombre" matchType="anyPart"
+														   prompt="País" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbDepartamento}" selectedItem="{_pais}"
+														   previous_focus="{txtEmail2}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Departamento" styleName="ItemStyle">
+								<components:MyAutoComplete id="cmbDepartamento" width="200" textAlign="left" change="cmbDepartamento_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().departamentos }" labelField="nombre" matchType="anyPart"
+														   prompt="Departamento" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbZona}" selectedItem="{_departamento}"
+														   previous_focus="{cmbPais}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Zona" styleName="ItemStyle">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<components:MyAutoComplete id="cmbZona" width="200" textAlign="left" change="cmbZona_changeHandler(event)"
+															   dataProvider="{ CatalogoFactory.getInstance().zonas }" labelField="nombre" matchType="anyPart" prompt="Zona"
+															   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+															   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
+															   backspaceAction="focus" next_focus="{txtAgencia}" selectedItem="{_zona}" previous_focus="{txtEmail2}"
+															   dropDownItemRenderer="{ dropDownItemRenderer }" />
+									<s:Label fontSize="12" fontWeight="normal" paddingLeft="25" text="Agencia" />
+									<s:TextInput id="txtAgencia" width="100%" text="@{cliente.agencia}" enter="cmbGiro.setFocus()" />
+								</s:HGroup>
+
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Giro" styleName="ItemStyle">
+								<components:MyAutoComplete id="cmbGiro" width="200" textAlign="left" change="cmbGiro_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().giros }" labelField="nombre" matchType="anyPart" prompt="Giro"
+														   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+														   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
+														   backspaceAction="focus" next_focus="{apply}" selectedItem="{_giro}" previous_focus="{cmbDepartamento}"
+														   dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+
+						</mx:Form>
+					</mx:Canvas>
+					<mx:Canvas width="100%" height="100%" label="Avanzado" enabled="{hasPerm()}"  >
+						<mx:Form width="100%" height="100%" fontWeight="normal" creationComplete="{txtCodigo.setFocus()}" maxWidth="800" contentBackgroundAlpha="1">
+							<s:Label fontSize="16" fontWeight="normal" text="Datos Avanzados" />
+							<mx:HRule width="100%" />
+							<s:Spacer height="10" />
+							<mx:FormItem width="100%" label="Moneda" styleName="ItemStyle" enabled="{hasPerm()}">
+								<components:MyAutoComplete id="cmbMoney" width="200" textAlign="left" change="cmbMoney_changeHandler(event)" dataProvider="{ monedas }"
+														   labelField="nombre" matchType="anyPart" prompt="Ingrese Moneda" allowNewValues="false"
+														   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+														   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+														   backspaceAction="focus" selectedItem="{cliente.moneda}" dropDownRowCount="{monedas.length}" next_focus="{txtTopeCredito}" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Tope crédito" styleName="ItemStyle" enabled="{hasPerm()}">
+								<s:TextInput id="txtTopeCredito" width="100" change="{cliente.cliTopeCredito = Number(txtTopeCredito.text)}"
+											 text="{cliente.cliTopeCredito ? cliente.cliTopeCredito.toString() : ''}" restrict="0-9" enter="cmbCategoria.setFocus()" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Categoría" styleName="ItemStyle" enabled="{hasPerm()}">
+								<components:MyAutoComplete id="cmbCategoria" width="200" textAlign="left" change="cmbCategoria_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().categoriasClientes }" labelField="nombre" matchType="anyPart"
+														   prompt="Ingrese Categoría" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+														   selectedItem="{_categoria}" next_focus="{cmbFormaPago}" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Forma de pago" styleName="ItemStyle">
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<components:MyAutoComplete id="cmbFormaPago" width="200" textAlign="left" change="cmbFormaPago_changeHandler(event)" enabled="{hasPerm()}"
+															   dataProvider="{ CatalogoFactory.getInstance().planPagos }" labelField="nombre" matchType="anyPart"
+															   prompt="Ingrese Forma de Pago" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+															   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+															   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{txtDiaHoraPago}"
+															   selectedItem="{cliente.planPagos}" previous_focus="{txtTopeCredito}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+									<s:Label width="100" textAlign="right" text="Día hora pago" />
+									<s:TextInput id="txtDiaHoraPago" width="160" text="@{cliente.diaHoraPagos}" enter="cmbListaPrecios.setFocus()" />
+								</s:HGroup>
+							</mx:FormItem>
+
+							<mx:FormItem width="100%" label="Lista de precios" styleName="ItemStyle" enabled="{hasPerm()}">
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<components:MyAutoComplete id="cmbListaPrecios" width="200" textAlign="left" change="cmbListaPrecios_changeHandler(event)"
+															   dataProvider="{ CatalogoFactory.getInstance().preciosVenta }" labelField="nombre" matchType="anyPart"
+															   prompt="Ingrese Lista de Precios" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+															   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+															   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{txtDescuento}"
+															   selectedItem="{cliente.preciosVenta}" previous_focus="{cmbFormaPago}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+									<s:Label width="100" textAlign="right" text="Descuentos" />
+									<s:TextInput id="txtDescuento" width="36" textAlign="right" change="{cliente.cliDto1 = Number(txtDescuento.text)}"
+												 text="{String(cliente.cliDto1)}" enter="cmbEncCuenta.setFocus()" restrict="0-9" maxChars="2" />
+									<s:Label width="100" text="%" />
+								</s:HGroup>
+							</mx:FormItem>
+
+							<mx:FormItem width="100%" label="Encargado cuenta" styleName="ItemStyle" enabled="{hasPerm()}">
+								<components:MyAutoComplete id="cmbEncCuenta" width="200" textAlign="left" change="cmbEncCuenta_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().vendedores }" labelField="nombre" matchType="anyPart"
+														   prompt="Encargado de Cuenta" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbVendedor}"
+														   previous_focus="{txtDescuento}" selectedItem="{_encCuenta}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Vendedor" styleName="ItemStyle" enabled="{hasPerm()}">
+								<components:MyAutoComplete id="cmbVendedor" width="200" textAlign="left" change="cmbVendedor_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().vendedores }" labelField="nombre" matchType="anyPart" prompt="Vendedor"
+														   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+														   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
+														   backspaceAction="focus" next_focus="{cmbEspecialista1}" previous_focus="{cmbEncCuenta}" selectedItem="{cliente.vendedor}"
+														   dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Especialista 1" styleName="ItemStyle" enabled="{hasPerm()}">
+								<components:MyAutoComplete id="cmbEspecialista1" width="200" textAlign="left" change="cmbEspecialista1_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().vendedores }" labelField="nombre" matchType="anyPart"
+														   prompt="Especialista 1" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbEspecialista2}"
+														   previous_focus="{cmbVendedor}" selectedItem="{_especialista1}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Especialista 2" styleName="ItemStyle" enabled="{hasPerm()}">
+								<components:MyAutoComplete id="cmbEspecialista2" width="200" textAlign="left" change="cmbEspecialista2_changeHandler(event)"
+														   dataProvider="{ CatalogoFactory.getInstance().vendedores }" labelField="nombre" matchType="anyPart"
+														   prompt="Especialista 2" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{apply}" previous_focus="{cmbDepartamento}"
+														   selectedItem="{_especialista2}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+							</mx:FormItem>
+							<s:Spacer height="10"/>
+							<s:Label text="Permisos" fontFamily="Helvetica" fontSize="14"/>
+							<mx:FormItem width="100%" label="Ve stock" styleName="ItemStyle">
+								<s:DropDownList id="ddlStockPerm" width="320" dataProvider="{showStockList}" selectedIndex="{new Number(cliente.permisoStock)}" change="ddlStockPerm_changeHandler(event)"/>
+							</mx:FormItem>
+							<mx:FormItem width="100%" label="Ve precios" styleName="ItemStyle">
+								<s:DropDownList id="ddlPreciosPerm" width="320" dataProvider="{showPreciosList}" labelField="label" selectedIndex="{new Number(cliente.permisoPrecios)}" change="ddlPreciosPerm_changeHandler(event)"/>
+							</mx:FormItem>							
+
+						</mx:Form>
+					</mx:Canvas>
+
+				</mx:ViewStack>
+			</s:Group>
+		</mx:HBox>
+		<mx:ControlBar id="buttons" width="100%" height="54" horizontalAlign="center" verticalAlign="bottom" backgroundAlpha="1" contentBackgroundColor="0xF0F0F0"> 
+			<s:Button id="apply" click="validateForm(event)" label="Guardar" styleName="aceptarButton" />
+			<s:Button id="cancel" click="cancelValues(event)" label="Cerrar" styleName="cerrarButton" />
+		</mx:ControlBar>
+	</mx:VBox>
+</mx:Canvas>

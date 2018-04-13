@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+					creationComplete="creationCompleteHandler(event)" clipAndEnableScrolling="true">
+
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.event.AbrirFacturaEvent;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.Vendedor;
+			import biz.fulltime.model.Zona;
+			import biz.fulltime.model.deudores.DocPendientesCliente;
+			import biz.fulltime.model.deudores.DocumentoDeudor;
+			
+			import components.IconButton;
+			
+			import mx.controls.Spacer;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			
+			import spark.components.BorderContainer;
+			import spark.components.Button;
+			import spark.components.CheckBox;
+			import spark.components.HGroup;
+			import spark.components.Label;
+			import spark.components.VGroup;
+			import spark.layouts.HorizontalLayout;
+			import spark.layouts.VerticalLayout;
+			
+			import util.CatalogoFactory;
+			
+			private var dateFormatter:DateFormatter = new DateFormatter();
+
+			override public function set data(value:Object):void {
+				var oldValue:Object = super.data;
+
+				// Check to see if the data property is null. 
+				if (value == null)
+					return;
+				// If the data property is not null, 
+				// set the Label controls appropriately. 
+				if (oldValue == value) {
+					return;
+				}
+
+				super.data = value;
+
+				var cliente:Cliente = data.cliente;
+				if (!cliente) {
+					return;
+				}
+
+				var txtCliente:String = cliente.codigo + " - " + cliente.nombre + " (" + cliente.contacto.ctoRSocial + ")";
+				var txtVendedor:String = "";
+				if (cliente.vendedor) {
+					var vendedor:Vendedor = cliente.vendedor;
+					txtVendedor = "  Vendedor: " + vendedor.codigo + " - " + vendedor.nombre;
+				}
+				var txtClienteData1:String = "  RUT:" + (cliente.contacto.ctoRUT ? cliente.contacto.ctoRUT : "s/d") + (cliente.contacto.ctoTelefono ? (",  Teléfono: " + cliente.contacto.ctoTelefono) : "") + (cliente.contacto.ctoCelular ? (", Celular: " + cliente.contacto.ctoCelular) : "");
+
+				var txtClienteData2:String = "  Encargado de Pagos:" + data.encargadoPagos + ", Dirección de Cobranza: " + data.direccionCobranza;
+
+				lblCliente.label = txtCliente;
+				lblCliente1.text = txtClienteData1;
+				lblCliente2.text = txtClienteData2;
+
+				lblVendedor.text = txtVendedor;
+
+				var zona:String = "Zona: No Tiene";
+				for each (var z:Zona in CatalogoFactory.getInstance().zonas) {
+					if (cliente && z.codigo == cliente.contacto.zonaIdCto) {
+						zona = "Zona: " + z.nombre;
+						break;
+					}
+				}
+
+				lblClienteZona.text = zona;
+				lblClienteCategoria.text = "Categoría: " + (cliente.categCliId == null ? "No Tiene" : cliente.categCliId);
+				lblClienteGrupo.text = "Grupo: " + (cliente.grupo == null ? "No Tiene" : cliente.grupo.nombre);
+				if (data.diaHoraPagos) {
+					lblDiaHoraPagos.text = ", Día/Hora: " + data.diaHoraPagos;
+				} else {
+					lblDiaHoraPagos.text = "";
+				}
+					
+				contClientDetalle.removeAllElements();
+				
+				for each (var docDeudor:DocumentoDeudor in data.documentos) {
+					var fecha:String = docDeudor.fecha != null ? docDeudor.fecha : "";
+					var comprobante:String = docDeudor.comprobante != null ? docDeudor.comprobante.nombre : "";
+					var numero:String = String(docDeudor.numero);
+					var moneda:String = docDeudor.moneda != null ? docDeudor.moneda.nombre : "";
+					var facturado:String = nf_Espanol_Espanol.format(docDeudor.getFacturadoValue());
+					var formaPago:String = docDeudor.planPago != null ? docDeudor.planPago.nombre : "";
+					var cancelado:String = nf_Espanol_Espanol.format(docDeudor.getCanceladoValue());
+					var adeudado:String = nf_Espanol_Espanol.format(docDeudor.getAdeudadoValue());
+					var descto:String = docDeudor.getDescuentoValue().toString() + "%";
+					var adeudadoNeto:String = nf_Espanol_Espanol.format(docDeudor.getAdeudadoNetoValue());
+
+					var vencida:Boolean = docDeudor.tieneCuotaVencida;
+
+					var lblfecha:Label = new Label();
+					lblfecha.width = 70;
+					lblfecha.text = fecha;
+					lblfecha.styleName = vencida ? "lblVencida" : "lblNoVencida";
+
+					var lblcomprobante:Label = new Label();
+					lblcomprobante.maxDisplayedLines = 1;
+					lblcomprobante.width = 240;
+					lblcomprobante.text = comprobante;
+					lblcomprobante.styleName = vencida ? "lblVencida" : "lblNoVencida";
+
+					var lblnumero:Label = new Label();
+					lblnumero.width = 50;
+					lblnumero.text = numero;
+					lblnumero.maxDisplayedLines = 1;
+					lblnumero.styleName = vencida ? "lblNumberVencida" : "numberLabel";
+
+					var lblformaPago:Label = new Label();
+					lblformaPago.width = 240;
+					lblformaPago.maxDisplayedLines = 1;
+					lblformaPago.text = formaPago;
+					lblformaPago.styleName = vencida ? "lblVencida" : "lblNoVencida";
+
+					var lblmoneda:Label = new Label();
+					lblmoneda.width = 75;
+					lblmoneda.maxDisplayedLines = 1;
+					lblmoneda.text = moneda.toUpperCase();
+					lblmoneda.styleName = vencida ? "lblVencida" : "lblNoVencida";
+
+					var lblfacturado:Label = new Label();
+					lblfacturado.width = 90;
+					lblfacturado.text = facturado;
+					lblfacturado.styleName = vencida ? "lblNumberVencida" : "numberLabel";
+
+					var lblcancelado:Label = new Label();
+					lblcancelado.width = 90;
+					lblcancelado.text = cancelado;
+					lblcancelado.styleName = vencida ? "lblNumberVencida" : "numberLabel";
+
+					var lbladeudado:Label = new Label();
+					lbladeudado.width = 90;
+					lbladeudado.text = adeudado;
+					lbladeudado.styleName = vencida ? "lblNumberVencida" : "numberLabel";
+
+					var lbldescto:Label = new Label();
+					lbldescto.width = 40;
+					lbldescto.text = descto;
+					lbldescto.styleName = vencida ? "lblNumberVencida" : "numberLabel";
+
+					var lbladeudadoNeto:Label = new Label();
+					lbladeudadoNeto.width = 90;
+					lbladeudadoNeto.text = adeudadoNeto;
+					lbladeudadoNeto.styleName = vencida ? "lblNumberVencida" : "numberLabel";
+
+					var spacer:Spacer = new Spacer();
+					spacer.width = 5;
+
+					var hGroup:HGroup = new HGroup();
+					hGroup.gap = 0;
+					hGroup.paddingTop = 0;
+					hGroup.paddingBottom = 0;
+					hGroup.height = 20;
+					hGroup.verticalAlign = "middle";
+					hGroup.addElement(lblfecha);
+					hGroup.addElement(lblcomprobante);
+					hGroup.addElement(lblnumero);
+					hGroup.addElement(spacer);
+					hGroup.addElement(lblformaPago);
+					hGroup.addElement(lblmoneda);
+					hGroup.addElement(lblfacturado);
+					hGroup.addElement(lblcancelado);
+					hGroup.addElement(lbladeudado);
+					hGroup.addElement(lbldescto);
+					hGroup.addElement(lbladeudadoNeto);
+
+					var btnGo:IconButton = new IconButton();
+					btnGo.styleName = "goButton";
+					btnGo.width = 20;
+					btnGo.height = 18;
+					btnGo.automationName = docDeudor.docId;
+					btnGo.addEventListener(MouseEvent.CLICK, function(evt:Event):void {
+							var button:Button = evt.target as Button;
+							dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, button.automationName));
+						});
+
+					var spacer2:Spacer = new Spacer();
+					spacer2.width = 5;
+
+					hGroup.addElement(spacer2);
+					hGroup.addElement(btnGo);
+
+					
+					contClientDetalle.addElement(hGroup);
+				}
+				
+				docDeudor.addEventListener("_changeMoneda", calcularSubTotales);
+				calcularSubTotales();
+			
+			}
+			
+			private function calcularSubTotales(event:Event = null):void {
+				var cliente:Cliente = data.cliente;
+				var moneda:Moneda = data.moneda; // Obtener moneda				
+				if (moneda) {
+					lblClienteNombre.text = cliente.nombre;
+					lblMoneda.text = moneda.nombre;
+					lblFacturado.text = nf_Espanol_Espanol.format(data.getTotalFacturado(moneda.codigo));
+					lblCancelado.text = nf_Espanol_Espanol.format(data.getTotalCancelado(moneda.codigo));
+					lblAdeudado.text = nf_Espanol_Espanol.format(data.getTotalAdeudado(moneda.codigo));
+					lblAdeudadoNeto.text = nf_Espanol_Espanol.format(data.getTotalAdeudadoNeto(moneda.codigo));
+					
+				}
+			}
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function lblCliente_changeHandler(event:Event):void {
+				var doc:DocPendientesCliente = this.data as DocPendientesCliente;
+				doc.print = lblCliente.selected;
+			}
+			
+		]]> 
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+	</fx:Declarations>
+
+
+	<s:VGroup id="mainGroup" horizontalAlign="center" paddingBottom="10" paddingLeft="0" paddingRight="0">
+		<s:VGroup id="container" paddingBottom="0" paddingTop="1" gap="0">
+			<s:BorderContainer width="100%" backgroundAlpha="1.0" backgroundColor="0xFFFFFF" minHeight="0" borderAlpha="0.0">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="2" paddingLeft="3" paddingRight="3" paddingTop="2" verticalAlign="middle" gap="3" />
+				</s:layout>
+				<s:HGroup width="100%" paddingBottom="5" paddingLeft="10" paddingTop="5" verticalAlign="middle">
+					<s:CheckBox id="lblCliente" width="100%" fontSize="14" fontWeight="bold" change="lblCliente_changeHandler(event)" selected="{data.print}" />
+					<s:Label id="lblClienteZona" width="200" />
+				</s:HGroup>
+				<s:HGroup width="100%" paddingTop="2" verticalAlign="middle">
+					<s:Label id="lblVendedor" width="100%" fontWeight="bold" />
+				</s:HGroup>
+				<s:HGroup width="100%" paddingTop="2" verticalAlign="middle">
+					<s:Label id="lblCliente1" />
+					<s:Spacer width="100%" />
+					<s:Label id="lblClienteCategoria" width="200" />
+				</s:HGroup>
+				<s:HGroup width="100%" paddingBottom="2" paddingTop="2">
+					<s:Label id="lblCliente2" />
+					<s:Label id="lblDiaHoraPagos" />
+					<s:Spacer width="100%" />
+					<s:Label id="lblClienteGrupo" width="200" />
+				</s:HGroup>
+			</s:BorderContainer>
+			<s:BorderContainer height="24" backgroundColor="0x666666" minHeight="0" borderAlpha="1.0">
+				<s:layout>
+					<s:HorizontalLayout paddingBottom="2" paddingLeft="3" paddingRight="3" paddingTop="2" verticalAlign="middle" gap="0" />
+				</s:layout>
+				<s:Label width="70" styleName="titleLabel" text="Fecha" />
+				<s:Label width="240" styleName="titleLabel" text="Comprobante" />
+				<s:Label width="50" styleName="titleNumberLabel" text="Nro" />
+				<s:Spacer width="5" />
+				<s:Label width="240" styleName="titleLabel" text="Forma Pago" />
+				<s:Label width="75" styleName="titleLabel" text="Moneda" maxDisplayedLines="1" />
+				<s:Label width="90" styleName="titleNumberLabel" text="Facturado" maxDisplayedLines="1" />
+				<s:Label width="90" styleName="titleNumberLabel" text="Cancelado" maxDisplayedLines="1" />
+				<s:Label width="90" styleName="titleNumberLabel" text="Adeudado" maxDisplayedLines="1" />
+				<s:Label width="40" styleName="titleNumberLabel" text="Dcto." maxDisplayedLines="1" />
+				<s:Label width="90" styleName="titleNumberLabel" text="A.Neto" maxDisplayedLines="1" />
+				<s:Label width="24" styleName="titleNumberLabel" text="" maxDisplayedLines="1" />
+			</s:BorderContainer>
+			<s:VGroup width="100%">
+				<s:BorderContainer id="contClientDetalle" backgroundAlpha="1.0" backgroundColor="0xFDFDFD" minHeight="0" styleName="contenidoDetalle" borderAlpha="0">
+					<s:layout>
+						<s:VerticalLayout paddingLeft="3" paddingRight="3" gap="0" />
+					</s:layout>
+				</s:BorderContainer>
+			</s:VGroup>
+			<s:BorderContainer width="100%" height="24" backgroundAlpha="1.0" backgroundColor="0xDADADA" minHeight="0" borderAlpha="0.0">
+				<s:layout>
+					<s:HorizontalLayout horizontalAlign="right" paddingBottom="2" paddingLeft="3" paddingRight="3" paddingTop="5" verticalAlign="middle" gap="0" />
+				</s:layout>
+				<s:Label id="lblSubtotales" width="100" styleName="subtotalLabelRight" text="Subtotales:" />
+				<s:Label id="lblClienteNombre" width="235" styleName="subtotalLabelName" text="Cliente" maxDisplayedLines="1" />
+				<s:Label id="lblMoneda" width="75" styleName="subtotalLabel" maxDisplayedLines="1" />
+				<s:Label id="lblFacturado" width="90" styleName="subtotalLabelRight" maxDisplayedLines="1" />
+				<s:Label id="lblCancelado" width="90" styleName="subtotalLabelRight" maxDisplayedLines="1" />
+				<s:Label id="lblAdeudado" width="90" styleName="subtotalLabelRight" maxDisplayedLines="1" />
+				<s:Label id="lblAdeudadoNeto" width="130" styleName="subtotalLabelRight" maxDisplayedLines="1" />
+				<s:Label width="24" text="" maxDisplayedLines="1" />
+			</s:BorderContainer>
+		</s:VGroup>
+		
+	</s:VGroup>
+</s:GridItemRenderer>

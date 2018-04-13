@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:s="library://ns.adobe.com/flex/spark"
+		   width="100%" creationComplete="updateLabel()" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+
+	<mx:Script>
+		<![CDATA[
+			import biz.fulltime.event.UsuarioEvent;
+			import biz.fulltime.model.CodigoNombreEntity;
+
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.ISystemManager;
+
+			private var _listenersInstalled:Boolean = false;
+
+			[Bindable]
+			private var _label:String;
+
+			[Bindable]
+			private var _value:CodigoNombreEntity;
+
+			[Bindable]
+			private var _fontSize:Number = 12;
+
+			[Bindable]
+			private var _removeEnabled:Boolean = true;
+
+			override public function set data(value:Object):void {
+				_value = value as CodigoNombreEntity;
+
+				updateLabel();
+			}
+
+			override public function get data():Object {
+				return _value;
+			}
+
+			public function set removeEnabled(val:Boolean):void {
+				_removeEnabled = val;
+			}
+
+			public function set fontSize(size:Number):void {
+				this._fontSize = size;
+			}
+
+			public function updateLabel():void {
+				var item:CodigoNombreEntity = CodigoNombreEntity(_value);
+				if (item != null) {
+					_label = item.codigo + ' - ' + item.nombre;
+					return;
+				}
+				_label = "";
+			}
+
+			public function remove(evt:Event):void {
+				var parent:Sprite;
+
+				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+				// no types so no dependencies
+				var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+				if (mp && mp.useSWFBridge()) {
+					parent = Sprite(sm.getSandboxRoot());
+				} else {
+					parent = Sprite(FlexGlobals.topLevelApplication);
+				}
+
+				Alert.show("¿Esta seguro de Borrar el Usuario '" + _label + "'?", "Borrar Usuario", Alert.YES + Alert.NO, parent, alertClickHandler);
+
+			}
+
+			// Event handler function for displaying the selected Alert button.
+			private function alertClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					dispatchEvent(new UsuarioEvent(UsuarioEvent.BORRAR_USUARIO, _value));
+				}
+			}
+		]]>
+	</mx:Script>
+
+	<mx:Glow id="glowOn" color="#ffffff" blurXFrom="0" blurXTo="10" blurYFrom="0" targets="{[mainBox]}" blurYTo="10" alphaFrom="0" alphaTo="1" duration="100" />
+	<mx:Glow id="glowOff" color="#ffffff" blurXFrom="10" blurXTo="0" blurYFrom="10" targets="{[mainBox]}" blurYTo="0" alphaFrom="1" alphaTo="0" duration="200" />
+
+	<s:SkinnableContainer width="100%" height="32" styleName="advancedLabel">
+		<s:layout>
+			<s:VerticalLayout horizontalAlign="left" paddingLeft="10" verticalAlign="middle" />
+		</s:layout>
+		<mx:HBox id="mainBox" width="100%" height="28" backgroundAlpha="0.92" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle"
+				 rollOut="{glowOff.play()}" rollOver="{glowOn.play()}" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+			<mx:Image id="img" width="18" height="18" source="{StyleManager.getStyleManager(null).getStyleDeclaration('.icons').getStyle('personaIcon')}" />
+			<mx:VBox width="100%" height="100%" verticalAlign="middle" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+				<s:Label id="lblDesc" fontSize="{_fontSize}" text="{_label}" />
+			</mx:VBox>
+		</mx:HBox>
+	</s:SkinnableContainer>
+
+
+</mx:Canvas>

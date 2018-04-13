@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)" keyDown="group1_keyDownHandler(event)" xmlns:components="components.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			
+			import spark.events.TextOperationEvent;
+
+			[Bindable]
+			private var _resumen:XML =
+				<resumen/>
+				;
+
+			[Bindable]
+			private var _montoDto:String;
+
+			[Bindable]
+			private var _prcjeDto:String;
+
+			public function get prcjeDto():String {
+				var dtoPje:BigDecimal = txtDtoPorcentaje.text.length > 0 ? new BigDecimal(txtDtoPorcentaje.text) : BigDecimal.ZERO;
+				return dtoPje.toString();
+			}
+
+			public function set prcjeDto(value:String):void {
+				_prcjeDto = value;
+			}
+
+			public function get montoDto():String {
+				return _montoDto;
+			}
+
+			public function set montoDto(value:String):void {
+				_montoDto = value;
+			}
+
+			public function set resumen(data:XML):void {
+				this._resumen = data;
+
+				var total:BigDecimal = new BigDecimal(_resumen.total[0].toString());
+				var dtoPorcentaje:BigDecimal = new BigDecimal(_resumen.descuento[0].toString());
+				var dtoMto:BigDecimal = total.multiply(dtoPorcentaje).divideScaleRound(new BigDecimal(100), 2, MathContext.ROUND_HALF_UP);
+
+				_prcjeDto = dtoPorcentaje.setScale(2).toString();
+				_montoDto = dtoMto.setScale(2).toString();
+			}
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+				txtDtoPorcentaje.setFocus();
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function cmdCancelar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function group1_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+
+			protected function txtDtoPorcentaje_changeHandler(event:TextOperationEvent):void {
+				var total:BigDecimal = new BigDecimal(_resumen.total[0].toString());
+				var dtoPje:BigDecimal = txtDtoPorcentaje.text.length > 0 ? new BigDecimal(txtDtoPorcentaje.text) : BigDecimal.ZERO;
+				var dtoMonto:BigDecimal = total.multiply(dtoPje).divideScaleRound(new BigDecimal(100), 2, MathContext.ROUND_HALF_UP);
+
+				_resumen.descuento = dtoPje.setScale(2).toString();
+
+				_montoDto = dtoMonto.setScale(2).toString();
+
+			}
+
+			protected function txtMtoDto_changeHandler(event:TextOperationEvent):void {
+				var total:BigDecimal = new BigDecimal(_resumen.total[0].toString());
+				var dtoMto:BigDecimal = txtMtoDto.text.length > 0 ? new BigDecimal(txtMtoDto.text) : BigDecimal.ZERO;
+				var dtoPje:BigDecimal = dtoMto.multiply(new BigDecimal(100)).divideScaleRound(total, 2, MathContext.ROUND_HALF_UP);
+
+				_resumen.descuento = dtoPje.setScale(2);
+
+				_prcjeDto = dtoPje.setScale(2).toString();
+			}
+		]]>
+	</fx:Script>
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+		<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
+			<s:VGroup width="100%" height="100%">
+				<mx:Form width="100%" height="100%">
+					<mx:FormItem width="100%" label="Monto Original">
+						<s:HGroup width="100%" paddingRight="22" verticalAlign="middle">
+							<s:TextInput id="txtMontoOriginal" width="100%" textAlign="right" text="{_resumen.total}" editable="false"
+										 borderAlpha=".16"  />
+						</s:HGroup>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Descuento">
+						<s:HGroup width="100%" verticalAlign="middle">
+							<s:TextInput id="txtDtoPorcentaje" width="100%" textAlign="right" change="txtDtoPorcentaje_changeHandler(event)"
+										 text="{_prcjeDto}" restrict="0-9" maxChars="3" enter="txtMtoDto.setFocus();"/>
+							<s:Label text="%" paddingLeft="5"/>
+						</s:HGroup>
+					</mx:FormItem>
+					<s:Group width="100%">
+						<s:Line width="100%" height="1" left="90">
+							<s:stroke>
+								<s:SolidColorStroke id="lineStroke3" color="blue" alpha="0.4" />
+							</s:stroke>
+						</s:Line>
+					</s:Group>
+					<mx:FormItem width="100%" label="Monto con dcto.">
+						<s:HGroup width="100%" paddingRight="22" verticalAlign="middle">
+							<s:TextInput id="txtMtoDto" width="100%" textAlign="right" change="txtMtoDto_changeHandler(event)" 
+										 restrict="0-9" maxChars="16" text="{_montoDto}" enter="cmdAceptar.setFocus();" />
+						</s:HGroup>
+					</mx:FormItem>
+				</mx:Form>
+
+			</s:VGroup>
+
+			<s:controlBarContent>
+				<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+					<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+				</s:HGroup>
+			</s:controlBarContent>
+		</s:Panel>
+	</s:BorderContainer>
+
+</s:Group>

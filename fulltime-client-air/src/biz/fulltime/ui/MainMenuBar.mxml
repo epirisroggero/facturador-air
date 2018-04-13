@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:controls="com.rphelan.controls.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" creationComplete="onCreationComplete()" focusEnabled="false">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.Permisos;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.MenuEventFT;
+			import biz.fulltime.model.Usuario;
+			
+			import com.rphelan.controls.menuClasses.Accelerator;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.MenuEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+
+			[Bindable]
+			public var menuBarCollection:XMLListCollection;
+
+			// holds all accelerators available in the menu
+			private var _accelerators:ArrayCollection;
+
+			private function onCreationComplete():void {
+				parseAccelerators(menuProvider);
+				
+				var user:Usuario = GeneralOptions.getInstance().loggedUser;
+				if (user.permisos) {
+					menuProvider[1].@enabled = user.permisos.contains(Permisos.INFORMES);
+					menuProvider[3].@enabled = user.permisos.contains(Permisos.DEUDORES);
+					menuProvider[4].@enabled = user.permisos.contains(Permisos.RUTINA_CARGA_COSTOS);
+					menuProvider[5].@enabled = user.permisos.contains(Permisos.TABLAS_BASICAS);
+					//menuProvider[6].@enabled = user.permisos.contains(Permisos.EXPEDICIONES);
+					//menuProvider[7].@enabled = user.permisos.contains(Permisos.CONFIGURACIONES);
+				}
+				
+				FlexGlobals.topLevelApplication.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp, false, 0, true);
+			}
+
+			private function parseAccelerators(xml:XMLList):void {
+				_accelerators = new ArrayCollection();
+
+				for each (var child:XML in xml.menuitem) {
+					if (String(child.@accelerator)) {
+						var item:Accelerator = Accelerator.fromString(child.@accelerator);
+						item.data = String(child.@data);
+						_accelerators.addItem(item);
+					}
+				}
+			}
+
+			private function onKeyUp(event:KeyboardEvent):void {
+				for each (var accelerator:Accelerator in _accelerators) {
+					if (accelerator.test(event)) {
+						handleMenuFunction(accelerator.data as String);
+					}
+				}
+			}
+
+			// Event handler for the MenuBar control's itemClick event.
+			private function handleMenuFunction(value:String):void {
+				if (value == "facturacion") {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.FACTURACION_EVENT));
+				} else if (value == 'reporteStockPrecios') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_STOCK_PRECIO_EVENT));
+				} else if (value == 'reporteComisiones') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_COMISIONES));
+				} else if (value == 'reporteControl+') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_CONTROL_MAS));
+				} else if (value == 'reporteLiquidacion') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION));
+				} else if (value == 'refrescarCatalogos') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REFRESCAR_CATALOGOS_EVENT));
+				} else if (value == 'exit') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXIT));
+				} else if (value == 'deudores-0') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_DEUDORES_EVENT));
+				} else if (value == 'expediciones') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXPEDICIONES_EVENT));
+				} else if (value == 'conf-1') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CONFIGURAR_IMPRESORAS_EVENT));
+				} else if (value == 'tiposEntrega') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CRUD_TIPOS_ENTREGA_EVENT));
+				} else if (value == 'rutinaCostos') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.RUTINA_COSTOS_EVENT));
+				} else if (value == 'descPrometidos') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.DESCUENTOS_PROMETIDOS_EVENT));
+				} else if (value == 'clientes') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_CLIENTES_EVENT));
+				} else if (value == 'reporteRentas') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_RENTAS_EVENT));
+				} else if (value == 'liquidacionVendedores') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION_VENDEDORES));
+				}
+
+
+			}
+		]]>
+	</fx:Script>
+
+	<controls:AcceleratorMenuBar id="menuBar" width="100%" fontSize="12" itemClick="handleMenuFunction(event.item.@data);" labelField="@label" dataProvider="{menuProvider}" focusEnabled="false"/>
+
+	<fx:Declarations>
+
+		<fx:XMLList id="menuProvider">
+			<menu label="Principal" data="top">
+				<menuitem label="Facturación     " data="facturacion" accelerator="F3" />
+				<menuitem type="separator" />
+				<menuitem label="Clientes     " data="clientes"/>
+				<menuitem type="separator" />
+				<menuitem label="Reporte de Stock y Precios" data="reporteStockPrecios" accelerator="Ctrl+R" />
+				<menuitem type="separator" />
+				<menuitem label="Salir" data="exit" />
+			</menu>
+			<menu label="Informes" data="top">
+				<menuitem label="Listado de Control+" data="reporteControl+" enabled="true" />
+				<menuitem label="Listado Liquidación / Cobranza" data="reporteLiquidacion" enabled="true" />
+				<menuitem type="separator" />
+				<menuitem label="Rentas por Comprobante" data="reporteRentas" enabled="true" />
+				<menuitem label="Liquidación Vendedores" data="liquidacionVendedores" enabled="true" />
+			</menu>
+			<menu label="Catálogos" data="top">
+				<menuitem label="Refrescar Catálogos" data="refrescarCatalogos" />
+			</menu>
+			<menu label="Deudores" data="top">
+				<menuitem label="Listado de deudores" data="deudores-0" enabled="true" />
+			</menu>
+			<menu label="Rutinas" data="top">
+				<menuitem label="Rutina Carga Costo" data="rutinaCostos" enabled="true" />
+				<menuitem label="Deuda cliente" data="rutinas-1" enabled="false" />
+				<menuitem label="Deuda cliente método 2" data="rutinas-2" enabled="false" />
+			</menu>
+			<menu label="Tablas Básicas" data="top">
+				<menuitem label="Tipos de Entrega" data="tiposEntrega" enabled="true" />
+				<menuitem label="Descuentos Prometidos" data="descPrometidos" enabled="true" />
+			</menu>
+			<menu label="Expediciones" data="top">
+				<menuitem label="Expediciones" data="expediciones" enabled="true" accelerator="F5"/>
+			</menu>
+			<menu label="Configuración" data="top">
+				<menuitem label="Preferencias" data="conf-1" enabled="true" />
+			</menu>
+ 		</fx:XMLList>
+	</fx:Declarations>
+
+</s:VGroup>

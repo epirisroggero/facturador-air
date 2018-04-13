@@ -1,0 +1,4196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:classes="com.hillelcoren.components.autoComplete.classes.*" xmlns:componentes="componentes.*" xmlns:components="biz.fulltime.ui.components.*" xmlns:components1="components.*"
+		 xmlns:facturacion="biz.fulltime.ui.facturacion.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:loader="biz.fulltime.util.loader.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" backgroundAlpha="0.85" backgroundColor="0xfafafa" creationComplete="onCreationComplete(event)" initialize="initializeHandler(event)" enabled="{!running}" xmlns:util="biz.fulltime.util.*">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.CreditoInfo;
+			import biz.fulltime.dto.EFacturaResult;
+			import biz.fulltime.event.ClaveSupervisoraEvent;
+			import biz.fulltime.event.ClienteEvent;
+			import biz.fulltime.event.ExportToPDFEvent;
+			import biz.fulltime.event.MonedaEvent;
+			import biz.fulltime.event.ProveedorEvent;
+			import biz.fulltime.model.AgendaTarea;
+			import biz.fulltime.model.Articulo;
+			import biz.fulltime.model.Auditoria;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Comprobante;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.CotizacionesModel;
+			import biz.fulltime.model.CotizacionesMonedas;
+			import biz.fulltime.model.Deposito;
+			import biz.fulltime.model.Documento;
+			import biz.fulltime.model.LineaDocumento;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.Pais;
+			import biz.fulltime.model.ParametrosAdministracion;
+			import biz.fulltime.model.ParticipacionVendedor;
+			import biz.fulltime.model.PlanPagos;
+			import biz.fulltime.model.PreciosVenta;
+			import biz.fulltime.model.Proveedor;
+			import biz.fulltime.model.SerieNumero;
+			import biz.fulltime.model.Tarea;
+			import biz.fulltime.model.Usuario;
+			import biz.fulltime.model.Vendedor;
+			import biz.fulltime.model.deudores.DocPendientesCliente;
+			import biz.fulltime.model.deudores.DocumentoDeudor;
+			import biz.fulltime.ui.components.HelpClientPnl;
+			import biz.fulltime.ui.components.HelpProveedorPnl;
+			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
+			import biz.fulltime.ui.expediciones.FrmNuevaTarea;
+			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
+			import biz.fulltime.ui.forms.FrmLineasVenta;
+			import biz.fulltime.ui.forms.FrmNotasEnvio;
+			import biz.fulltime.ui.forms.FrmTrazabilidadDocumento;
+			import biz.fulltime.ui.forms.FrmVendedores;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.FlexEvent;
+			import mx.events.PropertyChangeEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.ISystemManager;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.utils.StringUtil;
+			
+			import spark.components.TitleWindow;
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			import spark.formatters.NumberFormatter;
+			
+			import util.CatalogoFactory;
+			import util.DateUtil;
+			import util.ErrorPanel;
+			import util.Utils;
+
+			[Bindable]
+			[Embed("/assets/general/exclamation.png")]
+			private var mediaIcon:Class;
+
+			[Bindable]
+			[Embed(source="assets/general/Info.png")]
+			public var iconSymbol:Class;
+
+			[Bindable]
+			private var _documento:Documento;
+
+			private var remObjSerieNumero:RemoteObject;
+
+			private var remObjSave:RemoteObject;
+
+			private var remObjModify:RemoteObject;
+
+			private var remObjBorrar:RemoteObject;
+
+			private var remObjEmitir:RemoteObject;
+			
+			private var helpWindow:TitleWindow;
+
+			private var emitiendo_documento:Boolean = false;
+
+			private var _changeFactura:Boolean = false;
+
+			private var creditoInfo:CreditoInfo;
+
+			private var _problemasEncontrados:Boolean = false;
+
+			private var _verificacionFinalizada:Boolean = false;
+
+			private var problemasMsg:String;
+
+			private var verificando:Boolean = false;
+
+			private var verificacionFinalizada:Boolean = false;
+
+			private var problemasMsgVerificacion:String;
+
+			private var notas:String;
+
+			private var error:ErrorPanel;
+
+			private var frmNuevaTarea:FrmNuevaTarea;
+
+			private const WINDOW_WIDTH:Number = 640;
+
+			private const WINDOW_HEIGHT:Number = 600;
+
+			private var _modoSolicitud:Boolean = false;
+
+			private var resultPrecios:ArrayCollection;
+			
+			private var resultCostos:ArrayCollection;
+			
+			private var docPrecios:Documento;
+
+			[Bindable]
+			private var _convirtiendo:Boolean = false;
+
+			[Bindable]
+			private var monedas:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			private var _comisiones:String;
+
+			[Bindable]
+			private var running:Boolean;
+
+			[Bindable]
+			public var _modoVisualizacion:Boolean = false;
+
+			[Bindable]
+			public var tieneCambios:Boolean = false;
+
+			[Bindable]
+			public var lineastienenCambios:Boolean = false;
+
+
+			[Bindable]
+			private var eMail:String;
+
+			[Bindable]
+			private var _proveedores:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			private var _pais:Pais = new Pais();
+
+			[Bindable]
+			private var _usuarioAutorizante:String;
+			
+			//
+			// Seleccion de Lineas de Venta
+			// 
+			private var frmLineasVenta:FrmLineasVenta;
+			
+			[Bindable]
+			private var tipoDoc:Object
+			
+			[Bindable]
+			private var tipoCFERef:Object;
+			
+			[Bindable]
+			private var indGlobalCFERef:Object;
+
+			[Bindable]
+			public var tipoReferenciaList:ArrayCollection = new ArrayCollection([
+				{value:"E", label:"Específica"}, 
+				{value:"G", label:"Global"}				
+			]);
+
+			[Bindable]
+			public var tipoEFacturaList:ArrayCollection = new ArrayCollection([
+				{value:"111", label:"eFactura"}, 
+				{value:"101", label:"eTicket"}, 
+				{value:"211", label:"eFactura de Contingencia"},
+				{value:"201", label:"eTicket de Contingencia"}				
+			]);
+			
+			[Bindable]
+			public var tiposDocList:ArrayCollection = new ArrayCollection([
+				{value:"C", label:"C.I."}, 
+				{value:"R", label:"RUT"} 
+			]);
+			
+			[Bindable]
+			public var modoVentana:Boolean = false;
+
+			private var _showNuevo:Boolean = true;
+			
+			private var _showGuardar:Boolean = true;
+			
+			private var _showEmitir:Boolean = true;
+			
+			private var _showEMail:Boolean = true;
+
+			private var emitirEImprimirNCF:Boolean = true; 
+			
+
+		   [Bindable]
+			public function get modoSolicitud():Boolean {
+				return _modoSolicitud;
+			}
+
+			public function set modoSolicitud(value:Boolean):void {
+				_modoSolicitud = value;
+			}
+
+			protected function initializeHandler(event:FlexEvent):void {
+				// Guardar Documento
+				remObjSave = new RemoteObject();
+				remObjSave.destination = "CreatingRpc";
+				remObjSave.channelSet = ServerConfig.getInstance().channelSet;
+				remObjSave.addEventListener(ResultEvent.RESULT, resultSave);
+				remObjSave.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjSave.showBusyCursor = true;
+
+				remObjSerieNumero = new RemoteObject();
+				remObjSerieNumero.destination = "CreatingRpc";
+				remObjSerieNumero.channelSet = ServerConfig.getInstance().channelSet;
+				remObjSerieNumero.addEventListener(ResultEvent.RESULT, resultSerieNumero);
+				remObjSerieNumero.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjSerieNumero.showBusyCursor = true;
+
+				// Modificar Documento
+				remObjModify = new RemoteObject();
+				remObjModify.destination = "CreatingRpc";
+				remObjModify.channelSet = ServerConfig.getInstance().channelSet;
+				remObjModify.addEventListener(ResultEvent.RESULT, resultModify);
+				remObjModify.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjModify.showBusyCursor = true;
+
+				// Borrar Documento
+				remObjBorrar = new RemoteObject();
+				remObjBorrar.destination = "CreatingRpc";
+				remObjBorrar.channelSet = ServerConfig.getInstance().channelSet;
+				remObjBorrar.addEventListener(ResultEvent.RESULT, resultBorrar);
+				remObjBorrar.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjBorrar.showBusyCursor = true;
+
+				// Emitir Documento
+				remObjEmitir = new RemoteObject();
+				remObjEmitir.destination = "CreatingRpc";
+				remObjEmitir.channelSet = ServerConfig.getInstance().channelSet;
+				remObjEmitir.addEventListener(ResultEvent.RESULT, resultEmitir);
+				remObjEmitir.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjEmitir.showBusyCursor = true;
+				
+
+			}
+
+			protected function onCreationComplete(event:FlexEvent):void {
+				if (!_documento.esSolicitudCompra) {
+					cmbClient.setFocus();
+				} else {
+					cmbProveedor.setFocus();
+				}
+
+				summary.addEventListener("next_focus_", function():void {
+						cmdGuardar.setFocus();
+					});
+
+				if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) {
+					txtDate.disabledRanges = [{rangeEnd:CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado}];
+				}
+
+				CatalogoFactory.getInstance().addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
+						if (evt.property == "proveedores") {
+							if (_documento.comprobante.codigo == "120") {
+								_proveedores = CatalogoFactory.getInstance().getProveedoresExtranjeros();
+							} else {
+								_proveedores = CatalogoFactory.getInstance().proveedores;
+							}
+						}
+					});
+			}
+
+
+			override protected function commitProperties():void {
+				super.commitProperties();
+
+				if (_changeFactura) {
+					// Si el comprobante no es aster, no mostrar las monedas aster. 
+					cargarMonedas();
+
+					_convirtiendo = false;
+
+					if (_documento.comprobante.codigo == "120") {
+						_proveedores = CatalogoFactory.getInstance().getProveedoresExtranjeros();
+					} else {
+						_proveedores = CatalogoFactory.getInstance().proveedores;
+					}
+
+					if (_modoSolicitud) {
+						if (_documento.proveedor) {
+							for each (var p:Pais in CatalogoFactory.getInstance().paises) {
+								if (p.codigo == _documento.proveedor.contacto.paisIdCto) {
+									_pais = p;
+									break;
+								}
+							}
+						} else {
+							_pais = new Pais();
+						}
+					}
+
+					if (_documento.indGlobalCFERef && _documento.indGlobalCFERef.length > 0) {
+						if (_documento.indGlobalCFERef == "E") {
+							indGlobalCFERef = tipoReferenciaList.getItemAt(0);
+						} else {
+							indGlobalCFERef = tipoReferenciaList.getItemAt(1);
+						}
+					} else {
+						indGlobalCFERef = null;
+					}
+					if (ddlReferenciaCFE != null) { 
+						ddlReferenciaCFE.selectedItem = indGlobalCFERef ;
+					}
+					
+					if (_documento.tipoCFERef && _documento.tipoCFERef.length > 0) {
+						if (_documento.tipoCFERef == "111") {
+							tipoCFERef = tipoEFacturaList.getItemAt(0);
+						} else if (_documento.tipoCFERef == "101"){
+							tipoCFERef = tipoEFacturaList.getItemAt(1);
+						} else if (_documento.tipoCFERef == "211"){
+							tipoCFERef = tipoEFacturaList.getItemAt(2);
+						} else if (_documento.tipoCFERef == "201"){
+							tipoCFERef = tipoEFacturaList.getItemAt(3);
+						}
+					} else {
+						tipoCFERef = null;
+					}					
+					if (ddlTipoCFE != null) {
+						ddlTipoCFE.selectedItem = tipoCFERef;
+					}					
+					if (txtSerieCfeRef) {
+						txtSerieCfeRef.text = _documento.serieCFERef;
+					}
+					if (txtNroCfeRef) {
+						txtNroCfeRef.text = _documento.numCFERef;
+					}
+					if (txtRazon) {
+						txtRazon.text = _documento.razonCFERef;
+					}
+					if (txtFechaCFERef) {
+						txtFechaCFERef.selectedDate = _documento.fechaCFERef;
+					}
+					if (_documento.tipoDoc && _documento.tipoDoc.length > 0) {
+						for each (var tipo:Object in new ArrayCollection(tiposDocList.source)) {
+							if (tipo.value == _documento.tipoDoc) {
+								tipoDoc = tipo;
+							}
+						}
+					} else {
+						tipoDoc = tiposDocList[1];
+					}
+										
+					if (txtRUT) {
+						var contacto:Contacto = _documento.cliente ? _documento.cliente.contacto : (_documento.proveedor ? _documento.proveedor.contacto : null);
+						if (contacto && contacto.paisIdCto == "UY") {
+							rut_stringValidator.validate();
+						}
+						
+					}
+										
+					_usuarioAutorizante = null;
+					for each (var u:Usuario in CatalogoFactory.getInstance().usuarios) {
+						if (u.codigo == _documento.usuIdAut) {
+							_usuarioAutorizante = u.nombre;
+							break;
+						}
+					}
+
+					// Setear el estado de la factura
+					this.currentState = _documento.comprobante.tipo == Comprobante.VENTA_CONTADO ? "contado" : "default";
+
+					// Ponerle el titulo de la factura					
+					title = _documento.comprobante.nombre.toUpperCase();
+
+					// Actualizar las comisiones del documento.
+					actualizarComisiones();
+
+					// Actualizar campo de cotizacion fiscal.
+					if (_documento.docTCF && (_documento.emitido || !_documento.pendiente)) {
+						_documento.docTCF = new BigDecimal(_documento.docTCF).setScale(3, MathContext.ROUND_HALF_UP).toString();
+					} else {
+						obtenerTipoCambioFiscal();
+					}
+
+					// Actualizar campo de cotizacion comercial.
+					if (!_documento.docTCC || new BigDecimal(_documento.docTCC).compareTo(BigDecimal.ZERO) <= 0) {
+						if (CatalogoFactory.getInstance().ultimaCotizacion) {
+							_documento.docTCC = new BigDecimal(CatalogoFactory.getInstance().ultimaCotizacion.toString()).setScale(2, MathContext.ROUND_HALF_UP).toString();
+						} else {
+							obtenerTipoCambio();
+						}
+					} else {
+						_documento.docTCC = new BigDecimal(_documento.docTCC).setScale(2, MathContext.ROUND_HALF_UP).toString();
+					}
+
+					if (_documento.depositoOrigen) { // Las cotizaciones no tienen deposito de origen predeterminado.
+						for each (var l:LineaDocumento in _documento.lineas.lineas) {
+							if (!l.articulo || l.articulo.codigo == "") {
+								continue;
+							}
+							l.deposito = _documento.depositoOrigen.codigo;
+							l.obtenerStock();
+						}
+					}
+
+					// Si es un movimiento de stock genero serie y numero... en todos los movimientos de stock estos son autogenerados...
+					if (!_documento.esCotizacionDeVenta && !_documento.esOrdenDeVenta && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE && _documento.nuevo) {
+						remObjSerieNumero.generateSerieNumero(_documento.comprobante);
+					}
+
+					// Los vendedores (junior, distribuidor, senior) solo pueden editar documentos que ellos crearon (Documento.usuarioId). 
+					// Si no son creadores, entonces el documento aparece para solo lectura. 
+					// Administradores y Supervisores pueden editar cualquier cosa.
+					if (!_modoVisualizacion) {
+						if (_documento.nuevo) {
+							_modoVisualizacion = false;
+						} else {
+							if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado && !_documento.esCotizacionDeVenta && !_documento.esOrdenDeVenta && (DateUtil.compareDates(_documento.fechaDoc, CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) == -1)) {
+								_modoVisualizacion = true;
+							} else {
+								_modoVisualizacion = !_documento.permisosDocumentoUsuario.edicion;
+							}
+						}
+					}
+
+					tieneCambios = false;
+					lineastienenCambios = false;
+					callLater(function():void {
+							_documento.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
+									if (evt.property != "depto" && evt.property != "cotizacion" && evt.property != "esSolicitudCompra") {
+										tieneCambios = true;
+									}
+
+								});
+						});
+
+					if (!_documento.esSolicitudCompra) {
+						callLater(function():void {
+								_documento.comisiones.participaciones.addEventListener(CollectionEvent.COLLECTION_CHANGE, function(event:CollectionEvent):void {
+										trace("Propery Name :: ", "changeComisiones");
+										tieneCambios = true;
+									});
+								// Setear el foco en el campo cliente.-
+								cmbClient.setFocus();
+							});
+					} else {
+						callLater(function():void {
+							// Setear el foco en el campo proveedor.-
+								cmbProveedor.setFocus();
+							});
+
+					}
+					_changeFactura = false;
+				}
+
+				if (_problemasEncontrados) {
+					_problemasEncontrados = false;
+
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Problemas encontrados";
+					helpWindow.width = 640;
+					helpWindow.height = 480;
+
+					notas = "";
+
+					var hlpPanel:GuardarFacturaConfirmacion = new GuardarFacturaConfirmacion();
+					hlpPanel.factura = this._documento;
+					hlpPanel.errorText = problemasMsg;
+					hlpPanel.notas = notas;
+
+					var parent:Sprite;
+
+					var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+					var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+					if (mp && mp.useSWFBridge()) {
+						parent = Sprite(sm.getSandboxRoot());
+					} else {
+						parent = Sprite(FlexGlobals.topLevelApplication);
+					}
+					PopUpManager.addPopUp(helpWindow, parent, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, confirm_closeHandler);
+					hlpPanel.addEventListener(CloseEvent.CLOSE, confirm_closeHandler);
+					hlpPanel.addEventListener("_save", function(evt:Event):void {
+							verificando = true;
+							obtenerMensajesError();
+							notas = hlpPanel.notas;
+							confirm_closeHandler(evt);
+						});
+
+					helpWindow.addElement(hlpPanel);
+				}
+
+				if (verificando && verificacionFinalizada) {
+					verificando = false;
+					verificacionFinalizada = false;
+
+					// En caso de la verificacion se de de forma correcta...
+					if (problemasMsg == problemasMsgVerificacion) {
+						var auditoria:Auditoria = new Auditoria();
+						auditoria.problemas = problemasMsg;
+						auditoria.docId = _documento.docId;
+						auditoria.notas = notas;
+						auditoria.fechaEnv = new Date();
+						auditoria.audFechaHora = new Date()
+						auditoria.usuId = GeneralOptions.getInstance().loggedUser.codigo;
+						auditoria.usuNom = GeneralOptions.getInstance().loggedUser.nombre;
+						auditoria.destinatarios = "";
+
+						problemasMsg = "";
+						problemasMsgVerificacion = "";
+
+						guardarDocumento(auditoria);
+					} else {
+						var alert:Alert = Alert.show("La verificación del documento falló.", "Error al verificar documento");
+						alert.width = 420;
+						alert.height = 240;
+					}
+				}
+
+			}
+
+			private function resultGuardarDocumento(event:ResultEvent):void {
+				if (_documento && _documento.docId) {
+					reloadDocumento(_documento.docId, true);
+				}
+				error = new ErrorPanel();
+				error.cornerRadius = 10;
+				error.backgroundAlpha = .95;
+				error.showButtons = false;
+				error.type = 2;
+
+				error.errorText = "El documento ha sido GUARDADO.";
+
+				PopUpManager.addPopUp(error, this, true);
+				PopUpManager.centerPopUp(error);
+
+				tieneCambios = false;
+				lineastienenCambios = false;
+				running = false;
+
+				setTimeout(function():void {
+						PopUpManager.removePopUp(error);
+						actualizarPrecios(_documento);
+					}, 1500);
+
+			}
+			
+			private function actualizarPrecios(doc:Documento):void {				
+				if (doc.comprobante.codigo == '121' || doc.comprobante.codigo == '122') {
+					var rem:RemoteObject = new RemoteObject();
+					rem.destination = "CreatingRpc";
+					rem.channelSet = ServerConfig.getInstance().channelSet;
+					rem.addEventListener(ResultEvent.RESULT, resultPrecios1);
+					rem.addEventListener(FaultEvent.FAULT, handleFault);
+					
+					resultPrecios = null;
+					docPrecios = doc;
+					
+					rem.getPreciosArticuloDocumento(doc);
+				}
+			}
+			
+			public function resultPrecios1(event:ResultEvent):void {
+				resultPrecios = event.result as ArrayCollection;	
+				if (resultPrecios != null && resultPrecios.length > 0) {
+					var alert:Alert = Alert.show("¿Desea actualizar los precios?", "Los precios han cambiado", Alert.YES | Alert.NO, this, actualizarClickHandler, mediaIcon);
+					alert.width = 400;
+					alert.height = 160;
+				}
+			}
+
+			// Event handler function for displaying the selected Alert button.
+			private function actualizarClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					if (helpWindow == null) {
+						helpWindow = new TitleWindow();
+						helpWindow.title = "Actualización de precios";
+						helpWindow.width = 900;
+						helpWindow.height = 500;
+						
+						var frmPrecios:FrmActualizarPrecios = new FrmActualizarPrecios();
+						frmPrecios.setPrecios(resultPrecios);
+						frmPrecios.documento = docPrecios;
+						
+						PopUpManager.addPopUp(helpWindow, this, true);
+						PopUpManager.centerPopUp(helpWindow);
+						
+						helpWindow.addEventListener(CloseEvent.CLOSE, closePreciosHandler);
+						frmPrecios.addEventListener(CloseEvent.CLOSE, closePreciosHandler);
+						
+						helpWindow.addElement(frmPrecios);
+						
+						helpWindow.closeButton.visible = true;
+					}
+				}
+				
+			}
+			
+			private function closePreciosHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closePreciosHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+				
+			}
+
+			private function resultModify(event:ResultEvent):void {
+				if (!emitiendo_documento) {
+					// Guardar documeto
+					resultGuardarDocumento(event)
+				} else {
+					// Emitir documento
+					emitirFactura(_documento.docId);
+				}
+			}
+
+			private function resultGuardarNroEnvio(event:ResultEvent):void {
+				trace("Número de envío guardado.");
+
+				error = new ErrorPanel();
+				error.cornerRadius = 10;
+				error.backgroundAlpha = .95;
+				error.showButtons = false;
+				error.type = 2;
+
+				error.errorText = "Número de envío guardado.";
+
+				PopUpManager.addPopUp(error, this, true);
+				PopUpManager.centerPopUp(error);
+
+				setTimeout(function():void {
+						PopUpManager.removePopUp(error);
+					}, 1000);
+
+			}
+
+			private function grabarFacturaOk(close:Boolean = false):void {
+				if (_documento.emitido || (!_documento.pendiente && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR)) {
+					if (_documento.iva != _documento.getIva().setScale(4, MathContext.ROUND_UP).toString()) {
+						Alert.show("Los valores de 'Subtotal', 'Total' e 'IVA' no se puede modificar en documentos ya emitodos. \n" + "\nTotal = [Antes:" + _documento.total + "  Después:" + _documento.getTotalRedondeado().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nSubtotal = [" + _documento.subTotal + " Después:" + _documento.getSubTotal().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nIva = [" + _documento.iva + " Después:" + _documento.getIva().setScale(4, MathContext.ROUND_UP).toString() + "]" + "", "Información");
+					} else {
+						running = true;
+
+						// Guardar la factura.
+						var remObj:RemoteObject = new RemoteObject();
+						remObj.destination = "CreatingRpc";
+						remObj.channelSet = ServerConfig.getInstance().channelSet;
+						remObj.addEventListener(ResultEvent.RESULT, resultGuardarDocumento);
+						remObj.addEventListener(FaultEvent.FAULT, handleFault);
+						remObj.showBusyCursor = true;
+
+						remObj.guardar(_documento);
+					}
+
+				} else {
+					// Para los 80s y los 90s no hacemos controles ni de stock ni verificación de crédito del cliente.
+					if (_documento.comprobante.codigo == '80' || _documento.comprobante.codigo == '81' || _documento.comprobante.codigo == '82' || _documento.comprobante.codigo == '90' || _documento.comprobante.codigo == '91' || _documento.comprobante.codigo == '92' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '71' || _documento.comprobante.codigo == '72' || _documento.comprobante.codigo == '130' || _documento.comprobante.codigo == '131' || _documento.comprobante.codigo == '132' || _documento.comprobante.codigo == '133') {
+						guardarDocumento();
+					} else {
+						// Se debe verificar el credito del cliente y a continuación realizar el control de stock.
+						// en caso de estar todo correcto se guarda el doc.
+						_problemasEncontrados = false;
+
+						if (_documento.cliente) {
+							verificarCreditoCliente();
+						} else {
+							guardarDocumento();
+						}
+					}
+					if (close) {
+						dispatchEvent(new Event("_cancel_"));
+					}
+				}
+			}
+
+			protected function cmdGuardar_clickHandler(event:MouseEvent, close:Boolean = false):void {
+				emitiendo_documento = false;
+				
+				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+					if (!_documento.usuIdAut) {
+						_documento.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
+					}
+					grabarFacturaOk(false);
+					return;
+				}
+				if (_documento.comprobante.codigo == '1' || _documento.comprobante.codigo == '10') {
+					grabarFacturaOk(false);
+					return;
+				}
+				if (_documento.usuIdAut) {
+					grabarFacturaOk(false);
+					return;
+				}
+				if ((_documento.cliente && _documento.cliente.categCliId == 'G')) {
+					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							helpWindow = null;
+
+							_documento.usuIdAut = evt.usuarioId;
+							grabarFacturaOk(false);
+						});
+				} else {
+					grabarFacturaOk(false);
+				}
+
+			}
+
+			private function obtenerClaveSupervisora(result:Function):void {
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Ingrese clave supervisora";
+					helpWindow.width = 400;
+					helpWindow.height = 220;
+
+					var frmClaveSup:FrmClaveSupervisora = new FrmClaveSupervisora();
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
+					frmClaveSup.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
+					frmClaveSup.addEventListener("_claveSupOK", result);
+					helpWindow.addElement(frmClaveSup);
+				}
+
+			}
+
+
+			private function obtenerMensajesError():void {
+				// Chequear si tiene credito disponible...
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, resultCreditoCliente);
+				remObj.showBusyCursor = false;
+
+				running = true;
+				remObj.getDocumentosDeudores();
+			}
+
+			private function resultCreditoCliente(event:ResultEvent):void {
+				var data:ArrayCollection = event.result as ArrayCollection;
+
+				var resultPendientes:ArrayCollection = new ArrayCollection();
+
+				for each (var doc:DocumentoDeudor in data) {
+					if (doc.docId != _documento.docId) {
+						if (doc.deudor.codigo == _documento.cliente.codigo) {
+							if (resultPendientes.length > 0) {
+								var pendientes:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+								pendientes.documentos.addItem(doc);
+							} else {
+								var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
+								docsDeudores.codCliente = doc.deudor.codigo;
+								docsDeudores.cliente = doc.deudor;
+								docsDeudores.documentos.addItem(doc);
+
+								resultPendientes.addItem(docsDeudores);
+							}
+						}
+					}
+				}
+
+				if (resultPendientes.length > 0) {
+					var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+
+					var idDocumento:String = _documento.docId;
+					var codCliente:String = _documento.cliente.codigo;
+					var total:BigDecimal = new BigDecimal(_documento.total);
+
+					var monedaCliente:String = _documento.cliente.moneda ? _documento.cliente.moneda.codigo : Moneda.DOLARES;
+
+					var totalFacturaActual:BigDecimal = DocPendientesCliente.convertir(total, _documento.moneda.codigo, monedaCliente);
+					var totalAdeudado:String = pendiente.getTotalAdeudado(monedaCliente, idDocumento);
+
+					creditoInfo = new CreditoInfo();
+					creditoInfo.topeCredito = _documento.cliente.cliTopeCredito;
+					creditoInfo.solicitado = totalFacturaActual.toString();
+					creditoInfo.cliente = codCliente;
+					creditoInfo.deuda = totalAdeudado;
+
+					problemasMsgVerificacion = creditoInfo.tieneCredito() ? getTieneCreditoVerificar(pendiente) : getLimiteCreditoExcedido(pendiente);
+				} else {
+					problemasMsgVerificacion = "";
+					if (!hayStock()) {
+						problemasMsgVerificacion += getStockInsuficienteMessage(_documento.lineas.lineas);
+					}
+				}
+				verificacionFinalizada = true;
+				invalidateProperties();
+
+				running = false;
+
+			}
+
+			private function tieneCredito(pendientes:DocPendientesCliente = null):void {
+				problemasMsg = "";
+				if (!hayStock()) { // Tiene crédito y NO hay stock.
+					problemasMsg += getStockInsuficienteMessage(_documento.lineas.lineas);
+					if (pendientes != null) {
+						problemasMsg += pendientes.getDocumentosVencidos();
+						problemasMsg += pendientes.getDocumentosPendientes();
+					}
+					_problemasEncontrados = true;
+					invalidateProperties();
+				} else { // Tiene crédito y stock.
+					_problemasEncontrados = false;
+					guardarDocumento();
+				}
+
+			}
+
+			private function getTieneCreditoVerificar(pendientes:DocPendientesCliente):String {
+				var problemasMsgV:String = "";
+				if (!hayStock()) {
+					problemasMsgV += getStockInsuficienteMessage(_documento.lineas.lineas);
+				}
+				if (pendientes != null) {
+					problemasMsgV += pendientes.getDocumentosVencidos();
+					problemasMsgV += pendientes.getDocumentosPendientes();
+				}
+
+				return problemasMsgV;
+			}
+
+
+			private function verificarCreditoCliente():void {
+				// Chequear si tiene credito disponible...
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, resultVerificarCreditoCliente);
+				remObj.showBusyCursor = false;
+
+				running = true;
+				remObj.getDocumentosDeudores();
+			}
+
+
+			private function resultVerificarCreditoCliente(event:ResultEvent):void {
+				var data:ArrayCollection = event.result as ArrayCollection;
+
+				var resultPendientes:ArrayCollection = new ArrayCollection();
+				try {
+					for each (var doc:DocumentoDeudor in data) {
+						if (doc.docId != _documento.docId) {
+							if (doc.deudor.codigo == _documento.cliente.codigo) {
+								if (resultPendientes.length > 0) {
+									var pendientes:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+									pendientes.documentos.addItem(doc);
+								} else {
+									var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
+
+									docsDeudores.codCliente = doc.deudor.codigo;
+									docsDeudores.cliente = doc.deudor;
+									if (_documento.nuevo || doc.docId != _documento.docId) {
+										docsDeudores.documentos.addItem(doc);
+									}
+
+									resultPendientes.addItem(docsDeudores);
+								}
+							}
+						}
+					}
+					if (resultPendientes.length > 0) {
+						var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+
+						var idDocumento:String = _documento.docId;
+						var codCliente:String = _documento.cliente.codigo;
+						var total:BigDecimal = new BigDecimal(_documento.total);
+
+						var monedaCliente:String = _documento.cliente.moneda ? _documento.cliente.moneda.codigo : Moneda.DOLARES;
+
+						// Convertir el total a la moneda del cliente
+						var totalFacturaActual:BigDecimal = DocPendientesCliente.convertir(total, _documento.moneda.codigo, monedaCliente);
+						var totalAdeudado:String = pendiente.getTotalAdeudado(monedaCliente, idDocumento);
+
+						creditoInfo = new CreditoInfo();
+						creditoInfo.topeCredito = _documento.cliente.cliTopeCredito;
+						creditoInfo.solicitado = totalFacturaActual.toString();
+						creditoInfo.cliente = codCliente;
+						creditoInfo.deuda = totalAdeudado;
+
+						if (creditoInfo.tieneCredito()) {
+							tieneCredito(pendiente);
+						} else {
+							problemasMsg = getLimiteCreditoExcedido(pendiente);
+							_problemasEncontrados = true;
+							invalidateProperties();
+						}
+					} else {
+						tieneCredito();
+					}
+					running = false;
+
+				} catch (error:Error) {
+					Alert.show(error.toString(), "Error");
+				}
+
+			}
+
+			private function getLimiteCreditoExcedido(pendientes:DocPendientesCliente):String {
+				var probMsg:String = "Límite de crédito excedido:\n";
+				if (creditoInfo) {
+					var deuda:BigDecimal = new BigDecimal(creditoInfo.deuda);
+					var solicitado:BigDecimal = new BigDecimal(creditoInfo.solicitado);
+					var topeCredito:Number = creditoInfo.topeCredito;
+
+					var simbolo:String = _documento.cliente.moneda ? _documento.cliente.moneda.simbolo : "U$S";
+					var nf:NumberFormatter = new NumberFormatter();
+					nf.setStyle("locale", "es_ES");
+
+					probMsg += "Crédito: " + simbolo + " " + nf.format(deuda.add(solicitado).toString()) + ", Tope Crédito: " + simbolo + " " + nf.format(topeCredito.toString()) + "\n\n";
+				}
+
+				if (!hayStock()) {
+					probMsg += getStockInsuficienteMessage(_documento.lineas.lineas);
+				}
+				probMsg += pendientes.getDocumentosVencidos();
+				probMsg += pendientes.getDocumentosPendientes();
+
+				return probMsg;
+
+			}
+
+
+			private function resultEmitir(event:ResultEvent):void {
+				var serieNumero:SerieNumero = event.result as SerieNumero;
+				if (serieNumero) {
+					_documento.serie = serieNumero.serie;
+					_documento.numero = serieNumero.numero;
+
+					txtSerial.text = _documento.serie;
+					txtNumber.text = _documento.numero.toString();
+				}
+				emitiendo_documento = false;
+				_documento.emitido = true;
+				
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					factura = evt.result as Documento;
+					enviarEmail();
+
+				});
+				remObj.getDocumento(_documento.docId);
+				
+			}
+			
+			private function enviarEmail():void {
+				// TODO: Enviar mail al emitir la factura.
+				{
+					if (!chbEnvioMailAut.selected) {
+						running = false;
+						Alert.show("¿Desea enviar la factura por correo?", "Envío de factura", Alert.YES | Alert.NO, this, alertClickHandler);
+					} else {
+						if (_documento.comprobante.isNotaCreditoFinanciera()) {
+							if (emitirEImprimirNCF) {
+								printToPrinter();
+							} else {
+								tieneCambios = false;
+								lineastienenCambios = false
+								running = false;
+							}
+						} else {
+							printToPrinter();
+						}
+					}
+				}
+				
+				currentState = "default";
+			}
+			
+			private function printToPrinter():void {
+				var pfactura:PrintJobFactura = new PrintJobFactura(false);
+				pfactura.documento = _documento;
+				pfactura.createSMSImage(chbEnvioMailAut.selected);
+				
+				setTimeout(function():void {
+					running = false;
+					facturaEmitida();
+				}, 1000);
+				
+			}
+
+			// Event handler function for displaying the selected Alert button.
+			private function alertClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					//Enviar eMail
+					var pfactura:PrintJobFactura = new PrintJobFactura(false);
+					pfactura.documento = this._documento;
+					pfactura.createSMSImage(chbEnvioMailAut.selected);
+				}
+				setTimeout(function():void {
+						facturaEmitida();
+					}, 1000);
+
+			}
+
+			public function emitirFactura(docId:String):void {
+				running = true;
+
+				var remObj1:RemoteObject = new RemoteObject();
+				remObj1.destination = "CreatingRpc";
+				remObj1.channelSet = ServerConfig.getInstance().channelSet;
+				remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					factura = evt.result as Documento;
+					
+					if (!factura.emitido) {
+						factura.updateCaja();
+						factura.emitidoPor = GeneralOptions.getInstance().loggedUser.codigo;
+
+						var fanfold:String = "";
+						
+						if (factura.esRemito()) { // Remitos seguro no van por el efactura. 
+							remObjEmitir.emitir(factura, fanfold);
+						} else {
+							// Crear e-ticket, e-factura 
+							var remObjEFactura:RemoteObject = new RemoteObject();
+							remObjEFactura.destination = "CreatingRpc";
+							remObjEFactura.channelSet = ServerConfig.getInstance().channelSet;
+							remObjEFactura.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+								var eFactura:EFacturaResult = event.result as EFacturaResult;
+								
+								if (eFactura == null) { // no tiene e-factura (comprobantes *)
+									// Emitir factura
+									remObjEmitir.emitir(factura, fanfold);
+									
+								} else if (!eFactura.efacturaFail) {									
+									emitiendo_documento = false;
+
+									// Leer factura nuevamente...
+									var remObj:RemoteObject = new RemoteObject();
+									remObj.destination = "CreatingRpc";
+									remObj.channelSet = ServerConfig.getInstance().channelSet;
+									remObj.addEventListener(FaultEvent.FAULT, handleFault);
+									remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+										factura = evt.result as Documento;
+										enviarEmail();										
+									});
+									
+									remObj.getDocumento(_documento.docId);
+									
+								} else {
+									emitiendo_documento = false;
+									running = false;
+									
+									var helpWindow:TitleWindow = new TitleWindow();
+									helpWindow.title = "E-Factura: Error al generar CFE";
+									helpWindow.width = 600;
+									
+									var errorPnl:ErrorPanel = new ErrorPanel();
+									errorPnl.type = 2;
+									errorPnl.backgroundAlpha = .08;
+									errorPnl.textColor = 0x000000;
+									errorPnl.errorText = "Error al procesar el CFE '" + eFactura.fileName + ".txt'.";
+									errorPnl.detailsText = eFactura.resultData;
+									errorPnl.showButtons = true;
+									
+									helpWindow.addElement(errorPnl);
+									
+									PopUpManager.addPopUp(helpWindow, Sprite(FlexGlobals.topLevelApplication));
+									PopUpManager.centerPopUp(helpWindow);
+									
+									helpWindow.addEventListener(CloseEvent.CLOSE, function():void {
+										PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+									});					
+									errorPnl.addEventListener(CloseEvent.CLOSE, function():void {
+										PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+									});						
+								}
+								
+							});
+							remObjEFactura.addEventListener(FaultEvent.FAULT, handleFault);
+							remObjEFactura.showBusyCursor = true;
+							remObjEFactura.generateCFE(factura);
+						}
+						
+					}
+				});
+				remObj1.getDocumento(docId);
+			}
+
+			private function reloadDocumento(docId:String, saving:Boolean = false):void {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						factura = evt.result as Documento;
+						running = false;
+
+						if (saving) {
+							if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' || _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
+
+								Alert.buttonWidth = 60;
+
+								var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
+								alert.width = 340;
+								alert.height = 180
+							}
+						}
+
+						currentState = "default";
+					});
+				remObj.getDocumento(docId);
+
+			}
+			
+			
+
+			private function facturaEmitida():void {
+				tieneCambios = false;
+				lineastienenCambios = false;
+				if (_documento.comprobante.codigo != "28") { // No imprimir las notas de credito financiera al emitir.
+					if (factura.comprobante.formatoidcmp && StringUtil.trim(factura.comprobante.formatoidcmp).length > 0) { // Imprimir de forma automatica solos los comprobantes que tienen salida a impresora.
+						if (_documento.tieneNotasEnLineas()) {
+							var alert:Alert = Alert.show("¿Desea imprimir las notas de las líneas?", "Confirmación", Alert.YES + Alert.NO, null, imprimirFacturaResult);
+							alert.width = 400;
+							alert.height = 180;
+
+						} else {
+							imprimirFactura(false);
+						}
+					}
+				}
+				running = false;
+			}
+			
+			private function imprimirFacturaResult(event:CloseEvent):void {
+				var printNotasInterlineadas:Boolean = false;
+				if (event.detail == Alert.YES) {
+					printNotasInterlineadas = true;	
+				}
+				imprimirFactura(printNotasInterlineadas);
+	
+			}
+			
+			private function imprimirFactura(imprimirNotas:Boolean):void {
+				var pjFactura:PrintJobFactura = new PrintJobFactura();
+				pjFactura.documento = factura;
+				pjFactura.printNotasInterlineadas = imprimirNotas; 
+				
+				if (factura.esRemito()) {
+					pjFactura.print_vias = [PrintJobFactura.VIA_COBRANZA];
+				}
+				pjFactura.print();
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+
+				emitiendo_documento = false;
+				running = false;
+				_convirtiendo = false;
+				currentState = "default";
+			}
+
+			public function clear():void {
+				if (cmbClient) {
+					cmbClient.clear();
+				}
+				if (cmbProveedor) {
+					cmbProveedor.clear();
+				}
+				if (cmbEntrega) {
+					cmbEntrega.clear();
+				}
+				if (cmbMoney) {
+					cmbMoney.clear();
+				}
+				if (cmbDepositoD) {
+					cmbDepositoD.clear();
+				}
+				if (cmbDepositoH) {
+					cmbDepositoH.clear();
+				}
+				if (cmbListaPrecios) {
+					cmbListaPrecios.clear();
+				}
+				if (cmbFormaPago) {
+					cmbFormaPago.clear();
+				}
+				if (cmbCondicion) {
+					cmbCondicion.clear();
+				}
+				if (txtCotizacion) {
+					txtCotizacion.text = "";
+				}
+			}
+
+			public function get factura():Documento {
+				return _documento;
+			}
+
+			public function set factura(value:Documento):void {
+				if (_documento) {
+					_documento.removeEventListener("_changeComisiones", changeComisionesListener);
+					_documento.removeEventListener("_changeTipoDoc", changeTipoDoc);
+					_documento.removeEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
+				}
+				_modoVisualizacion = false;
+
+				clear();
+
+				_documento = value;
+
+				if (_documento.pagos == null) {
+					_documento.pagos = new ArrayCollection();
+				}
+				if (_documento.recibosVinculados == null) {
+					_documento.recibosVinculados = new ArrayCollection();
+				}
+				_documento.cuotasDocumento.documento = _documento;
+				_documento.cuotasDocumento.inicializarCuotas();
+				_documento.addEventListener("_changeComisiones", changeComisionesListener);
+				_documento.addEventListener("_changeTipoDoc", changeTipoDoc);
+				_documento.addEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
+
+				_changeFactura = true;
+
+				dispatchEvent(new Event("_changeDocumento"));
+				invalidateProperties();
+			}
+			
+			private function changeTipoDoc(event:Event):void {
+				if (_documento.tipoDoc && _documento.tipoDoc.length > 0) {
+					for each (var tipo:Object in new ArrayCollection(tiposDocList.source)) {
+						if (tipo.value == _documento.tipoDoc) {
+							tipoDoc = tipo;
+						}
+					}
+				} else {
+					tipoDoc = tiposDocList[1];
+				}
+				
+				if (txtRUT) {
+					var contacto:Contacto = _documento.cliente ? _documento.cliente.contacto : (_documento.proveedor ? _documento.proveedor.contacto : null);
+					if (contacto && contacto.paisIdCto == "UY") {
+						rut_stringValidator.validate();
+						
+					}
+				}
+
+			}
+
+			private function cargarMonedas():void {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = true;
+
+				_documento.esCotizacionDeVenta = _documento.comprobante.codigo == '1';
+				_documento.esOrdenDeVenta = _documento.comprobante.codigo == '10';
+
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					_documento.esCotizacionDeVenta = evt.result as Boolean;
+						if (_documento.nuevo && _documento.esCotizacionDeVenta) {
+							remObjSerieNumero.generateSerieNumero(_documento.comprobante);
+						}
+					});
+				remObj.esCotizacionDeVenta(_documento.comprobante.codigo);
+
+				var remObj2:RemoteObject = new RemoteObject();
+				remObj2.destination = "CreatingRpc";
+				remObj2.channelSet = ServerConfig.getInstance().channelSet;
+				remObj2.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj2.showBusyCursor = true;
+				remObj2.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					_documento.esOrdenDeVenta = evt.result as Boolean;
+						if (_documento.nuevo && _documento.esOrdenDeVenta) {
+							remObjSerieNumero.generateSerieNumero(_documento.comprobante);
+						}
+					});
+				remObj2.esOrdenDeVenta(_documento.comprobante.codigo);
+
+				var remObjSol:RemoteObject = new RemoteObject();
+				remObjSol.destination = "CreatingRpc";
+				remObjSol.channelSet = ServerConfig.getInstance().channelSet;
+				remObjSol.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjSol.showBusyCursor = true;
+				remObjSol.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						_documento.esSolicitudCompra = evt.result as Boolean;
+						if (_documento.nuevo && _documento.esSolicitudCompra) {
+							remObjSerieNumero.generateSerieNumero(_documento.comprobante);
+						}
+					});
+				remObjSol.esSolicitudCompra(_documento.comprobante.codigo);
+
+
+				cargarMonedasComprobante();
+			}
+
+			private function cargarMonedasComprobante():void {
+				if (_documento.esOrdenDeVenta || _documento.esCotizacionDeVenta || _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE) {
+					monedas = new ArrayCollection();
+					var code:Number = Number(_documento.comprobante.codigo);
+					for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+						if (_documento.comprobante.esProceso80()) {
+							if (moneda.codigo == "1" || moneda.codigo == "2" || moneda.codigo == "4" || moneda.codigo == "5") {
+								monedas.addItem(moneda);
+							}
+						} else if (_documento.comprobante.esProceso14()) { // Para los 14, 15 y 16 solo Dólares *
+							if (moneda.codigo == "5") {
+								monedas.addItem(moneda);
+							}
+						} else {
+							monedas.addItem(moneda);
+						}
+
+					}
+					if (_documento.moneda) {
+						var m:Moneda = _documento.moneda;
+						if (m.nombre.indexOf("*") <= 0) {
+							_documento.comprobante.aster = false;
+						} else {
+							_documento.comprobante.aster = true;
+						}
+					}
+				} else {
+					if (!_documento.comprobante.aster) { // Si es oficial el comprobante.
+						monedas = new ArrayCollection();
+						for each (var m1:Moneda in CatalogoFactory.getInstance().monedas) {
+							if (m1.nombre.indexOf("*") <= 0 || _documento.comprobante.codigo == '100' || _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '120') { // Agrega las monedas oficiales.
+								if (_documento.comprobante.codigo == '120') {
+									if (!(m1.codigo == '1' || m1.codigo == '4')) {
+										monedas.addItem(m1);
+									}
+								} else {
+									monedas.addItem(m1);
+								}
+							}
+						}
+					} else {
+						monedas = new ArrayCollection();
+						for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
+							if (mda.nombre.indexOf("*") > 0 || _documento.comprobante.codigo == '19') { // Agrega las monedas NO oficiales.
+								monedas.addItem(mda);
+							}
+						}
+					}
+					if (_documento.moneda) {
+						var mm:Moneda = _documento.moneda;
+						if (mm.nombre.indexOf("*") <= 0) {
+							_documento.comprobante.aster = false;
+						} else {
+							_documento.comprobante.aster = true;
+						}
+					}
+
+				}
+				_documento.update();
+
+			/*
+			   tieneCambios = false;
+			   callLater(function():void {
+			   _documento.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
+			   if (evt.property != "depto" && evt.property != "cotizacion" && evt.property != "esSolicitudCompra") {
+			   tieneCambios = true;
+			   }
+
+			   });
+
+			   });
+			 */
+			}
+
+			private function resultSerieNumero(event:ResultEvent):void {
+				var serie:SerieNumero = event.result as SerieNumero;
+				if (serie) {
+					_documento.serie = serie.serie;
+					_documento.numero = serie.numero;
+				}
+			}
+
+			private function changeComisionesListener(event:Event):void {
+				actualizarComisiones();
+			}
+
+
+			protected function cmdEditSL_clickHandler(event:MouseEvent):void {
+				if (_documento.moneda == null || (_documento.preciosVenta == null)) {
+					if (!_documento.esSolicitudCompra) {
+						Alert.show("Para poder agregar Líneas de Venta debe seleccionar una 'Moneda' y 'Lista de Precios'", "Error");
+						return;
+					} else if (!_documento.moneda) {
+						Alert.show("Para poder agregar Líneas de Compra debe seleccionar una 'Moneda'", "Error");
+						return;
+					}
+				}
+				if (helpWindow == null) {
+					if (_documento.proveedor) {
+						CatalogoFactory.getInstance().updateArticulosProveedor(_documento.proveedor.codigo);
+					}
+					helpWindow = new TitleWindow();
+					helpWindow.title = _documento.esSolicitudCompra ? "Líneas de compra" : "Líneas de venta";
+					helpWindow.width = 1120;
+					helpWindow.height = 600;
+
+					frmLineasVenta = new FrmLineasVenta();
+					frmLineasVenta.documento = _documento;
+					frmLineasVenta.lineasVenta = _documento.lineas;
+					frmLineasVenta.moneda = cmbMoney.selectedItem; // Pasar Moneda. 
+					frmLineasVenta.preciosVenta = cmbListaPrecios.selectedItem; // Pasar Precios Venta.
+
+					if (_documento.esCotizacionDeVenta) {
+						var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
+						var depPpal:String = param.depIdParAdm.toString();
+						for each (var dep:Deposito in CatalogoFactory.getInstance().depositos) {
+							if (depPpal == dep.codigo) {
+								frmLineasVenta.deposito = dep;
+								break;
+							}
+						}
+					} else {
+						frmLineasVenta.deposito = cmbDepositoD.selectedItem; // Pasar Deposito para control de Stock.
+					}
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+					frmLineasVenta.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+
+					helpWindow.closeButton.visible = false;
+
+					helpWindow.addElement(frmLineasVenta);
+				}
+			}
+
+			private function closeLineaVentaHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+				if (frmLineasVenta.tieneCambios) {
+					tieneCambios = true;
+					lineastienenCambios = true;
+					_documento.usuIdAut = null;
+					_usuarioAutorizante = null;
+				}
+
+				frmLineasVenta = null;
+
+				callLater(function():void {
+						_documento.update();
+					});
+				callLater(function():void {
+						cmdEditSL.setFocus();
+					});
+			}
+
+			//-------------------------------------------------------------------------
+			// Seleccion de Lineas de Venta
+			// 
+			protected function cmdEditVencimientos_clickHandler(event:MouseEvent):void {
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Vencimientos";
+					helpWindow.width = 300;
+					helpWindow.height = 390;
+
+					var frmVencimientos:FrmVencimientos = new FrmVencimientos();
+					frmVencimientos.documento = _documento;
+					frmVencimientos.cuotasDocumento = _documento.cuotasDocumento.cuotas;
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
+					frmVencimientos.addEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
+
+					helpWindow.addElement(frmVencimientos);
+
+					helpWindow.closeButton.visible = false;
+				}
+			}
+
+			private function closeVencimientosHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+				callLater(function():void {
+						cmdVencimiento.setFocus();
+					});
+			}
+
+			private function capture_keyDownHandlerCliente(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.F1) {
+					cmbClient_helpFTHandler();
+				}
+			}
+
+			//
+			// Seleccion de Cliente
+			// 
+			protected function cmbClient_helpFTHandler(event:Event = null):void {
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Clientes";
+					helpWindow.width = 840;
+					helpWindow.height = 620;
+
+					var hlpPanel:HelpClientPnl = new HelpClientPnl();
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, cliente_closeHandler);
+					hlpPanel.addEventListener(CloseEvent.CLOSE, cliente_closeHandler);
+					hlpPanel.addEventListener(ClienteEvent.CLIENTE_SELECCIONADO, clienteSeleccionado);
+
+					helpWindow.addElement(hlpPanel);
+				}
+			}
+
+
+			private function capture_keyDownHandlerProveedor(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.F1) {
+					cmbProveedor_helpFTHandler();
+				}
+			}
+
+			//
+			// Seleccion de Proveedor
+			// 
+			protected function cmbProveedor_helpFTHandler(event:Event = null):void {
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Proveedores";
+					helpWindow.width = 840;
+					helpWindow.height = 620;
+
+					var hlpPanel:HelpProveedorPnl = new HelpProveedorPnl();
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
+					hlpPanel.addEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
+					hlpPanel.addEventListener(ProveedorEvent.PROVEEDOR_SELECCIONADO, proveedorSeleccionado);
+
+					helpWindow.addElement(hlpPanel);
+				}
+			}
+
+
+			private function clienteSeleccionado(event:ClienteEvent):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, cliente_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+
+				var cliente:Cliente = event.cliente;
+				cmbClient.selectedItem = cliente;
+
+				//
+				// Cargar datos del Cliente.
+				//
+				if (cliente != null) {
+					_documento.tomarCamposDelCliente(cliente.codigo);
+				}
+				helpWindow = null;
+
+				callLater(function():void {
+						cmbClient.setFocus();
+					});
+			}
+
+			private function proveedorSeleccionado(event:ProveedorEvent):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+
+				var proveedor:Proveedor = event.proveedor;
+				cmbProveedor.selectedItem = proveedor;
+
+				//
+				// Cargar datos del Proveedor.
+				//
+				if (proveedor != null) {
+					_documento.tomarCamposDelProveedor(proveedor.codigo);
+				}
+				helpWindow = null;
+
+				callLater(function():void {
+						cmbProveedor.setFocus();
+					});
+			}
+
+
+			private function cliente_closeHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, cliente_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+				callLater(function():void {
+						cmbClient.setFocus();
+					});
+			}
+
+			private function proveedor_closeHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+				callLater(function():void {
+						cmbProveedor.setFocus();
+					});
+			}
+
+
+			//
+			// Fin Seleccion de Cliente
+			//
+			protected function hayStock():Boolean {
+				for each (var linea:LineaDocumento in _documento.lineas.lineas) {
+					if (!linea.hasStock) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			private function getStockInsuficienteMessage(lineas:ArrayCollection):String {
+				var probMsg:String = "Stock Insuficiente:\n";
+				for each (var linea:LineaDocumento in lineas) {
+					if (!linea.hasStock) {
+						var stock:BigDecimal = linea.stock ? linea.stock.setScale(2, MathContext.ROUND_HALF_UP) : BigDecimal.ZERO;
+						probMsg += "[" + linea.articulo.codigo + "-" + linea.concepto + "]. En stock '" + stock + "'. Vendidas: " + linea.cantidad + ".\n";
+					}
+				}
+				return probMsg;
+			}
+
+			private function confirm_closeHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, confirm_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+
+			protected function cmdEmitir_clickHandler(event:MouseEvent):void {
+				if (_documento.comprobante.isNotaCreditoFinanciera()) {
+					var alert:Alert = Alert.show("¿Desea imprimir factura?", "Imprimir", Alert.YES | Alert.NO, this, 
+						function actualizarCostosClickHandler(evt:CloseEvent):void {
+							if (evt.detail == Alert.YES) {
+								emitirEImprimirNCF = true;
+							} else {
+								emitirEImprimirNCF = false;
+							}
+							verificarTipoCambioFiscal();
+						}, mediaIcon);
+					alert.width = 400;
+					alert.height = 200;	
+				} else {
+					verificarTipoCambioFiscal();
+				}
+				
+				
+			}
+			
+			protected function verificarTipoCambioFiscal():void {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					var result:Boolean = evt.result as Boolean;
+					if (result) {
+						resultVerificarTCFiscal();						
+					} else {
+						var alert:Alert = Alert.show("No hay tipo de cambio fiscal definido para el día de hoy.\nDebe definir el tipo de cambio fiscal para poder emitir.", "Advertencia");
+						alert.width = 500;
+					}
+				});
+				remObj.existeTCFiscal(_documento.moneda.codigo);
+				
+			}
+				
+			protected function resultVerificarTCFiscal():void {				
+				if (!_documento.comprobante.aster) {
+					var total:BigDecimal = new BigDecimal(_documento.total);
+					var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
+					var maxUI:BigDecimal = new BigDecimal("32426"); // Valor de la UI año 2016
+					
+					if (_documento.moneda.codigo == Moneda.DOLARES) {
+						var dolarStr:String = cotizaciones.cotizaciones.dolarVenta.@value;
+						var dolar:BigDecimal = new BigDecimal(dolarStr);
+						
+						maxUI = maxUI.divide(dolar);
+					} else  if (_documento.moneda.codigo == Moneda.EUROS) {
+						var euroStr:String = cotizaciones.cotizaciones.euroVenta.@value;
+						var euro:BigDecimal = new BigDecimal(dolarStr);
+						
+						maxUI = maxUI.divide(euro);
+					}
+					if (total.compareTo(maxUI) > 0) {
+						if (!_documento.rut || _documento.rut.length == 0) {
+							Alert.show("Para las ventas superiores a 10.000 UI se requiere documento del cliente.");
+							return;
+						}
+						var resultV:ValidationResultEvent = rut_stringValidator.validate();
+						if (resultV.type != ValidationResultEvent.VALID) {
+							Alert.show(resultV.message);
+							return;
+						}
+					}
+					
+					if (_documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO) {
+						var isValid:Boolean = true;
+						if ((ddlReferenciaCFE.selectedIndex) < 0) {
+							isValid = false;
+						} else {							
+							var index:int = ddlReferenciaCFE.selectedIndex;
+							if (index == 0) {
+								isValid = txtSerieCfeRef.text != null && txtSerieCfeRef.text.length > 0;
+								isValid = txtNroCfeRef.text != null && txtNroCfeRef.text.length > 0;
+								isValid = txtFechaCFERef.selectedDate != null;
+							} else {
+								isValid = txtRazon.text != null && txtRazon.text.length > 0;
+							}
+						}
+						if (!isValid) {
+							Alert.show("Los datos en \"Referncias CFE\" son requeridos, no pueden estar vacios.");
+							return;
+						}
+					}
+
+				}
+				
+				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+					emitirFacturaOk();
+				} else if (!_documento.usuIdAut || (_documento.cliente && _documento.cliente.categCliId == 'G')) {
+					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							helpWindow = null;
+
+							_documento.usuIdAut = evt.usuarioId;
+							emitirFacturaOk();
+						});
+				} else {
+					emitirFacturaOk();
+				}
+			}
+
+			protected function emitirFacturaOk():void {
+				emitiendo_documento = true;
+				_problemasEncontrados = false;
+
+				// En caso de ser nueva o de tener modificaciones guardo la factura.
+				if (_documento.cliente && !_documento.comprobante.isNotaCreditoFinanciera()) {
+					verificarCreditoCliente();
+				} else {
+					guardarDocumento();
+					running = false;
+				}
+			}
+
+			private function guardarDocumento(auditoria:Auditoria = null):void {
+				// Si documento es un contado, el plan de pagos debe de ser nulo y las cuotas deben de ser 0;
+				if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO || _documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.RECIBO_COBRO || _documento.comprobante.isMovimentoDeStockDeCliente() || _documento.comprobante.isMovimentoDeStockDeProveedor()) {
+					_documento.planPagos = null;
+					_documento.cuotasDocumento.cuotas = new ArrayCollection();
+				}
+				if (_documento.comprobante.codigo == '16') {
+					_documento.pendiente = false;
+				}
+				tieneCambios = false;
+
+				running = true;
+				
+				if (_documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.COMPRA_CREDITO) {
+					if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR && 
+						(_documento.comprobante.codigo == '102' || _documento.comprobante.codigo == '103' || _documento.comprobante.codigo == '202' || _documento.comprobante.codigo == '203')) {
+						
+						var remObj:RemoteObject = new RemoteObject();
+						remObj.destination = "CreatingRpc";
+						remObj.channelSet = ServerConfig.getInstance().channelSet;
+						remObj.addEventListener(ResultEvent.RESULT, costosResult);
+						remObj.addEventListener(FaultEvent.FAULT, handleFault);
+						remObj.showBusyCursor = true;
+						
+						remObj.getCompraVentaCostos(_documento);
+					}
+				}
+
+				_documento.updateCaja();
+						
+				// guardar errores para auditoría
+				if (_documento.nuevo) {
+					remObjSave.alta(_documento, auditoria);
+				} else {
+					remObjModify.modificar(_documento, auditoria);
+				}
+
+			}
+			
+			public function costosResult(event:ResultEvent):void {
+				resultCostos = event.result as ArrayCollection;	
+				if (resultCostos != null && resultCostos.length > 0) {
+					var alert:Alert = Alert.show("¿Desea actualizar los costos?", "Los costos han cambiado", Alert.YES | Alert.NO, this, actualizarCostosClickHandler);
+					alert.width = 360;
+					alert.height = 160;
+				}
+			}
+			
+			// Event handler function for displaying the selected Alert button.
+			private function actualizarCostosClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					if (helpWindow == null) {
+						helpWindow = new TitleWindow();
+						helpWindow.title = "Actualización de costos";
+						helpWindow.width = 1120;
+						helpWindow.height = 600;
+						
+						var frmVerificarCostos:FrmVerificarVentas = new FrmVerificarVentas();
+						frmVerificarCostos.documento = _documento;
+						frmVerificarCostos.setCostos(resultCostos);
+						
+						helpWindow.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
+						frmVerificarCostos.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
+						
+						helpWindow.addElement(frmVerificarCostos);
+						PopUpManager.addPopUp(helpWindow, this, true);
+
+						PopUpManager.centerPopUp(helpWindow);
+					}
+				}
+				
+			}
+
+			
+			private function generarExpedicion(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					var wndAltaTarea:TitleWindow = new TitleWindow();
+					wndAltaTarea.title = "Creación Tarea";
+					wndAltaTarea.width = WINDOW_WIDTH;
+					wndAltaTarea.height = WINDOW_HEIGHT;
+
+					var description:String = "Documento: " + _documento.serie + "/" + _documento.numero;
+					var tarea:AgendaTarea = new AgendaTarea();
+
+					frmNuevaTarea = new FrmNuevaTarea();
+					frmNuevaTarea.nueva = true;
+					frmNuevaTarea.matutina = false;
+					frmNuevaTarea.showFecha = true;
+					frmNuevaTarea.fecha = new Date();
+					if (_documento.cliente) {
+						frmNuevaTarea.contacto = _documento.cliente.contacto;
+					} else if (_documento.proveedor) {
+						frmNuevaTarea.contacto = _documento.proveedor.contacto;
+					}
+					frmNuevaTarea.descripcion = description;
+
+					for each (var t:Tarea in CatalogoFactory.getInstance().tareas) {
+						if (_documento.esSolicitudCompra) {
+							if (t.codigo == "022") {
+								frmNuevaTarea.tarea.tarea = t;
+								break;
+							}
+						} else {
+							if (t.codigo == "020") {
+								frmNuevaTarea.tarea.tarea = t;
+								break;
+							}
+						}
+					}
+
+					PopUpManager.addPopUp(wndAltaTarea, Sprite(FlexGlobals.topLevelApplication), false);
+					PopUpManager.centerPopUp(wndAltaTarea);
+
+					wndAltaTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
+					frmNuevaTarea.addEventListener(CloseEvent.CLOSE, function():void {
+							wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+							PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						});
+
+					frmNuevaTarea.addEventListener("_savedOk", function():void {
+							wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+							PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						});
+
+
+					wndAltaTarea.addElement(frmNuevaTarea);
+
+				}
+			}
+
+			private function closeHandler(event:Event):void {
+				var ttlWnd:TitleWindow = event.target as TitleWindow;
+				ttlWnd.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(ttlWnd as IFlexDisplayObject);
+			}
+
+
+			private function resultSave(event:ResultEvent):void {
+				var docId:String = event.result as String;
+				if (!docId) {
+					Alert.show("No se grabó correctamente el documento", "Error");
+					return;
+				}
+				error = new ErrorPanel();
+				error.cornerRadius = 10;
+				error.backgroundAlpha = .95;
+				error.showButtons = false;
+				error.type = 2;
+
+				error.errorText = "Documento GUARDADO.";
+
+				PopUpManager.addPopUp(error, this, true);
+				PopUpManager.centerPopUp(error);
+
+				setTimeout(function():void {
+						PopUpManager.removePopUp(error);
+					}, 1500);
+
+				_documento.docId = docId;
+
+				factura.nuevo = false;
+				lineastienenCambios = false;
+				tieneCambios = false;
+
+				if (!emitiendo_documento) {
+					running = true;
+					reloadDocumento(docId, true);
+				} else {
+					emitirFactura(docId);
+				}
+
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				if (tieneCambios && _documento.permisosDocumentoUsuario.edicion && !_modoVisualizacion && _documento.cliente) {
+					Alert.buttonWidth = 80;
+					var alert:Alert = Alert.show("El Documento ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
+					alert.width = 400;
+					alert.height = 200;
+				} else {
+					dispatchEvent(new Event("_cancel_", true, true));
+				}
+
+			}
+
+			protected function confirmCloseHandler(eventObj:CloseEvent):void {
+				if (eventObj.detail == Alert.YES) {
+					if (_documento.emitido) {
+						if (_documento.iva != _documento.getIva().setScale(4, MathContext.ROUND_UP).toString()) {
+							Alert.show("Los valores de sub-total, total e iva no se puede modificar en documentos ya emitodos. \n" + "\nTotal = [Antes:" + _documento.total + "  Después:" + _documento.getTotalRedondeado().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nSubtotal = [Antes:" + _documento.subTotal + " Después:" + _documento.getSubTotal().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nIva = [Antes:" + _documento.iva + " Después:" + _documento.getIva().setScale(4, MathContext.ROUND_UP).toString() + "]" + "", "Información");
+						} else {
+							var remObj:RemoteObject = new RemoteObject();
+							remObj.destination = "CreatingRpc";
+							remObj.channelSet = ServerConfig.getInstance().channelSet;
+							remObj.addEventListener(ResultEvent.RESULT, resultGuardarDocumento);
+							remObj.addEventListener(FaultEvent.FAULT, handleFault);
+
+							remObj.showBusyCursor = true;
+
+							tieneCambios = false
+
+							// Guardar la factura.
+							remObj.guardar(_documento);
+						}
+
+						dispatchEvent(new Event("_cancel_", true, true));
+					} else {
+						grabarFacturaOk(true);
+					}
+				} else if (eventObj.detail == Alert.NO) {
+					tieneCambios = false; // Se perderan los cambios
+					dispatchEvent(new Event("_cancel_", true, true));
+				}
+			}
+
+			protected function cmdEditSL_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER) {
+					if (cmbFormaPago) {
+						cmbFormaPago.setFocus();
+					} else {
+						txtComments.setFocus();
+					}
+				}
+			}
+
+			protected function cmdVencimiento_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER || event.keyCode == Keyboard.TAB) {
+					txtComments.setFocus();
+				}
+			}
+
+			protected function cmdNotasEnvio_clickHandler(event:MouseEvent):void {
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.width = 400;
+					helpWindow.height = 420;
+					helpWindow.title = "Nota de envío";
+					helpWindow.visible = true;
+
+					var notasEnvioPnl:FrmNotasEnvio = new FrmNotasEnvio();
+					notasEnvioPnl.factura = factura;
+
+					PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, notaEnvio_closeHandler);
+					notasEnvioPnl.addEventListener(CloseEvent.CLOSE, notaEnvio_closeHandler);
+
+					helpWindow.addElement(notasEnvioPnl);
+				}
+			}
+
+			private function notaEnvio_closeHandler(event:CloseEvent):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, notaEnvio_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+				callLater(function():void {
+						cmdNotasEnvio.setFocus();
+					});
+
+			}
+
+			protected function cmdNotasEnvio_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER || event.keyCode == Keyboard.TAB) {
+					if (event.shiftKey) {
+						cmbEntrega.setFocus();
+					} else {
+						cmbMoney.setFocus();
+					}
+				}
+			}
+
+			protected function txtVendedores_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.F1) {
+					if (!_documento.cliente) {
+						return;
+					}
+
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Comisiones";
+					helpWindow.width = 480;
+					helpWindow.height = 360;
+					helpWindow.visible = true;
+
+					var vendedoresPnl:FrmVendedores = new FrmVendedores();
+					vendedoresPnl.comisiones = _documento.comisiones;
+					vendedoresPnl.cliente = _documento.cliente;
+
+					PopUpManager.addPopUp(helpWindow, parentApplication.owner, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+					vendedoresPnl.addEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+
+					helpWindow.addElement(vendedoresPnl);
+
+					// Hide the close button.
+					helpWindow.closeButton.visible = false;
+
+				} else if (event.keyCode == Keyboard.ENTER) {
+					cmbEntrega.setFocus();
+				} else if (event.keyCode == Keyboard.TAB) {
+					cmbEntrega.setFocus();
+				} else {
+					// No hacer nada
+					event.preventDefault();
+				}
+
+			}
+
+			private function actualizarComisiones():void {
+				_comisiones = "";
+				var first:Boolean = true;
+				for each (var participacion:ParticipacionVendedor in _documento.comisiones.participaciones) {
+					if (participacion.vendedor) {
+						_comisiones += (first ? "" : ", ") + participacion.vendedor.nombre + " (" + participacion.porcentaje + "%)";
+						first = false;
+					}
+				}
+			}
+
+			private function closeHandlerComisiones(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+				actualizarComisiones();
+
+				if (summary) {
+					summary.updateVendedores();
+				}
+
+				tieneCambios = true;
+
+				callLater(function():void {
+						txtVendedores.setFocus();
+					});
+			}
+
+			protected function cmdEMail_clickHandler(event:MouseEvent):void {
+				var pfactura:PrintJobFactura = new PrintJobFactura(false);
+				pfactura.documento = this._documento;
+				pfactura.createSMSImage();
+
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+
+				return label;
+			}
+
+
+			public function clienteLabelFunction(item:Object):String {
+				var client:Cliente = item as Cliente;
+
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				if (client.razonSocial != client.nombre) {
+					label += " [" + client.razonSocial + "] ";
+				}
+
+				return label;
+			}
+
+
+			public function proveedorLabelFunction(item:Object):String {
+				var proveedor:Proveedor = item as Proveedor;
+
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				if (proveedor.contacto.ctoRSocial != proveedor.contacto.nombre) {
+					label += " [" + proveedor.contacto.ctoRSocial + "] ";
+				}
+
+				return label;
+			}
+
+
+			protected function cmbClient_changeHandler(event:Event):void {
+				var cliente:Cliente = cmbClient.selectedItem;
+
+				// Datos que vienen del cliente
+				if (cliente != null) {
+					_documento.tomarCamposDelCliente(cliente.codigo);
+				}
+			}
+
+			private function closeFacturasPendientes(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+
+			protected function txtNumber_changeHandler(event:TextOperationEvent):void {
+				if (txtNumber.text && txtNumber.text != "") {
+					_documento.numero = txtNumber.text;
+				} else {
+					_documento.numero = null;
+				}
+			}
+
+			protected function cmbFormaPago_changeHandler(event:Event):void {
+				if (cmbFormaPago.selectedItem) {
+					var planPagos:PlanPagos = cmbFormaPago.selectedItems[0] as PlanPagos;
+
+					_documento.updatePlanPagos(planPagos);
+
+					tieneCambios = true;
+
+					cmdVencimiento.enabled = true;
+				} else {
+					cmdVencimiento.enabled = false;
+				}
+			}
+
+			protected function cmdImprimir_clickHandler(event:MouseEvent):void {
+				imprimir();
+			}
+
+			private function imprimir():void {
+				var pjFactura:PrintJobFactura = new PrintJobFactura();
+				pjFactura.documento = factura;
+				pjFactura.forzarRemitos = true;
+				pjFactura.print_vias = [PrintJobFactura.VIA_CLIENTE];
+
+				pjFactura.print();
+			}
+
+			private function cs_closeHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, cs_closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+
+
+			private function resultBorrar(event:ResultEvent):void {
+				dispatchEvent(new Event("_cancel_"));
+			}
+
+			protected function txtVendedores_keyUpHandler(event:KeyboardEvent):void {
+				event.preventDefault();
+			}
+
+			protected function txtComments_keyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.TAB) {
+					cmdImprimir.setFocus();
+				}
+			}
+
+			protected function cmdBorrar_clickHandler(event:MouseEvent):void {
+				var alert:Alert = Alert.show("¿Esta seguro de BORRAR el documento?", "Borrar documento", Alert.YES | Alert.NO, this, alertBorrarClickHandler, mediaIcon);
+				alert.width = 400;
+				alert.height = 200;	
+			}
+
+			// Event handler function for displaying the selected Alert button.
+			private function alertBorrarClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					remObjBorrar.baja(_documento);
+				}
+			}
+
+			protected function txtCotizacion_changeHandler(event:Event):void {
+				_documento.docTCC = txtCotizacion.text;
+				tieneCambios = true;
+				CatalogoFactory.getInstance().ultimaCotizacion = Number(txtCotizacion.text);
+			}
+
+			private function convertirCotizacion():void {
+				var codigo:String = "10"; // Código para la Orden de Venta
+
+				currentState = "cargando";
+				var comprobante:Comprobante;
+				for each (var cmp:Comprobante in CatalogoFactory.getInstance().comprobantes) {
+					if (cmp.codigo == codigo) {
+						comprobante = cmp;
+						break;
+					}
+				}
+				var clienteRemObj:RemoteObject = new RemoteObject();
+				clienteRemObj.destination = "CreatingRpc";
+				clienteRemObj.channelSet = ServerConfig.getInstance().channelSet;
+				clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				clienteRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var cliente:Cliente = evt.result as Cliente;
+
+						// Datos del Cliente
+						var planPagos:PlanPagos = cliente.planPagos;
+						var rut:String = cliente.contacto.ctoRUT;
+						var razonSocial:String = cliente.contacto.ctoRSocial;
+						var direccion:String = cliente.contacto.ctoDireccion;
+						var telefono:String = null;
+						if (cliente.contacto.ctoTelefono) {
+							if (cliente.contacto.ctoTelefono.length > 30) {
+								telefono = cliente.contacto.ctoTelefono.substring(0, 30);
+							} else {
+								telefono = cliente.contacto.ctoTelefono;
+							}
+						}
+						
+						var vendedor:Vendedor = cliente.vendedor;
+
+						// Creación de un nuevo documento para el comprobante
+						var doc:Documento = Documento.getNuevoDocumento(comprobante);
+						doc.cliente = _documento.cliente;
+						doc.moneda = _documento.moneda;
+						doc.lineas = _documento.lineas;
+
+						doc.vendedor = _documento.vendedor ? _documento.vendedor : vendedor;
+						doc.direccion = _documento.direccion ? _documento.direccion : direccion;
+						doc.razonSocial = _documento.razonSocial ? _documento.razonSocial : razonSocial;
+						doc.rut = _documento.rut ? _documento.rut : rut;
+						doc.telefono = _documento.telefono ? _documento.telefono : telefono;
+
+						doc.comisiones = _documento.comisiones;
+						doc.docTCF = _documento.docTCF;
+						doc.docTCC = _documento.docTCC;
+						doc.entrega = _documento.entrega;
+						doc.agencia = _documento.agencia;
+						doc.cantidadBultos = _documento.cantidadBultos
+						doc.chofer = _documento.chofer;
+						doc.fechaDoc = new Date();
+						doc.localidad = _documento.localidad;
+						doc.condicion = _documento.condicion;
+						doc.notas = _documento.notas;
+						
+						if (_documento.prevDocId && _documento.prevDocId.length > 0) {
+							doc.prevDocId = _documento.prevDocId;
+						} else {
+							doc.prevDocId = String(_documento.docId);
+						}
+						doc.usuIdAut = _documento.usuIdAut;
+
+						doc.planPagos = null;
+						doc.update();
+						doc.establecerFormaPago();
+
+						doc.participaciones = _documento.participaciones;
+						doc.preciosVenta = _documento.preciosVenta;
+
+						var remObjSN:RemoteObject = new RemoteObject();
+						remObjSN.destination = "CreatingRpc";
+						remObjSN.channelSet = ServerConfig.getInstance().channelSet;
+						remObjSN.showBusyCursor = true;
+						remObjSN.addEventListener(FaultEvent.FAULT, handleFault);
+						remObjSN.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+								var serie:SerieNumero = event.result as SerieNumero;
+								if (serie) {
+									doc.serie = serie.serie;
+									doc.numero = serie.numero;
+								}
+								var remObjAlta:RemoteObject = new RemoteObject();
+								remObjAlta.destination = "CreatingRpc";
+								remObjAlta.channelSet = ServerConfig.getInstance().channelSet;
+								remObjAlta.showBusyCursor = true;
+								remObjAlta.addEventListener(FaultEvent.FAULT, handleFault);
+								remObjAlta.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+										var docId:String = event.result as String;
+										var remObjR:RemoteObject = new RemoteObject();
+										remObjR.destination = "CreatingRpc";
+										remObjR.showBusyCursor = true;
+										remObjR.channelSet = ServerConfig.getInstance().channelSet;
+										remObjR.addEventListener(FaultEvent.FAULT, handleFault);
+										remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
+												var remObj1:RemoteObject = new RemoteObject();
+												remObj1.destination = "CreatingRpc";
+												remObj1.showBusyCursor = true;
+												remObj1.channelSet = ServerConfig.getInstance().channelSet;
+												remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+												remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+														factura = evt.result as Documento;
+														currentState = "default";
+														if (_documento.comprobante.codigo == '10') {
+															Alert.buttonWidth = 60;
+
+															var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
+															alert.width = 340;
+															alert.height = 180
+														}
+
+													});
+												remObj1.getDocumento(docId);
+											});
+										remObjR.baja(_documento);
+									});
+								remObjAlta.alta(doc);
+							});
+						remObjSN.generateSerieNumero(doc.comprobante);
+					});
+				clienteRemObj.findCatalogEntity("Cliente", _documento.cliente.codigo);
+
+			}
+
+			protected function cmdConvertirCotizacion_clickHandler(event:MouseEvent):void {
+				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+					convertirCotizacion();
+				} else if ((_documento.cliente && _documento.cliente.categCliId == 'G')) {
+					if (helpWindow == null) {
+						helpWindow = new TitleWindow();
+						helpWindow.title = "Ingrese clave supervisora";
+						helpWindow.width = 400;
+						helpWindow.height = 200;
+
+						var frmClaveSup:FrmClaveSupervisora = new FrmClaveSupervisora();
+
+						PopUpManager.addPopUp(helpWindow, this, true);
+						PopUpManager.centerPopUp(helpWindow);
+
+						helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
+						frmClaveSup.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
+						frmClaveSup.addEventListener("_claveSupOK", function(evt:Event):void {
+								PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+								helpWindow = null;
+
+								convertirCotizacion();
+							});
+
+						helpWindow.addElement(frmClaveSup);
+					}
+				} else {
+					convertirCotizacion();
+				}
+
+			}
+
+
+			protected function changeMonedaListener(event:MonedaEvent):void {
+				var oldmoneda:Moneda = event.oldValue as Moneda;
+				var newmoneda:Moneda = event.newValue as Moneda;
+
+				if (_documento.esSolicitudCompra || _documento.esCotizacionDeVenta || _documento.esOrdenDeVenta || _documento.comprobante.esProceso80() || _documento.comprobante.esProceso90() || _documento.comprobante.esProceso14()) {
+					if (newmoneda) {
+						if (newmoneda.nombre.indexOf("*") <= 0) { // Agrega las monedas oficiales.
+							_documento.comprobante.aster = false;
+						} else {
+							_documento.comprobante.aster = true;
+						}
+					}
+				}
+				if (newmoneda) {
+					if (oldmoneda) {
+						_documento.updateLineasVenta(oldmoneda.codigo, newmoneda.codigo);
+					} else {
+						_documento.update();
+					}
+
+				}
+				
+				obtenerTipoCambioFiscal();
+			}
+
+			protected function cmbCondicion_changeHandler(event:Event):void {
+				if (cmbCondicion.selectedItem) {
+					var condicion:PlanPagos = cmbCondicion.selectedItems[0] as PlanPagos;
+					_documento.condicion = condicion;
+					tieneCambios = true;
+				}
+			}
+
+			protected function convertirMovimientoStockOk():void {
+				var helpWindow:TitleWindow = new TitleWindow();
+				var closeHandler:Function = function closeHandler(event:CloseEvent):void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				}
+
+				
+				//TODO: Estan todos los codigos cableados ... Revisar
+				if (_documento.comprobante.codigo == '10') {
+					convertirMS2Factura(_documento, _documento.comprobante.nombre);
+				} else if (_documento.comprobante.codigo == '14') {
+					convertirMovimientoStock(_documento, '15');
+				} else if (_documento.comprobante.codigo == '15') {
+					convertirMovimientoStock(_documento, '16');
+				} else if (_documento.comprobante.codigo == '11') {
+					convertirMS2Factura(_documento, _documento.comprobante.nombre);
+				} else if (_documento.comprobante.codigo == '80') {
+					convertirMovimientoStock(_documento, '81');
+				} else if (_documento.comprobante.codigo == '81') {
+					convertirMovimientoStock(_documento, '82');
+				} else if (_documento.comprobante.codigo == '82') {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.codigo + " - " + _documento.comprobante.nombre + "'";
+					var nextMovStockPanel:FrmConvert8384 = new FrmConvert8384();
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel.addEventListener("_selectedFinished", function(event:Event):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							convertirMovimientoStock(_documento, nextMovStockPanel.rbDescargaCuponera.selected ? "84" : "83");
+						});
+					helpWindow.addElement(nextMovStockPanel);
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+				} else if (_documento.comprobante.codigo == '83') {
+					convertirMS2Factura(_documento, _documento.comprobante.nombre);
+				} else if (_documento.comprobante.codigo == '90') {
+					convertirMovimientoStock(_documento, '91');
+				} else if (_documento.comprobante.codigo == '91') {
+					convertirMovimientoStock(_documento, '92');
+				} else if (_documento.comprobante.codigo == '92') {
+					convertirMovimientoStock(_documento, '93');
+				} else if (_documento.comprobante.codigo == '93') {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
+					var nextMovStockPanel2:FrmConvert9499 = new FrmConvert9499();
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel2.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel2.addEventListener("_selectedFinished", function(event:Event):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+
+							if (nextMovStockPanel2.rbFacturar.selected) {
+								convertirMS2Factura(_documento, _documento.comprobante.nombre);
+							} else if (nextMovStockPanel2.rbBajadaRentas.selected) {
+								convertirMovimientoStock(_documento, '98');
+							} else {
+								convertirMovimientoStock(_documento, '94');
+							}
+						});
+					helpWindow.addElement(nextMovStockPanel2);
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+				} else if (_documento.comprobante.codigo == '70') {
+					convertirMovimientoStock(_documento, '71');
+				} else if (_documento.comprobante.codigo == '71') {
+					convertirMovimientoStock(_documento, '72');
+				} else if (_documento.comprobante.codigo == '72') {
+					convertirMovimientoStock(_documento, '73');
+				} else if (_documento.comprobante.codigo == '73') {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
+					var nextMovStockPanel3:FrmConvert7399 = new FrmConvert7399();
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel3.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel3.addEventListener("_selectedFinished", function(event:Event):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							if (nextMovStockPanel3.rbFacturar.selected) {
+								convertirMS2Factura(_documento, _documento.comprobante.nombre);
+							} else if (nextMovStockPanel3.rbBajadaRentas.selected) {
+								convertirMovimientoStock(_documento, '98');
+							}
+						});
+					helpWindow.addElement(nextMovStockPanel3);
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+				} else if (_documento.comprobante.codigo == '130') {
+					convertirMovimientoStock(_documento, '131');
+				} else if (_documento.comprobante.codigo == '131') {
+					convertirMovimientoStock(_documento, '132');
+				} else if (_documento.comprobante.codigo == '132') {
+					convertirMovimientoStock(_documento, '133');
+				} else if (_documento.comprobante.codigo == '133') {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
+					var nextMovStockPanel4:FrmConvert7399 = new FrmConvert7399();
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel4.addEventListener(CloseEvent.CLOSE, closeHandler);
+					nextMovStockPanel4.addEventListener("_selectedFinished", function(event:Event):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							if (nextMovStockPanel4.rbFacturar.selected) {
+								convertirMS2Factura(_documento, _documento.comprobante.nombre);
+							} else if (nextMovStockPanel4.rbBajadaRentas.selected) {
+								convertirMovimientoStock(_documento, '98');
+							}
+						});
+					helpWindow.addElement(nextMovStockPanel4);
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+				}
+			}
+
+			protected function cmdMovimientoStock_clickHandler(event:MouseEvent):void {
+				var permisoId:String = GeneralOptions.getInstance().loggedUser.permisoId;
+				var codigo:String = _documento.comprobante.codigo;
+
+				if (permisoId == Usuario.USUARIO_SUPERVISOR || codigo == "70" || codigo == "80" || codigo == "90" || codigo == "130") {
+					convertirMovimientoStockOk();
+				} else if ((codigo == "71" || codigo == "72" || codigo == "73" || codigo == "81" || codigo == "82" || codigo == "83" || codigo == "84" || codigo == "91" || codigo == "92" || codigo == "93" || codigo == "131" || codigo == "132" || codigo == "133") && (permisoId == Usuario.USUARIO_TITO || permisoId == Usuario.USUARIO_ADMINISTRADOR || permisoId == Usuario.USUARIO_FACTURACION)) {
+					convertirMovimientoStockOk();
+				} else if (!_documento.usuIdAut || (_documento.cliente && _documento.cliente.categCliId == 'G')) {
+					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							helpWindow = null;
+
+							_documento.usuIdAut = evt.usuarioId;
+
+							var auditoria:Auditoria = new Auditoria();
+							auditoria.problemas = "No hubo problemas";
+							auditoria.docId = _documento.docId;
+							auditoria.notas = "Documento autorizado por: ";
+							auditoria.fechaEnv = new Date();
+							auditoria.audFechaHora = new Date();
+							auditoria.usuId = GeneralOptions.getInstance().loggedUser.codigo;
+							auditoria.usuNom = GeneralOptions.getInstance().loggedUser.nombre;
+							auditoria.destinatarios = "";
+
+							var remObj:RemoteObject = new RemoteObject();
+							remObj.destination = "CreatingRpc";
+							remObj.channelSet = ServerConfig.getInstance().channelSet;
+							remObj.showBusyCursor = false;
+
+							remObj.modificar(_documento, auditoria);
+
+							convertirMovimientoStockOk();
+						});
+				} else {
+					convertirMovimientoStockOk();
+				}
+
+			}
+
+			public function convertirMovimientoStock(doc:Documento, codigo:String):void {
+				var comprobante:Comprobante;
+				for each (var c:Comprobante in CatalogoFactory.getInstance().comprobantesUsuario) {
+					if (c.codigo == codigo) {
+						comprobante = c;
+						break;
+					}
+				}
+				currentState = "cargando";
+
+				var clienteRemObj:RemoteObject = new RemoteObject();
+				clienteRemObj.destination = "CreatingRpc";
+				clienteRemObj.channelSet = ServerConfig.getInstance().channelSet;
+				clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				clienteRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var cliente:Cliente = evt.result as Cliente;
+
+						var planPagos:PlanPagos = cliente.planPagos;
+						var rut:String = cliente.contacto.ctoRUT;
+						var razonSocial:String = cliente.contacto.ctoRSocial;
+						var direccion:String = cliente.contacto.ctoDireccion;
+						var telefono:String = null;
+						if (cliente.contacto.ctoTelefono) {
+							if (cliente.contacto.ctoTelefono.length > 30) {
+								telefono = cliente.contacto.ctoTelefono.substring(0, 30);
+							} else {
+								telefono = cliente.contacto.ctoTelefono;
+							}
+						}
+
+						var vendedor:Vendedor = cliente.vendedor;
+						var preciosVenta:PreciosVenta = cliente.preciosVenta;
+
+						var documento:Documento = new Documento(comprobante);
+						documento.cliente = cliente;
+						documento.moneda = doc.moneda;
+						documento.lineas = doc.lineas;
+						documento.preciosVenta = doc.preciosVenta ? doc.preciosVenta : preciosVenta;
+
+						documento.vendedor = doc.vendedor ? doc.vendedor : vendedor;
+						documento.direccion = doc.direccion ? doc.direccion : direccion;
+						documento.razonSocial = doc.razonSocial ? doc.razonSocial : razonSocial;
+						documento.rut = doc.rut ? doc.rut : rut;
+						documento.telefono = doc.telefono ? doc.telefono : telefono;
+
+						documento.condicion = doc.condicion ? doc.condicion : planPagos;
+						documento.comisiones = doc.comisiones;
+						documento.docTCF = doc.docTCF;
+						documento.docTCC = doc.docTCC;
+ 
+						documento.pendiente = !(codigo == "94" || codigo == "84");
+						documento.entrega = doc.entrega;
+						documento.agencia = doc.agencia;
+						documento.cantidadBultos = doc.cantidadBultos
+						documento.chofer = doc.chofer;
+						documento.fechaDoc = new Date();
+						documento.localidad = doc.localidad;
+						documento.notas = doc.notas;
+						documento.cuotasDocumento = doc.cuotasDocumento;
+
+						if (doc.prevDocId && doc.prevDocId.length > 0) {
+							documento.prevDocId = doc.prevDocId;
+						} else {
+							documento.prevDocId = String(doc.docId);
+						}
+						documento.usuIdAut = doc.usuIdAut;
+
+						documento.planPagos = null;
+						documento.cuotasDocumento.cuotas = new ArrayCollection();
+
+						if ((codigo == "71" || codigo == "72" || codigo == "73") || (codigo == "131" || codigo == "132" || codigo == "133") || (codigo == "81" || codigo == "82" || codigo == "83") || (codigo == "91" || codigo == "92" || codigo == "93" || codigo == "94" || codigo == "98") || (codigo == "15" || codigo == "16")) { // no generar número de serie para comprobantes.
+							documento.serie = codigo;
+							documento.numero = doc.numero;
+
+							var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
+							var depPpal:String = param.depIdParAdm.toString();
+
+							var depositoPrincipal:Deposito = null;
+							for each (var deposito:Deposito in CatalogoFactory.getInstance().depositos) {
+								if (depPpal == deposito.codigo) {
+									depositoPrincipal = deposito;
+									break;
+								}
+							}
+							if (codigo == "98") {
+								documento.depositoOrigen = depositoPrincipal;
+								documento.depositoDestino = null;
+							}
+							altaMovimientoStock(doc, documento);
+						} else {
+							var remGenerateSN:RemoteObject = new RemoteObject();
+							remGenerateSN.destination = "CreatingRpc";
+							remGenerateSN.channelSet = ServerConfig.getInstance().channelSet;
+							remGenerateSN.showBusyCursor = true;
+							remGenerateSN.addEventListener(FaultEvent.FAULT, handleFault);
+							remGenerateSN.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+									var serie:SerieNumero = event.result as SerieNumero;
+									if (serie) {
+										documento.serie = serie.serie;
+										documento.numero = serie.numero;
+									}
+									altaMovimientoStock(doc, documento);
+								});
+							remGenerateSN.generateSerieNumero(comprobante);
+						}
+					});
+				clienteRemObj.addEventListener(FaultEvent.FAULT, function handleFault(e:FaultEvent):void {
+						Alert.show(e.fault.faultString, "Error", 4, null, null);
+					});
+				clienteRemObj.findCatalogEntity("Cliente", doc.cliente.codigo);
+
+			}
+
+			private function altaMovimientoStock(oldDoc:Documento, documento:Documento):void {
+				var remObjAlta:RemoteObject = new RemoteObject();
+				remObjAlta.destination = "CreatingRpc";
+				remObjAlta.channelSet = ServerConfig.getInstance().channelSet;
+				remObjAlta.showBusyCursor = true;
+				remObjAlta.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjAlta.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+						var docId:String = event.result as String;
+
+						var remObjUpdate:RemoteObject = new RemoteObject();
+						remObjUpdate.destination = "CreatingRpc";
+						remObjUpdate.showBusyCursor = true;
+						remObjUpdate.channelSet = ServerConfig.getInstance().channelSet;
+						remObjUpdate.addEventListener(FaultEvent.FAULT, handleFault);
+						remObjUpdate.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
+								var remObj1:RemoteObject = new RemoteObject();
+								remObj1.destination = "CreatingRpc";
+								remObj1.showBusyCursor = true;
+								remObj1.channelSet = ServerConfig.getInstance().channelSet;
+								remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+								remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+										factura = evt.result as Documento;
+										currentState = "default";
+									});
+								remObj1.getDocumento(docId);
+							});
+						remObjUpdate.finalizarMovimientoStock(oldDoc);
+					});
+				remObjAlta.alta(documento);
+			}
+
+			private function convertirMS2Factura(doc:Documento, title:String = null):void {
+				helpWindow = new TitleWindow();
+				helpWindow.title = "Convertir" + " '" + title + "'";
+				helpWindow.height = 420;
+				helpWindow.visible = true;
+
+				var convertPnl:SeleccionarTipoFactura = new SeleccionarTipoFactura();
+				convertPnl.hideComprobante = doc.comprobante.codigo;
+
+				convertPnl.showComprobanteTipo = doc.comprobante.codigo == "11" ? [Comprobante.NOTA_CREDITO, Comprobante.DEVOLUCION_CONTADO] : [Comprobante.VENTA_CREDITO, Comprobante.VENTA_CONTADO];
+				var moneda:Moneda = cmbMoney.selectedItem as Moneda;
+				convertPnl.filter = (moneda.nombre.indexOf("*") <= 0) ? "noaster" : "aster";
+
+				helpWindow.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
+						helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						helpWindow = null;
+					});
+				convertPnl.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
+						helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						helpWindow = null;
+					});
+				convertPnl.addEventListener("accept_", resultConvertirDocumento);
+				convertPnl.addEventListener("next_step_", resultConvertirDocumento);
+
+				helpWindow.addElement(convertPnl);
+				PopUpManager.addPopUp(helpWindow, parentApplication.owner, true);
+				PopUpManager.centerPopUp(helpWindow);
+
+			}
+
+			private function resultConvertirDocumento(event:Event):void {
+				var convertPnl:SeleccionarTipoFactura = event.target as SeleccionarTipoFactura;
+				var codigo:String = convertPnl.tipoFactura.codigo;
+
+				currentState = "cargando";
+
+				var comprobante:Comprobante = convertPnl.tipoFactura as Comprobante;
+
+				var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
+				var depPpal:String = param.depIdParAdm.toString();
+
+
+				var clienteRemObj:RemoteObject = new RemoteObject();
+				clienteRemObj.destination = "CreatingRpc";
+				clienteRemObj.channelSet = ServerConfig.getInstance().channelSet;
+				clienteRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var cliente:Cliente = evt.result as Cliente;
+
+						var planPagos:PlanPagos = cliente.planPagos;
+						var rut:String = cliente.contacto.ctoRUT;
+						var razonSocial:String = cliente.contacto.ctoRSocial;
+						var direccion:String = cliente.contacto.ctoDireccion;
+						var telefono:String = null;
+						if (cliente.contacto.ctoTelefono) {
+							if (cliente.contacto.ctoTelefono.length > 30) {
+								telefono = cliente.contacto.ctoTelefono.substring(0, 30);
+							} else {
+								telefono = cliente.contacto.ctoTelefono;
+							}
+						}
+
+						var vendedor:Vendedor = cliente.vendedor;
+
+						var doc:Documento = new Documento(comprobante);
+
+						////////////////////////////////
+						// Obtener deposito Principal //
+						////////////////////////////////
+						var depositoPrincipal:Deposito = null;
+						for each (var deposito:Deposito in CatalogoFactory.getInstance().depositos) {
+							if (depPpal == deposito.codigo) {
+								depositoPrincipal = deposito;
+								break;
+							}
+						}
+						/////////////////////////////////
+						doc.depositoOrigen = _documento.esOrdenDeVenta || _documento.comprobante.codigo == "93" ? depositoPrincipal : _documento.comprobante.depositoDestino;
+						doc.depositoDestino = (comprobante.tipo == Comprobante.NOTA_CREDITO || comprobante.tipo == Comprobante.DEVOLUCION_CONTADO) ? depositoPrincipal : null;
+
+						doc.cliente = _documento.cliente;
+						doc.moneda = _documento.moneda;
+
+						doc.vendedor = _documento.vendedor ? _documento.vendedor : vendedor;
+						doc.direccion = _documento.direccion ? _documento.direccion : direccion;
+						doc.razonSocial = _documento.razonSocial ? _documento.razonSocial : razonSocial;
+						doc.rut = _documento.rut ? _documento.rut : rut;
+						doc.telefono = _documento.telefono ? _documento.telefono : telefono;
+
+						doc.comisiones = _documento.comisiones;
+						doc.docTCF = _documento.docTCF;
+						doc.docTCC = _documento.docTCC;
+
+						doc.entrega = _documento.entrega;
+						doc.cuotasDocumento = _documento.cuotasDocumento;
+						doc.agencia = _documento.agencia;
+						doc.cantidadBultos = _documento.cantidadBultos
+						doc.chofer = _documento.chofer;
+						doc.fechaDoc = new Date();
+						doc.localidad = _documento.localidad;
+						doc.notas = _documento.notas;
+						if (_documento.prevDocId && _documento.prevDocId.length > 0) {
+							doc.prevDocId = _documento.prevDocId;
+						} else {
+							doc.prevDocId = String(_documento.docId);
+						}
+						doc.usuIdAut = _documento.usuIdAut;
+
+						if (comprobante.isCredito() || comprobante.isNotaCredito()) {
+							if (comprobante.isCredito()) {
+								doc.planPagos = _documento.condicion ? _documento.condicion : planPagos;
+							} else {
+								doc.condicion = _documento.condicion ? _documento.condicion : planPagos;
+							}
+							if (comprobante.codigo != "7" && comprobante.codigo != "24") { // Se agrego este cable por punto 2
+								for each (var lDoc:LineaDocumento in _documento.lineas.lineas) {
+									var precio:BigDecimal = new BigDecimal(lDoc.precio).setScale(2, MathContext.ROUND_UP);
+									precio = precio.divideScaleRound(new BigDecimal(".64"), 2, MathContext.ROUND_HALF_UP);
+									lDoc.precio = precio.toString();
+									//lDoc.valorNeto = precio.toString();
+								}
+
+							}
+						} else {
+							doc.planPagos = null;
+						}
+						doc.lineas = _documento.lineas;
+						doc.update();
+						doc.establecerFormaPago();
+
+						doc.participaciones = _documento.participaciones;
+						doc.preciosVenta = _documento.preciosVenta;
+
+						var remObjConvert:RemoteObject = new RemoteObject();
+
+						remObjConvert.destination = "CreatingRpc";
+						remObjConvert.channelSet = ServerConfig.getInstance().channelSet;
+						remObjConvert.showBusyCursor = true;
+						remObjConvert.addEventListener(FaultEvent.FAULT, handleFault);
+						remObjConvert.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+								var docId:String = event.result as String;
+								var remObjR:RemoteObject = new RemoteObject();
+								remObjR.destination = "CreatingRpc";
+								remObjR.showBusyCursor = true;
+								remObjR.channelSet = ServerConfig.getInstance().channelSet;
+								remObjR.addEventListener(FaultEvent.FAULT, handleFault);
+								remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
+										var remObj1:RemoteObject = new RemoteObject();
+										remObj1.destination = "CreatingRpc";
+										remObj1.showBusyCursor = true;
+										remObj1.channelSet = ServerConfig.getInstance().channelSet;
+										remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+										remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+												factura = evt.result as Documento;
+												currentState = "default";
+											});
+										remObj1.getDocumento(docId);
+									});
+								remObjR.finalizarMovimientoStock(_documento);
+							});
+						remObjConvert.alta(doc);
+
+					});
+
+				clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				clienteRemObj.findCatalogEntity("Cliente", _documento.cliente.codigo);
+
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+
+			}
+
+
+			[Bindable(event="_changeDocumento")]
+			private function hasConvertMS():Boolean {
+				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
+
+				if (_documento.esCotizacionDeVenta) {
+					if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
+						if (_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92") {
+							return false;
+						} else {
+							return true;
+						}
+					} else if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+						return true;
+					} else {
+						return false;
+					}
+
+				} else if (_documento.esSolicitudCompra) {
+					if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+						if (_documento.comprobante.codigo == "100" || _documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "110" || _documento.comprobante.codigo == "120") {
+							return true;
+						}
+						return false;
+					}
+					return false;
+				}
+				return true;
+
+			}
+
+			protected function cmdNuevo_clickHandler(event:MouseEvent):void {
+				guardarDocumento();
+
+				dispatchEvent(new Event("_nuevo_"));
+			}
+
+			protected function combobox1_changeHandler(event:IndexChangeEvent):void {
+				var cuponera:Articulo = cmbCuponera.selectedItem as Articulo;
+				_documento.obtenerStock("1", cuponera.codigo);
+
+			}
+
+
+			protected function cmdDuplicar_clickHandler(event:MouseEvent):void {
+				var codigo:String = "14"; //
+
+				currentState = "cargando";
+				var comprobante:Comprobante;
+				for each (var cmp:Comprobante in CatalogoFactory.getInstance().comprobantesUsuario) {
+					if (cmp.codigo == codigo) {
+						comprobante = cmp;
+						break;
+					}
+				}
+
+				var clienteRemObj:RemoteObject = new RemoteObject();
+				clienteRemObj.destination = "CreatingRpc";
+				clienteRemObj.channelSet = ServerConfig.getInstance().channelSet;
+				clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				clienteRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var cliente:Cliente = evt.result as Cliente;
+
+						var planPagos:PlanPagos = cliente.planPagos;
+						var rut:String = cliente.contacto.ctoRUT;
+						var razonSocial:String = cliente.contacto.ctoRSocial;
+						var direccion:String = cliente.contacto.ctoDireccion;
+						var telefono:String = null;
+						if (cliente.contacto.ctoTelefono) {
+							if (cliente.contacto.ctoTelefono.length > 30) {
+								telefono = cliente.contacto.ctoTelefono.substring(0, 30);
+							} else {
+								telefono = cliente.contacto.ctoTelefono;
+							}
+						}
+
+						var vendedor:Vendedor = cliente.vendedor;
+						var preciosVenta:PreciosVenta = cliente.preciosVenta;
+
+						var documento:Documento = new Documento(comprobante);
+						documento.cliente = cliente;
+						documento.moneda = _documento.moneda;
+						documento.lineas = _documento.lineas;
+						documento.preciosVenta = _documento.preciosVenta ? _documento.preciosVenta : preciosVenta;
+
+						documento.vendedor = _documento.vendedor ? _documento.vendedor : vendedor;
+						documento.direccion = _documento.direccion ? _documento.direccion : direccion;
+						documento.razonSocial = _documento.razonSocial ? _documento.razonSocial : razonSocial;
+						documento.rut = _documento.rut ? _documento.rut : rut;
+						documento.telefono = _documento.telefono ? _documento.telefono : telefono;
+
+						documento.condicion = _documento.condicion ? _documento.condicion : planPagos;
+						documento.comisiones = _documento.comisiones;
+						documento.docTCC = _documento.docTCC;
+						documento.docTCF = _documento.docTCF;
+
+						documento.pendiente = true;
+						documento.entrega = _documento.entrega;
+						documento.agencia = _documento.agencia;
+						documento.cantidadBultos = _documento.cantidadBultos
+						documento.chofer = _documento.chofer;
+						documento.fechaDoc = _documento.fechaDoc;
+						documento.localidad = _documento.localidad;
+						documento.notas = _documento.notas;
+						documento.cuotasDocumento = _documento.cuotasDocumento;
+						documento.prevDocId = null;
+						documento.usuIdAut = _documento.usuIdAut;
+
+						documento.updateCaja();
+						documento.planPagos = null;
+						documento.cuotasDocumento.cuotas = new ArrayCollection();
+
+						var remGenerateSN:RemoteObject = new RemoteObject();
+						remGenerateSN.destination = "CreatingRpc";
+						remGenerateSN.channelSet = ServerConfig.getInstance().channelSet;
+						remGenerateSN.showBusyCursor = true;
+						remGenerateSN.addEventListener(FaultEvent.FAULT, handleFault);
+						remGenerateSN.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+								var serie:SerieNumero = event.result as SerieNumero;
+								if (serie) {
+									documento.serie = serie.serie;
+									documento.numero = serie.numero;
+								}
+
+								var remObjAlta:RemoteObject = new RemoteObject();
+								remObjAlta.destination = "CreatingRpc";
+								remObjAlta.channelSet = ServerConfig.getInstance().channelSet;
+								remObjAlta.showBusyCursor = true;
+								remObjAlta.addEventListener(FaultEvent.FAULT, handleFault);
+								remObjAlta.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+										var docId:String = event.result as String;
+
+										var remObj1:RemoteObject = new RemoteObject();
+										remObj1.destination = "CreatingRpc";
+										remObj1.showBusyCursor = true;
+										remObj1.channelSet = ServerConfig.getInstance().channelSet;
+										remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+										remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+												factura = evt.result as Documento;
+												currentState = "default";
+											});
+										remObj1.getDocumento(docId);
+									});
+								remObjAlta.alta(documento);
+							});
+						remGenerateSN.generateSerieNumero(comprobante);
+
+					});
+				clienteRemObj.addEventListener(FaultEvent.FAULT, function handleFault(e:FaultEvent):void {
+						Alert.show(e.fault.faultString, "Error", 4, null, null);
+					});
+				clienteRemObj.findCatalogEntity("Cliente", _documento.cliente.codigo);
+
+			}
+
+			public function obtenerTipoCambioFiscal(fecha:Date = null):void {
+				if (!_documento.moneda) {
+					return;
+				}
+				var remObjCotizaciones:RemoteObject = new RemoteObject();
+				remObjCotizaciones.destination = "CreatingRpc";
+				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
+				remObjCotizaciones.addEventListener(ResultEvent.RESULT, resultTipoCambioFiscal);
+				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
+						Alert.show(evt.fault.faultString, "Advertencia");
+					});
+				remObjCotizaciones.getTipoCambioFiscal(_documento.moneda.codigo, fecha ? fecha : new Date());
+			}
+			
+			private function resultTipoCambioFiscal(event:ResultEvent):void {
+				var result:String = event.result as String;
+				if (result && result.length > 0) {
+					_documento.docTCF = new BigDecimal(result).setScale(3, MathContext.ROUND_HALF_UP).toString();
+				} else {
+					_documento.docTCF = "";
+				}
+			}
+
+			private function obtenerTipoCambio():void {
+				var remObjCotizaciones:RemoteObject = new RemoteObject();
+				remObjCotizaciones.destination = "CreatingRpc";
+				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
+				remObjCotizaciones.addEventListener(ResultEvent.RESULT, resultCotizaciones);
+				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
+						Alert.show(evt.fault.faultString, "Advertencia");
+					});
+				remObjCotizaciones.getCotizacionHoy();
+			}
+
+			private function resultCotizaciones(event:ResultEvent):void {
+				var result:CotizacionesMonedas = event.result as CotizacionesMonedas;
+
+				var dolarCompra:BigDecimal = new BigDecimal(result.dolarCompra);
+				var dolarVenta:BigDecimal = new BigDecimal(result.dolarVenta);
+				var euroCompra:BigDecimal = new BigDecimal(result.euroCompra);
+				var euroVenta:BigDecimal = new BigDecimal(result.euroVenta);
+
+				var formatter:DateFormatter = new DateFormatter();
+				formatter.formatString = 'DD-MM-YYYY';
+
+				var _cotizaciones:XML =
+					<cotizaciones>
+						<fecha/>
+						<dolarCompra value="0.0"/>
+						<dolarVenta value="0.0"/>
+						<euroCompra value="0.0"/>
+						<euroVenta value="0.0"/>
+						<euroCompraXDolar value="0.0"/>
+						<euroVentaXDolar value="0.0"/>
+					</cotizaciones>
+					;
+				_cotizaciones.fecha.@value = formatter.format(result.dia);
+				_cotizaciones.dolarCompra.@value = dolarCompra.setScale(2, MathContext.ROUND_DOWN).toString();
+				_cotizaciones.dolarVenta.@value = dolarVenta.setScale(2, MathContext.ROUND_UP).toString();
+				_cotizaciones.euroCompra.@value = euroCompra.setScale(2, MathContext.ROUND_DOWN).toString();
+				_cotizaciones.euroVenta.@value = euroVenta.setScale(2, MathContext.ROUND_UP).toString();
+				_cotizaciones.euroCompraXDolar.@value = euroCompra.divide(dolarCompra).setScale(2, MathContext.ROUND_DOWN).toString();
+				_cotizaciones.euroVentaXDolar.@value = euroVenta.divide(dolarVenta).setScale(2, MathContext.ROUND_UP).toString();
+
+				CotizacionesModel.getInstance().cotizaciones = _cotizaciones;
+
+				if (_documento) {
+					_documento.docTCC = _cotizaciones.dolarVenta.@value;
+				}
+			}
+
+			protected function cmbProveedor_changeHandler(event:Event):void {
+				var proveedor:Proveedor = cmbProveedor.selectedItem;
+
+				// Datos que vienen del proveedor
+				if (proveedor != null) {
+					_documento.tomarCamposDelProveedor(proveedor.codigo);
+
+					for each (var p:Pais in CatalogoFactory.getInstance().paises) {
+						if (p.codigo == proveedor.contacto.paisIdCto) {
+							_pais = p;
+							break;
+						}
+					}
+				}
+			}
+
+			protected function cmdConvertirSol_clickHandler(event:MouseEvent):void {
+				if ((GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION)) {
+
+					convertirSolicitudAut();
+				} else if (_documento.usuIdAut) {
+					convertirSolicitudAut();
+				} else {
+					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							helpWindow = null;
+
+							_documento.usuIdAut = evt.usuarioId;
+
+							var auditoria:Auditoria = new Auditoria();
+							auditoria.problemas = "No hubo problemas";
+							auditoria.docId = _documento.docId;
+							auditoria.notas = "Solicitud autorizado por: ";
+							auditoria.usuId = GeneralOptions.getInstance().loggedUser.codigo;
+							auditoria.usuNom = GeneralOptions.getInstance().loggedUser.nombre;
+							auditoria.fechaEnv = new Date();
+							auditoria.audFechaHora = new Date();
+							auditoria.destinatarios = "";
+
+							var remObj:RemoteObject = new RemoteObject();
+							remObj.destination = "CreatingRpc";
+							remObj.channelSet = ServerConfig.getInstance().channelSet;
+							remObj.showBusyCursor = false;
+
+							remObj.modificar(_documento, auditoria);
+
+							convertirSolicitudAut();
+						});
+				}
+			}
+
+			private function convertirSolicitudAut():void {
+				if (_documento.comprobante.codigo == '100') {
+					convertirSolicitud(_documento, "101");
+				} else if (_documento.comprobante.codigo == '101') {
+					var helpWindow:TitleWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.codigo + " - " + _documento.comprobante.nombre + "'";
+					var convertPanel:FrmConvertSol100 = new FrmConvertSol100();
+					var closeHandler:Function = function closeHandler(event:CloseEvent):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						}
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+					var m:Moneda = _documento.moneda;
+					convertPanel.oficial = (m.nombre.indexOf("*") <= 0);
+					convertPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+					convertPanel.addEventListener("_selectedFinished", function(event:Event):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+							if (m.nombre.indexOf("*") <= 0) {
+								convertirSolicitud(_documento, convertPanel.rbOption0.selected ? "102" : "103");
+							} else {
+								convertirSolicitud(_documento, convertPanel.rbOption0.selected ? "202" : "203");
+							}
+						});
+					helpWindow.addElement(convertPanel);
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+				} else if (_documento.comprobante.codigo == '110') {
+					convertirSolicitud(_documento, "111");
+				} else if (_documento.comprobante.codigo == '120') { // SOLICITUD DE IMPORTACION -> ORDEN DE  IMPORTACION
+					convertirSolicitud(_documento, "121");
+				} else if (_documento.comprobante.codigo == '121') { // ORDEN DE IMPORTACION -> PROFORMA
+					if (tieneCambios) {
+						guardarSolicitudImp(_documento);
+					} else {
+						actualizarPrecios(_documento);
+					}
+					convertirSolicitud(_documento, "122");
+				} else if (_documento.comprobante.codigo == '122') { // PROFORMA -> NACIONALIZACIÓN
+					if (tieneCambios) {
+						guardarSolicitudImp(_documento);
+					} else {
+						actualizarPrecios(_documento);
+					}
+					var f:String = txtCoeficiente.text;
+					var factor:BigDecimal = BigDecimal.ONE;
+					if (f && f.length > 0) {
+						factor = new BigDecimal(f).setScale(4, MathContext.ROUND_UP);
+					}
+					convertirSolicitud(_documento, "124", true, factor);
+				}
+			}
+			
+			private function guardarSolicitudImp(doc:Documento):void {
+				// Guardar la factura.
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, resultGuardarDocumento);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = true;
+				
+				remObj.guardar(doc);
+			}
+
+			public function convertirSolicitud(doc:Documento, codigo:String, ajustarPrecio:Boolean = false, factor:BigDecimal = null):void {
+				currentState = "cargando";
+				_convirtiendo = true;
+				
+				var comprobante:Comprobante;
+				for each (var c:Comprobante in CatalogoFactory.getInstance().comprobantesUsuario) {
+					if (c.codigo == codigo) {
+						comprobante = c;
+						break;
+					}
+				}
+				var proveedorRemObj:RemoteObject = new RemoteObject();
+				proveedorRemObj.destination = "CreatingRpc";
+				proveedorRemObj.channelSet = ServerConfig.getInstance().channelSet;
+				proveedorRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				proveedorRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					var proveedor:Proveedor = evt.result as Proveedor;
+
+					var planPagos:PlanPagos = proveedor.planPagos ? proveedor.planPagos : CatalogoFactory.getInstance().planPagos[1] as PlanPagos;
+					var rut:String = proveedor.contacto.ctoRUT;
+					var razonSocial:String = proveedor.contacto.ctoRSocial;
+					var direccion:String = proveedor.contacto.ctoDireccion;
+					var telefono:String = null;
+					if (proveedor.contacto.ctoTelefono) {
+						if (proveedor.contacto.ctoTelefono.length > 30) {
+							telefono = proveedor.contacto.ctoTelefono.substring(0, 30);
+						} else {
+							telefono = proveedor.contacto.ctoTelefono;
+						}
+					}
+					var documento:Documento = Documento.getNuevoDocumento(comprobante);
+					documento.proveedor = proveedor;
+
+					documento.lineas = doc.lineas;
+					documento.lineas.documento = documento;
+					documento.moneda = doc.moneda;
+					documento.prevDocSerieNro = doc.serie + doc.numero;
+
+					documento.direccion = doc.direccion ? doc.direccion : direccion;
+					documento.razonSocial = doc.razonSocial ? doc.razonSocial : razonSocial;
+					documento.rut = doc.rut ? doc.rut : rut;
+					documento.telefono = doc.telefono ? doc.telefono : telefono;
+
+					documento.docTCF = doc.docTCF;
+					documento.docTCC = doc.docTCC;
+
+					documento.agencia = doc.agencia;
+					documento.chofer = doc.chofer;
+					documento.fechaDoc = new Date();
+					documento.localidad = doc.localidad;
+					documento.notas = doc.notas;
+					documento.cuotasDocumento = doc.cuotasDocumento;
+					documento.pendiente = true;
+
+					documento.update(ajustarPrecio, factor);
+
+					if (doc.prevDocId && doc.prevDocId.length > 0) {
+						documento.prevDocId = doc.prevDocId;
+					} else {
+						documento.prevDocId = String(doc.docId);
+					}
+					documento.usuIdAut = doc.usuIdAut;
+
+					documento.updateCaja();
+
+					if (comprobante.isCredito()) {
+						documento.condicion = null;
+						documento.planPagos = doc.planPagos ? doc.planPagos : (doc.condicion ? doc.condicion : planPagos);
+						if (documento.pagos == null) {
+							documento.pagos = new ArrayCollection();
+						}
+						if (documento.recibosVinculados == null) {
+							documento.recibosVinculados = new ArrayCollection();
+						}
+						documento.cuotasDocumento.documento = documento;
+						documento.cuotasDocumento.inicializarCuotas();
+
+					} else {
+						documento.planPagos = null;
+						documento.condicion = doc.condicion ? doc.condicion : planPagos;
+						documento.cuotasDocumento.cuotas = new ArrayCollection();
+					}
+
+					var numerador:String = documento.comprobante.numCmpId;
+					var tieneNumerador:Boolean = numerador && numerador.length > 0;
+					if (tieneNumerador) {
+						var remGenerateSN:RemoteObject = new RemoteObject();
+						remGenerateSN.destination = "CreatingRpc";
+						remGenerateSN.channelSet = ServerConfig.getInstance().channelSet;
+						remGenerateSN.showBusyCursor = true;
+						remGenerateSN.addEventListener(FaultEvent.FAULT, handleFault);
+						remGenerateSN.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+								var serie:SerieNumero = event.result as SerieNumero;
+								if (serie) {
+									documento.serie = serie.serie;
+									documento.numero = serie.numero;
+								}
+								altaSolicitud(doc, documento);
+							});
+						remGenerateSN.generateSerieNumero(comprobante);
+					} else {
+						documento.serie = codigo + "/";
+						documento.numero = doc.numero;
+						altaSolicitud(doc, documento)
+					}
+				});
+				
+				proveedorRemObj.addEventListener(FaultEvent.FAULT, function handleFault(e:FaultEvent):void {
+						Alert.show(e.fault.faultString, "Error", 4, null, null);
+					});
+				proveedorRemObj.findCatalogEntity("Proveedor", doc.proveedor.codigo);
+
+			}
+
+			private function altaSolicitud(oldDoc:Documento, documento:Documento):void {
+				var remObjR:RemoteObject = new RemoteObject();
+				remObjR.destination = "CreatingRpc";
+				remObjR.showBusyCursor = true;
+				remObjR.channelSet = ServerConfig.getInstance().channelSet;
+				remObjR.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
+						var remObjAlta:RemoteObject = new RemoteObject();
+						remObjAlta.destination = "CreatingRpc";
+						remObjAlta.channelSet = ServerConfig.getInstance().channelSet;
+						remObjAlta.showBusyCursor = true;
+						remObjAlta.addEventListener(FaultEvent.FAULT, handleFault);
+						remObjAlta.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+								var docId:String = event.result as String;
+								var remObj1:RemoteObject = new RemoteObject();
+								remObj1.destination = "CreatingRpc";
+								remObj1.showBusyCursor = true;
+								remObj1.channelSet = ServerConfig.getInstance().channelSet;
+								remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+								remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+										factura = evt.result as Documento;
+										currentState = "default";
+										_convirtiendo = false;
+										if (factura.comprobante.codigo == '101') {
+											Alert.buttonWidth = 60;
+											var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
+											alert.width = 340;
+											alert.height = 180
+										}										
+										if (factura.comprobante.codigo == '121') {
+											actualizarPrecios(_documento);
+										}
+									});
+								remObj1.getDocumento(docId);
+							});
+						remObjAlta.alta(documento);
+						
+
+					});
+				if (oldDoc.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
+					remObjR.finalizarMovimientoStock(oldDoc);
+				} else {
+					var fanfold:String = GeneralOptions.getInstance().opciones.fanfold.remitos;
+					if (factura.comprobante.tipo == Comprobante.VENTA_CONTADO || factura.comprobante.tipo  == Comprobante.VENTA_CREDITO) {
+						fanfold = GeneralOptions.getInstance().opciones.fanfold.facturas;
+					} else if (factura.comprobante.tipo == Comprobante.NOTA_CREDITO || factura.comprobante.tipo  == Comprobante.DEVOLUCION_CONTADO) {
+						fanfold = GeneralOptions.getInstance().opciones.fanfold.remitos;
+					}
+					
+					remObjR.emitir(oldDoc, fanfold);					
+				}
+				
+
+			}
+
+			protected function cmdTrazabilidad_clickHandler(event:MouseEvent):void {
+				var remTrazabilidad:RemoteObject = new RemoteObject();
+				remTrazabilidad.destination = "CreatingRpc";
+				remTrazabilidad.channelSet = ServerConfig.getInstance().channelSet;
+				remTrazabilidad.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var listDocuments:ArrayCollection = evt.result as ArrayCollection;
+						if (listDocuments && listDocuments.length > 0) {
+							var helpWindow:TitleWindow = new TitleWindow();
+							helpWindow.width = 1024;
+							helpWindow.height = 560;
+							helpWindow.title = "Trazabilidad | " + (_documento.serie ? _documento.serie : "") + (_documento.numero ? (_documento.numero + " | ") : "") + _documento.comprobante.nombre;
+
+							var parent:Sprite;
+							var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+							// no types so no dependencies
+							var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+							if (mp && mp.useSWFBridge()) {
+								parent = Sprite(sm.getSandboxRoot());
+							} else {
+								parent = Sprite(FlexGlobals.topLevelApplication);
+							}
+
+
+							var trazabilidadPanel:FrmTrazabilidadDocumento = new FrmTrazabilidadDocumento();
+							trazabilidadPanel.documentos = listDocuments;
+							var closeHandler:Function = function closeHandler(event:CloseEvent):void {
+									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+								}
+							trazabilidadPanel.addEventListener("_openDocument", function(evt:Event):void {
+									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+									if (trazabilidadPanel.documento && _documento.docId == trazabilidadPanel.documento.docId) {
+										return;
+									}
+
+									if (cmdGuardar.enabled) {
+										var alertHandler:Function = function alertHandler(event:CloseEvent):void {
+												if (event.detail == Alert.YES) {
+													factura = trazabilidadPanel.documento;
+												}
+												PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+											}
+										Alert.show("Los cambios realizados se perderán.\n¿Esta usted seguro?", "Confirmación", Alert.YES | Alert.NO, parent, alertHandler);
+									} else {
+										factura = trazabilidadPanel.documento;
+									}
+								});
+							trazabilidadPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+							helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+
+							helpWindow.addElement(trazabilidadPanel);
+							PopUpManager.addPopUp(helpWindow, parent, true);
+							PopUpManager.centerPopUp(helpWindow);
+						} else {
+							Alert.show("'" + _documento.serie + _documento.numero + " | " + _documento.comprobante.nombre + "' no tiene trazabilidad.", "Información");
+						}
+
+					});
+				remTrazabilidad.addEventListener(FaultEvent.FAULT, handleFault);
+
+				remTrazabilidad.getTrazabilidad((_documento.prevDocId && _documento.prevDocId.length > 0 && _documento.prevDocId != "NaN" && _documento.prevDocId != "0") ? _documento.prevDocId : _documento.docId);
+			}
+
+			protected function cmdAuditoria_clickHandler(event:MouseEvent):void {
+				var remAuditoria:RemoteObject = new RemoteObject();
+				remAuditoria.destination = "CreatingRpc";
+				remAuditoria.channelSet = ServerConfig.getInstance().channelSet;
+				remAuditoria.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var lineasAuditoria:ArrayCollection = evt.result as ArrayCollection;
+						if (lineasAuditoria && lineasAuditoria.length > 0) {
+							var helpWindow:TitleWindow = new TitleWindow();
+							helpWindow.width = 840;
+							helpWindow.height = 460;
+							helpWindow.title = "Auditoría | " + (_documento.serie ? _documento.serie : "") + (_documento.numero ? (_documento.numero + " | ") : "") + _documento.comprobante.nombre;
+
+							var parent:Sprite;
+							var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+							// no types so no dependencies
+							var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+							if (mp && mp.useSWFBridge()) {
+								parent = Sprite(sm.getSandboxRoot());
+							} else {
+								parent = Sprite(FlexGlobals.topLevelApplication);
+							}
+
+							var lineasAudPanel:FrmLineasAuditoriaDoc = new FrmLineasAuditoriaDoc();
+							lineasAudPanel.lineas = lineasAuditoria;
+							var closeHandler:Function = function closeHandler(event:CloseEvent):void {
+									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+								}
+
+							lineasAudPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+							helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+							helpWindow.addElement(lineasAudPanel);
+							PopUpManager.addPopUp(helpWindow, parent, true);
+							PopUpManager.centerPopUp(helpWindow);
+						} else {
+							Alert.show("'" + (_documento.serie ? _documento.serie : "") + (_documento.numero ? _documento.numero : " | ") + _documento.comprobante.nombre + "' no tiene auditoría.", "Información");
+						}
+
+					});
+				remAuditoria.addEventListener(FaultEvent.FAULT, handleFault);
+
+				if (_documento.docId) {
+					remAuditoria.getLineasAuditoria(_documento.docId);
+				}
+
+			}
+
+			protected function cmdAutorizar_clickHandler(event:MouseEvent):void {
+				obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						helpWindow = null;
+
+						_documento.usuIdAut = evt.usuarioId;
+
+						guardarDocumento();
+					});
+
+			}
+
+			protected function txtCoeficiente_changeHandler(event:TextOperationEvent):void {
+				_documento.coeficienteImp = txtCoeficiente.text;
+				tieneCambios = true;
+			}
+
+			protected function cmdFinalizar_clickHandler(event:MouseEvent):void {
+				var docId:String = _documento.docId;
+
+				var remObjR:RemoteObject = new RemoteObject();
+				remObjR.destination = "CreatingRpc";
+				remObjR.showBusyCursor = true;
+				remObjR.channelSet = ServerConfig.getInstance().channelSet;
+				remObjR.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
+						var remObj1:RemoteObject = new RemoteObject();
+						remObj1.destination = "CreatingRpc";
+						remObj1.showBusyCursor = true;
+						remObj1.channelSet = ServerConfig.getInstance().channelSet;
+						remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+						remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+								factura = evt.result as Documento;
+							});
+						remObj1.getDocumento(docId);
+					});
+				
+				if (_documento.esCompra()) {
+					remObjR.finalizarCompra(_documento);
+				} else {
+					remObjR.finalizarMovimientoStock(_documento);
+				}
+			
+			}
+
+			protected function ddlReferenciaCFE_changeHandler(event:IndexChangeEvent):void {
+				indGlobalCFERef = ddlReferenciaCFE.selectedItem as Object;
+				_documento.indGlobalCFERef = indGlobalCFERef.value;
+			
+			}
+			
+			protected function ddlTipoCFE_changeHandler(event:IndexChangeEvent):void {
+				tipoCFERef = ddlTipoCFE.selectedItem as Object;
+				_documento.tipoCFERef = tipoCFERef.value;
+				
+			}
+			
+			protected function ddlTipoDoc_changeHandler(event:IndexChangeEvent):void {
+				tipoDoc = ddlTipoDoc.selectedItem as Object;
+				_documento.tipoDoc = tipoDoc.value;
+				
+				var ctoDocumento:String = "";
+				if (_documento.cliente != null) {
+					ctoDocumento = Utils.clean_ci(_documento.cliente.contacto.ctoDocumento);
+				} else if (_documento.proveedor != null) {
+					ctoDocumento = Utils.clean_ci(_documento.proveedor.contacto.ctoDocumento);
+				}
+				
+				txtRUT.maxChars = tipoDoc != null && tipoDoc.value == 'C' ? 8 : 12;
+				txtRUT.text = (tipoDoc != null && tipoDoc.value == 'C') 
+					? (ctoDocumento != null && ctoDocumento.length > 0 ? ctoDocumento : "") 
+					: (_documento.cliente ? _documento.cliente.contacto.ctoRUT : _documento.proveedor.contacto.ctoRUT);
+			
+				callLater(function():void {
+					txtRUT.setFocus();
+				});
+			}
+			
+			
+			protected function cmdVerificarVentas_clickHandler(event:MouseEvent):void {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, verificarCostosResult);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = true;
+				
+				remObj.getCompraVentaCostos(_documento);
+
+			}
+			
+			public function verificarCostosResult(event:ResultEvent):void {
+				var result:ArrayCollection = event.result as ArrayCollection;
+				
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Cruce de costos";
+					helpWindow.width = 1120;
+					helpWindow.height = 600;
+					
+					var frmVerificarCostos:FrmVerificarVentas = new FrmVerificarVentas();
+					frmVerificarCostos.documento = _documento;
+					frmVerificarCostos.setCostos(result);
+					
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
+					frmVerificarCostos.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
+					
+					helpWindow.addElement(frmVerificarCostos);
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+				}
+			}
+
+			
+			private function closeCompraVentaVerificacionHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+
+			
+			protected function cmdVerificarVentas_keyDownHandler(event:KeyboardEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function txtRUT_changeHandler(event:TextOperationEvent):void {
+				var count:int = tipoDoc != null && tipoDoc.value == 'C' ? 7 : 12;
+				
+				var value:String = txtRUT.text;
+				if (value.length == 0 || value.length >= count) {
+					rut_stringValidator.validate();
+				}
+			}
+			
+			
+			
+			protected function txtDate_changeHandler(event:CalendarLayoutChangeEvent):void {
+				obtenerTipoCambioFiscal();
+			}
+
+			[Bindable]
+			public function get showNuevo():Boolean {
+				return _showNuevo;
+			}
+
+			public function set showNuevo(value:Boolean):void {
+				_showNuevo = value;
+			}
+
+			[Bindable]
+			public function get showGuardar():Boolean {
+				return _showGuardar;
+			}
+
+			public function set showGuardar(value:Boolean):void {
+				_showGuardar = value;
+			}
+
+			[Bindable]
+			public function get showEmitir():Boolean {
+				return _showEmitir;
+			}
+
+			public function set showEmitir(value:Boolean):void {
+				_showEmitir = value;
+			}
+
+			[Bindable]
+			public function get showEMail():Boolean {
+				return _showEMail;
+			}
+
+			public function set showEMail(value:Boolean):void {
+				_showEMail = value;
+			}
+			
+			protected function cmdMostrarFacturasPendientes_clickHandler(event:MouseEvent):void {
+				var facPendWindow:TitleWindow = new TitleWindow();
+				facPendWindow.title = "Facturas Pendientes: " + _documento.cliente.nombre;
+				facPendWindow.width = 860;
+				facPendWindow.height = 600;
+				
+				var frmListadoDeudores:ListadoDeudoresCliente = new ListadoDeudoresCliente();
+				
+				var docPendientes:ArrayCollection = new ArrayCollection();
+				docPendientes.addItem(_documento.cliente.documentsPendientes);
+				
+				frmListadoDeudores.dataProvider = docPendientes;
+				frmListadoDeudores.codigoCliente = _documento.cliente.codigo;
+				
+				var parent:Sprite;
+				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+				// no types so no dependencies
+				var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+				if (mp && mp.useSWFBridge()) {
+					parent = Sprite(sm.getSandboxRoot());
+				} else {
+					parent = Sprite(FlexGlobals.topLevelApplication);
+				}
+				
+				PopUpManager.addPopUp(facPendWindow, parent, true);
+				PopUpManager.centerPopUp(facPendWindow);
+				
+				frmListadoDeudores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
+				
+				facPendWindow.addElement(frmListadoDeudores);
+				
+				facPendWindow.closeButton.visible = false;
+				
+			}
+			
+		]]>
+
+	</fx:Script>
+
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+
+		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" maxLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" 
+							tooShortError="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 'Número de RUT inválido.' : 'Número de documento inválido.'}" checkRut="{tipoDoc &amp;&amp; tipoDoc.value == 'R'}" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" />
+		<s:NumberFormatter id="nf_Cotizaciones" fractionalDigits="3" locale="es_ES" />
+	</fx:Declarations>
+
+	<s:states>
+		<s:State name="default" />
+		<s:State name="contado" />
+		<s:State name="cargando" />
+	</s:states>
+
+	<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" includeIn="cargando">
+		<loader:LoadComponent />
+	</s:VGroup>
+	<s:Group width="100%" height="100%" excludeFrom="cargando"> 
+		<components1:IconButton  left="327" top="76"  x="327" y="76" styleName="moneyButton" width="28" height="26" toolTip="Facturas Pendientes" 
+								 click="cmdMostrarFacturasPendientes_clickHandler(event)" 
+								 enabled="{_documento.cliente &amp;&amp; _documento.cliente.documentsPendientes}"
+								 visible="{!_documento.emitido}" />
+		
+		<s:Rect x="408" y="7" width="186" height="36"
+				visible="{(_documento.emitido &amp;&amp; !_documento.comprobante.esImportacion()) || (!_documento.pendiente &amp;&amp; (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE 
+				|| _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR || _documento.esCompra()))}">
+			<s:fill>
+				<s:LinearGradient rotation="90">
+					<s:GradientEntry color="0xFFFFFF" ratio="0.2" alpha="0.23" />
+					<s:GradientEntry color="0xFFFFFF" ratio="0.48" alpha="0.32" />
+					<s:GradientEntry color="0xFFFFFF" ratio="0.48001" alpha="0.63" />
+				</s:LinearGradient>
+			</s:fill>
+			<s:stroke>
+				<s:LinearGradientStroke rotation="90" weight="3">
+					<s:GradientEntry color="0xFF0000" alpha="0.70" ratio="0.4" />
+					<s:GradientEntry color="0xFA0000" alpha="0.40" ratio="0.965" />
+					<s:GradientEntry color="0xFF0000" alpha="0.30" ratio="0.9651" />
+				</s:LinearGradientStroke>
+			</s:stroke>
+		</s:Rect>
+
+		<s:Label width="120" color="#ff0000" fontSize="24" left="440" textAlign="center" top="15" text="Emitido" 
+				 visible="{_documento.emitido &amp;&amp; !_documento.comprobante.esImportacion()}" />
+		<s:Label width="120" color="#ff0000" fontSize="24" left="440" textAlign="center" top="15" text="Finalizado"
+				 visible="{!_documento.pendiente &amp;&amp; (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR || _documento.esCompra() || _documento.comprobante.esImportacion())}" />
+		<s:VGroup width="100%" height="100%" gap="0">
+			<s:HGroup width="100%" paddingTop="0" gap="0">
+				<mx:Form id="form" width="340" horizontalGap="0" textAlign="right" maxWidth="340">
+					<mx:FormItem width="100%" label="Serie" styleName="myLabel">
+						<s:HGroup width="100%" verticalAlign="middle">
+							<s:TextInput id="txtSerial" width="100%" textAlign="left" enter="{txtNumber.setFocus()}" text="@{_documento.serie}"
+										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="6" />
+							<s:Spacer width="10" />
+							<s:Label text="Número" styleName="myLabel" />
+							<s:TextInput id="txtNumber" width="100%" change="txtNumber_changeHandler(event)" enter="{cmbClient.setFocus()}" restrict="0-9" text="{_documento.numero}"
+										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="20" />
+						</s:HGroup>
+					</mx:FormItem>
+					<s:Spacer height="25" />
+					<mx:FormItem width="100%" label="Cliente" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+						<s:VGroup width="100%" gap="3">
+							<components:MyAutoComplete id="cmbClient" width="100%" textAlign="left" change="cmbClient_changeHandler(event)" keyDown="capture_keyDownHandlerCliente(event)"
+													   dataProvider="{ CatalogoFactory.getInstance().getClientesVendedor() }" labelField="nombre" matchType="anyPart" prompt="Ingrese cliente"
+													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+													   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
+													   next_focus="{txtRazonSocial}" previous_focus="{txtNumber}" selectedItem="{_documento.cliente}" dropDownWidth="480" dropDownRowCount="10"
+													   enabled="{!_modoVisualizacion}" />
+							<s:Label id="lblCorreoCliente" fontSize="9" fontWeight="normal" text="Correo: {_documento.cliente.contacto.ctoEmail1}"
+									 visible="{_documento.cliente &amp;&amp; _documento.cliente.contacto.ctoEmail1}" />
+						</s:VGroup>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Proveedor" visible="{modoSolicitud}" includeInLayout="{modoSolicitud}">
+						<s:VGroup width="100%" gap="3">
+							<components:MyAutoComplete id="cmbProveedor" width="100%" textAlign="left" change="cmbProveedor_changeHandler(event)" keyDown="capture_keyDownHandlerProveedor(event)"
+													   dataProvider="{_proveedores}" labelField="nombre" matchType="anyPart" prompt="Ingrese proveedor" allowNewValues="false"
+													   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+													   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus" next_focus="{txtRazonSocial}"
+													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" dropDownWidth="320" dropDownRowCount="10" enabled="{!_modoVisualizacion}" />
+							<s:Label id="lblCorreoProveedor" fontSize="9" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
+									 visible="{_documento.proveedor &amp;&amp; _documento.proveedor.contacto.ctoEmail1}" />
+						</s:VGroup>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Razón social">
+						<s:TextInput id="txtRazonSocial" width="100%" textAlign="left" enter="{txtVendedores.setFocus()}" prompt="Ingrese razón social" text="@{_documento.razonSocial}"
+									 editable="{!_modoVisualizacion}" maxChars="100" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="País" visible="{modoSolicitud}" includeInLayout="{modoSolicitud}">
+						<s:TextInput id="txtPais" width="100%" textAlign="left" text="{_pais ? _pais.nombre : ''}" prompt="Uruguay" enter="{txtVendedores.setFocus()}" editable="false" maxChars="100" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Vendedores" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+						<s:TextInput id="txtVendedores" width="100%" textAlign="left" keyDown="txtVendedores_keyDownHandler(event)" keyUp="txtVendedores_keyUpHandler(event)"
+									 enter="{cmbEntrega.setFocus()}" prompt="F1 Comisiones" text="{_comisiones}" toolTip="{_comisiones}" editable="{!_modoVisualizacion}" maxChars="256" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Entrega" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+						<s:VGroup width="100%" horizontalAlign="right">
+							<components:MyAutoComplete id="cmbEntrega" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().entrega }" labelField="nombre" matchType="anyPart"
+													   prompt="No Tiene" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" selectedItem="@{_documento.entrega}" dropDownWidth="220" dropDownRowCount="10"
+													   next_focus="{cmdNotasEnvio}" previous_focus="{txtVendedores}" enabled="{!_modoVisualizacion}" />
+
+							<s:Button id="cmdNotasEnvio" width="110" height="28" click="cmdNotasEnvio_clickHandler(event)" keyDown="cmdNotasEnvio_keyDownHandler(event)" label="Notas Envío..."
+									  toolTip="Imprimir Notas de Envío" styleName="textButton" enabled="{_documento.lineas.lineas.length > 0}" focusEnabled="false"
+									  visible="{!_documento.esCotizacionDeVenta &amp;&amp; !_documento.esOrdenDeVenta}" />
+						</s:VGroup>
+					</mx:FormItem>
+				</mx:Form>
+
+				<mx:Form width="100%" textAlign="right">
+					<s:Spacer height="56" />
+					<mx:FormItem width="100%" label="Moneda">
+						<s:VGroup>
+							<components:MyAutoComplete id="cmbMoney" width="200" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart" prompt="Ingrese moneda"
+													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+													   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+													   backspaceAction="focus" next_focus="{txtDirection}" selectedItem="@{_documento.moneda}" dropDownRowCount="{monedas.length}"
+													   previous_focus="{cmdNotasEnvio}" enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
+						</s:VGroup>
+
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Depto.">
+						<s:TextInput id="txtDpto" width="100%" textAlign="left" enter="{txtDirection.setFocus()}" prompt="" text="@{_documento.departamento}"
+									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="40" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Dirección">
+						<s:TextInput id="txtDirection" width="100%" textAlign="left" enter="{txtRUT.setFocus()}" prompt="" text="@{_documento.direccion}"
+									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="100" />
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Documento">
+						<s:HGroup>
+							<s:DropDownList id="ddlTipoDoc" dataProvider="{tiposDocList}" width="75" textAlign="left" change="ddlTipoDoc_changeHandler(event)" selectedItem="{tipoDoc}"/>
+							<s:TextInput id="txtRUT" textAlign="left" enter="{txtTelephone.setFocus()}" prompt="No tiene" text="@{_documento.rut}" change="txtRUT_changeHandler(event)" restrict="0-9"
+										 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="{tipoDoc != null &amp;&amp; tipoDoc.value == 'C' ? 8 : 12}" widthInChars="12" />
+							
+						</s:HGroup>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Teléfono">
+						<s:TextInput id="txtTelephone" width="100%" textAlign="left" enter="{cmbDepositoD.setFocus()}" prompt="No tiene" text="@{_documento.telefono}"
+									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="50" />
+					</mx:FormItem>
+				</mx:Form>
+
+				<s:VGroup width="340">
+					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
+						<s:Label text="Fecha" styleName="myLabel" />
+						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es"
+									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
+					</s:HGroup>
+					<s:Spacer height="5" />
+					<mx:Form width="100%" paddingTop="0" textAlign="right">
+						<mx:FormItem width="100%" label="Depósito desde">
+							<components:MyAutoComplete id="cmbDepositoD" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre"
+													   matchType="anyPart" prompt="Ninguno" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbDepositoH}" previous_focus="{txtTelephone}"
+													   selectedItem="@{_documento.depositoOrigen}" enabled="{!_modoVisualizacion}" />
+						</mx:FormItem>
+						<mx:FormItem width="100%" label="Depósito hasta">
+							<components:MyAutoComplete id="cmbDepositoH" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre"
+													   matchType="anyPart" prompt="Ninguno" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbListaPrecios}" previous_focus="{cmbDepositoD}"
+													   selectedItem="@{_documento.depositoDestino}" enabled="{!_modoVisualizacion}" />
+						</mx:FormItem>
+						<mx:FormItem width="100%" label="Lista precios" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+							<components:MyAutoComplete id="cmbListaPrecios" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().preciosVentaUsuario }" labelField="nombre"
+													   matchType="anyPart" prompt="Ingrese Lista Precios" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+													   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{txtCotizacion}" previous_focus="{cmbDepositoH}"
+													   selectedItem="@{_documento.preciosVenta}" enabled="{!_modoVisualizacion}" />
+						</mx:FormItem>
+
+						<mx:FormItem width="100%" label="T.C.Fiscal">
+							<components1:MyTextInput id="txtTCF" width="100" text="{_documento.docTCF}" enter="cmdEditSL.setFocus()"
+										 editable="false" permitirNegativos="false"/>
+						</mx:FormItem>
+						<mx:FormItem width="100%" label="T.C.Comercial">
+							<components1:MyTextInput id="txtCotizacion" width="100" text="@{_documento.docTCC}" enter="cmdEditSL.setFocus()" change="txtCotizacion_changeHandler(event)" 
+										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" permitirNegativos="false"/>
+						</mx:FormItem>
+						<mx:FormItem width="100%" label="Coeficiente" visible="{_documento.comprobante.codigo == '122'}" includeInLayout="{_documento.comprobante.codigo == '122'}">
+							<s:TextInput id="txtCoeficiente" width="100" textAlign="right" change="txtCoeficiente_changeHandler(event)" text="{_documento.coeficienteImp}" enter="cmdEditSL.setFocus()"
+										 prompt="1.00" restrict="0-9.," editable="{!_modoVisualizacion}" />
+						</mx:FormItem>
+					</mx:Form>
+				</s:VGroup>
+			</s:HGroup>
+
+			<s:HGroup width="100%" height="100%" gap="0">
+				<s:VGroup width="100%" height="100%" gap="0">
+					<s:HGroup width="100%" height="100%" gap="0">
+						<s:Panel width="100%" height="100%" title="Venta" styleName="pnlInterno">
+							<s:VGroup width="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+								<s:Button id="cmdEditSL" width="180" height="45" click="cmdEditSL_clickHandler(event)" keyDown="cmdEditSL_keyDownHandler(event)" styleName="textButton"
+										  label="{_documento.esSolicitudCompra ? 'Líneas de compra...' : 'Líneas de venta...'}"
+										  toolTip="{ _documento.esSolicitudCompra ? 'Editar líneas de compra' : 'Editar líneas de venta'} " focusEnabled="false" />
+								<s:HGroup width="100%" paddingTop="12" verticalAlign="middle"
+										  includeInLayout="{
+									  			_documento.comprobante.tipo != Comprobante.VENTA_CONTADO &amp;&amp; 
+									  			_documento.comprobante.tipo != Comprobante.COMPRA_CONTADO &amp;&amp; 
+									  			_documento.comprobante.tipo != Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE &amp;&amp; 
+									  			_documento.comprobante.tipo != Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR &amp;&amp; 
+									  			_documento.comprobante.tipo != Comprobante.NOTA_CREDITO
+										  }"
+										  visible="{
+											  _documento.comprobante.tipo != Comprobante.VENTA_CONTADO &amp;&amp; 
+											  _documento.comprobante.tipo != Comprobante.COMPRA_CONTADO &amp;&amp; 
+											  _documento.comprobante.tipo != Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE &amp;&amp; 
+											  _documento.comprobante.tipo != Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR &amp;&amp; 
+											  _documento.comprobante.tipo != Comprobante.NOTA_CREDITO
+										  }">
+									<s:Label fontSize="13" fontWeight="normal" text="Condición" />
+									<components:MyAutoComplete id="cmbFormaPago" width="300" textAlign="left" change="cmbFormaPago_changeHandler(event)"
+															   dataProvider="{ CatalogoFactory.getInstance().planPagos }" labelField="nombre" matchType="anyPart" prompt="Ninguna"
+															   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+															   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+															   backspaceAction="focus" next_focus="{cmdVencimiento}" previous_focus="{cmdEditSL}" selectedItem="{_documento.planPagos}"
+															   enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
+									<s:Button id="cmdVencimiento" height="28" click="cmdEditVencimientos_clickHandler(event)" keyDown="cmdVencimiento_keyDownHandler(event)" label="Vencimientos..."
+											  toolTip="Editar vencimientos" styleName="textButton" enabled="{_documento.planPagos != null}" focusEnabled="false" />
+								</s:HGroup>
+								<s:HGroup width="100%" paddingTop="12" verticalAlign="middle"
+										  includeInLayout="{										       
+										  	  _documento.esCotizacionDeVenta ||
+											  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || 
+											  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR || 
+											  _documento.comprobante.isNotaCredito()}"
+										  visible="{
+										  	  (!_documento.comprobante.isNotaCreditoFinanciera()) &amp;&amp; 
+										  	  (_documento.esCotizacionDeVenta || 
+										  	  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || 
+											  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR || 
+										  	  _documento.comprobante.isNotaCredito())}">
+									<s:Label fontSize="13" fontWeight="normal" text="Condición" />
+									<components:MyAutoComplete id="cmbCondicion" width="300" textAlign="left" change="cmbCondicion_changeHandler(event)"
+															   dataProvider="{ CatalogoFactory.getInstance().planPagos }" labelField="nombre" matchType="anyPart" prompt="Ninguna"
+															   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+															   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+															   backspaceAction="focus" next_focus="{cmdVencimiento}" previous_focus="{cmdEditSL}" selectedItem="{_documento.condicion}" />
+								</s:HGroup>
+							</s:VGroup>
+						</s:Panel>
+						<s:Panel width="300" height="100%" title="Cuponeras" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80')}"
+								 includeInLayout="{(_documento.comprobante.codigo == '80')}">
+							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length > 0)}"
+									  includeInLayout="{(_documento.cuponeras.length > 0)}">
+								<s:DropDownList id="cmbCuponera" width="100%" textAlign="left" change="combobox1_changeHandler(event)" dataProvider="{_documento.cuponeras}" labelField="nombre"
+												prompt="Seleccionar una" />
+								<s:Group width="100%" height="100%" visible="{cmbCuponera.selectedIndex >= 0}">
+									<s:layout>
+										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+									</s:layout>
+									<s:Label fontSize="14" text="Saldo" />
+									<s:Label color="{(_documento.stock.intValueExact() &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="24" fontWeight="normal"
+											 text="{nf_Espanol_Espanol.format(_documento.stock.toString())}" />
+									<s:Label fontSize="14" text="{_documento.comprobante.codigo == '80' ? 'afilados.' : 'servicios.'}" />
+								</s:Group>
+							</s:VGroup>
+							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length &lt; 1)}"
+									  includeInLayout="{(_documento.cuponeras.length &lt; 1)}">
+								<s:Group width="100%" height="100%">
+									<s:layout>
+										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+									</s:layout>
+									<s:Label fontSize="14" text="No tiene cuponera" />
+								</s:Group>
+							</s:VGroup>
+						</s:Panel>
+						<s:Panel width="400" height="100%" title="Referencia CFE" styleName="pnlInterno" visible="{_documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO}"
+								 includeInLayout="{_documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO}">
+							<s:VGroup width="100%" height="128" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5">
+								<s:HGroup verticalAlign="middle">
+									<s:Label text="Referencia" width="80" textAlign="right"/>
+									<s:DropDownList id="ddlReferenciaCFE" width="200" dataProvider="{tipoReferenciaList}" labelField="label" selectedItem="{indGlobalCFERef}" change="ddlReferenciaCFE_changeHandler(event)"/>
+								</s:HGroup>
+								<s:HGroup verticalAlign="middle" visible="{ddlReferenciaCFE.selectedIndex == 0}" includeInLayout="{ddlReferenciaCFE.selectedIndex == 0}">
+									<s:Label text="Tipo de CFE" width="80" textAlign="right"/>
+									<s:DropDownList id="ddlTipoCFE" width="200" dataProvider="{tipoEFacturaList}" labelField="label" selectedItem="{tipoCFERef}" change="ddlTipoCFE_changeHandler(event)"/>
+								</s:HGroup>
+								<s:HGroup verticalAlign="middle" visible="{ddlReferenciaCFE.selectedIndex == 0}" includeInLayout="{ddlReferenciaCFE.selectedIndex == 0}">
+									<s:Label text="Serie/Nro" width="80" textAlign="right"/>
+									<s:TextInput id="txtSerieCfeRef" width="60" restrict="A-Za-z" text="@{_documento.serieCFERef}" enter="{txtNroCfeRef.setFocus()}"/>
+									<s:TextInput id="txtNroCfeRef" width="134" restrict="0-9" text="@{_documento.numCFERef}" maxChars="16" textAlign="right"/>
+								</s:HGroup>
+								<s:HGroup verticalAlign="middle" width="100%" height="100%" visible="{ddlReferenciaCFE.selectedIndex == 1}" includeInLayout="{ddlReferenciaCFE.selectedIndex == 1}">
+									<s:Label text="Razón" width="80" textAlign="right"/>
+									<s:TextArea id="txtRazon" width="100%" height="100%" text="@{_documento.razonCFERef}"/>
+								</s:HGroup>
+								<s:HGroup verticalAlign="middle" visible="{ddlReferenciaCFE.selectedIndex == 0}" includeInLayout="{ddlReferenciaCFE.selectedIndex == 0}">
+									<s:Label text="Fecha" width="80" textAlign="right"/>
+									<mx:DateField id="txtFechaCFERef" fontSize="12" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" selectedDate="@{_documento.fechaCFERef}" yearNavigationEnabled="false" />
+								</s:HGroup>
+							</s:VGroup>
+						</s:Panel>
+					</s:HGroup>
+					<s:HGroup width="100%" height="100%" gap="0">
+						<s:Panel width="100%" height="100%" title="{modoSolicitud ? 'Notas' : 'Observaciones'}" styleName="pnlInterno">
+							<s:VGroup width="100%" height="100%" gap="0">
+								<s:TextArea id="txtComments" width="100%" height="100%" keyDown="txtComments_keyDownHandler(event)" borderAlpha="0" contentBackgroundAlpha=".78" text="@{_documento.notas}"
+											editable="{!_modoVisualizacion}" minHeight="0" maxChars="1024" />
+							</s:VGroup>
+						</s:Panel>
+					</s:HGroup>
+				</s:VGroup>
+
+				<s:VGroup width="316" height="100%" gap="0">
+					<facturacion:SummaryPnl id="summary" width="100%" height="100%" factura="{_documento}" modoSolicitud="{modoSolicitud}" />
+				</s:VGroup>
+			</s:HGroup>
+		</s:VGroup>
+		<s:Group id="grpWarning" width="100%" height="100%" left="0" top="0" showEffect="Fade" includeInLayout="{_documento.cliente &amp;&amp;_documento.cliente.categCliId == 'G'}"
+				 visible="{_documento.cliente &amp;&amp;_documento.cliente.categCliId == 'G'}">
+			<s:Rect id="topMaskRect" x="400" y="10" width="{grpWarning.width - 800}" height="60" bottomLeftRadiusX="14" bottomRightRadiusY="14" bottomRightRadiusX="14" bottomLeftRadiusY="14"
+					topLeftRadiusX="14" topRightRadiusY="14" topRightRadiusX="14" topLeftRadiusY="14">
+				<s:fill>
+					<s:SolidColor color="#FF0000" alpha="0.75" />
+				</s:fill>
+				<s:stroke>
+					<s:SolidColorStroke id="borderStroke" color="#880000" weight="1" alpha=".5" />
+				</s:stroke>
+			</s:Rect>
+			<s:Label x="240" y="30" width="{grpWarning.width - 480}" color="white" fontSize="24" textAlign="center" text="Cliente en el CLEARING" />
+		</s:Group>
+		<s:Group width="100%" left="360" top="-22">
+			<s:HGroup width="100%" horizontalAlign="right" paddingRight="10">
+				<s:Label color="0xffffff" fontFamily="Verdana" fontSize="14" fontWeight="bold" text="{'Autorizado por: ' + _usuarioAutorizante} " styleName="myLabel"
+						 visible="{_usuarioAutorizante &amp;&amp;_documento.usuIdAut != GeneralOptions.getInstance().loggedUser.codigo}">
+					<s:filters>
+						<s:DropShadowFilter color="0x000000" distance="1" />
+					</s:filters>
+
+				</s:Label>
+			</s:HGroup>
+		</s:Group>
+
+	</s:Group>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
+			<s:Spacer width="10" />
+			<components1:IconButton id="cmdTrazabilidad" click="cmdTrazabilidad_clickHandler(event)" styleName="trackingButton" label="Trazabilidad" toolTip="Trazabilidad"
+									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}" />
+			<components1:IconButton id="cmdAuditoria" click="cmdAuditoria_clickHandler(event)" styleName="trackingButton" label="Auditoría" toolTip="Líneas auditoría"
+									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}"/>
+
+			<s:Spacer width="100%" />
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<s:CheckBox id="chbEnvioMailAut" selected="{GeneralOptions.getInstance().opciones.envioAutomaticoMail == 'true'}" label="Envío correo automático"
+						includeInLayout="{!modoVentana &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esCotizacionDeVenta}"
+						visible="{!modoVentana &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esCotizacionDeVenta}" />
+			<s:Spacer width="100%" />
+			<s:Button id="cmdVerificarVentas" click="cmdVerificarVentas_clickHandler(event)" keyDown="cmdVerificarVentas_keyDownHandler(event)" styleName="costosButton"
+					  label="Costos" toolTip="Verificar costos"
+					  includeInLayout="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR &amp;&amp;
+					  				  	(_documento.comprobante.codigo == '102' || _documento.comprobante.codigo == '103' || _documento.comprobante.codigo == '202' || _documento.comprobante.codigo == '203')}"
+					  visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR &amp;&amp; 
+					  					(_documento.comprobante.codigo == '102' || _documento.comprobante.codigo == '103' || _documento.comprobante.codigo == '202' || _documento.comprobante.codigo == '203')}"/>
+
+			<s:Button id="cmdConvertir" click="cmdConvertirCotizacion_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir documento"
+					  visible="{!_modoVisualizacion &amp;&amp; _documento.esCotizacionDeVenta &amp;&amp; _documento.comprobante.codigo != '98'}"
+					  includeInLayout="{!_modoVisualizacion &amp;&amp; _documento.esCotizacionDeVenta &amp;&amp; _documento.comprobante.codigo != '98'}"
+					  enabled="{!_documento.emitido &amp;&amp; !_documento.nuevo &amp;&amp; _documento.cliente &amp;&amp; !_modoVisualizacion}" focusEnabled="false" />
+			<s:Button id="cmdFinalizar" click="cmdFinalizar_clickHandler(event)" styleName="finishButton" label="Finalizar" toolTip="Finalizar documento"
+					  visible="{!_modoVisualizacion &amp;&amp; (_documento.comprobante.codigo == '98' || _documento.comprobante.codigo == '111' || _documento.comprobante.codigo == '124' || _documento.esCompra())}"
+					  includeInLayout="{!_modoVisualizacion &amp;&amp; (_documento.comprobante.codigo == '98'|| _documento.comprobante.codigo == '111' || _documento.comprobante.codigo == '124' || _documento.esCompra())}"
+					  enabled="{_documento.pendiente &amp;&amp; !_documento.nuevo}" focusEnabled="false" />
+
+			<s:Button id="cmdDuplicar" click="cmdDuplicar_clickHandler(event)" styleName="convertButton" label="Duplicar" toolTip="Duplicar documento" visible="{_documento.comprobante.codigo == '14'}"
+					  includeInLayout="{_documento.comprobante.codigo == '14'}" enabled="{!_documento.pendiente &amp;&amp; _documento.cliente &amp;&amp; !_modoVisualizacion}" />
+			<s:Button id="cmdMovimientoStock" click="cmdMovimientoStock_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir movimiento stock"
+					  enabled="{!_documento.nuevo &amp;&amp; _documento.cliente &amp;&amp; !_modoVisualizacion}"
+					  visible="{_documento.comprobante.tipo == 32 &amp;&amp; _documento.comprobante.codigo != '98' &amp;&amp; _documento.comprobante.codigo != '1' &amp;&amp;  _documento.pendiente &amp;&amp; hasConvertMS()}"
+					  includeInLayout="{_documento.comprobante.tipo == 32 &amp;&amp; _documento.comprobante.codigo != '98' &amp;&amp; _documento.comprobante.codigo != '1' &amp;&amp; _documento.pendiente}" />
+
+			<s:Button id="cmdConvertirSol" click="cmdConvertirSol_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir solicitud"
+					  enabled="{!_convirtiendo &amp;&amp; !_documento.nuevo &amp;&amp; _documento.proveedor &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"
+					  visible="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; !_documento.emitido)}"
+					  includeInLayout="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; !_documento.emitido)}" />
+
+			<!--s:Button id="cmdMostrarFacturasPendientes" click="cmdMostrarFacturasPendientes_clickHandler(event)" styleName="moneyButton" label="Pendientes cliente" toolTip="Facturas pendientes"
+					  enabled="{_documento.cliente &amp;&amp; _documento.cliente.documentsPendientes}"
+					  visible="{!_documento.emitido &amp;&amp; _documento.comprobante.codigo == '28'}" 
+					  includeInLayout="{!_documento.emitido &amp;&amp; _documento.comprobante.codigo == '28'}" /-->
+			
+			<s:Spacer width="5" />
+			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false"
+					  visible="{showNuevo &amp;&amp; !_modoVisualizacion &amp;&amp; _documento.comprobante.codigo != '121' &amp;&amp; _documento.comprobante.codigo != '122' &amp;&amp; _documento.comprobante.codigo != '124'}"
+					  includeInLayout="{!_modoVisualizacion &amp;&amp; _documento.comprobante.codigo != '121' &amp;&amp; _documento.comprobante.codigo != '122' &amp;&amp; _documento.comprobante.codigo != '124'}" />
+			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Borrar" toolTip="Borrar documento"
+					  enabled="{!_documento.emitido &amp;&amp; !_documento.nuevo}" visible="{!_modoVisualizacion &amp;&amp; !modoVentana}" includeInLayout="{!_modoVisualizacion &amp;&amp; !modoVentana}" focusEnabled="false" />
+			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" visible="{showGuardar &amp;&amp; !_modoVisualizacion}"
+					  includeInLayout="{showGuardar &amp;&amp; !_modoVisualizacion}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
+			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" enabled="{!_documento.nuevo}" includeInLayout="{showEMail}"
+					  visible="{showEMail}" focusEnabled="false" />
+			
+			<s:Button id="cmdEmitir" click="cmdEmitir_clickHandler(event)" styleName="emitirButton" label="Emitir" toolTip="Emitir"
+					  visible="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra}"
+					  includeInLayout="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra}"
+					  focusEnabled="false" enabled="{!_documento.emitido &amp;&amp; (_documento.cliente || _documento.proveedor) }" />
+			<s:Spacer width="5" />
+			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />
+		</s:HGroup>
+	</s:controlBarContent>
+
+</s:Panel>

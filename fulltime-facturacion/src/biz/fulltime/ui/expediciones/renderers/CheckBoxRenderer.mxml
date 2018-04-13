@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXAdvancedDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+								  focusEnabled="true" verticalCenter="0">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.dto.AgendaTareaDTO;
+			import biz.fulltime.model.AgendaTarea;
+			
+			import mx.controls.advancedDataGridClasses.AdvancedDataGridListData;
+			import mx.controls.listClasses.BaseListData;
+			
+			[Bindable]
+			private var _colorBackground:uint = 0xFFFFFF;
+			
+			[Bindable]
+			private var _colorForeground:uint = 0x000000;
+			
+			[Bindable]
+			private var _alpha:Number = .16;
+
+			override public function set listData(value:BaseListData):void {
+				super.listData = value;
+				
+				if (value) {
+					var agendaTarea:AgendaTareaDTO = AdvancedDataGridListData(value).item as AgendaTareaDTO;
+
+					if (agendaTarea) {					
+						checkBox.selected = agendaTarea.selected;
+
+						if (agendaTarea.estado == "C") {
+							if (agendaTarea.fechaHoraFin == null) {
+								_colorBackground = 0xFFFF00;
+								_colorForeground = 0x000000;
+								_alpha = .24;
+							} else {
+								_colorBackground = 0x00FF00;
+								_colorForeground = 0x000000;
+								_alpha = .02;
+							} 							
+							checkBox.selected = false;
+							checkBox.includeInLayout = false;
+							checkBox.visible = false;
+						} else if (agendaTarea.estado == "P") {
+							var fechaInicio:Date = agendaTarea.fechaInicio;
+							var fecha:Date = agendaTarea.fechaHora;
+							
+							if (fecha.date != fechaInicio.date || fecha.month != fechaInicio.month) {
+								_colorBackground = 0xFF0000;
+								_colorForeground = 0x000000;
+								_alpha = .015;
+							} else{
+								_colorBackground = 0xDADADA;
+								_colorForeground = 0x000000;
+								_alpha = .24;
+							}
+							checkBox.visible = true;
+							checkBox.includeInLayout = true;
+						} else {
+							_colorBackground = 0x000000;
+							_colorForeground = 0x222222;
+							_alpha = .84;						
+							
+							checkBox.visible = true;
+							checkBox.includeInLayout = true;
+						}
+					}			
+				}
+			}
+
+			private function changeListData(event:Event):void {
+				var agendaTarea:AgendaTareaDTO = AdvancedDataGridListData(listData).item as AgendaTareaDTO;
+				
+				agendaTarea.selected = event.target.selected;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:Rect left="0" right="0" top="-2" bottom="-2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xFFFFFF" alpha="{_alpha*4}" ratio=".00"/>
+				<s:GradientEntry color="{_colorBackground}" alpha="{_alpha}" ratio=".09" />
+				<s:GradientEntry color="{_colorBackground}" alpha="{_alpha}" ratio=".96"/>
+				<s:GradientEntry color="{_colorBackground}" alpha="{_alpha*2}" ratio=".96"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>	
+
+	<s:CheckBox id="checkBox" x="5" y="5" change="changeListData(event)"  verticalCenter="0"/>
+
+</s:MXAdvancedDataGridItemRenderer>

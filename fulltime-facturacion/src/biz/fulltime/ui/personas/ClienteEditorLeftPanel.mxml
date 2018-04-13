@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:personas="biz.fulltime.ui.personas.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="320" height="100%">
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.ByteArray;
+			
+			import com.as3xls.xls.Sheet;
+			import com.as3xls.xls.ExcelFile;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ICollectionView;
+			import mx.collections.IViewCursor;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.utils.StringUtil;
+			
+			import biz.fulltime.dto.ClienteDTO;
+			import biz.fulltime.event.ExportToExcelEvent;
+
+			private var _agregandoNuevo:Boolean = false;
+
+			[Bindable]
+			public function get agregandoNuevo():Boolean {
+				return _agregandoNuevo;
+			}
+
+			public function set agregandoNuevo(value:Boolean):void {
+				_agregandoNuevo = value;
+			}
+
+			protected function cmdAgregar_clickHandler(event:MouseEvent):void {
+				personsList.setNuevoCliente();
+				agregandoNuevo = true;
+			}
+
+			public function cancelar():void {
+				if (agregandoNuevo) {
+					agregandoNuevo = false;
+					personsList.removerNuevoCliente();
+				}
+			}
+
+			public function finalizar(cliente:ClienteDTO = null):void {
+				if (agregandoNuevo) {
+					agregandoNuevo = false;
+					
+					callLater(function():void {
+						personsList.limpiarFiltos();
+						personsList.refrescarClientes(null, cliente);
+					});
+				}
+
+			}
+			
+			protected function cmdExcel_clickHandler(event:MouseEvent = null):void {
+				var repColumns:ArrayCollection = new ArrayCollection();
+				repColumns.addItem("Codigo");
+				repColumns.addItem("Nombre");
+				repColumns.addItem("Direccion");
+				repColumns.addItem("Telefono");
+				repColumns.addItem("Celular");
+				repColumns.addItem("Email");
+				repColumns.addItem("Zona");
+				repColumns.addItem("Localidad");
+				repColumns.addItem("Departamento");
+				
+				// create a columns Array
+				var columns:Array = new Array();
+				var col:int = 0;
+				for each (var colName:String in repColumns) {
+					var column:Object = new Object();
+					column.header = StringUtil.trim(colName).toUpperCase();
+					column.value = "col_" + col;
+					columns.push(column);
+					col++;
+				}				
+				var dataProvider:Array = new Array();
+				
+				var personas:ArrayCollection = personsList.getPersonas();	
+				for each(var cliente:ClienteDTO in personas) {
+					var data:Object = new Object();
+					data.col_0 = cliente.codigo;
+					data.col_1 = cliente.nombre;
+					data.col_2 = cliente.direccion ? cliente.direccion : "";
+					data.col_3 = cliente.telefono ? cliente.telefono : "";
+					data.col_4 = cliente.celular ? cliente.celular : "";
+					data.col_5 = cliente.email ? cliente.email : "";
+					data.col_6 = cliente.zona ? cliente.zona : "";
+					data.col_7 = cliente.localidad ? cliente.localidad : "";
+					data.col_8 = cliente.depto ? cliente.depto : "";
+					
+					dataProvider.push(data);
+				}
+				
+
+				var date:Date = new Date();
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY";
+				
+				export(dataProvider, columns, "reporte_clientes_" + dateFormatter.format(date) + ".xls");
+			}
+			
+			/**
+			 *
+			 * Export to Excell
+			 *
+			 * @param obj        Objeto simple, XML, XMLList, Array, ArrayCollection o XMLListCollection
+			 *                   que se quiere exportar a excel
+			 * @colsValues       Listado de objetos que indican cual es el nombre de la columna
+			 *                   y que propiedad del objeto se utiliza para sacar los datos de la columna
+			 *                   {header:"nombre del header", value:"propiedad del objeto que contiene el valor"}
+			 * @param defaultName   Nombre default con el que se genera el excel
+			 *
+			 */
+			public function export(obj:Object, colsValues:Array, defautlName:String):void {
+				var _dp:ICollectionView = ClienteEditorLeftPanel.getDataProviderCollection(obj);
+				if (_dp == null) {
+					return;
+				}
+				
+				var sheet:Sheet = new Sheet();
+				
+				// Agregar Cabezal.
+				var rows:Number = 0;
+				var cols:Number = 0;
+				
+				var cantCols:Number = colsValues.length;
+				
+				sheet.resize(_dp.length + 14, colsValues.length + 2);
+				
+				var date:Date = new Date();
+				var formatter:DateFormatter = new DateFormatter();
+				formatter.formatString = "DD/MM/YYYY - JJ:NN";
+
+				sheet.setCell(rows, cols, "CLIENTES");
+				cols++;
+				cols++;
+				cols++;
+				cols++;
+				sheet.setCell(rows, cols, "Fecha:");
+				cols++;
+				sheet.setCell(rows, cols, formatter.format(date));
+				rows++;
+
+				cols = 0;
+				if (personsList.cmbVendedor.selectedItem) {
+					sheet.setCell(rows, cols, "Vendedor:");
+					cols++;
+					sheet.setCell(rows, cols, personsList.cmbVendedor.selectedItem.nombre);
+					cols++;
+				}
+				if (personsList.cmbZona.selectedItem) {
+					sheet.setCell(rows, cols, "Zona:");
+					cols++;
+					sheet.setCell(rows, cols, personsList.cmbZona.selectedItem.nombre);
+					cols++;
+				}
+				if (personsList.cmbCategorias.selectedItem) {
+					sheet.setCell(rows, cols, "Categoría:");
+					cols++;
+					sheet.setCell(rows, cols, personsList.cmbVendedor.selectedItem.nombre);
+					cols++;
+				}
+				rows++;
+				rows++;
+				
+				cols = 0;
+				for (; cols < cantCols; cols++) {
+					sheet.setCell(rows, cols, colsValues[cols].header);
+				}
+				
+				cols = 0;
+				rows++;
+				var cursor:IViewCursor = _dp.createCursor();
+				while (!cursor.afterLast) {
+					for (cols = 0; cols < cantCols; cols++) {
+						if ((cursor.current as Object).hasOwnProperty(colsValues[cols].value)) {
+							sheet.setCell(rows, cols, (cursor.current as Object)[colsValues[cols].value]);
+						}
+					}					
+					rows++;
+					cursor.moveNext();
+				}
+				
+				var xls:ExcelFile = new ExcelFile();
+				xls.sheets.addItem(sheet);
+				var bytes:ByteArray = xls.saveToByteArray();
+								
+				dispatchEvent(new ExportToExcelEvent(ExportToExcelEvent.EXPORT_TO_EXCEL, bytes, defautlName));
+			}
+			
+			//----------------------------- 
+			// Private function 
+			//----------------------------- 
+			/**
+			 *
+			 * A partir de un elemento pasado se genera un ICollectionView
+			 * para su correcto recorrido
+			 *
+			 * @param obj         Objeto a convertir a ICollectionView
+			 *
+			 *
+			 * @return referencia a un ICollectionView.
+			 *
+			 */
+			static public function getDataProviderCollection(obj:Object):ICollectionView {
+				if ((obj is Number && isNaN(obj as Number)) || (!(obj is Number) && obj == null)) {
+					return null;
+				} else if (obj is ICollectionView) {
+					return obj as ICollectionView;
+				} else if (obj is Array) {
+					return new ArrayCollection(obj as Array);
+				} else if (obj is XMLList) {
+					return new XMLListCollection(obj as XMLList);
+				} else if (obj is XML) {
+					var col:XMLListCollection = new XMLListCollection();
+					col.addItem(obj);
+					return col;
+				} else if (obj is Object) {
+					return new ArrayCollection([obj]);
+				} else {
+					return null;
+				}
+			}
+
+			
+			protected function personsList_creationCompleteHandler(event:FlexEvent):void {
+				personsList.addEventListener("addNewClient", function():void {
+					personsList.setNuevoCliente();
+					agregandoNuevo = true;
+				});
+				personsList.addEventListener("exportToExcel", function():void {
+					cmdExcel_clickHandler();
+				});
+			}
+			
+		]]>
+	</fx:Script>
+	
+
+	<s:VGroup width="100%" height="100%">
+		<s:HGroup width="100%" height="100%" horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" verticalAlign="middle">
+			<personas:ListaClientes id="personsList" width="100%" height="100%" enabled="{!agregandoNuevo}" creationComplete="personsList_creationCompleteHandler(event)"/>
+		</s:HGroup>
+	</s:VGroup>
+</s:Group>

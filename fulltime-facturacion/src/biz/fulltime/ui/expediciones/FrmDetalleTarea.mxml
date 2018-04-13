@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" xmlns:tabBar="skin.components.tabBar.*" >
+	
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.AgendaTarea;
+						
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import util.CatalogoFactory;
+			import util.ErrorPanel;
+			
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+			
+			private var _tarea:AgendaTarea = new AgendaTarea();
+			
+			private var remObj:RemoteObject;
+			
+			private var _matutina:Boolean;
+			
+			[Bindable]
+			private var _nueva:Boolean = false;
+			
+			private var _fecha:Date;
+			
+			[Bindable]
+			private var ageBlob:ByteArray;
+			
+			private var _changeTarea:Boolean = false;
+			
+			private var loader : Loader = new Loader();
+			
+			private var bitmapData:BitmapData;
+			
+			[Bindable]
+			private var scaleImage:Number = 0;
+			
+			
+			[Bindable]
+			public var myDP:ArrayCollection = new ArrayCollection([{value:"B", label:"Baja"}, {value:"M", label:"Media"}, {value:"A", label:"Alta"}]);
+			
+			public function get fecha():Date {
+				return _fecha;
+			}
+			
+			public function set fecha(value:Date):void {
+				_fecha = value;
+			}
+			
+			public function get matutina():Boolean {
+				return _matutina;
+			}
+			
+			public function set matutina(value:Boolean):void {
+				_matutina = value;
+			}
+			
+			[Bindable]
+			public function get tarea():AgendaTarea {
+				return _tarea;
+			}
+			
+			[Bindable]
+			private var _fechaInicio:String;
+
+			[Bindable]
+			private var _fechaFin:String;
+
+			[Bindable]
+			private var _prioridad:String;
+
+			public function set tarea(value:AgendaTarea):void {
+				_tarea = value;				
+				
+				ageBlob = _tarea.ageBlob;
+				
+				callLater(function():void {
+					for each(var o:Object in myDP) {
+						if (o.value == _tarea.prioridad) {
+							_prioridad = o.label; 
+						}
+					}
+				});
+				if (_tarea.fechaInicio) {
+					var dateFormatter:DateFormatter = new DateFormatter();
+					dateFormatter.formatString = "DD-MM-YYYY HH:NN";
+					_fechaInicio = dateFormatter.format(_tarea.fechaInicio);
+				} else {
+					_fechaInicio = null;
+				}
+				
+				if (_tarea.fechaHoraFin) {
+					var dateFormatter:DateFormatter = new DateFormatter();
+					dateFormatter.formatString = "DD-MM-YYYY HH:NN";
+					_fechaFin = dateFormatter.format(_tarea.fechaHoraFin);
+				} else {
+					_fechaFin = null;
+				}
+				
+				_changeTarea = true;
+				
+				invalidateProperties();
+
+			}
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				
+				if (_changeTarea && pageViewer) {
+					_changeTarea = false;
+					if (ageBlob) {
+						byteArrayToBitmapData(ageBlob);
+					} else {
+						pageViewer.source = null;
+					}
+				}
+			}
+
+			private function byteArrayToBitmapData(byteArray : ByteArray):void {
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, getBitmapData);
+				loader.loadBytes(byteArray);
+			}
+			
+			
+			private function getBitmapData(e:Event):void {
+				var content:* = loader.content;
+				bitmapData = new BitmapData(content.width,content.height,true,0x00000000);
+				 
+				var matrix:Matrix = new Matrix();
+				bitmapData.draw(content, matrix, null, null, null, true);
+				
+				pageViewer.source = new Bitmap( bitmapData );
+				
+				// resize bitmap if larger than stage
+				if (bitmapData.width > imgPreview.width || bitmapData.height > imgPreview.height) {
+					var xscale:Number = (imgPreview.width) / bitmapData.width;
+					var yscale:Number = (imgPreview.height) / bitmapData.height;
+					if (xscale < yscale) {
+						pageViewer.scaleX = pageViewer.scaleY = xscale;
+					} else {
+						pageViewer.scaleX = pageViewer.scaleY = yscale;
+					}
+				}
+				
+				scaleImage = Math.round(pageViewer.scaleX * 100); 
+				 
+			}
+			
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			protected function cmbClient_changeHandler(event:Event):void {
+			}
+			
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+			
+			protected function myTabBar_creationCompleteHandler(event:FlexEvent):void {
+				myTabBar.setCloseableTab(0, false);
+				myTabBar.setCloseableTab(1, false);
+				myTabBar.setCloseableTab(2, false);
+				//myTabBar.setCloseableTab(3, false);
+			}
+			
+			protected function mySlider_changeHandler(event:Event):void {
+				var xscale:Number = mySlider.value / 100;
+				
+				pageViewer.scaleX = pageViewer.scaleY = xscale;
+
+				scaleImage = mySlider.value;
+				
+			}
+
+			protected function imgPreview2_creationCompleteHandler(event:FlexEvent):void {				
+				invalidateProperties();				
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+	</fx:Declarations>
+	
+	<s:Panel width="100%" height="100%" backgroundAlpha="0.0" title="Nueva Tarea" styleName="pntLineasVenta">
+		<s:layout>
+			<s:VerticalLayout horizontalAlign="center" gap="0" paddingTop="3" />
+		</s:layout>
+		<tabBar:MyTabBar2 id="myTabBar" dataProvider="{myViewStack}" requireSelection="true" creationComplete="myTabBar_creationCompleteHandler(event)"/>	
+		<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0" minHeight="40">
+			<s:layout>
+				<s:VerticalLayout horizontalAlign="center" gap="0" />
+			</s:layout>
+			
+			<mx:ViewStack id="myViewStack" width="100%" height="100%" paddingTop="5">
+				<s:NavigatorContent label="General" width="100%" height="100%">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".016" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:VGroup width="100%" height="100%" paddingBottom="5">
+							<s:Form width="100%" height="100%" >
+								<s:layout>
+									<s:FormLayout gap="-12" />
+								</s:layout>    
+								<s:FormItem width="100%" label="Fecha Inicio:" includeInLayout="{!_nueva &amp;&amp; tarea.fechaInicio != null}" visible="{!_nueva &amp;&amp; tarea.fechaInicio != null}" color="red" fontWeight="bold" textAlign="right">
+									<s:Label  text="{_fechaInicio}"  color="black"/>
+								</s:FormItem>
+								<s:FormItem width="100%" label="Fecha Fin:" includeInLayout="{!_nueva &amp;&amp; tarea.fechaHoraFin  != null}" visible="{!_nueva &amp;&amp; tarea.fechaHoraFin != null}" color="red" fontWeight="bold" textAlign="right">
+									<s:Label  text="{_fechaFin}"  color="black"/>
+								</s:FormItem>
+								<s:HGroup width="100%" paddingBottom="10" paddingTop="10">
+									<s:Line width="100%" height="1" left="0">
+										<s:stroke>
+											<s:SolidColorStroke id="lineStroke" color="blue" alpha="0.4" />
+										</s:stroke>
+									</s:Line>
+								</s:HGroup>
+								<s:FormItem width="100%" label="Tarea:" textAlign="right">
+									<s:Label  text="{tarea.tarea.nombre}" />
+								</s:FormItem>
+								<s:FormItem width="100%" label="Descripción:" textAlign="right">
+									<s:layout>
+										<s:BasicLayout />
+									</s:layout>
+									<s:TextArea id="txtDescription" width="100%" height="60" text="{tarea.descripcion}" textAlign="left" editable="false" borderVisible="false" contentBackgroundAlpha=".3"/>
+								</s:FormItem>
+								<s:FormItem label="Ejecutante:" textAlign="right">
+									<s:Label  text="{tarea.usuarioAsignado ? tarea.usuarioAsignado.nombre : 'No Tiene'}" />
+								</s:FormItem>
+								<s:FormItem label="Prioridad:" textAlign="right">
+									<s:Label  text="{_prioridad}" />
+								</s:FormItem>
+								<s:FormItem label="Contacto:" textAlign="right">
+									<s:Label  text="{tarea.contacto.nombre}" />
+								</s:FormItem>
+								<s:HGroup width="100%" paddingLeft="90" paddingBottom="5">
+									<s:Form width="100%">
+										<s:layout>
+											<s:FormLayout gap="-12"/>
+										</s:layout>    
+										<s:FormItem width="100%" label="Dirección:" fontWeight="normal">
+											<s:Label  text="{tarea.contacto ? tarea.contacto.ctoDireccion : ''}" />
+										</s:FormItem>
+										<s:FormItem width="100%" label="Teléfono:" fontWeight="normal">
+											<s:Label text="{tarea.contacto ? tarea.contacto.ctoTelefono : ''}" />
+										</s:FormItem>
+									</s:Form>
+								</s:HGroup>
+								
+								<s:FormItem width="100%" label="Vínculo:" textAlign="right">
+									<s:TextArea id="txtDatosContacto" width="100%" height="28" text="{tarea.vinculo}" editable="false" textAlign="left" borderVisible="false" contentBackgroundAlpha=".3"/>
+								</s:FormItem>
+								<s:FormItem width="100%" height="100%" label="Nota:" textAlign="right">
+									<s:TextArea id="txtNotas" width="100%" height="100%" text="{tarea.notas}" editable="false" textAlign="left" borderVisible="false" contentBackgroundAlpha=".3"/>
+								</s:FormItem>
+							</s:Form>
+						</s:VGroup>						
+					</s:BorderContainer>					
+				</s:NavigatorContent>
+				
+				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta">
+					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">						
+						<s:Group width="100%" height="100%" mouseEnabled="true">
+							<s:BorderContainer width="100%" height="100%" backgroundColor="0xffffff" borderColor="0x666666" backgroundAlpha=".7" mouseEnabled="true" >
+								<s:VGroup width="100%" height="100%" paddingLeft="0" paddingTop="0" paddingBottom="0" paddingRight="0" gap="0" visible="{ageBlob != null}">
+									<s:VGroup id="imgPreview" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
+										<s:Scroller width="100%" height="100%">
+											<s:VGroup top="0" left="0" bottom="0" right="0" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
+												<s:SWFLoader id="pageViewer" mouseEnabled="true" creationComplete="imgPreview2_creationCompleteHandler(event)">
+													<s:filters>
+														<s:DropShadowFilter/>
+													</s:filters>
+												</s:SWFLoader>
+											</s:VGroup>
+										</s:Scroller>
+									</s:VGroup>
+									<s:BorderContainer width="100%" backgroundColor="0xDADADA" borderColor="0x666666" visible="{ageBlob != null}" minHeight="0">
+										<s:layout>
+											<s:HorizontalLayout paddingTop="5" paddingLeft="10" paddingBottom="5"/>
+										</s:layout>
+										<s:HSlider id="mySlider" liveDragging="true" dataTipPrecision="0" change="mySlider_changeHandler(event)" value="{scaleImage}" minimum="10" maximum="200"/>
+										<s:Label text="Zoom: {scaleImage}%" />
+									</s:BorderContainer>
+								</s:VGroup>
+							</s:BorderContainer >
+							<s:VGroup id="imgPrv" width="100%" height="100%" visible="{ageBlob == null}" verticalAlign="middle" horizontalAlign="center" mouseEnabled="true">
+								<s:Label width="100%" height="100%" verticalAlign="middle" textAlign="center" horizontalCenter="0" text="No hay Imagen"  fontWeight="bold" fontSize="20" color="0x888888" />
+							</s:VGroup>
+						</s:Group>
+					</s:VGroup>
+				</s:NavigatorContent>
+				
+				<s:NavigatorContent label="{tarea.textoAdjunto ? ' * ' : ''}Texto Adjunto">
+					<s:VGroup width="100%" height="100%" >
+						<s:TextArea id="txtTextoAdjunto" width="100%" height="100%" text="{tarea.textoAdjunto}" borderAlpha="0" editable="false"/>
+					</s:VGroup>
+				</s:NavigatorContent>
+				
+			</mx:ViewStack>
+		</s:BorderContainer>
+		
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25"/>
+				<s:Spacer width="100%" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" focusEnabled="true" />
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+</s:Group>

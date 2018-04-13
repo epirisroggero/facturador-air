@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="biz.fulltime.ui.components.*" xmlns:deudores="biz.fulltime.ui.deudores.*" xmlns:expediciones="biz.fulltime.ui.expediciones.*"
+		 xmlns:facturacion="biz.fulltime.ui.facturacion.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:s="library://ns.adobe.com/flex/spark" xmlns:ui1="biz.fulltime.ui.*"
+		 width="100%" height="100%" creationComplete="creationCompleteHandler(event)" xmlns:buttonBar="skin.components.buttonBar.*" xmlns:tabBar="skin.components.tabBar.*">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.AbrirFacturaEvent;
+			import biz.fulltime.event.ExportToCSVEvent;
+			import biz.fulltime.event.ExportToExcelEvent;
+			import biz.fulltime.event.ExportToPDFEvent;
+			import biz.fulltime.event.MenuEventFT;
+			import biz.fulltime.model.CotizacionesModel;
+			import biz.fulltime.model.Documento;
+			import biz.fulltime.ui.components.EditarComprobanteDescuentos;
+			import biz.fulltime.ui.configure.FrmOpciones;
+			import biz.fulltime.ui.crud.tipoEntrega.TipoEntrega;
+			import biz.fulltime.ui.deudores.ListadoDeudores;
+			import biz.fulltime.ui.expediciones.FrmExpediciones;
+			import biz.fulltime.ui.facturacion.FacturacionPnl;
+			import biz.fulltime.ui.facturacion.LstFacturasPnl;
+			import biz.fulltime.ui.facturacion.reportes.FrmCobranzas;
+			import biz.fulltime.ui.facturacion.reportes.FrmLiquidacion;
+			import biz.fulltime.ui.facturacion.reportes.FrmLiquidacionVendedores;
+			import biz.fulltime.ui.facturacion.reportes.FrmListadoControlMas;
+			import biz.fulltime.ui.facturacion.reportes.FrmRentaComprobantes;
+			import biz.fulltime.ui.facturacion.reportes.FrmRutinaCostos;
+			import biz.fulltime.ui.facturacion.stockprecio.FrmStockPrecio;
+			import biz.fulltime.ui.personas.PersonaEditor;
+			
+			import mx.core.FlexGlobals;
+			import mx.core.IFlexDisplayObject;
+			import mx.core.INavigatorContent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.NavigatorContent;
+			import spark.components.Panel;
+			import spark.components.TitleWindow;
+			
+			import util.CatalogoFactory;
+
+			[Bindable]
+			private var _selectedIndex:Number = 0;
+
+			private var wndDialog:TitleWindow;
+			
+
+			private function init():void {
+				mainMenuBar.addEventListener(MenuEventFT.MENU_CHANGE, menuChanged);
+			}
+			
+			private function searchElement(name:String):Boolean {
+				var encontre:Boolean = false;
+				for each (var element:NavigatorContent in myViewStack.getChildren()) {
+					if (element.id == name) {
+						myViewStack.selectedChild = element;
+						encontre = true;
+						break;
+					}
+				}
+				return encontre;
+				
+			}
+
+			private function menuChanged(event:MenuEventFT):void {
+				if (event.navigate == MenuEventFT.FACTURACION_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("factura");
+
+						if (!encontre) {
+							var lstFacturasPnl:LstFacturasPnl = new LstFacturasPnl();
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.id = "factura";
+							navContext.label = "Facturación";
+							navContext.addElement(lstFacturasPnl);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});
+						}
+					});
+					
+					
+				} else if (event.navigate == MenuEventFT.EXPEDICIONES_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {						
+						var encontre:Boolean = searchElement("expediciones");
+						
+						if (!encontre) {
+							var pnlExpediciones:FrmExpediciones = new FrmExpediciones();
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.id = "expediciones";
+							navContext.label = "Expediciones";
+							navContext.addElement(pnlExpediciones);
+							
+							myViewStack.addElement(navContext);
+	
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}
+					});					
+					
+					
+				} else if (event.navigate == MenuEventFT.REPORTE_DEUDORES_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("deudores");
+						
+						if (!encontre) {
+							var pnlDeudores:ListadoDeudores = new ListadoDeudores();
+							pnlDeudores.addEventListener(AbrirFacturaEvent.ABRIR_DOCUMENTO, function(evt:AbrirFacturaEvent):void {
+								abrirDocumentoEnVentana(evt.docId);
+							});
+	
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Listado Deudores";
+							navContext.id = "deudores"; 
+							navContext.addElement(pnlDeudores);
+							
+							myViewStack.addElement(navContext);
+	
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+
+				} else if (event.navigate == MenuEventFT.MOSTRAR_CLIENTES_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("clientes");
+						if (!encontre) {
+							var pnlClientes:PersonaEditor = new PersonaEditor();
+							
+							pnlClientes.addEventListener(ExportToExcelEvent.EXPORT_TO_EXCEL, exportToExcel);
+
+							pnlClientes.addEventListener(AbrirFacturaEvent.ABRIR_DOCUMENTO, function(evt:AbrirFacturaEvent):void {
+								abrirDocumentoEnVentana(evt.docId);
+							});
+
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Clientes";
+							navContext.id = "clientes"; 
+							navContext.addElement(pnlClientes);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+					
+				} else if (event.navigate == MenuEventFT.REPORTE_STOCK_PRECIO_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("valorado");
+						if (!encontre) {
+							var frmStockPrecio:FrmStockPrecio = new FrmStockPrecio();
+							frmStockPrecio.addEventListener(ExportToPDFEvent.EXPORT_TO_PDF, exportToPDF);
+							frmStockPrecio.addEventListener(ExportToExcelEvent.EXPORT_TO_EXCEL, exportToExcel);
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Valorado";
+							navContext.id = "valorado"; 
+							navContext.addElement(frmStockPrecio);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+					
+				} else if (event.navigate == MenuEventFT.REPORTE_RENTAS_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("rentas");
+						
+						if (!encontre) {
+							var pnlRentas:FrmRentaComprobantes = new FrmRentaComprobantes();
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Rentas por Comprobante";
+							navContext.id = "rentas"; 
+							navContext.addElement(pnlRentas);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+
+				} else if (event.navigate == MenuEventFT.REPORTE_COBRANZA) {
+					showReporteCobranzas();
+				} else if (event.navigate == MenuEventFT.REPORTE_LIQUIDACION) {					
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("liquidacion");
+						
+						if (!encontre) {
+							var frmLiquidacion:FrmLiquidacion = new FrmLiquidacion();
+							frmLiquidacion.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
+														
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Liquidacion/Cobranzas";
+							navContext.id = "liquidacion"; 
+							navContext.addElement(frmLiquidacion);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+				} else if (event.navigate == MenuEventFT.REPORTE_LIQUIDACION_VENDEDORES) {					
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("liquidacionVendedores");
+						
+						if (!encontre) {
+							var frmLiquidacionVendedores:FrmLiquidacionVendedores = new FrmLiquidacionVendedores();
+							frmLiquidacionVendedores.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Liquidación Vendedores";
+							navContext.id = "liquidacionVendedores"; 
+							navContext.addElement(frmLiquidacionVendedores);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+				} else if (event.navigate == MenuEventFT.REPORTE_CONTROL_MAS) {					
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("liquidacionControl");
+						
+						if (!encontre) {
+							var frmListadoControlPlus:FrmListadoControlMas = new FrmListadoControlMas();
+							frmListadoControlPlus.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Listado Control+";
+							navContext.id = "listadoContol"; 
+							navContext.addElement(frmListadoControlPlus);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});
+						}
+					});
+					
+				} else if (event.navigate == MenuEventFT.CONFIGURAR_IMPRESORAS_EVENT) {
+					configurarImpresoras();
+				} else if (event.navigate == MenuEventFT.REFRESCAR_CATALOGOS_EVENT) {
+					CatalogoFactory.getInstance().loadAllCatalogs();
+				} else if (event.navigate == MenuEventFT.CRUD_TIPOS_ENTREGA_EVENT) {
+					showCRUDTiposEntrega();
+				} else if (event.navigate == MenuEventFT.DESCUENTOS_PROMETIDOS_EVENT) {
+					showEditarDescuentosPrometidos();
+				} else if (event.navigate == MenuEventFT.EXIT) {
+					currentState = "empty"; 
+					dispatchEvent(new Event("_logout"));
+				} else if (event.navigate == MenuEventFT.RUTINA_COSTOS_EVENT) {
+					showRutinaCostos();
+				} 
+			}
+			
+			private function showEditarDescuentosPrometidos():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Descuentos";
+					wndDialog.width = 640;
+					wndDialog.height = 560;
+					
+					var frmEditarComprobanteDescuentos:EditarComprobanteDescuentos = new EditarComprobanteDescuentos();
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					frmEditarComprobanteDescuentos.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmEditarComprobanteDescuentos);
+				}
+				
+			}
+
+			private function showCRUDTiposEntrega():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Tipos de Entrega";
+					wndDialog.width = 600;
+					wndDialog.height = 440;
+					
+					var frmTiposEntrega:TipoEntrega = new TipoEntrega();
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					frmTiposEntrega.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmTiposEntrega);
+				}
+			}
+			
+			private function showListaDeControlMas():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Listado de Control+";
+					wndDialog.width = 380;
+					wndDialog.height = 420;
+					
+					var frmListadoControlPlus:FrmListadoControlMas = new FrmListadoControlMas();
+					frmListadoControlPlus.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
+					frmListadoControlPlus.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmListadoControlPlus);
+				}
+
+			}
+			
+			private function showRutinaCostos():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Costos";
+					wndDialog.width = 480;
+					wndDialog.height = 520;
+					
+					var frmRutinaCostos:FrmRutinaCostos = new FrmRutinaCostos();
+					frmRutinaCostos.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
+					frmRutinaCostos.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					wndDialog.addElement(frmRutinaCostos);
+				}
+			}
+		
+			private function showReporteCobranzas():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Reporte Cobranzas";
+					wndDialog.width = 390;
+					wndDialog.height = 320;
+					
+					var frmCobranzas:FrmCobranzas = new FrmCobranzas();
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmCobranzas);
+				}
+			}
+			
+			/*private function showReporteLiquidacion():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Reporte Liquidación";
+					wndDialog.width = 440;
+					wndDialog.height = 480;
+					
+					var frmComisiones:FrmLiquidacion = new FrmLiquidacion();
+					frmComisiones.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					frmComisiones.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmComisiones);
+				}
+			}*/
+			
+			
+			private function showReportStockPrecio():void {				
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Reporte de Stock y Precios";
+					wndDialog.width = 600;
+					wndDialog.height = 520;
+
+					var frmStockPrecio:FrmStockPrecio = new FrmStockPrecio();
+					frmStockPrecio.addEventListener(ExportToPDFEvent.EXPORT_TO_PDF, exportToPDF);
+					frmStockPrecio.addEventListener(ExportToExcelEvent.EXPORT_TO_EXCEL, exportToExcel);
+
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+					wndDialog.addElement(frmStockPrecio);
+				}
+			}
+			
+			private function closeHandler(event:Event):void {
+				wndDialog.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(wndDialog as IFlexDisplayObject);
+				wndDialog = null;
+				
+				CotizacionesModel.getInstance().loadCotizacionesMonedas();
+				
+			}
+			
+			
+			private function configurarImpresoras():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "Configuración";
+					wndDialog.width = 500;
+					wndDialog.height = 480;
+					
+					var frmImpresoras:FrmOpciones = new FrmOpciones();
+					
+					PopUpManager.addPopUp(wndDialog, this, false);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					frmImpresoras.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmImpresoras);
+				}
+			}
+			
+			public function abrirDocumentoEnVentana(docId:String):void {
+				var remObjLocal:RemoteObject = new RemoteObject();
+				remObjLocal.destination = "CreatingRpc";
+				remObjLocal.channelSet = ServerConfig.getInstance().channelSet;
+				remObjLocal.showBusyCursor = true;
+				remObjLocal.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+					var facWindow:TitleWindow = new TitleWindow();
+					facWindow.title = "Factura";
+					facWindow.width = 1024;
+					facWindow.height = 640;
+					
+					facWindow.addEventListener(CloseEvent.CLOSE, closeHandler2);
+					
+					var doc:Documento = event.result as Documento;
+					
+					var frmFactura:FacturacionPnl = new FacturacionPnl();
+					frmFactura.factura = doc;
+					frmFactura._modoVisualizacion = true;
+					
+					frmFactura.addEventListener("_cancel_", function():void {
+						facWindow.removeEventListener(CloseEvent.CLOSE, closeHandler2);
+						PopUpManager.removePopUp(facWindow as IFlexDisplayObject);
+					});
+					
+					PopUpManager.addPopUp(facWindow, DisplayObject(FlexGlobals.topLevelApplication), true);
+					PopUpManager.centerPopUp(facWindow);
+					
+					facWindow.addElement(frmFactura);
+					//facWindow.closeButton.visible = false;
+				});
+				//remObj.addEventListener(FaultEvent.FAULT, onFault);
+				
+				remObjLocal.getDocumento(docId);
+				
+			}
+			
+			private function closeHandler2(event:Event):void {
+				var titleWin:TitleWindow = event.target as TitleWindow;
+				titleWin.removeEventListener(CloseEvent.CLOSE, closeHandler2);
+				PopUpManager.removePopUp(titleWin as IFlexDisplayObject);
+			}
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				currentState = "empty";
+			}
+			
+			private function exportToExcel(evt:ExportToExcelEvent):void {
+				dispatchEvent(new ExportToExcelEvent(ExportToExcelEvent.EXPORT_TO_EXCEL, evt.xls, evt.fileName));
+			}
+			
+			private function exportToPDF(evt:ExportToPDFEvent):void {
+				dispatchEvent(new ExportToPDFEvent(ExportToPDFEvent.EXPORT_TO_PDF, evt.pdf));
+			}
+			
+			private function exportToCSV(evt:ExportToCSVEvent):void {
+				dispatchEvent(new ExportToCSVEvent(ExportToCSVEvent.EXPORT_TO_CSV, evt.byteArray, evt.fileName));
+			}
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="empty"/>
+		<s:State name="running"/>
+	</s:states>
+
+	<s:Rect x="0" y="19" width="18" height="100%">
+		<s:stroke>
+			<s:LinearGradientStroke weight="1">
+				<s:GradientEntry color="0xFFFFFF" />
+				<s:GradientEntry color="0xD8D8D8" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+
+	<!-- layer 2: control bar fill -->
+	<s:Rect x="0" y="19" width="18" height="100%">
+		<s:fill>
+			<s:LinearGradient>
+				<s:GradientEntry color="0xEDEDED" />
+				<s:GradientEntry color="0xCDCDCD" />
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+
+	<s:VGroup id="mainPnl" width="100%" height="100%" gap="0">
+		<ui1:MainMenuBar id="mainMenuBar" fontWeight="bold" creationComplete="init();" />
+		<s:BorderContainer width="100%" backgroundColor="#FCFCFC"  includeIn="running" minHeight="28" backgroundAlpha=".6" borderAlpha="0">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="bottom" paddingLeft="16"/>
+			</s:layout>
+			<tabBar:MyTabBar id="myTabBar" dataProvider="{myViewStack}" requireSelection="true" />	
+		</s:BorderContainer>		
+		
+		<s:Group width="100%" height="100%">
+			<s:Group width="100%" height="100%" includeIn="empty">
+				<s:HGroup bottom="10" right="15" >
+					<mx:Image id="loader1" source="@Embed(source='assets/logo/logo_oscuro.gif')" alpha=".35" />
+				</s:HGroup>
+			</s:Group>
+			<mx:ViewStack id="myViewStack" width="100%" height="100%" backgroundAlpha="0" paddingLeft="19" creationComplete="{setFocus();}" includeIn="running">
+			</mx:ViewStack>
+		</s:Group>
+	</s:VGroup>
+</s:Group>

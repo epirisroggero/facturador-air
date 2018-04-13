@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:articulos="biz.fulltime.ui.articulos.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:viewStackEffects="org.efflex.mx.viewStackEffects.*"
+		 width="400" height="300">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.ArticuloEvent;
+			import biz.fulltime.model.Articulo;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			private var _articulo:Articulo = null;
+			
+			private var _articulos:ArrayCollection;
+			
+			private var remObj:RemoteObject;
+			
+			[Bindable]
+			public function get articulo():Articulo {
+				return _articulo;
+			}
+			
+			public function set articulo(value:Articulo):void {
+				_articulo = value;
+				
+				var timer:Timer = new Timer(200);
+				timer.addEventListener(TimerEvent.TIMER, function():void {
+					viewPanel.articulo = articulo;
+					timer.stop();
+				});
+				timer.start();
+				
+				viewStack.selectedIndex = 0;
+
+			}
+						
+			protected function itemClickHandler(event:ItemClickEvent):void {
+			}
+			
+			protected function editPanel_creationCompleteHandler(event:FlexEvent):void {
+				editPanel.addEventListener(ArticuloEvent.FINALIZAR_EDICION_ART, function():void {
+					viewStack.selectedIndex = 0;
+					
+					callLater(function():void {
+						var clienteRemObj:RemoteObject = new RemoteObject();
+						clienteRemObj.destination = "CreatingRpc";
+						clienteRemObj.channelSet = ServerConfig.getInstance().channelSet;
+						clienteRemObj.addEventListener(ResultEvent.RESULT, resultArticulo);
+						clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+						
+						clienteRemObj.showBusyCursor = true;
+						clienteRemObj.findCatalogEntity("Articulo", articulo.codigo);
+					});
+				});
+				
+				editPanel.addEventListener(ArticuloEvent.CANCELAR_EDICION_ART, function():void {
+					viewStack.selectedIndex = 0;
+				});
+
+			}
+			
+			private function resultArticulo(event:ResultEvent):void {
+				var result:* = event.result;
+				
+				if (result is Articulo) {
+					callLater(function():void {
+						articulo = result as Articulo;
+					});
+				}
+			}
+			
+			private function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error");
+			}
+			
+			protected function viewPanel_creationCompleteHandler(event:FlexEvent):void {
+				viewPanel.addEventListener("_editarArticulo", function():void {
+					viewStack.selectedIndex = 1;
+				});
+			}
+			
+			[Bindable]
+			public function get articulos():ArrayCollection {
+				return _articulos;
+			}
+			
+			public function set articulos(value:ArrayCollection):void {
+				_articulos = value;
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<viewStackEffects:Grid id="effect" transparent="true" />
+	</fx:Declarations>
+	
+	
+	<s:Panel x="0" y="0" width="100%" height="100%" title="Artículo" dropShadowVisible="false" borderAlpha=".25">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="0" />
+		</s:layout>
+		
+		<s:VGroup width="100%" height="100%" horizontalAlign="center">
+			<mx:ViewStack id="viewStack" width="100%" height="100%" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2">
+				<mx:Canvas width="100%" height="100%" showEffect="effect" hideEffect="effect">
+					<s:Group width="100%" height="100%">
+						<s:Rect bottom="0" left="0" right="0" height="50">
+							<s:fill>
+								<s:SolidColor color="#F0F0F0" />
+							</s:fill>
+						</s:Rect>
+					</s:Group>
+					<s:HGroup bottom="10" right="15">
+						<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+					</s:HGroup>
+					<articulos:InfoArticulo id="viewPanel" width="100%" height="100%" creationComplete="viewPanel_creationCompleteHandler(event)" articulo="{articulo}"/>
+				</mx:Canvas>
+				<mx:Canvas showEffect="effect" hideEffect="effect">
+					<s:Group width="100%" height="100%">
+						<s:Rect bottom="0" left="0" right="0" height="50">
+							<s:fill>
+								<s:SolidColor color="#F0F0F0" />
+							</s:fill>
+						</s:Rect>
+					</s:Group>
+					<s:HGroup bottom="10" right="15">
+						<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+					</s:HGroup>
+					<articulos:EditarArticulo id="editPanel" width="100%" height="100%" creationComplete="editPanel_creationCompleteHandler(event)" articulo="{articulo}" />
+				</mx:Canvas>
+			</mx:ViewStack>
+		</s:VGroup>
+
+		
+		
+	</s:Panel>
+	
+</s:Group>

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:components="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)" styleName="pntLineasVenta">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.ui.components.HelpPnl;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.gridClasses.CellPosition;
+
+			private var remObjCat:RemoteObject;
+
+			private var _articulo:String;
+
+			private var _cliente:String;
+
+			private var _showCliente:Boolean = false;
+
+			private var _showButtons:Boolean = true;
+
+			private var _maxrows:int = 10;
+
+
+			[Bindable]
+			public function get showCliente():Boolean {
+				return _showCliente;
+			}
+
+			public function set showCliente(value:Boolean):void {
+				_showCliente = value;
+			}
+
+			[Bindable]
+			public function get maxrows():int {
+				return _maxrows;
+			}
+
+			public function set maxrows(value:int):void {
+				_maxrows = value;
+			}
+
+			[Bindable]
+			public function get showButtons():Boolean {
+				return _showButtons;
+			}
+
+			public function set showButtons(value:Boolean):void {
+				_showButtons = value;
+			}
+
+			public function get cliente():String {
+				return _cliente;
+			}
+
+			public function set cliente(value:String):void {
+				_cliente = value;
+			}
+
+			public function get articulo():String {
+				return _articulo;
+			}
+
+			public function set articulo(value:String):void {
+				_articulo = value;
+			}
+
+			public function obtenerAntecedentes(venta:Boolean = true):void {
+				remObjCat = new RemoteObject();
+				remObjCat.destination = "CreatingRpc";
+				remObjCat.channelSet = ServerConfig.getInstance().channelSet;
+				remObjCat.addEventListener(ResultEvent.RESULT, result);
+				remObjCat.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjCat.showBusyCursor = true;
+
+				remObjCat.getAntecedentes(articulo, cliente, maxrows, venta);
+			}
+
+
+			private function result(event:ResultEvent):void {
+				var values:ArrayCollection = event.result as ArrayCollection;
+
+				dgAntecedentes.dataProvider = values;
+
+				dispatchEvent(new Event("_antecedentesCargados", true, true));
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error de Permisos", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+				
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+				callLater(function():void {
+						dgAntecedentes.setFocus();
+
+						if (dgAntecedentes.dataProviderLength > 0) {
+							dgAntecedentes.setSelectedCell(0, 0);
+						}
+					});
+
+			}
+
+			protected function dgAntecedentes_keyDownHandler(event:KeyboardEvent):void {
+				var cellPos:CellPosition = dgAntecedentes.selectedCell;
+
+				if (event.keyCode == Keyboard.F1 || (event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) { // Se presiono la tecla 'F1' o A-Z o 1-9
+					var hlpPanel:HelpPnl = new HelpPnl();
+					hlpPanel.addEventListener(CloseEvent.CLOSE, closePnlHandler);
+					hlpPanel.label = GridColumn(dgAntecedentes.columns.getItemAt(cellPos.columnIndex)).headerText;
+
+					PopUpManager.addPopUp(hlpPanel, this, true);
+					PopUpManager.centerPopUp(hlpPanel);
+				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				} else if (event.keyCode == Keyboard.ENTER) { // Se presiono la tecla 'ENTER'
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+
+			private function closePnlHandler(event:CloseEvent):void {
+				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
+				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
+				dgAntecedentes.setFocus();
+			}
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+		]]>
+	</fx:Script>
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+		<s:VGroup width="100%" height="100%" horizontalAlign="center">
+			<s:DataGrid id="dgAntecedentes" width="100%" height="100%" keyDown="dgAntecedentes_keyDownHandler(event)" borderAlpha="0" selectionMode="singleCell">
+				<s:columns>
+					<s:ArrayList>
+						<s:GridColumn width="90" dataField="comprobante.nombre" headerText="Tipo" sortable="true" />
+						<s:GridColumn dataField="documentoSerie" headerText="Serie" sortable="true" />
+						<s:GridColumn dataField="documentoNumero" headerText="Número" sortable="true" />
+						<s:GridColumn dataField="fecha" headerText="Fecha" sortable="true">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="left">
+										<fx:Script>
+											<![CDATA[
+												import mx.formatters.DateFormatter;
+												
+												import biz.fulltime.dto.AntecedentesArticulo;
+
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data != null) {
+														var fecha:Date = AntecedentesArticulo(data).fecha;
+														if (fecha) {
+															var formatter:DateFormatter = new DateFormatter();
+															formatter.formatString = "DD-MM-YYYY";
+
+															label = formatter.format(fecha);
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn width="150" dataField="cliente.nombre" headerText="Contato" sortable="true" visible="{showCliente}" />
+						<s:GridColumn dataField="cantidad" headerText="Cant." sortable="true" />
+						<s:GridColumn dataField="moneda.nombre" headerText="Moneda" sortable="true" />
+						<s:GridColumn dataField="precioUnitario" headerText="Precio" sortable="true">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.dto.AntecedentesArticulo;
+
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data == null) {
+														return;
+													}
+													if (AntecedentesArticulo(data).precioUnitario) {
+														var precioUnitario:BigDecimal = new BigDecimal(AntecedentesArticulo(data).precioUnitario).setScale(2, MathContext.ROUND_HALF_UP);
+														label = precioUnitario.toString();
+													} else {
+														label = "";
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn dataField="neto" headerText="Neto" sortable="true">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.dto.AntecedentesArticulo;
+
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data == null) {
+														return;
+													}
+													if (AntecedentesArticulo(data).neto) {
+														var neto:BigDecimal = new BigDecimal(AntecedentesArticulo(data).neto).setScale(2, MathContext.ROUND_HALF_UP);
+														label = neto.toString();
+													} else {
+														label = "";
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn dataField="costo" headerText="Costo" sortable="true"
+									  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoMostrador }">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.dto.AntecedentesArticulo;
+
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data == null) {
+														return;
+													}
+													if (AntecedentesArticulo(data).costo) {
+														var costo:BigDecimal = new BigDecimal(AntecedentesArticulo(data).costo).setScale(2, MathContext.ROUND_HALF_UP);
+														label = costo.toString();
+													} else {
+														label = "";
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn dataField="renta" headerText="Renta" sortable="true"
+									  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoMostrador }">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.dto.AntecedentesArticulo;
+
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data == null) {
+														return;
+													}
+													if (AntecedentesArticulo(data).renta) {
+														var renta:BigDecimal = new BigDecimal(AntecedentesArticulo(data).renta).setScale(2, MathContext.ROUND_HALF_UP);
+														label = renta.toString();
+													} else {
+														label = "";
+													}
+
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn dataField="tipoCambio" headerText="Tipo Cambio" sortable="true">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.dto.AntecedentesArticulo;
+
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data == null) {
+														return;
+													}
+													if (AntecedentesArticulo(data).tipoCambio) {
+														var tipoCambio:BigDecimal = new BigDecimal(AntecedentesArticulo(data).tipoCambio).setScale(2, MathContext.ROUND_HALF_UP);
+														label = tipoCambio.toString();
+													} else {
+														label = "";
+													}
+
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+
+						</s:GridColumn>
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+		</s:VGroup>
+	</s:BorderContainer>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingTop="5" visible="{showButtons}">
+			<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+		</s:HGroup>
+	</s:controlBarContent>
+
+</s:Panel>

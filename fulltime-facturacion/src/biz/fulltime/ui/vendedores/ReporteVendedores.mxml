@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:classes="com.hillelcoren.components.autoComplete.classes.*" xmlns:componentes="componentes.*" xmlns:components="biz.fulltime.ui.components.*" xmlns:components1="components.*"
+		 xmlns:expediciones="biz.fulltime.ui.expediciones.*" xmlns:facturacion="biz.fulltime.ui.facturacion.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:loader="biz.fulltime.util.loader.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" backgroundAlpha="0.5" creationComplete="creationCompleteHandler(event)" title="REPORTE DE VENTAS">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.AgendaTareaDTO;
+			import biz.fulltime.expediciones.AgendaTareaQuery;
+			import biz.fulltime.model.AgendaTarea;
+			import biz.fulltime.model.Capitulo;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.Tarea;
+			import biz.fulltime.model.Usuario;
+
+			import com.adobe.utils.DateUtil;
+			import com.hillelcoren.components.AutoComplete;
+
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.advancedDataGridClasses.AdvancedDataGridColumn;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.utils.ObjectUtil;
+
+			import spark.components.TitleWindow;
+
+			import util.CatalogoFactory;
+
+			[Bindable]
+			private var _reportes:ArrayCollection;
+
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+
+
+			private var remObj:RemoteObject;
+
+			[Bindable]
+			private var _enabledButtons:Boolean = true;
+
+			[Bindable]
+			private var _cargando:Boolean = true;
+
+			private var _iniciando:Boolean = true;
+
+			private const WINDOW_WIDTH:Number = 640;
+
+			private const WINDOW_HEIGHT:Number = 600;
+
+			private var _selectedIndex:int = 0;
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.showBusyCursor = true;
+				remObj.addEventListener(ResultEvent.RESULT, onResult);
+				remObj.addEventListener(FaultEvent.FAULT, onFault);
+			}
+
+
+
+			private function onResult(event:ResultEvent):void {
+				_reportes = event.result as ArrayCollection;
+
+				if (_iniciando) {
+					_iniciando = false;
+				}
+				_cargando = false;
+			}
+
+			private function onFault(event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+				_cargando = false;
+			}
+
+			public function refrescar():void {
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new Event("_close_expediciones"));
+			}
+
+			protected function cmdImprimir_clickHandler(event:MouseEvent):void {
+			}
+
+			private function imprimir():void {
+				var wndImprimirTareas:TitleWindow = new TitleWindow();
+				wndImprimirTareas.title = "Imprimir ";
+
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				return label;
+			}
+
+			protected function cmdNuevo_clickHandler(event:MouseEvent):void {
+				var wndAltaTarea:TitleWindow = new TitleWindow();
+				wndAltaTarea.title = "Nuevo Reporte";
+				wndAltaTarea.width = 640;
+				wndAltaTarea.height = 600;
+			}
+
+			private function closeHandler(event:Event):void {
+				var ttlWnd:TitleWindow = event.target as TitleWindow;
+				ttlWnd.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(ttlWnd as IFlexDisplayObject);
+			}
+
+			protected function cmdMover_clickHandler(event:MouseEvent):void {
+				//var agendaTarea:AgendaTarea = dgMatutinas.grid.selectedItem as AgendaTarea;
+			}
+
+			private function formatDate(item:Object, column:AdvancedDataGridColumn):String {
+				return dt.format(item[column.dataField]);
+			}
+
+			private function compareDates(date1:Date, date2:Date):void {
+				if (ObjectUtil.dateCompare(date1, date2) > -1) {
+					Alert.show(date2 + " is before " + date1);
+				} else if (ObjectUtil.dateCompare(date1, date2) == 0) {
+					Alert.show(date1 + " and " + date2 + " are equal");
+				} else {
+					Alert.show(date1 + " is before " + date2);
+				}
+			}
+
+			protected function cmdPrevious_clickHandler(event:MouseEvent):void {
+				var nuevaFecha:Date = util.DateUtil.clone(txtDate.selectedDate).subtract(util.DateUtil.DAY, 1).datetime;
+
+			}
+
+			protected function cmdNext_clickHandler(event:MouseEvent):void {
+				var nuevaFecha:Date = util.DateUtil.clone(txtDate.selectedDate).add(util.DateUtil.DAY, 1).datetime;
+
+			}
+
+			protected function cmbUsuarioAsignado_changeHandler(event:Event):void {
+			}
+
+			protected function cmdFechaHoy_clickHandler(event:MouseEvent):void {
+				txtDate.selectedDate = new Date();
+			}
+
+			protected function cmbTarea_changeHandler(event:Event):void {
+			}
+
+			protected function cmbTarea_keyDownHandler(event:KeyboardEvent):void {
+			}
+
+
+			protected function cmdDetalleTareaM_clickHandler(event:MouseEvent):void {
+				var wndTarea:TitleWindow = new TitleWindow();
+				wndTarea.title = "Detalle Tarea Finalizada";
+				wndTarea.width = WINDOW_WIDTH;
+				wndTarea.height = WINDOW_HEIGHT;
+
+			}
+
+			protected function cmdDetalleTareaT_clickHandler(event:MouseEvent):void {
+				var wndTarea:TitleWindow = new TitleWindow();
+				wndTarea.title = "Detalle Tarea Finalizada";
+				wndTarea.width = WINDOW_WIDTH;
+				wndTarea.height = WINDOW_HEIGHT;
+			}
+
+
+			protected function cmdRefrescar_clickHandler(event:MouseEvent):void {
+			}
+
+			protected function cmbContacto_keyDownHandler(event:KeyboardEvent):void {
+			}
+
+			protected function cmbContacto_changeHandler(event:Event):void {
+			}
+
+			protected function chbMisAsignados_changeHandler(event:Event):void {
+			}
+
+			protected function txtDate_changeHandler(event:CalendarLayoutChangeEvent):void {
+				// TODO Auto-generated method stub
+
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+		<mx:DateFormatter id="dt" formatString="H:NN" />
+	</fx:Declarations>
+
+	<fx:Declarations>
+		<mx:DateFormatter id="dateFormatter" formatString="EEEE, DD de MMMM de YYYY" />
+	</fx:Declarations>
+
+
+	<s:VGroup width="100%" height="100%" gap="-1">
+		<s:HGroup width="100%" paddingBottom="0" paddingLeft="20" paddingRight="10" paddingTop="10" verticalAlign="middle">
+			<s:Label width="120" fontSize="12" textAlign="left" text="Vendedor: " />
+			<s:Label fontSize="12" textAlign="right" text="{GeneralOptions.getInstance().loggedUser.nombre.toUpperCase()}" />
+
+		</s:HGroup>
+		<s:HGroup width="100%" paddingBottom="20" paddingLeft="20" paddingRight="10" paddingTop="10" verticalAlign="middle">
+			<s:Label width="120" fontSize="12" textAlign="left" text="Fecha del Informe:" />
+			<mx:DateField id="txtDate" fontSize="14" change="txtDate_changeHandler(event)" selectedDate="{new Date()}" formatString="DD/MM/YYYY" locale="es" yearNavigationEnabled="true" />
+
+			<s:HGroup horizontalAlign="center" paddingLeft="20" paddingRight="40" verticalAlign="middle">
+				<components1:IconButton id="cmdPrevious" width="24" height="24" cornerRadius="6" click="cmdPrevious_clickHandler(event)" styleName="previousButton" focusEnabled="false"
+										toolTip="Día anterior" />
+				<s:Button id="cmdFechaHoy" height="24" click="cmdFechaHoy_clickHandler(event)" label="Hoy" toolTip="Ir al día de hoy" focusEnabled="false" styleName="textButton" />
+				<components1:IconButton id="cmdNext" width="24" height="24" cornerRadius="6" click="cmdNext_clickHandler(event)" styleName="nextButton" toolTip="Día siguiente" focusEnabled="false" />
+				<s:Spacer width="8" />
+				<s:Button id="cmdRefrescar" click="cmdRefrescar_clickHandler(event)" label="Refrescar" toolTip="Refrescar" focusEnabled="false" styleName="refrescarButton16" visible="false" />
+
+				<s:Spacer width="8" />
+			</s:HGroup>
+			<s:Spacer width="100%" />
+			<s:Label fontSize="14" text="{dateFormatter.format(txtDate.selectedDate)}" />
+		</s:HGroup>
+
+		<s:Group width="100%" height="100%">
+			<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{_cargando}">
+				<loader:LoadComponent />
+			</s:VGroup>
+			<s:Panel id="pnlDataGrid" width="100%" height="100%" title="Líneas" styleName="pnlInterno">
+				<s:HGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0">
+					<expediciones:ExpedicionesDataGrid id="dgMatutinas" tareas="{new ArrayCollection()}" turno="{ExpedicionesDataGrid.TURNO_MATUTINO}" mostrarSoloPendientes="{true}"
+													   showDateColumn="false" />
+					<s:BorderContainer width="110" height="100%" backgroundColor="0xF6F6F6" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="30" verticalAlign="top" />
+						</s:layout>
+						<s:Button id="cmdNuevo" width="100%" click="cmdNuevo_clickHandler(event)" label="Nueva" toolTip="Agregar una nueva línea reporte" styleName="nuevaButton" focusEnabled="false" />
+					</s:BorderContainer>
+				</s:HGroup>
+			</s:Panel>
+		</s:Group>
+	</s:VGroup>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<s:Button id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" focusEnabled="false" />
+		</s:HGroup>
+	</s:controlBarContent>
+
+</s:Panel>

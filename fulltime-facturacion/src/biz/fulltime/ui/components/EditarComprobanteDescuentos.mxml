@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:components="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.model.CategoriasClientes;
+			import biz.fulltime.model.Comprobante;
+			import biz.fulltime.model.DescuentoPrometidoComprobante;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.gridClasses.CellPosition;
+			import spark.events.GridItemEditorEvent;
+			import spark.events.GridSelectionEvent;
+			import spark.events.IndexChangeEvent;
+			
+			import util.CatalogoFactory;
+			import util.ErrorPanel;
+			
+			
+			private var error:ErrorPanel;
+			
+			[Bindable]
+			public var descuentos:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var descuentosOriginales:ArrayCollection = new ArrayCollection();
+
+			private var _changeCategoriaCliente:Boolean = false;
+			
+			private var _changeComprobante:Boolean = false;
+			
+			[Bindable]
+			private var _changeDescuentos:Boolean = false;
+			
+			private var descuentosDefault:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var myDP:ArrayCollection = new ArrayCollection();
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				
+				if ((_changeCategoriaCliente || _changeComprobante) && (dgComprobantes != null && ddlCategoriaCliente != null)) {
+					if (_changeDescuentos) {
+						Alert.show("Los valores han cambiado, ¿Desea guardar los cambios?", "Guardar cambios", Alert.YES + Alert.NO, null, guardarCloseHandler);
+					} else {
+						obtenerDescuentos();
+					}
+					
+					_changeCategoriaCliente = false;
+					_changeComprobante = false;
+				}
+			}
+			
+			private function obtenerDescuentos():void {
+				var comprobante:String = (dgComprobantes.selectedItem as Comprobante).codigo;
+				var categoria:String = (ddlCategoriaCliente.selectedItem as Object).codigo;
+
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					var dataProvider:ArrayCollection = evt.result as ArrayCollection;
+					descuentos = dataProvider;
+					
+					descuentosOriginales.removeAll();
+					descuentosOriginales.addAll(dataProvider);
+					
+					_changeDescuentos = false;
+				});
+				remObj.getDescuentosPrometidos(comprobante, categoria);
+				
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				Alert.show(event.fault.message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+						
+			protected function lstComprobantes_changeHandler(event:IndexChangeEvent):void {
+			}
+			
+			protected function cmdCerrar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));				
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				if (dgComprobantes.dataProvider.length > 0) {
+					callLater(function():void {
+						dgComprobantes.selectedIndex = 0;
+
+						_changeComprobante = true;
+						invalidateProperties();
+					});
+				}		
+				
+				descuentosDefault.removeAll();
+				
+				var data0:DescuentoPrometidoComprobante = new DescuentoPrometidoComprobante();
+				data0.retraso = 30;data0.descuento = "34";
+				var data1:DescuentoPrometidoComprobante = new DescuentoPrometidoComprobante();
+				data1.retraso = 45;data1.descuento = "32";
+				var data2:DescuentoPrometidoComprobante = new DescuentoPrometidoComprobante();
+				data2.retraso = 60;data2.descuento = "30";
+
+				descuentosDefault.addItem(data0);
+				descuentosDefault.addItem(data1);
+				descuentosDefault.addItem(data2);
+				
+				var showComprobanteTipo:Array = [Comprobante.VENTA_CREDITO, Comprobante.NOTA_CREDITO];
+				
+				myDP = new ArrayCollection();
+				for each (var comprobante:Comprobante in CatalogoFactory.getInstance().comprobantes) {
+					if (comprobante.tipo == Comprobante.VENTA_CREDITO || comprobante.tipo == Comprobante.NOTA_CREDITO) {
+						myDP.addItem(comprobante);
+					}
+				}
+				
+			}
+						
+			protected function cmdCancelar_clickHandler(event:MouseEvent):void {
+				callLater(function():void {
+					dgComprobantes.selectedIndex = 0;
+				});				
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));				
+			}
+			
+			private function resultGuardar(event:ResultEvent):void {
+				lblMsg.text = "Descuento prometido guardado con éxito."
+				msgBox.visible = true;
+				msgBox.includeInLayout = true;
+								
+				setTimeout(function():void {
+					msgBox.visible = false;
+					msgBox.includeInLayout = false;
+				}, 3000);
+				
+			}
+			
+			private function fixLabel(item_obj:Object):String {
+				var label_str:String = item_obj.codigo + " - " + item_obj.nombre;
+				return label_str;
+			}
+			
+			protected function cmdNuevo_clickHandler(event:MouseEvent = null):void	{
+				var comprobante:Comprobante = dgComprobantes.selectedItem as Comprobante;
+				var categoria:CategoriasClientes = ddlCategoriaCliente.selectedItem as CategoriasClientes;
+
+				var data:DescuentoPrometidoComprobante = new DescuentoPrometidoComprobante();
+				data.retraso = 0;
+				data.descuento = "0";
+				data.comprobante = comprobante;		
+				data.categCliente = categoria;
+					
+				descuentos.addItem(data);				
+				dgEntries.dataProvider = descuentos;
+				
+				_changeDescuentos = true;
+				
+				callLater(function():void {
+					dgEntries.setSelectedCell(descuentos.length - 1, 0);
+				});
+			}
+			
+			protected function cmdBorrar_clickHandler(event:MouseEvent = null):void {
+				var rowIndex:int = dgEntries.selectedCell.rowIndex;
+				var maxIndex:int = dgEntries.dataProvider.length - 1;
+				
+				_changeDescuentos = true;
+				
+				descuentos.removeItemAt(rowIndex);
+				callLater(function():void {
+					if (dgEntries.dataProvider.length > 0) {
+						if (rowIndex == 0) {
+							dgEntries.setSelectedCell(rowIndex, 0);
+							//dgEntries.selectedIndex = 0;
+						} else if (rowIndex == maxIndex) {
+							dgEntries.setSelectedCell(rowIndex - 1, 0);
+							//dgEntries.selectedIndex = index - 1;
+						} else {
+							dgEntries.setSelectedCell(rowIndex, 0);
+							//dgEntries.selectedIndex = index;
+						}						
+					}
+				});
+				
+			}
+			
+			private function fixLabelFunction(item:Object, column:GridColumn):String {
+				var label:String;
+				
+				if (item && item.hasOwnProperty("descuento")) {
+					label = Number(item.descuento).valueOf() + "%";
+				}
+				return label;
+			}
+
+			
+			protected function ddlCategoriaCliente_changeHandler(event:IndexChangeEvent):void {
+				_changeCategoriaCliente = true;
+				invalidateProperties();
+			}
+			
+			protected function dgComprobantes_selectionChangeHandler(event:GridSelectionEvent):void {
+				_changeComprobante = true;
+				invalidateProperties();
+			}
+			
+			private function guardarCloseHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					guardarCambios();					
+				} else {
+					obtenerDescuentos();
+				}
+				invalidateProperties();
+				
+			}
+			
+			protected function cmdGuardar_clickHandler(event:MouseEvent):void {
+				guardarCambios();
+			}
+			
+			private function guardarCambios():void {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					resultGuardar(evt);
+
+					obtenerDescuentos();
+				});
+				remObj.saveDescuentosPrometidos(descuentosOriginales, descuentos);
+			}
+			
+			protected function cmdDefault_clickHandler(event:MouseEvent):void {
+				_changeDescuentos = true;
+				var comprobante:Comprobante = dgComprobantes.selectedItem as Comprobante;
+				var categoria:CategoriasClientes = ddlCategoriaCliente.selectedItem as CategoriasClientes;
+
+				for each (var descuento:DescuentoPrometidoComprobante in descuentosDefault) {
+					descuento.comprobante = comprobante;
+					descuento.categCliente = categoria;
+				}				
+				if (descuentos.length > 0) {
+					Alert.show("Los valores actuales se perderán, ¿Esta usted seguro?", "Valores por Defecto", Alert.YES + Alert.NO, null, confirmationCloseHandler);
+				} else {
+					descuentos.addAll(descuentosDefault);
+				}				
+				
+				callLater(function():void {
+					dgEntries.setSelectedCell(0, 0);
+				});
+
+			}
+			
+			private function confirmationCloseHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					_changeDescuentos = true;
+					
+					descuentos.removeAll();
+					descuentos.addAll(descuentosDefault);
+				}
+	 		}
+			
+			protected function dgEntries_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void {
+				_changeDescuentos = true;
+			}
+			
+			private var cellPos:CellPosition;
+			
+			protected function dg_keyDownHandler(event:KeyboardEvent):void {
+				cellPos = dgEntries.selectedCell;
+				
+				if (event.keyCode == Keyboard.INSERT) { // Se presiono la tecla 'INSERT'
+					cmdNuevo_clickHandler();
+				} else if (event.keyCode == Keyboard.DELETE) { // Se presiono la tecla 'DEKLETE'
+					cmdBorrar_clickHandler();
+				} else if ((event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) {
+					dgEntries.startItemEditorSession(cellPos.rowIndex, cellPos.columnIndex);
+				} else if (event.keyCode == Keyboard.ENTER) {
+					var maxCol:int = dgEntries.columnsLength - 1;
+					var maxRow:int = dgEntries.dataProvider.length - 1;
+					
+					var colIndex:int;
+					var rowIndex:int;
+					if (cellPos == null) {
+						colIndex = dgEntries.editorColumnIndex;
+						rowIndex = dgEntries.editorRowIndex
+					} else {
+						colIndex = cellPos.columnIndex + 1;
+						rowIndex = cellPos.rowIndex;
+					}
+					if (colIndex > maxCol) {
+						colIndex = 0;
+						if (rowIndex < maxRow) {
+							rowIndex += 1;
+						}
+					}					
+					dgEntries.setSelectedCell(rowIndex, colIndex);
+					
+				}
+			}
+
+			
+			
+		]]>
+	</fx:Script>
+	
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">		
+		<s:Panel width="100%" height="100%" creationComplete="creationCompleteHandler(event)" styleName="pntLineasVenta" dropShadowVisible="false">
+			<s:HGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" gap="0">
+				<s:Panel width="45%" height="100%" backgroundAlpha=".5" borderColor="#B5A7A7"
+						 borderVisible="true" dropShadowVisible="false" title="Comprobante">
+					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0">
+						<s:layout>
+							<s:VerticalLayout />
+						</s:layout>
+						<s:DataGrid id="dgComprobantes" width="100%" height="100%"  dataProvider="{myDP}" selectionChange="dgComprobantes_selectionChangeHandler(event)" >
+							<s:columns>
+								<s:ArrayList>
+									<s:GridColumn headerText="Código" dataField="codigo" width="65" />
+									<s:GridColumn headerText="Nombre" dataField="nombre" />
+								</s:ArrayList>
+							</s:columns>
+						</s:DataGrid>
+					</s:BorderContainer>
+				</s:Panel>
+				<s:Rect width="2" height="100%">
+					<s:stroke>
+						<s:LinearGradientStroke weight="4">
+							<s:GradientEntry color="0xEAEAEA" />
+							<s:GradientEntry color="0xEAEAEA" />
+						</s:LinearGradientStroke>
+					</s:stroke>
+				</s:Rect>
+				
+				<s:Panel width="55%" height="100%" backgroundAlpha=".5" borderColor="#B5A7A7"
+						 borderVisible="true" dropShadowVisible="false" title="{dgComprobantes.selectedItem.nombre}">
+					<s:layout>
+						<s:VerticalLayout gap="0" verticalAlign="middle"/>
+					</s:layout>
+					<s:HGroup width="100%" verticalAlign="middle" paddingLeft="10" paddingTop="10" paddingBottom="10">
+						<s:DropDownList id="ddlCategoriaCliente" textAlign="left" labelFunction="fixLabel" dataProvider="{CatalogoFactory.getInstance().categoriasClientes}" selectedIndex="0" width="200" change="ddlCategoriaCliente_changeHandler(event)"/>
+					</s:HGroup>
+					<s:HGroup width="100%" verticalAlign="middle" paddingLeft="16" paddingTop="5">
+						<s:Label text="Descuentos definidos" fontSize="14"/>
+					</s:HGroup>
+					<s:HGroup width="100%" height="100%" gap="10" paddingLeft="10" paddingBottom="10">
+						<s:DataGrid id="dgEntries" width="100%" height="100%" selectionMode="singleCell" keyDown="dg_keyDownHandler(event)" dataProvider="{descuentos}" editable="true" textAlign="right"  gridItemEditorSessionSave="dgEntries_gridItemEditorSessionSaveHandler(event)">
+							<s:columns>
+								<s:ArrayList>
+									<s:GridColumn headerText="Retraso(días)" dataField="retraso" width="100" />
+									<s:GridColumn headerText="Descuento(%)"  dataField="descuento" labelFunction="fixLabelFunction"/>
+								</s:ArrayList>
+							</s:columns>
+						</s:DataGrid>
+						<s:VGroup verticalAlign="top" height="100%" paddingTop="25" paddingRight="10" paddingBottom="0">
+							<s:Button id="cmdNuevo" label="Nuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevaButton16" width="100%"/>
+							<s:Button id="cmdBorrar" label="Borrar" click="cmdBorrar_clickHandler(event)" styleName="borrarButton16" width="100%"/>
+							<s:Spacer height="100%" />
+							<s:Button id="cmdDefault" label="Defecto" click="cmdDefault_clickHandler(event)" styleName="defaultButton16" toolTip="Valores por defecto"/>
+							<s:Spacer height="100%" />
+							<s:Button id="cmdGuardar" label="Guardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton16" width="100%" enabled="{_changeDescuentos}"/>
+
+						</s:VGroup>						
+					</s:HGroup>
+					
+					<s:BorderContainer id="msgBox" width="100%" visible="false" includeInLayout="false" backgroundColor="0x333333">
+						<s:layout>
+							<s:HorizontalLayout paddingTop="10" paddingBottom="5" horizontalAlign="center"/>
+						</s:layout>
+						<s:Label id="lblMsg" text="Descuento guardado con éxito." width="100%" color="white" maxDisplayedLines="1" fontSize="14" fontWeight="normal" textAlign="center" paddingBottom="5"/>
+					</s:BorderContainer>
+
+				</s:Panel>
+			</s:HGroup>
+			
+			<s:controlBarContent>
+				<s:HGroup width="100%" horizontalAlign="right" verticalAlign="middle" paddingRight="0" >
+					<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+					<s:Spacer width="100%" />
+					<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" styleName="cancelarButton" label="Cerrar" width="100"/>
+				</s:HGroup>
+			</s:controlBarContent>
+		</s:Panel>
+	</s:BorderContainer>
+	
+	
+</s:Group>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="init()" title="Ingrese Nueva Persona Vinculada">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
+
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Persona;
+
+			private var _persona:Persona = new Persona();
+
+			private var _cliente:Cliente;
+
+
+
+			[Bindable]
+			private var validatorArr:Array;
+
+
+			private function init():void {
+				validatorArr = new Array();
+
+				validatorArr.push(nombreValidator);
+				validatorArr.push(cargoValidator);
+
+				callLater(function():void {
+						txtNombre.setFocus();
+					});
+
+			}
+
+			[Bindable]
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+			
+			public function set cliente(value:Cliente):void {
+				_cliente = value;
+			}
+
+			[Bindable]
+			public function get persona():Persona {
+				return _persona;
+			}
+
+			public function set persona(value:Persona):void {
+				_persona = value;
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+
+			protected function cmdSave_clickHandler(event:MouseEvent):void {
+				var validatorErrorArray:Array = Validator.validateAll(validatorArr);
+
+				var isValidForm:Boolean = validatorErrorArray.length == 0;
+				if (isValidForm) {
+					persona.addEventListener("_addPersonaOk", function(evt:Event):void {
+							dispatchEvent(new Event("_personSaved"));
+						});
+					persona.codigo = cliente.codigo;
+					persona.savePersona();
+				}
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<mx:StringValidator id="nombreValidator" source="{txtNombre}" required="true" property="text" requiredFieldError="El 'Nombre' debe tener al menos 2 caracteres." minLength="2"
+							tooShortError="El 'Nombre' debe tener al menos 2 caracteres." />
+		<mx:StringValidator id="cargoValidator" source="{txtCargo}" required="true" property="text" requiredFieldError="El 'Cargo' no puede quedar vacío." />
+	</fx:Declarations>
+
+
+	<s:Form width="100%" defaultButton="{cmdSave}">
+		<s:layout>
+			<s:FormLayout gap="-12" />
+		</s:layout>
+
+		<s:FormItem width="100%" label="Nombre" required="true">
+			<s:HGroup width="100%">
+				<s:TextInput id="txtNombre" width="100%" enter="txtCargo.setFocus()" text="@{persona.nombre}" />
+			</s:HGroup>
+		</s:FormItem>
+		<s:FormItem width="100%" label="Cargo" required="true">
+			<s:HGroup width="100%">
+				<s:TextInput id="txtCargo" width="100%" enter="txtTelefono.setFocus()" text="@{persona.ctoPerCargo}" />
+			</s:HGroup>
+		</s:FormItem>
+		<s:FormItem width="100%" label="Teléfono">
+			<s:TextInput id="txtTelefono" width="100%" enter="txtCelular.setFocus()" text="@{persona.ctoPerTelefono}" />
+		</s:FormItem>
+		<s:FormItem width="120" label="Celular">
+			<s:TextInput id="txtCelular" width="100%" enter="txtEmail.setFocus()" text="@{persona.ctoPerCelular}" />
+		</s:FormItem>
+		<s:FormItem width="120" label="EMail">
+			<s:TextInput id="txtEmail" width="100%" enter="cmdSave.setFocus()" text="@{persona.ctoPerEmail}" />
+		</s:FormItem>
+		<s:FormItem width="100%" height="100%" label="Notas">
+			<s:TextArea id="txtNotas" width="100%" height="100%" text="@{persona.ctoPerNotas}" />
+		</s:FormItem>
+	</s:Form>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<s:Button id="cmdSave" height="32" click="cmdSave_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+			<s:Button id="cmdCancel" height="32" click="cmdCancel_clickHandler(event)" label="Cancelar" styleName="closeButton16" />
+		</s:HGroup>
+	</s:controlBarContent>
+
+</s:Panel>

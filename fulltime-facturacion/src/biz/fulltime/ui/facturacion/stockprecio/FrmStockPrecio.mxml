@@ -1,0 +1,1506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:components="biz.fulltime.ui.components.*" xmlns:components1="components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:loader="biz.fulltime.util.loader.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" creationComplete="creationCompleteHandler(event)" contentBackgroundAlpha=".5" title="Filtrar por">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.CodigoNombre;
+			import biz.fulltime.dto.ReportParameters;
+			import biz.fulltime.dto.TableReportResult;
+			import biz.fulltime.event.ExportToExcelEvent;
+			import biz.fulltime.event.ExportToPDFEvent;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.CotizacionesModel;
+			import biz.fulltime.model.Deposito;
+			import biz.fulltime.model.FamiliaArticulos;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.PreciosVenta;
+			import biz.fulltime.model.Usuario;
+			import biz.fulltime.rapi.Cotizaciones;
+
+			import com.as3xls.xls.ExcelFile;
+			import com.as3xls.xls.Sheet;
+			import com.hillelcoren.components.AutoComplete;
+
+			import mx.collections.ArrayCollection;
+			import mx.collections.ICollectionView;
+			import mx.collections.IViewCursor;
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.utils.StringUtil;
+
+			import org.alivepdf.colors.RGBColor;
+			import org.alivepdf.data.Grid;
+			import org.alivepdf.data.GridColumn;
+			import org.alivepdf.display.Display;
+			import org.alivepdf.fonts.CodePage;
+			import org.alivepdf.fonts.CoreFont;
+			import org.alivepdf.fonts.EmbeddedFont;
+			import org.alivepdf.fonts.FontFamily;
+			import org.alivepdf.fonts.IFont;
+			import org.alivepdf.layout.Align;
+			import org.alivepdf.layout.Orientation;
+			import org.alivepdf.layout.Size;
+			import org.alivepdf.layout.Unit;
+			import org.alivepdf.pdf.PDF;
+
+			import spark.components.TitleWindow;
+			import spark.events.GridSelectionEvent;
+			import spark.formatters.NumberFormatter;
+
+			import util.CatalogoFactory;
+			import util.ErrorPanel;
+
+			private var _cotizacionesXML:XML;
+
+			[Bindable]
+			public var moneyDP:ArrayCollection;
+
+			private var myPDF:PDF;
+
+			private var helpWindow:TitleWindow;
+
+			private var repParameters:ReportParameters;
+
+			[Embed(source="/assets/MyriadWebPro.TTF", mimeType="application/octet-stream")]
+			private var fontStream:Class;
+
+			[Embed(source="/assets/myriad.afm", mimeType="application/octet-stream")]
+			private var afmStream:Class;
+
+			[Bindable]
+			public var proveedores:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var proveedoresSelected:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var familiasSelected:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var capitulos:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var subtitulos:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var subfamilia:ArrayCollection = new ArrayCollection();
+
+
+			[Bindable]
+			public var familias:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			public var loading:Boolean = false;
+
+			[Bindable]
+			public var hasPermPrecios:Boolean = false;
+
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				resetRemoteObject();
+				// Obtener los datos para luego al obtener los datos generar el pdf
+				// asi que en el onResult se llamaría al exportar a PDF
+				remObjMonedasSP.channelSet = ServerConfig.getInstance().channelSet;
+				remObjMonedasSP.getMonedasReporteStockPrecios();
+
+				cotizacionesXML = CotizacionesModel.getInstance().cotizaciones;
+
+				var user:Usuario = GeneralOptions.getInstance().loggedUser;
+				hasPermPrecios = user.permisoId == Usuario.USUARIO_SUPERVISOR || user.permisoId == Usuario.USUARIO_ADMINISTRADOR;
+
+				for each (var contacto:Contacto in CatalogoFactory.getInstance().getContactosActivos()) {
+					if (contacto.ctoProveedor == "S") {
+						var proveedor:Object = new Object();
+						proveedor.codigo = Number(contacto.codigo);
+						proveedor.nombre = contacto.nombre;
+
+						proveedores.addItem(proveedor);
+
+					}
+				}
+
+				for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+					var familia:Object = new Object();
+					familia.codigo = Number(f.codigo);
+					familia.nombre = f.nombre;
+
+					if (Number(f.codigo) < 100) {
+						capitulos.addItem(familia);
+					} else if (Number(f.codigo) < 10000) {
+						subtitulos.addItem(familia);
+					} else if (Number(f.codigo) < 1000000) {
+						subfamilia.addItem(familia);
+					} else {
+						familias.addItem(familia);
+					}
+				}
+
+			}
+
+			[Bindable]
+			public function get cotizacionesXML():XML {
+				return _cotizacionesXML;
+			}
+
+			public function set cotizacionesXML(value:XML):void {
+				_cotizacionesXML = value;
+			}
+
+			private function obtenerCotizacion():Cotizaciones {
+				// Cotizaciones
+				var cotizaciones:Cotizaciones = new Cotizaciones();
+				cotizaciones.agregarCotizacion("0", "1", true, _cotizacionesXML.dolarCompra.@value);
+				cotizaciones.agregarCotizacion("0", "1", false, _cotizacionesXML.dolarVenta.@value)
+
+				cotizaciones.agregarCotizacion("0", "6", true, _cotizacionesXML.euroCompra.@value);
+				cotizaciones.agregarCotizacion("0", "6", false, _cotizacionesXML.euroVenta.@value)
+
+				cotizaciones.agregarCotizacion("1", "6", true, _cotizacionesXML.euroCompraXDolar.@value);
+				cotizaciones.agregarCotizacion("1", "6", false, _cotizacionesXML.euroVentaXDolar.@value);
+
+				return cotizaciones;
+			}
+
+			protected function resetFields():void {
+				txtCodigoDesde.text = '';
+				txtCodigoHasta.text = '';
+			}
+
+			protected function cmdExportar_clickHandler(event:MouseEvent):void {
+				var moneda:Moneda = cmbMoney.selectedItem as Moneda;
+
+				var filtro:String;
+				if (rbCodigo.selected) {
+					filtro = "Codigo";
+				} else if (rbFamilia.selected) {
+					filtro = "Familia";
+				} else if (rbProveedor.selected) {
+					filtro = "Proveedor";
+				} else {
+					filtro = null;
+				}
+
+				var codigosProveedores:String = "";
+				var codigosFamilias:String = "";
+
+				if (filtro == "Codigo") {
+					if ((txtCodigoDesde.text == null || txtCodigoDesde.text == "") && (txtCodigoHasta.text == null || txtCodigoHasta.text == "")) {
+						Alert.show("El valor desde y hasta no pueden ser ambos vacios.", "Validación", 4, null, function():void {
+								callLater(function():void {
+										txtCodigoDesde.setFocus();
+									});
+							});
+						return;
+					}
+				} else if (filtro == "Familia") {
+					if (tn2.selectedIndex == 1) {
+						for each (var familia:Object in familiasSelected) {
+							codigosFamilias += familia.codigo + ",";
+						}
+						if (codigosFamilias.length > 0) {
+							codigosFamilias = codigosFamilias.substring(0, codigosFamilias.length - 1);
+						} else {
+							Alert.show("Debe seleccionar al menos una Familia.", "Validación", 4, null, function():void {
+									callLater(function():void {
+										});
+								});
+							return;
+						}
+					}
+
+				} else if (filtro == "Proveedor") {
+					if (tn3.selectedIndex == 1) {
+						for each (var proveedor:Object in proveedoresSelected) {
+							codigosProveedores += proveedor.codigo + ",";
+						}
+						if (codigosProveedores.length > 0) {
+							codigosProveedores = codigosProveedores.substring(0, codigosProveedores.length - 1);
+						} else {
+							Alert.show("Debe seleccionar al menos un Proveedor.", "Validación", 4, null, function():void {
+									callLater(function():void {
+										});
+								});
+							return;
+						}
+					}
+
+				}
+
+				//
+				// Report Parameters...
+				//
+				repParameters = new ReportParameters();
+
+				var params:Object = {};
+				if (filtro) {
+					params.filtro = filtro;
+
+					var desde:String;
+					var hasta:String;
+
+					if (filtro == "Codigo") {
+						desde = txtCodigoDesde.selectedItem.codigo != '' ? txtCodigoDesde.selectedItem.codigo : null;
+						hasta = txtCodigoHasta.selectedItem.codigo != '' ? txtCodigoHasta.selectedItem.codigo : null;
+
+						params.desde = desde;
+						params.hasta = hasta;
+					} else if (filtro == "Familia") {
+						if (tn2.selectedIndex == 1) {
+							params.familias = codigosFamilias;
+						} else {
+							desde = txtFamiliaDesde.selectedItem.codigo != '' ? txtFamiliaDesde.selectedItem.codigo : null;
+							hasta = txtFamiliaHasta.selectedItem.codigo != '' ? txtFamiliaHasta.selectedItem.codigo : null;
+
+							params.desde = desde;
+							params.hasta = hasta;
+						}
+
+					} else if (filtro == "Proveedor") {
+						if (tn3.selectedIndex == 1) {
+							params.proveedores = codigosProveedores;
+						} else {
+							desde = txtProveedorDesde.selectedItem.codigo != '' ? txtProveedorDesde.selectedItem.codigo : null;
+							hasta = txtProveedorHasta.selectedItem.codigo != '' ? txtProveedorHasta.selectedItem.codigo : null;
+
+							params.desde = desde;
+							params.hasta = hasta;
+						}
+
+					}
+
+				}
+				params.moneda = Moneda(cmbMoney.selectedItem).codigo;
+				params.cotizaciones = obtenerCotizacion();
+
+				params.filtrarNegativos = chbOcultarNegativos.selected;
+				params.filtrarCeros = chbOcultarCeros.selected;
+
+				params.mostrarCosto = chbMostrarCostos.selected;
+				params.mostrarPrecioFabrica = chbMostrarPF.selected && GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR;
+
+				var listasPrecio:String = "";
+				if (cmbListaPrecios.selectedItems != null && cmbListaPrecios.selectedItems.length > 0) {
+					for each (var lista:PreciosVenta in cmbListaPrecios.selectedItems) {
+						listasPrecio += lista.codigo + ",";
+					}
+				} else {
+					for each (var lista:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
+						listasPrecio += lista.codigo + ",";
+					}
+				}
+				listasPrecio = listasPrecio.substring(0, listasPrecio.length - 1);
+				params.listasPrecio = listasPrecio;
+
+				if (cmbDeposito.selectedItems != null && cmbDeposito.selectedItems.length > 0) {
+					var depositos:String = "";
+					for each (var dep:Deposito in cmbDeposito.selectedItems) {
+						depositos += dep.codigo + ",";
+					}
+					depositos = depositos.substring(0, depositos.length - 1);
+
+					params.depositos = depositos;
+				}
+
+				repParameters.parameters = params;
+
+				// Reset Remote Objects
+				resetRemoteObject();
+
+				loading = true;
+
+				if (cmbExportType.selectedIndex == 0) {
+					// Obtener los datos para luego al obtener los datos generar el xls
+					// asi que en el onResult se llamaría al exportar a EXCEL
+					remObjQueryXLS.channelSet = ServerConfig.getInstance().channelSet;
+					remObjQueryXLS.getReporteStockPrecios(repParameters);
+
+				} else {
+					// Obtener los datos para luego al obtener los datos generar el pdf
+					// asi que en el onResult se llamaría al exportar a PDF
+					remObjQuery.channelSet = ServerConfig.getInstance().channelSet;
+					remObjQuery.getReporteStockPrecios(repParameters);
+				}
+
+
+			}
+
+			protected function exportarPDF(reportResult:TableReportResult):void {
+				// we create the PDF
+				myPDF = new PDF(Orientation.LANDSCAPE, Unit.MM, Size.A4);
+				// we set the zoom to 100%
+				myPDF.setDisplayMode(Display.FULL_WIDTH);
+
+				// we add a page
+				myPDF.addPage();
+
+				var msg:String = "Artículos: Stock y Precios";
+
+				var filtros:String;
+
+				if (repParameters.parameters.filtro) {
+					filtros = "Filtrado por '" + repParameters.parameters.filtro + "' ";
+					if (repParameters.parameters.hasta) {
+						filtros += "desde '" + repParameters.parameters.desde + "' hasta '" + repParameters.parameters.hasta + "'";
+					} else if (repParameters.parameters.desde) {
+						filtros += "desde '" + repParameters.parameters.desde + "'";
+					}
+				}
+
+				var ef:EmbeddedFont = new EmbeddedFont(new fontStream(), new afmStream(), CodePage.CP1252);
+
+				myPDF.setFont(ef, 10);
+				myPDF.textStyle(new RGBColor(0x000000), 1);
+
+				myPDF.addText(msg, 10, 10);
+				if (filtros) {
+					myPDF.setFont(ef, 9);
+					myPDF.addText(filtros, 10, 16);
+				}
+
+				myPDF.setFont(ef, 10);
+
+				var date:Date = new Date();
+				var formatter:DateFormatter = new DateFormatter();
+				formatter.formatString = "DD/MM/YYYY - JJ:NN";
+
+				myPDF.addText(formatter.format(date), 250, 10);
+
+				var moneda:String = "Moneda: " + Moneda(cmbMoney.selectedItem).nombre;
+				myPDF.addText(moneda, 250, 16);
+
+				var uf:IFont = new CoreFont(FontFamily.COURIER);
+
+				myPDF.textStyle(new RGBColor(0x000000), 1);
+				myPDF.setFont(uf, 6);
+
+				//From Metadata
+
+				// create a columns Array
+				var columns:Array = new Array();
+
+				var repColumns:ArrayCollection = new ArrayCollection(reportResult.columns);
+				repColumns.addItemAt("Codigo", 1);
+
+				var col:int = 0;
+				for each (var colName:String in repColumns) {
+					var gridcolumn:org.alivepdf.data.GridColumn = new org.alivepdf.data.GridColumn(StringUtil.trim(colName).toUpperCase(), 'col_' + col, (col == 0) ? 14 : (col == 1) ? 32 : (col == 2 ? 86 : 22), (col == 1 || col == 2) ? Align.LEFT : Align.RIGHT, (col == 1 || col == 2) ? Align.LEFT : Align.RIGHT);
+					columns.push(gridcolumn);
+					col++;
+				}
+
+				var obj:Object = reportResult.rowsWithData;
+
+				var myDP:Array = new Array();
+
+				var nf2:NumberFormatter = new NumberFormatter();
+				nf2.setStyle("locale", "es_ES");
+				nf2.trailingZeros = false;
+				nf2.fractionalDigits = 2;
+
+				for (var i:int = 0; i < obj.length; i++) {
+					var row:Object = obj[i];
+
+					var o:Object = new Object();
+					o["col_0"] = row[0] != null ? nf2.format(new BigDecimal(row[0]).setScale(2, MathContext.ROUND_HALF_UP).toString()) : "0";
+					o["col_1"] = CodigoNombre(row[1]).codigo;
+					o["col_2"] = StringUtil.trim(CodigoNombre(row[1]).nombre);
+					o["col_3"] = row[2] != null ? new BigDecimal(row[2]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "0.00";
+					for (var k:int = 4; k < columns.length; k++) {
+						o["col_" + k] = row[k - 1] != null ? new BigDecimal(row[k - 1]).setScale(2, MathContext.ROUND_HALF_UP).toString() : " 0.00";
+					}
+
+					myDP.push(o);
+				}
+
+				// create a Grid object as usual
+				var grid:Grid = new Grid(myDP, 272, 160, new RGBColor(0x6E87B5), new RGBColor(0xCCCCCC), true, new RGBColor(0x665511), .1, null, columns);
+
+				myPDF.textStyle(new RGBColor(0x000000), 1);
+				myPDF.setFont(uf, 6);
+
+				myPDF.addGrid(grid, 0, 10);
+
+				loading = false;
+
+				dispatchEvent(new ExportToPDFEvent(ExportToPDFEvent.EXPORT_TO_PDF, myPDF));
+			}
+
+			private function resultQuery(repResult:TableReportResult):void {
+				exportarPDF(repResult);
+			}
+
+			private function resultMonedasStockPrecio(items:ArrayCollection):void {
+				moneyDP = items;
+
+				if (cmbMoney) {
+					cmbMoney.selectedIndex = 0;
+				}
+			}
+
+			private function resultQueryXLS(repResult:TableReportResult):void {
+				exportarExcel(repResult);
+			}
+
+			/**
+			 *
+			 * Export to Excell
+			 *
+			 * @param obj        Objeto simple, XML, XMLList, Array, ArrayCollection o XMLListCollection
+			 *                   que se quiere exportar a excel
+			 * @colsValues       Listado de objetos que indican cual es el nombre de la columna
+			 *                   y que propiedad del objeto se utiliza para sacar los datos de la columna
+			 *                   {header:"nombre del header", value:"propiedad del objeto que contiene el valor"}
+			 * @param defaultName   Nombre default con el que se genera el excel
+			 *
+			 */
+			public function export(obj:Object, colsValues:Array, defautlName:String):void {
+				var _dp:ICollectionView = FrmStockPrecio.getDataProviderCollection(obj);
+				if (_dp == null) {
+					return;
+				}
+
+				var sheet:Sheet = new Sheet();
+
+				// Agregar Cabezal.
+				var rows:Number = 0;
+				var cols:Number = 1;
+
+				var cantCols:Number = colsValues.length;
+
+				sheet.resize(_dp.length + 14, colsValues.length + 2);
+
+				var date:Date = new Date();
+				var formatter:DateFormatter = new DateFormatter();
+				formatter.formatString = "DD/MM/YYYY - JJ:NN";
+
+				sheet.setCell(rows, cols, "Fecha:");
+				cols++;
+				sheet.setCell(rows, cols, formatter.format(date));
+				rows++;
+				cols = 1;
+
+				sheet.setCell(rows, cols, "Moneda:");
+				cols++;
+				sheet.setCell(rows, cols, Moneda(cmbMoney.selectedItem).nombre);
+				rows++;
+				cols = 1;
+
+				var filtro:String = "";
+				sheet.setCell(rows, cols, "Filtro:");
+
+				if (repParameters.parameters.filtro) {
+					if (rbCodigo.selected) {
+						filtro = "Codigos";
+					} else if (rbFamilia.selected) {
+						filtro = "Familia";
+					} else if (rbProveedor.selected) {
+						filtro = "Proveedores";
+					} else {
+						filtro = null;
+					}
+
+					if (repParameters.parameters.desde) {
+						filtro += " desde '" + repParameters.parameters.desde + "'";
+					}
+					if (repParameters.parameters.hasta) {
+						filtro += " hasta '" + repParameters.parameters.hasta + "'.";
+					} else {
+						filtro += ".";
+					}
+				}
+				if (repParameters.parameters.filtrarNegativos || repParameters.parameters.filtrarCeros) {
+					filtro += "Stock ";
+
+					if (repParameters.parameters.filtrarCeros) {
+						filtro += "no cero" + (repParameters.parameters.filtrarNegativos ? ', ' : '.');
+					}
+					if (repParameters.parameters.filtrarNegativos) {
+						filtro += "no neg.";
+					}
+				}
+
+				sheet.setCell(rows++, 2, filtro);
+
+				rows++;
+				cols = 0;
+
+				sheet.setCell(0, 3, "COTIZACIONES");
+				sheet.setCell(0, 4, "Peso");
+				sheet.setCell(0, 6, "Dolar");
+
+				sheet.setCell(1, 4, "Compra");
+				sheet.setCell(1, 5, "Venta");
+				sheet.setCell(1, 6, "Compra");
+				sheet.setCell(1, 7, "Venta");
+
+
+				sheet.setCell(2, 3, "Dolar");
+				cols++;
+				sheet.setCell(2, 4, _cotizacionesXML.dolarCompra.@value);
+				sheet.setCell(2, 5, _cotizacionesXML.dolarVenta.@value);
+
+				sheet.setCell(3, 3, "Euro");
+				sheet.setCell(3, 4, _cotizacionesXML.euroCompra.@value);
+				sheet.setCell(3, 5, _cotizacionesXML.euroVenta.@value);
+
+				sheet.setCell(3, 6, _cotizacionesXML.euroCompraXDolar.@value);
+				sheet.setCell(3, 7, _cotizacionesXML.euroVentaXDolar.@value);
+
+				if (rows < 5) {
+					rows = 5;
+				}
+
+				cols = 0;
+				for (; cols < cantCols; cols++) {
+					sheet.setCell(rows, cols, colsValues[cols].header);
+				}
+
+				cols = 0;
+				rows++;
+				var cursor:IViewCursor = _dp.createCursor();
+				while (!cursor.afterLast) {
+					for (cols = 0; cols < cantCols; cols++) {
+						if ((cursor.current as Object).hasOwnProperty(colsValues[cols].value)) {
+							sheet.setCell(rows, cols, (cursor.current as Object)[colsValues[cols].value]);
+						}
+					}
+
+					rows++;
+					cursor.moveNext();
+				}
+
+				var xls:ExcelFile = new ExcelFile();
+				xls.sheets.addItem(sheet);
+				var bytes:ByteArray = xls.saveToByteArray();
+
+				loading = false;
+
+				dispatchEvent(new ExportToExcelEvent(ExportToExcelEvent.EXPORT_TO_EXCEL, bytes, defautlName));
+			}
+
+			//----------------------------- 
+			// Private function 
+			//----------------------------- 
+			/**
+			 *
+			 * A partir de un elemento pasado se genera un ICollectionView
+			 * para su correcto recorrido
+			 *
+			 * @param obj         Objeto a convertir a ICollectionView
+			 *
+			 *
+			 * @return referencia a un ICollectionView.
+			 *
+			 */
+			static private function getDataProviderCollection(obj:Object):ICollectionView {
+				if ((obj is Number && isNaN(obj as Number)) || (!(obj is Number) && obj == null)) {
+					return null;
+				} else if (obj is ICollectionView) {
+					return obj as ICollectionView;
+				} else if (obj is Array) {
+					return new ArrayCollection(obj as Array);
+				} else if (obj is XMLList) {
+					return new XMLListCollection(obj as XMLList);
+				} else if (obj is XML) {
+					var col:XMLListCollection = new XMLListCollection();
+					col.addItem(obj);
+					return col;
+				} else if (obj is Object) {
+					return new ArrayCollection([obj]);
+				} else {
+					return null;
+				}
+			}
+
+			protected function exportarExcel(reportResult:TableReportResult):void {
+				// create a columns Array
+				var columns:Array = new Array();
+				var repColumns:ArrayCollection = new ArrayCollection(reportResult.columns);
+				repColumns.addItemAt("Codigo", 1);
+
+				var col:int = 0;
+				for each (var colName:String in repColumns) {
+					var column:Object = new Object();
+					column.header = StringUtil.trim(colName).toUpperCase();
+					column.value = "col_" + col;
+					columns.push(column);
+					col++;
+				}
+
+				var dataProvider:Array = new Array();
+
+				var obj:Object = reportResult.rowsWithData;
+
+				for (var i:int = 0; i < obj.length; i++) {
+					var row:Object = obj[i];
+
+					var data:Object = new Object();
+					data.col_0 = row[0];
+					data.col_1 = StringUtil.trim(CodigoNombre(row[1]).codigo);
+					data.col_2 = StringUtil.trim(CodigoNombre(row[1]).nombre);
+					data.col_3 = row[2] != null ? new BigDecimal(row[2]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "0.00";
+
+					for (var k:int = 4; k < repColumns.length + 1; k++) {
+						data["col_" + k] = row[k - 1] ? new BigDecimal(row[k - 1]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "";
+					}
+
+					dataProvider.push(data);
+				}
+
+				export(dataProvider, columns, "reporte_stock_precio.xls");
+			}
+
+			protected function filtro_itemClickHandler(event:ItemClickEvent):void {
+				if (event.currentTarget.selectedValue == 'noFiltrar') {
+					currentState = "default";
+				} else if (event.currentTarget.selectedValue == 'filtrarCod') {
+					currentState = "articulos";
+				} else if (event.currentTarget.selectedValue == 'filtrarProv') {
+					currentState = "proveedores";
+				} else if (event.currentTarget.selectedValue == 'filtrarFam') {
+					currentState = "familias";
+				}
+
+			}
+
+			protected function chbOcultarNegativos_clickHandler(event:MouseEvent):void {
+			}
+
+			protected function chbOcultarCeros_clickHandler(event:MouseEvent):void {
+			}
+
+
+			private function onFault(event:FaultEvent):void {
+				loading = false;
+
+				if (helpWindow == null) {
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Error";
+					helpWindow.width = 360;
+
+
+					var errorPanel:ErrorPanel = new ErrorPanel();
+					errorPanel.errorText = event.fault.faultString + "[" + event.fault.faultCode + "]";
+					errorPanel.detailsText = event.fault.toString();
+
+					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.centerPopUp(helpWindow);
+
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+					errorPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+
+					helpWindow.y = 60;
+
+					helpWindow.addElement(errorPanel);
+				}
+
+			}
+
+			/**
+			 * Disconnect Remote Object.
+			 */
+			public function resetRemoteObject():void {
+				remObjMonedasSP.disconnect();
+				remObjQuery.disconnect();
+				remObjQueryXLS.disconnect();
+			}
+
+
+			private function closeHandler(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String = "";
+
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += "-" + item.nombre;
+				}
+				return label;
+			}
+
+			public function nombreLabelFunction(item:Object):String {
+				var label:String = "";
+				if (item && item.hasOwnProperty("nombre")) {
+					label += item.nombre;
+				}
+				return label;
+			}
+
+			protected function filterProveedor_creationCompleteHandler(event:FlexEvent):void {
+			}
+
+
+			protected function resetSearchProveedores(event:MouseEvent):void {
+				btnCloseSearchProveedor.visible = false;
+
+				proveedores.filterFunction = null;
+				proveedores.refresh();
+
+				filterProveedor.text = '';
+				filterProveedor.setFocus();
+			}
+
+			protected function filterFamilias_creationCompleteHandler(event:FlexEvent):void {
+			}
+
+
+			protected function resetSearchFamilias(event:MouseEvent):void {
+				btnCloseSearchFamilias.visible = false;
+
+				filterProveedor.text = '';
+				filterProveedor.setFocus();
+			}
+
+			private function showProveedorButton(evt:Event):void {
+				btnCloseSearchProveedor.visible = filterProveedor.text.length > 0;
+
+				if (filterProveedor.text.length == 0) {
+					proveedores.filterFunction = null;
+					proveedores.refresh();
+				} else {
+					proveedores.filterFunction = filterProveedores;
+					proveedores.refresh();
+				}
+
+			}
+
+			private function filterProveedores(item:Object):Boolean {
+				var filter:String = filterProveedor.text;
+				var code:String = String(item.codigo);
+				var name:String = String(item.nombre);
+
+				if (code.toLowerCase().match(new RegExp(filter.toLowerCase(), 'i'))) {
+					return true;
+				}
+				if (name.toLowerCase().match(new RegExp(filter.toLowerCase(), 'i'))) {
+					return true;
+				}
+				return false;
+			}
+
+
+			private function showFamiliaButton(evt:Event):void {
+				btnCloseSearchFamilias.visible = filterFamilias.text.length > 0;
+
+				if (txtSubfamilia.selectedItem) {
+					familias.filterFunction = filterSubFamilia;
+					familias.refresh();
+
+				} else if (txtSubtitulo.selectedItem) {
+					familias.filterFunction = filterSubTitulo;
+					familias.refresh();
+
+				} else if (txtCapitulos.selectedItem) {
+					familias.filterFunction = filterCapitulo;
+					familias.refresh();
+
+				} else {
+					if (filterFamilias.text.length == 0) {
+						familias.filterFunction = null;
+						familias.refresh();
+					} else {
+						familias.filterFunction = filterFamilia;
+						familias.refresh();
+
+					}
+				}
+
+
+			}
+
+
+			protected function txtCapitulos_changeHandler(event:Event):void {
+				if (familias) {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				subtitulos.removeAll();
+				subfamilia.removeAll();
+
+				for each (var o:Object in familias) {
+					o.selected = false;
+				}
+
+				if (txtCapitulos.selectedItem) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.selected = false;
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+
+						if (Number(f.codigo) >= 100 && Number(f.codigo) < 10000) {
+							if (f.codigo.toString().match(new RegExp("^" + txtCapitulos.selectedItem.codigo, 'i'))) {
+								subtitulos.addItem(familia);
+							}
+						}
+					}
+					familias.filterFunction = filterCapitulo;
+					familias.refresh();
+				} else {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+
+			}
+
+			protected function txtSubtitulo_changeHandler(event:Event):void {
+				if (familias) {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				subfamilia.removeAll();
+
+				for each (var o:Object in familias) {
+					o.selected = false;
+				}
+				if (txtSubtitulo.selectedItem) {
+					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+						var familia:Object = new Object();
+						familia.selected = false;
+						familia.codigo = Number(f.codigo);
+						familia.nombre = f.nombre;
+
+						if (Number(f.codigo) >= 10000 && Number(f.codigo) < 100000) {
+							if (f.codigo.toString().match(new RegExp("^" + txtSubtitulo.selectedItem.codigo, 'i'))) {
+								subfamilia.addItem(familia);
+							}
+						}
+					}
+					familias.filterFunction = filterSubTitulo;
+					familias.refresh();
+				} else {
+					txtCapitulos_changeHandler(event);
+				}
+
+			}
+
+			protected function txtSubfamilia_changeHandler(event:Event):void {
+				if (familias) {
+					familias.filterFunction = null;
+					familias.refresh();
+				}
+				for each (var o:Object in familias) {
+					o.selected = false;
+				}
+				if (txtSubfamilia.selectedItem) {
+					familias.filterFunction = filterSubFamilia;
+					familias.refresh();
+				} else {
+					txtSubtitulo_changeHandler(event);
+				}
+
+
+			}
+
+
+			private function filterCapitulo(item:Object):Boolean {
+				var _filter:String = txtCapitulos.selectedItem ? txtCapitulos.selectedItem.codigo : null;
+				if (item["codigo"] && _filter) {
+					return item.codigo.toString().match(new RegExp("^" + _filter, 'i')) && (filterFamilias.text.length == 0 || item.nombre.match(new RegExp(filterFamilias.text, 'i')));
+				}
+
+				return false;
+
+			}
+
+			private function filterSubTitulo(item:Object):Boolean {
+				var _filter:String = txtSubtitulo.selectedItem ? txtSubtitulo.selectedItem.codigo : null;
+				if (item["codigo"] && _filter) {
+					return item.codigo.toString().match(new RegExp("^" + _filter, 'i')) && (filterFamilias.text.length == 0 || item.nombre.match(new RegExp(filterFamilias.text, 'i')));
+				} else {
+					return false;
+				}
+			}
+
+			private function filterFamilia(item:Object):Boolean {
+				if (item["nombre"]) {
+					return filterFamilias.text.length == 0 || item.nombre.match(new RegExp(filterFamilias.text, 'i'));
+				} else {
+					return false;
+				}
+			}
+
+
+
+			private function filterSubFamilia(item:Object):Boolean {
+				var _filter:String = txtSubfamilia.selectedItem ? txtSubfamilia.selectedItem.codigo : null;
+				if (item["codigo"] && _filter) {
+					return item.codigo.toString().match(new RegExp("^" + _filter, 'i')) && (filterFamilias.text.length == 0 || item.nombre.match(new RegExp(filterFamilias.text, 'i')));
+				} else {
+					return false;
+				}
+
+			}
+
+			protected function addSelected_clickHandler(event:MouseEvent):void {
+				var selectedIndex:int = proveedoresList.selectedIndex;
+				var v:Vector.<Object> = proveedoresList.selectedItems;
+				for each (var item:Object in v) {
+					proveedoresSelected.addItem(item);
+					proveedores.removeItemAt(proveedores.getItemIndex(item));
+				}
+
+				callLater(function():void {
+						if (selectedIndex <= proveedores.length - 1) {
+							proveedoresList.selectedIndex = selectedIndex;
+						} else {
+							proveedoresList.selectedIndex = proveedores.length - 1;
+						}
+						proveedoresList.ensureCellIsVisible(proveedoresList.selectedIndex);
+
+						proveedoresListSelected.selectedIndex = proveedoresSelected.length - 1;
+						proveedoresListSelected.ensureCellIsVisible(proveedoresSelected.length - 1);
+					});
+
+				callLater(function():void {
+						updateButtons();
+					});
+
+			}
+
+			protected function addAll_clickHandler(event:MouseEvent):void {
+				proveedoresList.selectAll();
+
+				callLater(function():void {
+						var v:Vector.<Object> = proveedoresList.selectedItems;
+						for each (var item:Object in v) {
+							proveedoresSelected.addItem(item);
+							proveedores.removeItemAt(proveedores.getItemIndex(item));
+						}
+						updateButtons();
+
+					});
+
+				callLater(function():void {
+						proveedoresListSelected.selectAll();
+					});
+
+
+			}
+
+			protected function removeSelected_clickHandler(event:MouseEvent):void {
+				var selectedIndex:int = proveedoresListSelected.selectedIndex;
+				var v:Vector.<Object> = proveedoresListSelected.selectedItems;
+				for each (var item:Object in v) {
+					proveedores.addItem(item);
+					proveedoresSelected.removeItemAt(proveedoresSelected.getItemIndex(item));
+				}
+
+				callLater(function():void {
+						if (selectedIndex <= proveedoresSelected.length - 1) {
+							proveedoresListSelected.selectedIndex = selectedIndex;
+						} else {
+							proveedoresListSelected.selectedIndex = proveedoresSelected.length - 1;
+						}
+						proveedoresListSelected.ensureCellIsVisible(proveedoresListSelected.selectedIndex);
+						proveedoresList.selectedIndex = proveedores.length - 1;
+						proveedoresList.ensureCellIsVisible(proveedores.length - 1);
+					});
+
+				callLater(function():void {
+						updateButtons();
+					});
+
+			}
+
+			protected function removeAll_clickHandler(event:MouseEvent):void {
+				proveedoresListSelected.selectAll();
+
+				callLater(function():void {
+						var v:Vector.<Object> = proveedoresListSelected.selectedItems;
+						for each (var item:Object in v) {
+							proveedores.addItem(item);
+							proveedoresSelected.removeItemAt(proveedoresSelected.getItemIndex(item));
+						}
+						updateButtons();
+					});
+
+				callLater(function():void {
+						proveedoresList.selectAll();
+					});
+
+			}
+
+			protected function proveedoresList_selectionChangeHandler(event:GridSelectionEvent):void {
+				updateButtons();
+			}
+
+			protected function proveedoresListSelected_selectionChangeHandler(event:GridSelectionEvent):void {
+				updateButtons();
+			}
+
+			private function updateButtons():void {
+				if (proveedoresList.selectedItems && proveedoresList.selectedItems.length > 0) {
+					cmdAdd.enabled = true;
+				} else {
+					cmdAdd.enabled = false;
+				}
+				if (proveedoresListSelected.selectedItems && proveedoresListSelected.selectedItems.length > 0) {
+					cmdRemove.enabled = true;
+				} else {
+					cmdRemove.enabled = false;
+				}
+			}
+
+			protected function familiasList_selectionChangeHandler(event:GridSelectionEvent):void {
+				updateButtonsFamilias();
+			}
+
+			protected function familiasListSelected_selectionChangeHandler(event:GridSelectionEvent):void {
+				updateButtonsFamilias();
+			}
+
+			private function updateButtonsFamilias():void {
+				cmdAddFam.enabled = familiasList.selectedItems && familiasList.selectedItems.length > 0;
+				cmdRemoveFam.enabled = familiasListSelected.selectedItems && familiasListSelected.selectedItems.length > 0;
+			}
+
+			protected function cmdAddAllFam_clickHandler(event:MouseEvent):void {
+				familiasList.selectAll();
+
+				callLater(function():void {
+						var v:Vector.<Object> = familiasList.selectedItems;
+						for each (var item:Object in v) {
+							familiasSelected.addItem(item);
+							familias.removeItemAt(familias.getItemIndex(item));
+						}
+						updateButtonsFamilias();
+
+					});
+
+				callLater(function():void {
+						familiasListSelected.selectAll();
+					});
+
+			}
+
+			protected function cmdAddFam_clickHandler(event:MouseEvent):void {
+				var selectedIndex:int = familiasList.selectedIndex;
+				var v:Vector.<Object> = familiasList.selectedItems;
+				for each (var item:Object in v) {
+					familiasSelected.addItem(item);
+					familias.removeItemAt(familias.getItemIndex(item));
+				}
+
+				callLater(function():void {
+						if (selectedIndex <= familias.length) {
+							familiasList.selectedIndex = selectedIndex;
+						} else {
+							familiasList.selectedIndex = familias.length - 1;
+						}
+						familiasList.ensureCellIsVisible(familiasList.selectedIndex);
+
+						familiasListSelected.selectedIndex = familiasSelected.length - 1;
+						familiasListSelected.ensureCellIsVisible(familiasSelected.length - 1);
+					});
+
+				callLater(function():void {
+						updateButtonsFamilias();
+					});
+
+			}
+
+			protected function cmdRemoveFam_clickHandler(event:MouseEvent):void {
+				var selectedIndex:int = familiasListSelected.selectedIndex;
+				var v:Vector.<Object> = familiasListSelected.selectedItems;
+				for each (var item:Object in v) {
+					familias.addItem(item);
+					familiasSelected.removeItemAt(familiasSelected.getItemIndex(item));
+				}
+
+				callLater(function():void {
+						if (selectedIndex <= familiasSelected.length - 1) {
+							familiasListSelected.selectedIndex = selectedIndex;
+						} else {
+							familiasListSelected.selectedIndex = familiasSelected.length - 1;
+						}
+						familiasListSelected.ensureCellIsVisible(familiasListSelected.selectedIndex);
+
+						familiasList.selectedIndex = familias.length - 1;
+						familiasList.ensureCellIsVisible(familias.length - 1);
+					});
+
+				callLater(function():void {
+						updateButtonsFamilias();
+					});
+
+
+			}
+
+			protected function cmdRemoveAllFam_clickHandler(event:MouseEvent):void {
+				familiasListSelected.selectAll();
+
+				callLater(function():void {
+						var v:Vector.<Object> = familiasListSelected.selectedItems;
+						for each (var item:Object in v) {
+							familias.addItem(item);
+							familiasSelected.removeItemAt(familiasSelected.getItemIndex(item));
+						}
+						updateButtonsFamilias();
+					});
+
+				callLater(function():void {
+						familiasList.selectAll();
+					});
+
+			}
+
+			protected function chbMostrarCostos_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+
+			}
+
+			protected function chbMostrarPF_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+
+			}
+
+			public function hasPerm():Boolean {
+				var user:Usuario = GeneralOptions.getInstance().loggedUser;
+
+				if (user.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
+					return false;
+				}
+				return true;
+
+
+			}
+		]]>
+	</fx:Script>
+
+	<s:states>
+		<s:State name="default" />
+		<s:State name="articulos" />
+		<s:State name="proveedores" />
+		<s:State name="familias" />
+	</s:states>
+
+	<fx:Declarations>
+		<s:RemoteObject id="remObjQuery" destination="CreatingRpc" result="resultQuery(event.result as TableReportResult);" showBusyCursor="true" fault="onFault(event)" />
+		<s:RemoteObject id="remObjQueryXLS" destination="CreatingRpc" result="resultQueryXLS(event.result as TableReportResult);" showBusyCursor="true" fault="onFault(event)" />
+		<s:RemoteObject id="remObjMonedasSP" destination="CreatingRpc" result="resultMonedasStockPrecio(event.result as ArrayCollection);" showBusyCursor="true" fault="onFault(event)" />
+	</fx:Declarations>
+
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+
+		<s:RadioButtonGroup id="filtro" itemClick="filtro_itemClickHandler(event)" />
+	</fx:Declarations>
+
+
+	<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{loading}">
+		<loader:LoadComponent label="Generando Archivo" />
+	</s:VGroup>
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0" visible="{!loading}">
+		<s:VGroup bottom="0" left="10" right="10" top="10">
+			<s:HGroup paddingBottom="10" paddingLeft="16" paddingRight="16" paddingTop="5" gap="12">
+				<s:RadioButton id="rbNoFiltrar" fontWeight="bold" label="No Filtrar" groupName="filtro" selected="true" value="noFiltrar" />
+				<s:RadioButton id="rbCodigo" fontWeight="bold" label="Código" groupName="filtro" value="filtrarCod" />
+				<s:RadioButton id="rbProveedor" fontWeight="bold" label="Proveedor" groupName="filtro" value="filtrarProv" visible="{hasPerm()}" includeInLayout="{hasPerm()}" />
+				<s:RadioButton id="rbFamilia" fontWeight="bold" label="Familia" groupName="filtro" value="filtrarFam" />
+			</s:HGroup>
+
+			<s:VGroup id="pnlNoFiltrar" width="100%" height="100%" includeIn="default" />
+
+			<s:Group id="pnlArticulos" width="100%" height="100%" includeIn="articulos">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" />
+				</s:layout>
+				<mx:TabNavigator id="tn1" width="100%" height="100%">
+					<mx:VBox width="100%" height="100%" label="Desde - Hasta">
+						<s:Panel width="100%" height="100%" title="Artículos" styleName="pnlForm" dropShadowVisible="false">
+							<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" contentBackgroundAlpha="1">
+								<s:layout>
+									<s:VerticalLayout paddingLeft="5" paddingRight="5" />
+								</s:layout>
+								<mx:Form id="formArticulos" width="100%" height="100%">
+									<mx:FormItem label="Desde:">
+										<components:MyAutoComplete id="txtCodigoDesde" width="400" dataProvider="{ CatalogoFactory.getInstance().articulos }" matchType="anyPart"
+																   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownWidth="500" dropDownRowCount="10" />
+
+									</mx:FormItem>
+									<mx:FormItem label="Hasta:">
+										<components:MyAutoComplete id="txtCodigoHasta" width="400" dataProvider="{ CatalogoFactory.getInstance().articulos }" matchType="anyPart"
+																   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownWidth="500" dropDownRowCount="10" />
+									</mx:FormItem>
+								</mx:Form>
+							</s:BorderContainer>
+						</s:Panel>
+					</mx:VBox>
+				</mx:TabNavigator>
+			</s:Group>
+
+			<s:Group id="pnlFamilias" width="100%" height="100%" includeIn="familias">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" />
+				</s:layout>
+				<mx:TabNavigator id="tn2" width="100%" height="100%">
+					<mx:VBox width="100%" height="100%" label="Desde - Hasta">
+						<s:Panel width="100%" height="100%" title="Familias" styleName="pnlForm" dropShadowVisible="false">
+							<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" contentBackgroundAlpha="1">
+								<s:layout>
+									<s:VerticalLayout paddingLeft="5" paddingRight="5" />
+								</s:layout>
+								<mx:Form id="formFamilias" width="100%" height="100%">
+									<mx:FormItem label="Desde:">
+										<components:MyAutoComplete id="txtFamiliaDesde" width="400" dataProvider="{ CatalogoFactory.getInstance().familias }" matchType="anyPart"
+																   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownWidth="500" dropDownRowCount="10" />
+
+									</mx:FormItem>
+									<mx:FormItem label="Hasta:">
+										<components:MyAutoComplete id="txtFamiliaHasta" width="400" dataProvider="{ CatalogoFactory.getInstance().familias }" matchType="anyPart"
+																   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownWidth="500" dropDownRowCount="10" />
+									</mx:FormItem>
+								</mx:Form>
+							</s:BorderContainer>
+						</s:Panel>
+					</mx:VBox>
+
+					<mx:VBox width="100%" height="100%" label="  Seleccionar  ">
+						<s:Panel width="100%" height="100%" title="Familias" styleName="pnlForm" dropShadowVisible="false">
+							<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+								<s:layout>
+									<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" />
+								</s:layout>
+								<s:VGroup width="100%" paddingBottom="10">
+									<s:HGroup width="100%" verticalAlign="middle">
+										<s:Label width="90" text="Capítulo:" />
+										<components:MyAutoComplete id="txtCapitulos" width="240" change="txtCapitulos_changeHandler(event)" dataProvider="{ capitulos }" matchType="anyPart"
+																   contentBackgroundAlpha="1" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" />
+									</s:HGroup>
+									<s:HGroup width="100%" verticalAlign="middle">
+										<s:Label width="90" text="Subtítulo:" />
+										<components:MyAutoComplete id="txtSubtitulo" width="240" change="txtSubtitulo_changeHandler(event)" dataProvider="{ subtitulos }" matchType="anyPart"
+																   contentBackgroundAlpha="1" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"
+																   enabled="{txtCapitulos.selectedItem}" />
+									</s:HGroup>
+									<s:HGroup width="100%" verticalAlign="middle">
+										<s:Label width="90" text="Subfamilia:" />
+										<components:MyAutoComplete id="txtSubfamilia" width="240" change="txtSubfamilia_changeHandler(event)" dataProvider="{ subfamilia }" matchType="anyPart"
+																   contentBackgroundAlpha="1" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"
+																   enabled="{txtSubtitulo.selectedItem}" />
+									</s:HGroup>
+								</s:VGroup>
+								<s:HGroup width="100%" height="100%">
+									<s:VGroup width="100%" height="100%">
+										<s:HGroup width="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="5">
+											<s:Label id="lblFilterFamilias" width="90" fontSize="12" left="5" text="Nombre: " />
+											<s:SkinnableContainer width="240" styleName="filterTextInput">
+												<s:layout>
+													<s:HorizontalLayout horizontalAlign="center" paddingBottom="1" paddingLeft="2" paddingRight="5" paddingTop="1" verticalAlign="middle" />
+												</s:layout>
+												<s:TextInput id="filterFamilias" width="100%" change="showFamiliaButton(event)" creationComplete="filterFamilias_creationCompleteHandler(event)"
+															 styleName="filter" prompt="Ver todos" />
+												<s:Button id="btnCloseSearchFamilias" width="8" height="8" click="resetSearchFamilias(event)" styleName="buttonCloseSearch" visible="false" />
+											</s:SkinnableContainer>
+										</s:HGroup>
+
+										<s:DataGrid id="familiasList" width="100%" height="100%" variableRowHeight="true" dataProvider="{familias}" contentBackgroundColor="0xFFFFFF"
+													contentBackgroundAlpha=".8" selectionMode="multipleRows" selectionChange="familiasList_selectionChangeHandler(event)">
+											<s:columns>
+												<s:ArrayList>
+													<s:GridColumn width="70" headerText="Código" dataField="codigo" itemRenderer="biz.fulltime.ui.facturacion.stockprecio.NumberItemRenderer" />
+													<s:GridColumn headerText="Nombre" dataField="nombre" />
+												</s:ArrayList>
+											</s:columns>
+										</s:DataGrid>
+									</s:VGroup>
+									<s:VGroup height="100%" paddingTop="20" verticalAlign="middle">
+										<s:Button id="cmdAddAllFam" width="42" height="32" fontWeight="bold" click="cmdAddAllFam_clickHandler(event)" label=">>" toolTip="Agregar Todos" enabled="true" />
+										<s:Button id="cmdAddFam" width="42" height="32" fontWeight="bold" click="cmdAddFam_clickHandler(event)" label=">" toolTip="Agregar Seleccionados"
+												  enabled="false" />
+										<s:Button id="cmdRemoveFam" width="42" height="32" fontWeight="bold" click="cmdRemoveFam_clickHandler(event)" label="&lt;" toolTip="Remover Seleccionados"
+												  enabled="false" />
+										<s:Button id="cmdRemoveAllFam" width="42" height="32" fontWeight="bold" click="cmdRemoveAllFam_clickHandler(event)" label="&lt;&lt;" toolTip="Remover Todos"
+												  enabled="true" />
+									</s:VGroup>
+									<s:VGroup width="100%" height="100%">
+										<s:Label paddingTop="12" text="Familias Seleccionados" />
+										<s:DataGrid id="familiasListSelected" width="100%" height="100%" dataProvider="{familiasSelected}" contentBackgroundColor="0xFFFFFF" contentBackgroundAlpha=".8"
+													selectionMode="multipleRows" selectionChange="familiasListSelected_selectionChangeHandler(event)">
+											<s:columns>
+												<s:ArrayList>
+													<s:GridColumn width="70" headerText="Código" dataField="codigo" itemRenderer="biz.fulltime.ui.facturacion.stockprecio.NumberItemRenderer" />
+													<s:GridColumn headerText="Nombre" dataField="nombre" />
+												</s:ArrayList>
+											</s:columns>
+										</s:DataGrid>
+									</s:VGroup>
+
+								</s:HGroup>
+							</s:BorderContainer>
+
+						</s:Panel>
+					</mx:VBox>
+				</mx:TabNavigator>
+			</s:Group>
+
+			<s:Group id="pnlProveedores" width="100%" height="100%" includeIn="proveedores">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" />
+				</s:layout>
+				<mx:TabNavigator id="tn3" width="100%" height="100%">
+					<mx:VBox width="100%" height="100%" label="Desde - Hasta">
+						<s:Panel width="100%" height="100%" title="Proveedores" styleName="pnlForm" dropShadowVisible="false">
+							<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0" contentBackgroundAlpha="1">
+								<s:layout>
+									<s:VerticalLayout paddingLeft="5" paddingRight="5" />
+								</s:layout>
+								<mx:Form id="formProveedores" width="100%" height="100%">
+									<mx:FormItem label="Desde:">
+										<components:MyAutoComplete id="txtProveedorDesde" width="400" backgroundAlpha="1" dataProvider="{ proveedores }" matchType="anyPart"
+																   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownWidth="500" dropDownRowCount="10" />
+
+									</mx:FormItem>
+									<mx:FormItem label="Hasta:">
+										<components:MyAutoComplete id="txtProveedorHasta" width="400" backgroundAlpha="1" dataProvider="{ proveedores }" matchType="anyPart"
+																   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownWidth="500" dropDownRowCount="10" />
+									</mx:FormItem>
+								</mx:Form>
+							</s:BorderContainer>
+						</s:Panel>
+					</mx:VBox>
+
+					<mx:VBox width="100%" height="100%" label="  Seleccionar  ">
+						<s:Panel width="100%" height="100%" title="Proveedores" styleName="pnlForm" dropShadowVisible="false">
+							<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
+								<s:layout>
+									<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" />
+								</s:layout>
+								<s:HGroup width="100%" height="100%">
+									<s:VGroup width="100%" height="100%">
+										<s:HGroup width="360" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="5">
+											<s:Label id="lblFilterProveedor" fontSize="12" left="5" text="Filtrar: " />
+											<s:SkinnableContainer width="100%" styleName="filterTextInput">
+												<s:layout>
+													<s:HorizontalLayout horizontalAlign="center" paddingBottom="1" paddingLeft="2" paddingRight="5" paddingTop="1" verticalAlign="middle" />
+												</s:layout>
+												<s:TextInput id="filterProveedor" width="100%" change="showProveedorButton(event)" creationComplete="filterProveedor_creationCompleteHandler(event)"
+															 styleName="filter" prompt="Ver todos" />
+												<s:Button id="btnCloseSearchProveedor" width="8" height="8" click="resetSearchProveedores(event)" styleName="buttonCloseSearch" visible="false" />
+											</s:SkinnableContainer>
+										</s:HGroup>
+										<s:DataGrid id="proveedoresList" width="100%" height="100%" dataProvider="{proveedores}" contentBackgroundColor="0xFFFFFF" contentBackgroundAlpha=".8"
+													selectionMode="multipleRows" selectionChange="proveedoresList_selectionChangeHandler(event)">
+											<s:columns>
+												<s:ArrayList>
+													<s:GridColumn width="70" headerText="Código" dataField="codigo" itemRenderer="biz.fulltime.ui.facturacion.stockprecio.NumberItemRenderer" />
+													<s:GridColumn headerText="Nombre" dataField="nombre" />
+												</s:ArrayList>
+											</s:columns>
+										</s:DataGrid>
+									</s:VGroup>
+									<s:VGroup height="100%" paddingTop="25" verticalAlign="middle">
+										<s:Button id="cmdAddAll" width="42" height="32" fontWeight="bold" click="addAll_clickHandler(event)" label=">>" toolTip="Agregar Todos" enabled="true" />
+										<s:Button id="cmdAdd" width="42" height="32" fontWeight="bold" click="addSelected_clickHandler(event)" label=">" toolTip="Agregar Seleccionados" enabled="false" />
+										<s:Button id="cmdRemove" width="42" height="32" fontWeight="bold" click="removeSelected_clickHandler(event)" label="&lt;" toolTip="Remover Seleccionados"
+												  enabled="false" />
+										<s:Button id="cmdRemoveAll" width="42" height="32" fontWeight="bold" click="removeAll_clickHandler(event)" label="&lt;&lt;" toolTip="Remover Todos"
+												  enabled="true" />
+									</s:VGroup>
+									<s:VGroup width="100%" height="100%">
+										<s:Label paddingTop="12" text="Proveedores Seleccionados" />
+										<s:DataGrid id="proveedoresListSelected" width="100%" height="100%" dataProvider="{proveedoresSelected}" contentBackgroundColor="0xFFFFFF"
+													contentBackgroundAlpha=".8" selectionMode="multipleRows" selectionChange="proveedoresListSelected_selectionChangeHandler(event)">
+											<s:columns>
+												<s:ArrayList>
+													<s:GridColumn width="70" headerText="Código" dataField="codigo" itemRenderer="biz.fulltime.ui.facturacion.stockprecio.NumberItemRenderer" />
+													<s:GridColumn headerText="Nombre" dataField="nombre" />
+												</s:ArrayList>
+											</s:columns>
+										</s:DataGrid>
+
+									</s:VGroup>
+
+								</s:HGroup>
+							</s:BorderContainer>
+						</s:Panel>
+					</mx:VBox>
+				</mx:TabNavigator>
+			</s:Group>
+
+			<mx:HRule width="100%" />
+			<s:HGroup width="100%" paddingBottom="5" paddingTop="5">
+				<s:VGroup paddingLeft="10" paddingRight="5">
+					<s:CheckBox id="chbOcultarCeros" click="chbOcultarCeros_clickHandler(event)" label="Ocultar Art. con Stock Cero" selected="true" />
+					<s:CheckBox id="chbOcultarNegativos" click="chbOcultarNegativos_clickHandler(event)" label="Ocultar Art. con Stock Negativo" selected="true" />
+				</s:VGroup>
+				<mx:VRule height="50" />
+				<s:VGroup paddingLeft="10" paddingRight="5" visible="{hasPermPrecios}" includeInLayout="{hasPermPrecios}">
+					<s:CheckBox id="chbMostrarCostos" click="chbMostrarCostos_clickHandler(event)" label="Mostrar Costos" selected="true" />
+					<s:CheckBox id="chbMostrarPF" click="chbMostrarPF_clickHandler(event)" label="Mostrar Precios Fábrica" selected="true"
+								visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}" />
+				</s:VGroup>
+				<mx:VRule height="50" visible="{hasPermPrecios}" />
+
+				<s:HGroup paddingLeft="10" verticalAlign="middle">
+					<s:Label text="Modeda:" />
+					<s:DropDownList id="cmbMoney" width="140" textAlign="left" dataProvider="{moneyDP}" labelField="nombre" selectedIndex="0" contentBackgroundAlpha="1" />
+				</s:HGroup>
+				<mx:VRule height="50" />
+				<s:VGroup width="100%" paddingLeft="0" paddingRight="5">
+					<s:HGroup width="100%" height="24" paddingLeft="20" verticalAlign="middle">
+						<s:Label width="80" text="Lista Precios:" />
+						<components:MyAutoComplete id="cmbListaPrecios" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().preciosVentaUsuario }" labelField="nombre"
+												   matchType="anyPart" prompt="Todas" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="true"
+												   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="nombreLabelFunction" backspaceAction="focus"
+												   contentBackgroundAlpha="1" />
+
+					</s:HGroup>
+					<s:HGroup width="100%" height="24" paddingLeft="20" verticalAlign="middle" contentBackgroundAlpha="1" visible="false">
+						<s:Label width="80" text="Depositos:" />
+						<components:MyAutoComplete id="cmbDeposito" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre" matchType="anyPart"
+												   prompt="Todos" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="true"
+												   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="nombreLabelFunction" backspaceAction="focus"
+												   contentBackgroundAlpha="1" />
+					</s:HGroup>
+				</s:VGroup>
+
+			</s:HGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+
+	<s:controlBarContent>
+		<s:HGroup width="100%" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
+			<s:Label fontSize="14" text="Exportar a:" styleName="myLabel" />
+			<s:DropDownList id="cmbExportType" width="90" textAlign="left" labelField="nombre" selectedIndex="0">
+				<s:dataProvider>
+					<s:ArrayList source="[Excel, PDF]" />
+				</s:dataProvider>
+			</s:DropDownList>
+
+			<s:Spacer width="20" />
+			<components1:IconButton id="cmdExportar" width="142" click="cmdExportar_clickHandler(event)" styleName="exportButton" label="Generar Reporte" />
+		</s:HGroup>
+	</s:controlBarContent>
+</s:Panel>

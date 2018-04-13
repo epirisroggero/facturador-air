@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- http://blog.flexexamples.com/2007/08/20/creating-custom-dialog-boxes-using-the-popupmanager-and-titlewindow-classes/ -->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+				width="480" height="240" backgroundAlpha="1.0" backgroundColor="#D9E3F0" cornerRadius="0"
+				creationComplete="titlewindow1_creationCompleteHandler(event)" title="Completar tarea" titleStyleName="titleText"
+				showCloseButton="true" close="titleWindow_close(event)" xmlns:s="library://ns.adobe.com/flex/spark">
+
+	<mx:Script>
+		<![CDATA[
+			import biz.fulltime.event.FinalizarTareaEvent;
+
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+
+			private function titleWindow_close(evt:CloseEvent):void {
+				PopUpManager.removePopUp(this);
+
+				dispatchEvent(new FinalizarTareaEvent(FinalizarTareaEvent.CANCELAR_FIN_TAREA, true, true));
+			}
+
+			private function titleWindow_aceptar():void {
+				PopUpManager.removePopUp(this);
+
+				dispatchEvent(new FinalizarTareaEvent(FinalizarTareaEvent.FINALIZAR_TAREA, true, true, txtNota.text));
+			}
+
+			private function titleWindow_cancelar():void {
+				PopUpManager.removePopUp(this);
+
+				dispatchEvent(new FinalizarTareaEvent(FinalizarTareaEvent.CANCELAR_FIN_TAREA, true, true));
+			}
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void {
+				callLater(function():void {
+					txtNota.setFocus();
+				});
+
+			}
+		]]>
+	</mx:Script>
+
+	<mx:Style>
+		.titleText {
+			fontSize: 14px;
+		}
+		.headingText {
+			paddingTop: 10px;
+			paddingBottom: 10px;
+			fontSize: 12px;
+		}
+	</mx:Style>
+
+	<s:VGroup width="100%" height="100%" paddingTop="10" paddingLeft="0" paddingBottom="0" paddingRight="0">
+		<s:Label width="100%" text="Nota de finalización de la tarea" />
+		<s:TextArea id="txtNota" width="100%" height="100%" text="" />
+	
+		<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" paddingLeft="10" />
+			</s:layout>
+			<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".20" scaleY=".20" />
+			<s:Spacer width="100%" />
+			
+			<s:Button click="titleWindow_aceptar()" label="Aceptar" styleName="aceptarButton" toolTip="Aceptar" />
+			<s:Button click="titleWindow_cancelar()" label="Cancelar" styleName="cerrarButton" toolTip="Cancelar" />
+		</s:BorderContainer>		
+	</s:VGroup>
+
+</mx:TitleWindow>

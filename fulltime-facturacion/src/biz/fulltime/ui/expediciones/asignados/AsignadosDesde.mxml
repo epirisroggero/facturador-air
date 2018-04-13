@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%" xmlns:components="biz.fulltime.ui.components.*" creationComplete="group1_creationCompleteHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.dto.CodigoNombre;
+			import biz.fulltime.model.CodigoNombreEntity;
+			import biz.fulltime.model.UserModel;
+			import biz.fulltime.model.Usuario;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import util.CatalogoFactory;
+
+			private var _usuarios:ArrayCollection;
+
+			[Bindable]
+			public function get usuarios():ArrayCollection {
+				return _usuarios;
+			}
+
+			public function set usuarios(value:ArrayCollection):void {
+				_usuarios = value;
+			}
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void {
+//				usuarios = new ArrayCollection();
+//				
+//				for each (var item:Usuario in CatalogoFactory.getInstance().usuarios) {
+//					var user:CodigoNombreEntity = new CodigoNombreEntity();
+//					user.codigo = item.codigo;
+//					user.nombre = item.nombre;
+//					
+//					usuarios.addItem(user);
+//				}
+			}
+
+			
+			private function keyHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER) {
+					filterElements();
+				} else if (filter.text == null || filter.text == "") {
+				}
+			}
+
+			private function filterElements():void {
+				if (filter.text == null || filter.text == "") {
+					usuarios.filterFunction = null;
+					usuarios.refresh();
+				} else {
+					usuarios.filterFunction = filtrarUsuarios;
+					usuarios.refresh();
+				}
+			}
+
+			private function filtrarUsuarios(item:Object):Boolean {
+				var _usuarioLabel:String = item.codigo + ' - ' + item.nombre;
+				return _usuarioLabel.match(new RegExp(filter.text, 'i'));
+			}
+
+			protected function resetSearch(event:MouseEvent):void {
+				btnCloseSearch.visible = false;
+
+				usuarios.filterFunction = null;
+				usuarios.refresh();
+
+				if (usuarios.length > 0) {
+					listaUsuarios.invalidateList();
+				}
+				filter.text = '';
+				filter.setFocus();
+			}
+
+			private function showButton(evt:Event):void {
+				btnCloseSearch.visible = filter.text.length > 0;
+			}
+
+			protected function filter_creationCompleteHandler(event:FlexEvent):void {
+				filter.addEventListener(KeyboardEvent.KEY_UP, keyHandler);
+			}
+			
+			
+		]]>
+	</fx:Script>
+
+	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".56" backgroundColor="#FFFFFF" borderAlpha="0">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="0" paddingLeft="5" paddingRight="5" paddingTop="5"/>
+		</s:layout>
+		<s:HGroup width="100%" paddingBottom="10" paddingLeft="5" paddingRight="5" verticalAlign="middle">
+			<s:Label id="lblFilter" fontSize="14" text="Filtrar:" />
+			<s:SkinnableContainer width="100%" styleName="filterTextInput">
+				<s:layout>
+					<s:HorizontalLayout horizontalAlign="center" paddingBottom="1" paddingLeft="2" paddingRight="5" paddingTop="1" verticalAlign="middle" />
+				</s:layout>
+				<s:TextInput id="filter" width="100%" change="showButton(event)" creationComplete="filter_creationCompleteHandler(event)"/>
+				<s:Button id="btnCloseSearch" width="8" height="8" click="resetSearch(event)" styleName="buttonRemoveIcon" visible="false" />
+			</s:SkinnableContainer>
+		</s:HGroup>
+		<components:RoundedSelectionList id="listaUsuarios" width="100%" height="100%" borderSkin="{null}" selectionColor="0xfafafa" contentBackgroundAlpha=".87"
+										 selectionDuration="600" useRollOver="false" itemRenderer="biz.fulltime.ui.components.UsuarioLabel"
+										 dataProvider="{usuarios}" dragEnabled="true" dragMoveEnabled="true"/>
+	</s:BorderContainer>
+
+</s:Group>

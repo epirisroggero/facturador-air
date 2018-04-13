@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+			 minWidth="30" maxWidth="150" minHeight="25" alpha.disabled="0.5" creationComplete="init()">
+
+	<fx:Metadata>
+		[HostComponent("skin.components.tabBar.MyTabBarButton")]
+	</fx:Metadata>
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+
+			private function init():void {
+				hostComponent.addEventListener(FlexEvent.VALUE_COMMIT, onDataChange);
+				onDataChange();
+			}
+
+			private function onDataChange(event:FlexEvent = null):void {
+				if (hostComponent.data.hasOwnProperty("enabled")) {
+					hostComponent.enabled = hostComponent.data.enabled;
+
+				}
+			}
+		]]>
+	</fx:Script>
+
+
+	<!-- states -->
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" stateGroups="overStates" />
+		<s:State name="down" stateGroups="downStates" />
+		<s:State name="disabled" stateGroups="disabledStates" />
+		<s:State name="upAndSelected" stateGroups="selectedStates, selectedUpStates" />
+		<s:State name="overAndSelected" stateGroups="overStates, selectedStates" />
+		<s:State name="downAndSelected" stateGroups="downStates, selectedStates" />
+		<s:State name="disabledAndSelected" stateGroups="selectedUpStates, disabledStates, selectedStates" />
+	</s:states>
+
+	<!-- tab -->
+	<s:Group bottom="0" left="0" right="0" top="0" scaleGridLeft="15" scaleGridRight="50" scaleGridTop="1" scaleGridBottom="24">
+		<s:Path bottom="0" left="0" right="0" top="0">
+			<s:data>M 0,25 C 10,23 5,2 15,0 L 50,0 C 60,2 55,23 65,25 Z</s:data>
+			<s:fill>
+				<s:SolidColor color="#DCDCDD" color.down="#C0C0FF" color.over="#DADADA" color.selectedStates="#5079C5" />
+			</s:fill>
+		</s:Path>
+	</s:Group>
+
+	<!-- close button -->
+	<s:Button id="closeButton" right="14" top="6" skinClass="skin.components.tabBar.skin.MyCloseButtonSkin" />
+
+	<!-- label -->
+	<s:Label id="labelDisplay" bottom="0" color="#000000" color.down="#000000" color.overStates="#000000" color.selectedStates="#ffffff" fontWeight="normal" left="14" right="14" top="2"
+			 verticalAlign="middle" maxDisplayedLines="1" />
+</s:SparkSkin>

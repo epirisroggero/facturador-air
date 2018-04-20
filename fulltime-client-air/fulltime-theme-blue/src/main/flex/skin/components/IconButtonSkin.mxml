@@ -73,7 +73,11 @@
 
 	<!-- layer 1: shadow -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="shadow" bottom="-1" left="-1" right="-1" top="-1" radiusX="2" alpha="0">
+=======
+	<s:Rect id="shadow" bottom="-1" left="-1" right="-1" top="-1" radiusX="2">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:fill>
 			<s:LinearGradient rotation="90">
 				<s:GradientEntry color="0x000000" color.down="0xFFFFFF" alpha="0.01" alpha.down="0" />
@@ -84,7 +88,11 @@
 
 	<!-- layer 2: fill -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="fill" bottom="1" left="1" right="1" top="1" radiusX="2" alpha="0">
+=======
+	<s:Rect id="fill" bottom="1" left="1" right="1" top="1" radiusX="2">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:fill>
 			<s:LinearGradient rotation="90">
 				<s:GradientEntry color="0xFFFFFF" color.down="0xAAAAAA" color.over="0xBBBDBD" alpha="0.85" />
@@ -95,7 +103,11 @@
 
 	<!-- layer 3: fill lowlight -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="lowlight" bottom="1" left="1" right="1" top="1" radiusX="2" alpha="0">
+=======
+	<s:Rect id="lowlight" bottom="1" left="1" right="1" top="1" radiusX="2">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:fill>
 			<s:LinearGradient rotation="270">
 				<s:GradientEntry color="0x000000" ratio="0.0" alpha="0.0627" />
@@ -107,7 +119,11 @@
 
 	<!-- layer 4: fill highlight -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="highlight" bottom="1" left="1" right="1" top="1" radiusX="2" alpha="0">
+=======
+	<s:Rect id="highlight" bottom="1" left="1" right="1" top="1" radiusX="2">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:fill>
 			<s:LinearGradient rotation="90">
 				<s:GradientEntry color="0xFFFFFF" ratio="0.0" alpha="0.33" alpha.over="0.22" alpha.down="0.12" />
@@ -119,7 +135,11 @@
 
 	<!-- layer 5: highlight stroke (all states except down) -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="highlightStroke" bottom="1" left="1" right="1" top="1" radiusX="2" excludeFrom="down" alpha="0">
+=======
+	<s:Rect id="highlightStroke" bottom="1" left="1" right="1" top="1" radiusX="2" excludeFrom="down">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:stroke>
 			<s:LinearGradientStroke rotation="90" weight="1">
 				<s:GradientEntry color="0xFFFFFF" alpha.over="0.22" />
@@ -130,7 +150,11 @@
 
 	<!-- layer 6: highlight stroke (down state only) -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="hldownstroke1" bottom="1" left="1" right="1" top="1" radiusX="2" includeIn="down" alpha="0">
+=======
+	<s:Rect id="hldownstroke1" bottom="1" left="1" right="1" top="1" radiusX="2" includeIn="down">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:stroke>
 			<s:LinearGradientStroke rotation="90" weight="1">
 				<s:GradientEntry color="0x000000" alpha="0.25" ratio="0.0" />
@@ -142,7 +166,11 @@
 		</s:stroke>
 	</s:Rect>
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="hldownstroke2" bottom="2" left="2" right="2" top="2" radiusX="2" includeIn="down" alpha="0">
+=======
+	<s:Rect id="hldownstroke2" bottom="2" left="2" right="2" top="2" radiusX="2" includeIn="down">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:stroke>
 			<s:LinearGradientStroke rotation="90" weight="1">
 				<s:GradientEntry color="0x000000" alpha="0.09" ratio="0.0" />
@@ -153,7 +181,11 @@
 
 	<!-- layer 7: border - put on top of the fill so it doesn't disappear when scale is less than 1 -->
 	<!--- @private -->
+<<<<<<< HEAD
 	<s:Rect id="border" width="69" height="20" bottom="0" left="0" right="0" top="0" radiusX="2" alpha="0">
+=======
+	<s:Rect id="border" width="69" height="20" bottom="0" left="0" right="0" top="0" radiusX="2">
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		<s:stroke>
 			<s:LinearGradientStroke rotation="90" weight="1">
 				<s:GradientEntry color="0x000000" alpha="0.5625" alpha.down="0.6375" />

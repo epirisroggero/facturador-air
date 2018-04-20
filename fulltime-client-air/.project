@@ -23,6 +23,7 @@
 		<nature>com.adobe.flexbuilder.project.flexnature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
 	</natures>
+<<<<<<< HEAD
 	<linkedResources>
 		<link>
 			<name>bin-debug</name>
@@ -30,4 +31,6 @@
 			<location>C:/Develop/servers/jboss-4.2.3.GA/server/default/deploy/facturator-server-ear.ear/facturator-server.war/fulltime-client-air-debug</location>
 		</link>
 	</linkedResources>
+=======
+>>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 </projectDescription>

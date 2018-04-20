@@ -1,52 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:VGroup xmlns:controls="com.rphelan.controls.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
-		  width="100%" creationComplete="onCreationComplete()" focusEnabled="false">
+		  width="100%" height="32" creationComplete="onCreationComplete()" focusEnabled="false">
 
 	<fx:Script>
 		<![CDATA[
 			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.conf.Permisos;
-			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.event.MenuEventFT;
 			import biz.fulltime.model.Usuario;
 			
 			import com.rphelan.controls.menuClasses.Accelerator;
 			
+			import flash.net.dns.AAAARecord;
+			
 			import mx.collections.ArrayCollection;
 			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
-			import mx.events.MenuEvent;
-			import mx.rpc.events.FaultEvent;
-			import mx.rpc.events.ResultEvent;
-			import mx.rpc.remoting.RemoteObject;
 
 			[Bindable]
 			public var menuBarCollection:XMLListCollection;
+			
+			[Bindable]
+			public var menuProvider:XML = <menuProvider/>;
+			
+			public var menues:XML = 
+				<menues>
+					<menu label="Ventas" data="top">
+						<menuitem label="Facturación  " data="facturacion" accelerator="F3"/>
+						<menuitem type="separator" />
+						<menuitem label="Artículos    " data="articulos" accelerator="Ctrl+R" />
+						<menuitem label="Clientes     " data="clientes"  accelerator="Ctrl+L" />
+					</menu>
+					<menu label="Compras" data="top">
+						<menuitem label="Solicitudes  " data="solicitudes" accelerator="Ctrl+S"/>
+						<menuitem type="separator" />
+						<menuitem label="Proveedores  " data="proveedores" accelerator="Ctrl+P"/>
+					</menu>
+					<menu label="Gestión" data="top">
+						<menuitem label="Expediciones " data="expediciones" enabled="true" accelerator="F5"/>
+						<menuitem label="Cotizaciones " data="cotizaciones" accelerator="Ctrl+T"/>
+						<menuitem type="separator" />
+						<menuitem label="Reporte de Stock y Precios" data="reporteStockPrecios" accelerator="Ctrl+R" />
+						<menuitem type="separator" />
+						<menuitem label="Deudores" data="deudores-0" enabled="{GeneralOptions.getInstance().loggedUser.permisos.contains(Permisos.DEUDORES)}" accelerator="Ctrl+D"/>
+						<menuitem type="separator" />
+						<menuitem label="Compras Mercadería en Plaza " data="compraMercaderiaPlaza"/>
+					</menu>
+					<menu label="Informes" data="top">
+						<menuitem label="Listado de Control+" data="reporteControl+" enabled="true" />
+						<menuitem label="Listado Liquidación / Cobranza" data="reporteLiquidacion" enabled="true" />
+						<menuitem type="separator" />
+						<menuitem label="Rentas por Comprobante" data="reporteRentas" enabled="true" />
+						<menuitem label="Liquidación Vendedores" data="liquidacionVendedores" enabled="true" />
+						<menuitem label="Liquidación por Vendedor/Cobranza" data="liquidacionVendedorCobranza" enabled="false" />
+					</menu>
+					<menu label="Herramientas " data="top">
+						<menuitem label="Configuración" data="conf-1" enabled="true" />
+						<menuitem label="Refrescar Catálogos" data="refrescarCatalogos" />
+						<menuitem type="separator" />
+						<menuitem label="Rutina Carga Costo" data="rutinaCostos" enabled="true" />
+						<menuitem type="separator" />
+						<menuitem label="Usuarios" data="usuarios" enabled="true" />
+						<menuitem label="Tipos de Entrega" data="tiposEntrega" enabled="true" />
+						<menuitem label="Descuentos Prometidos" data="descPrometidos" enabled="true" />
+						<menuitem type="separator" />
+						<menuitem label="Cambiar de Usuario" data="exit" />
+					</menu>
+					<menu label="Recibos" data="top">
+						<menuitem label="Listado de recibos      " data="recibos" accelerator="F6" enabled="true"/>
+					</menu>
+				</menues>
+				;
+
 
 			// holds all accelerators available in the menu
 			private var _accelerators:ArrayCollection;
 
 			private function onCreationComplete():void {
-				parseAccelerators(menuProvider);
-				
+				//updatePermissions();
+				FlexGlobals.topLevelApplication.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp, false, 0, true);
+			}
+			
+			public function updatePermissions(): void {
 				var user:Usuario = GeneralOptions.getInstance().loggedUser;
-				if (user.permisos) {
-					menuProvider[1].@enabled = user.permisos.contains(Permisos.INFORMES);
-					menuProvider[3].@enabled = user.permisos.contains(Permisos.DEUDORES);
-					menuProvider[4].@enabled = user.permisos.contains(Permisos.RUTINA_CARGA_COSTOS);
-					menuProvider[5].@enabled = user.permisos.contains(Permisos.TABLAS_BASICAS);
-					//menuProvider[6].@enabled = user.permisos.contains(Permisos.EXPEDICIONES);
-					//menuProvider[7].@enabled = user.permisos.contains(Permisos.CONFIGURACIONES);
+				
+				delete menuProvider.menu;
+				
+				for each(var m:XML in menues.menu) {
+					menuProvider.appendChild(m.copy());
 				}
 				
-				FlexGlobals.topLevelApplication.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp, false, 0, true);
+				if (user.permisoId != Usuario.USUARIO_SUPERVISOR) {
+					delete menuProvider.menu[2].menuitem[7];
+					delete menuProvider.menu[2].menuitem[6];
+				}
+					
+				if (!user.permisos.contains(Permisos.DEUDORES)) {
+					delete menuProvider.menu[2].menuitem[5];
+					delete menuProvider.menu[2].menuitem[4];
+				}
+				
+				if (!user.permisos.contains(Permisos.INFORMES)) {
+					delete menuProvider.menu[3].menuitem[4];
+					delete menuProvider.menu[3].menuitem[3];
+					delete menuProvider.menu[3].menuitem[1];
+					delete menuProvider.menu[3].menuitem[0];
+				}
+				
+				if (!user.permisos.contains(Permisos.TABLAS_BASICAS)) {
+					delete menuProvider.menu[4].menuitem[7];
+					delete menuProvider.menu[4].menuitem[6];
+					delete menuProvider.menu[4].menuitem[5];
+					delete menuProvider.menu[4].menuitem[4];
+				}
+				
+				if (!user.permisos.contains(Permisos.RUTINA_CARGA_COSTOS)) {
+					delete menuProvider.menu[4].menuitem[3];
+					delete menuProvider.menu[4].menuitem[2];
+				}
+				
+				if (user.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
+					delete menuProvider.menu[3];
+					delete menuProvider.menu[1]; 	
+				
+				} else if (user.permisoId == Usuario.USUARIO_TITO) {
+					delete menuProvider.menu[3];
+					
+					delete menuProvider.menu[2].menuitem[3];
+					delete menuProvider.menu[2].menuitem[2];
+					delete menuProvider.menu[2].menuitem[1];
+					
+				} else if (user.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES) {
+					delete menuProvider.menu[5];
+					
+					delete menuProvider.menu[3];
+
+					delete menuProvider.menu[2].menuitem[3];
+					delete menuProvider.menu[2].menuitem[2];
+
+					delete menuProvider.menu[1];
+
+				} else if (user.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR) {
+					delete menuProvider.menu[3];
+					
+				} else if (user.permisoId == Usuario.USUARIO_FACTURACION) {
+					delete menuProvider.menu[3];
+				
+				} else if (user.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR) {
+					delete menuProvider.menu[3];
+				}
+				
+
+
+				parseAccelerators(menuProvider.menu);				
+				
 			}
 
 			private function parseAccelerators(xml:XMLList):void {
 				_accelerators = new ArrayCollection();
 
 				for each (var child:XML in xml.menuitem) {
-					if (String(child.@accelerator)) {
+					if (String(child.@accelerator) && child.@enabled[0] != "false") {
 						var item:Accelerator = Accelerator.fromString(child.@accelerator);
 						item.data = String(child.@data);
 						_accelerators.addItem(item);
@@ -60,6 +175,42 @@
 						handleMenuFunction(accelerator.data as String);
 					}
 				}
+				
+				if (event.keyCode == Keyboard.F12) { 
+					if (GeneralOptions.getInstance().opciones.modoMostrador == "true") {
+						GeneralOptions.getInstance().opciones.modoMostrador = "false";
+					} else {
+						GeneralOptions.getInstance().opciones.modoMostrador = "true";
+					}
+					var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Opciones.xml");
+					var newXMLStr:String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" + GeneralOptions.getInstance().opciones.toXMLString();
+					var fs:FileStream = new FileStream();
+					fs.open(file, FileMode.WRITE);
+					fs.writeUTFBytes(newXMLStr);
+					fs.close();
+					
+				} else if (event.keyCode == Keyboard.F11) { 
+					GeneralOptions.getInstance().mostrarPrecioInd = !GeneralOptions.getInstance().mostrarPrecioInd;
+					if (GeneralOptions.getInstance().mostrarPrecioInd) {
+						GeneralOptions.getInstance().mostrarPrecioIndRev = false;
+						GeneralOptions.getInstance().mostrarPrecioIndRevDist = false;
+					}
+					
+ 				} else if (event.keyCode == Keyboard.F10) { 
+					GeneralOptions.getInstance().mostrarPrecioIndRev = !GeneralOptions.getInstance().mostrarPrecioIndRev;
+					if (GeneralOptions.getInstance().mostrarPrecioIndRev) {
+						GeneralOptions.getInstance().mostrarPrecioInd = false;
+						GeneralOptions.getInstance().mostrarPrecioIndRevDist = false;
+					}
+					
+				} else if (event.keyCode == Keyboard.F9) { 
+					GeneralOptions.getInstance().mostrarPrecioIndRevDist = !GeneralOptions.getInstance().mostrarPrecioIndRevDist;
+					if (GeneralOptions.getInstance().mostrarPrecioIndRevDist) {
+						GeneralOptions.getInstance().mostrarPrecioInd = false;
+						GeneralOptions.getInstance().mostrarPrecioIndRev = false;
+					}					
+				}
+
 			}
 
 			// Event handler for the MenuBar control's itemClick event.
@@ -67,85 +218,60 @@
 				if (value == "facturacion") {
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.FACTURACION_EVENT));
 				} else if (value == 'reporteStockPrecios') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_STOCK_PRECIO_EVENT));
-				} else if (value == 'reporteComisiones') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_COMISIONES));
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_STOCK_PRECIO_EVENT));
 				} else if (value == 'reporteControl+') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_CONTROL_MAS));
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_CONTROL_MAS));
 				} else if (value == 'reporteLiquidacion') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION));
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION));
 				} else if (value == 'refrescarCatalogos') {
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REFRESCAR_CATALOGOS_EVENT));
+				} else if (value == 'deudores-0') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_DEUDORES_EVENT));
+				} else if (value == 'expediciones') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXPEDICIONES_EVENT));
+				} else if (value == 'conf-1') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CONFIGURAR_IMPRESORAS_EVENT));
+				} else if (value == 'tiposEntrega') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CRUD_TIPOS_ENTREGA_EVENT));
+				} else if (value == 'rutinaCostos') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.RUTINA_COSTOS_EVENT));
+				} else if (value == 'descPrometidos') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.DESCUENTOS_PROMETIDOS_EVENT));
+				} else if (value == 'contactos') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_CONTACTOS_EVENT));
+				} else if (value == 'recibos') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.RECIBOS_EVENT));
+				} else if (value == 'clientes') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_CLIENTES_EVENT));
+				} else if (value == 'articulos') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_ARTICULOS_EVENT));
+				} else if (value == 'reporteRentas') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_RENTAS_EVENT));
+				} else if (value == 'liquidacionVendedores') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION_VENDEDORES));
+				} else if (value == 'solicitudes') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.SOLICITUDES_EVENT));
+				} else if (value == 'cotizaciones') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.COTIZACIONES));
+				} else if (value == 'compraMercaderiaPlaza') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.COMPRA_MERCADERIA_PLAZA));
+				} else if (value == 'proveedores') {0
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_PROVEEDORES_EVENT));
+				} else if (value == 'usuarios') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_USUARIOS_EVENT));
+				} else if (value == 'reporteVendedores') {
+						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_VENDEDORES_EVENT));
+				} else if (value == 'fanfold') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CRUD_FANFOLD));
 				} else if (value == 'exit') {
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXIT));
-				} else if (value == 'deudores-0') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_DEUDORES_EVENT));
-				} else if (value == 'expediciones') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXPEDICIONES_EVENT));
-				} else if (value == 'conf-1') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CONFIGURAR_IMPRESORAS_EVENT));
-				} else if (value == 'tiposEntrega') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CRUD_TIPOS_ENTREGA_EVENT));
-				} else if (value == 'rutinaCostos') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.RUTINA_COSTOS_EVENT));
-				} else if (value == 'descPrometidos') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.DESCUENTOS_PROMETIDOS_EVENT));
-				} else if (value == 'clientes') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.MOSTRAR_CLIENTES_EVENT));
-				} else if (value == 'reporteRentas') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_RENTAS_EVENT));
-				} else if (value == 'liquidacionVendedores') {
-					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION_VENDEDORES));
-				}
-
+				} 
 
 			}
 		]]>
 	</fx:Script>
 
-	<controls:AcceleratorMenuBar id="menuBar" width="100%" fontSize="12" itemClick="handleMenuFunction(event.item.@data);" labelField="@label" dataProvider="{menuProvider}" focusEnabled="false"/>
-
-	<fx:Declarations>
-
-		<fx:XMLList id="menuProvider">
-			<menu label="Principal" data="top">
-				<menuitem label="Facturación     " data="facturacion" accelerator="F3" />
-				<menuitem type="separator" />
-				<menuitem label="Clientes     " data="clientes"/>
-				<menuitem type="separator" />
-				<menuitem label="Reporte de Stock y Precios" data="reporteStockPrecios" accelerator="Ctrl+R" />
-				<menuitem type="separator" />
-				<menuitem label="Salir" data="exit" />
-			</menu>
-			<menu label="Informes" data="top">
-				<menuitem label="Listado de Control+" data="reporteControl+" enabled="true" />
-				<menuitem label="Listado Liquidación / Cobranza" data="reporteLiquidacion" enabled="true" />
-				<menuitem type="separator" />
-				<menuitem label="Rentas por Comprobante" data="reporteRentas" enabled="true" />
-				<menuitem label="Liquidación Vendedores" data="liquidacionVendedores" enabled="true" />
-			</menu>
-			<menu label="Catálogos" data="top">
-				<menuitem label="Refrescar Catálogos" data="refrescarCatalogos" />
-			</menu>
-			<menu label="Deudores" data="top">
-				<menuitem label="Listado de deudores" data="deudores-0" enabled="true" />
-			</menu>
-			<menu label="Rutinas" data="top">
-				<menuitem label="Rutina Carga Costo" data="rutinaCostos" enabled="true" />
-				<menuitem label="Deuda cliente" data="rutinas-1" enabled="false" />
-				<menuitem label="Deuda cliente método 2" data="rutinas-2" enabled="false" />
-			</menu>
-			<menu label="Tablas Básicas" data="top">
-				<menuitem label="Tipos de Entrega" data="tiposEntrega" enabled="true" />
-				<menuitem label="Descuentos Prometidos" data="descPrometidos" enabled="true" />
-			</menu>
-			<menu label="Expediciones" data="top">
-				<menuitem label="Expediciones" data="expediciones" enabled="true" accelerator="F5"/>
-			</menu>
-			<menu label="Configuración" data="top">
-				<menuitem label="Preferencias" data="conf-1" enabled="true" />
-			</menu>
- 		</fx:XMLList>
-	</fx:Declarations>
+	<controls:AcceleratorMenuBar id="menuBar" width="100%" height="30" fontSize="12" itemClick="handleMenuFunction(event.item.@data)" labelField="@label" dataProvider="{menuProvider.menu}" 
+								 focusEnabled="false"/>
 
 </s:VGroup>

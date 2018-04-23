@@ -8,17 +8,13 @@
 		<![CDATA[
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.event.AbrirFacturaEvent;
-<<<<<<< HEAD
 			import biz.fulltime.event.ClienteEvent;
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			import biz.fulltime.event.ExportToCSVEvent;
 			import biz.fulltime.event.ExportToExcelEvent;
 			import biz.fulltime.event.ExportToPDFEvent;
 			import biz.fulltime.event.MenuEventFT;
 			import biz.fulltime.model.CotizacionesModel;
 			import biz.fulltime.model.Documento;
-<<<<<<< HEAD
 			import biz.fulltime.ui.articulos.ArticuloEditor;
 			import biz.fulltime.ui.components.EditarComprobanteDescuentos;
 			import biz.fulltime.ui.configure.FrmOpciones;
@@ -31,14 +27,6 @@
 			import biz.fulltime.ui.facturacion.FacturacionPnl;
 			import biz.fulltime.ui.facturacion.LstComprasPlazaPnl;
 			import biz.fulltime.ui.facturacion.LstCotizacionesPnl;
-=======
-			import biz.fulltime.ui.components.EditarComprobanteDescuentos;
-			import biz.fulltime.ui.configure.FrmOpciones;
-			import biz.fulltime.ui.crud.tipoEntrega.TipoEntrega;
-			import biz.fulltime.ui.deudores.ListadoDeudores;
-			import biz.fulltime.ui.expediciones.FrmExpediciones;
-			import biz.fulltime.ui.facturacion.FacturacionPnl;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			import biz.fulltime.ui.facturacion.LstFacturasPnl;
 			import biz.fulltime.ui.facturacion.reportes.FrmCobranzas;
 			import biz.fulltime.ui.facturacion.reportes.FrmLiquidacion;
@@ -47,7 +35,6 @@
 			import biz.fulltime.ui.facturacion.reportes.FrmRentaComprobantes;
 			import biz.fulltime.ui.facturacion.reportes.FrmRutinaCostos;
 			import biz.fulltime.ui.facturacion.stockprecio.FrmStockPrecio;
-<<<<<<< HEAD
 			import biz.fulltime.ui.personas.ClienteEditor;
 			import biz.fulltime.ui.proveedores.ProveedoresEditor;
 			import biz.fulltime.ui.recibos.LstRecibosPnl;
@@ -56,13 +43,6 @@
 			
 			import mx.core.FlexGlobals;
 			import mx.core.IFlexDisplayObject;
-=======
-			import biz.fulltime.ui.personas.PersonaEditor;
-			
-			import mx.core.FlexGlobals;
-			import mx.core.IFlexDisplayObject;
-			import mx.core.INavigatorContent;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
@@ -78,13 +58,10 @@
 			[Bindable]
 			private var _selectedIndex:Number = 0;
 
-<<<<<<< HEAD
 			[Bindable]
 			private var _maximized:Boolean;
 
 			
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private var wndDialog:TitleWindow;
 			
 
@@ -102,7 +79,6 @@
 					}
 				}
 				return encontre;
-<<<<<<< HEAD
 			}
 
 			private function closeElement(name:String):void {
@@ -116,11 +92,6 @@
 				
 			}
 			
-=======
-				
-			}
-
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private function menuChanged(event:MenuEventFT):void {
 				if (event.navigate == MenuEventFT.FACTURACION_EVENT) {
 					currentState = "running";
@@ -130,11 +101,8 @@
 
 						if (!encontre) {
 							var lstFacturasPnl:LstFacturasPnl = new LstFacturasPnl();
-<<<<<<< HEAD
 							lstFacturasPnl.modoSolicitud = false; 
 							lstFacturasPnl.addEventListener(ExportToPDFEvent.EXPORT_TO_PDF, exportToPDF);
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 							
 							var navContext:NavigatorContent = new NavigatorContent();
 							navContext.id = "factura";
@@ -150,7 +118,6 @@
 						}
 					});
 					
-<<<<<<< HEAD
 				} else if (event.navigate == MenuEventFT.RECIBOS_EVENT) {
 					currentState = "running";
 
@@ -202,8 +169,6 @@
 						}
 					});
 					
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					
 				} else if (event.navigate == MenuEventFT.EXPEDICIONES_EVENT) {
 					currentState = "running";
@@ -261,11 +226,7 @@
 					callLater(function():void {
 						var encontre:Boolean = searchElement("clientes");
 						if (!encontre) {
-<<<<<<< HEAD
 							var pnlClientes:ClienteEditor = new ClienteEditor();
-=======
-							var pnlClientes:PersonaEditor = new PersonaEditor();
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 							
 							pnlClientes.addEventListener(ExportToExcelEvent.EXPORT_TO_EXCEL, exportToExcel);
 
@@ -283,7 +244,6 @@
 							callLater(function() : void {
 								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
 								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
-<<<<<<< HEAD
 							});
 							
 							pnlClientes.addEventListener(ClienteEvent.CREAR_COTIZACION_CLIENTE, function(evt:ClienteEvent):void { 
@@ -402,8 +362,6 @@
 							callLater(function() : void {
 								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
 								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 							});							
 						}					
 					});
@@ -442,11 +400,7 @@
 							var pnlRentas:FrmRentaComprobantes = new FrmRentaComprobantes();
 							
 							var navContext:NavigatorContent = new NavigatorContent();
-<<<<<<< HEAD
 							navContext.label = "Rentas por comprobante";
-=======
-							navContext.label = "Rentas por Comprobante";
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 							navContext.id = "rentas"; 
 							navContext.addElement(pnlRentas);
 							
@@ -530,7 +484,6 @@
 						}
 					});
 					
-<<<<<<< HEAD
 				} else if (event.navigate == MenuEventFT.COMPRA_MERCADERIA_PLAZA) {
 					currentState = "running";
 					
@@ -587,15 +540,10 @@
 					
 				} else if (event.navigate == MenuEventFT.CONFIGURAR_IMPRESORAS_EVENT) {
 					configuraciones();
-=======
-				} else if (event.navigate == MenuEventFT.CONFIGURAR_IMPRESORAS_EVENT) {
-					configurarImpresoras();
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				} else if (event.navigate == MenuEventFT.REFRESCAR_CATALOGOS_EVENT) {
 					CatalogoFactory.getInstance().loadAllCatalogs();
 				} else if (event.navigate == MenuEventFT.CRUD_TIPOS_ENTREGA_EVENT) {
 					showCRUDTiposEntrega();
-<<<<<<< HEAD
 				} else if (event.navigate == MenuEventFT.CRUD_FANFOLD) {
 					showCRUDFanfold();
 				} else if (event.navigate == MenuEventFT.MOSTRAR_USUARIOS_EVENT) {
@@ -606,16 +554,10 @@
 					if (myViewStack) {
 						myViewStack.removeAllElements();
 					}					
-=======
-				} else if (event.navigate == MenuEventFT.DESCUENTOS_PROMETIDOS_EVENT) {
-					showEditarDescuentosPrometidos();
-				} else if (event.navigate == MenuEventFT.EXIT) {
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					currentState = "empty"; 
 					dispatchEvent(new Event("_logout"));
 				} else if (event.navigate == MenuEventFT.RUTINA_COSTOS_EVENT) {
 					showRutinaCostos();
-<<<<<<< HEAD
 				} else if (event.navigate == MenuEventFT.MOSTRAR_PROVEEDORES_EVENT) {
 					currentState = "running";
 					
@@ -678,21 +620,6 @@
 					var frmEditarComprobanteDescuentos:EditarComprobanteDescuentos = new EditarComprobanteDescuentos();
 					
 					PopUpManager.addPopUp(wndDialog, this, true);
-=======
-				} 
-			}
-			
-			private function showEditarDescuentosPrometidos():void {
-				if (wndDialog == null) {
-					wndDialog = new TitleWindow();
-					wndDialog.title = "Descuentos";
-					wndDialog.width = 640;
-					wndDialog.height = 560;
-					
-					var frmEditarComprobanteDescuentos:EditarComprobanteDescuentos = new EditarComprobanteDescuentos();
-					
-					PopUpManager.addPopUp(wndDialog, this, false);
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					PopUpManager.centerPopUp(wndDialog);
 					
 					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
@@ -706,7 +633,6 @@
 			private function showCRUDTiposEntrega():void {
 				if (wndDialog == null) {
 					wndDialog = new TitleWindow();
-<<<<<<< HEAD
 					wndDialog.title = "Tipos de entrega";
 					wndDialog.width = 800;
 					wndDialog.height = 600;
@@ -714,15 +640,6 @@
 					var frmTiposEntrega:FrmTipoEntrega = new FrmTipoEntrega();
 					
 					PopUpManager.addPopUp(wndDialog, this, true);
-=======
-					wndDialog.title = "Tipos de Entrega";
-					wndDialog.width = 600;
-					wndDialog.height = 440;
-					
-					var frmTiposEntrega:TipoEntrega = new TipoEntrega();
-					
-					PopUpManager.addPopUp(wndDialog, this, false);
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					PopUpManager.centerPopUp(wndDialog);
 					
 					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
@@ -732,7 +649,6 @@
 				}
 			}
 			
-<<<<<<< HEAD
 			private function showCRUDFanfold():void {
 				if (wndDialog == null) {
 					wndDialog = new TitleWindow();
@@ -773,8 +689,6 @@
 			}
 
 			
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private function showListaDeControlMas():void {
 				if (wndDialog == null) {
 					wndDialog = new TitleWindow();
@@ -833,29 +747,6 @@
 				}
 			}
 			
-<<<<<<< HEAD
-=======
-			/*private function showReporteLiquidacion():void {
-				if (wndDialog == null) {
-					wndDialog = new TitleWindow();
-					wndDialog.title = "Reporte Liquidación";
-					wndDialog.width = 440;
-					wndDialog.height = 480;
-					
-					var frmComisiones:FrmLiquidacion = new FrmLiquidacion();
-					frmComisiones.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
-					
-					PopUpManager.addPopUp(wndDialog, this, false);
-					PopUpManager.centerPopUp(wndDialog);
-					
-					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
-					frmComisiones.addEventListener(CloseEvent.CLOSE, closeHandler);
-					
-					wndDialog.addElement(frmComisiones);
-				}
-			}*/
-			
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			
 			private function showReportStockPrecio():void {				
 				if (wndDialog == null) {
@@ -887,21 +778,12 @@
 			}
 			
 			
-<<<<<<< HEAD
 			private function configuraciones():void {
 				if (wndDialog == null) {
 					wndDialog = new TitleWindow();
 					wndDialog.title = "Configuración";
 					wndDialog.width = 600;
 					wndDialog.height = 520;
-=======
-			private function configurarImpresoras():void {
-				if (wndDialog == null) {
-					wndDialog = new TitleWindow();
-					wndDialog.title = "Configuración";
-					wndDialog.width = 500;
-					wndDialog.height = 480;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					
 					var frmImpresoras:FrmOpciones = new FrmOpciones();
 					
@@ -923,13 +805,8 @@
 				remObjLocal.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
 					var facWindow:TitleWindow = new TitleWindow();
 					facWindow.title = "Factura";
-<<<<<<< HEAD
 					facWindow.width = 1120;
 					facWindow.height = 718;
-=======
-					facWindow.width = 1024;
-					facWindow.height = 640;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					
 					facWindow.addEventListener(CloseEvent.CLOSE, closeHandler2);
 					
@@ -948,13 +825,7 @@
 					PopUpManager.centerPopUp(facWindow);
 					
 					facWindow.addElement(frmFactura);
-<<<<<<< HEAD
 				});
-=======
-					//facWindow.closeButton.visible = false;
-				});
-				//remObj.addEventListener(FaultEvent.FAULT, onFault);
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				
 				remObjLocal.getDocumento(docId);
 				
@@ -968,7 +839,6 @@
 
 			protected function creationCompleteHandler(event:FlexEvent):void {
 				currentState = "empty";
-<<<<<<< HEAD
 				
 				stage.addEventListener(FullScreenEvent.FULL_SCREEN, function(event:FullScreenEvent):void {
 					if (event.fullScreen) {
@@ -978,8 +848,6 @@
 					}
 				});
 
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			}
 			
 			private function exportToExcel(evt:ExportToExcelEvent):void {
@@ -987,19 +855,11 @@
 			}
 			
 			private function exportToPDF(evt:ExportToPDFEvent):void {
-<<<<<<< HEAD
 				//dispatchEvent(new ExportToPDFEvent(ExportToPDFEvent.EXPORT_TO_PDF, evt.pdf));
 			}
 			
 			private function exportToCSV(evt:ExportToCSVEvent):void {
 				//dispatchEvent(new ExportToCSVEvent(ExportToCSVEvent.EXPORT_TO_CSV, evt.byteArray, evt.fileName));
-=======
-				dispatchEvent(new ExportToPDFEvent(ExportToPDFEvent.EXPORT_TO_PDF, evt.pdf));
-			}
-			
-			private function exportToCSV(evt:ExportToCSVEvent):void {
-				dispatchEvent(new ExportToCSVEvent(ExportToCSVEvent.EXPORT_TO_CSV, evt.byteArray, evt.fileName));
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			}
 			
 		]]>
@@ -1009,56 +869,32 @@
 		<s:State name="running"/>
 	</s:states>
 
-<<<<<<< HEAD
 	<s:Rect x="0" y="19" width="18" height="100%" visible="{!_maximized}" includeInLayout="{!_maximized}">
 		<s:stroke>
 			<s:LinearGradientStroke weight="1" >
 				<s:GradientEntry color="0xD8D8D8" />
-=======
-	<s:Rect x="0" y="19" width="18" height="100%">
-		<s:stroke>
-			<s:LinearGradientStroke weight="1">
-				<s:GradientEntry color="0xFFFFFF" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				<s:GradientEntry color="0xD8D8D8" />
 			</s:LinearGradientStroke>
 		</s:stroke>
 	</s:Rect>
 
 	<!-- layer 2: control bar fill -->
-<<<<<<< HEAD
 	<s:Rect x="0" y="19" width="18" height="100%" visible="{!_maximized}" includeInLayout="{!_maximized}">
 		<s:fill>
 			<s:LinearGradient>
 				<s:GradientEntry color="0xEDEDED" />
 				<s:GradientEntry color="0xEDEDED" />
-=======
-	<s:Rect x="0" y="19" width="18" height="100%">
-		<s:fill>
-			<s:LinearGradient>
-				<s:GradientEntry color="0xEDEDED" />
-				<s:GradientEntry color="0xCDCDCD" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			</s:LinearGradient>
 		</s:fill>
 	</s:Rect>
 
 	<s:VGroup id="mainPnl" width="100%" height="100%" gap="0">
-<<<<<<< HEAD
 		<ui1:MainMenuBar id="mainMenuBar" fontSize="14" creationComplete="init()" visible="{!_maximized}" includeInLayout="{!_maximized}"/>
 		<s:BorderContainer width="100%" backgroundColor="#F0F0F0"  includeIn="running" minHeight="28" borderAlpha="0" visible="{!_maximized}" includeInLayout="{!_maximized}">
 			<s:layout>
 				<s:VerticalLayout verticalAlign="bottom" paddingLeft="16"/>
 			</s:layout>
 			<tabBar:MyTabBar id="myTabBar" dataProvider="{myViewStack}" requireSelection="true"/>	
-=======
-		<ui1:MainMenuBar id="mainMenuBar" fontWeight="bold" creationComplete="init();" />
-		<s:BorderContainer width="100%" backgroundColor="#FCFCFC"  includeIn="running" minHeight="28" backgroundAlpha=".6" borderAlpha="0">
-			<s:layout>
-				<s:VerticalLayout verticalAlign="bottom" paddingLeft="16"/>
-			</s:layout>
-			<tabBar:MyTabBar id="myTabBar" dataProvider="{myViewStack}" requireSelection="true" />	
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		</s:BorderContainer>		
 		
 		<s:Group width="100%" height="100%">

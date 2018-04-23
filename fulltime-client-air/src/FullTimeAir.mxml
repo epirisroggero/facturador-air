@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
-<<<<<<< HEAD
 					   xmlns:s="library://ns.adobe.com/flex/spark" xmlns:ui="biz.fulltime.ui.*" applicationComplete="windowedapplication1_applicationCompleteHandler(event)"
 					   creationComplete="application1_creationCompleteHandler(event)" initialize="initializeThemeData()" minWidth="720"
 					   minHeight="600" width="1360" height="720" title="{version}" closing="windowedapplication1_closingHandler(event)">
-=======
-					   xmlns:s="library://ns.adobe.com/flex/spark" xmlns:ui="biz.fulltime.ui.*"
-					   creationComplete="application1_creationCompleteHandler(event)" initialize="initializeThemeData()" minWidth="1024"
-					   minHeight="670" title="{version}" close="saveXML()" closing="windowedapplication1_closingHandler(event)">
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 
 	<fx:Style source="facturador.css" />
 
 	<fx:Script>
 		<![CDATA[
-<<<<<<< HEAD
 			import air.update.ApplicationUpdaterUI;
 			import air.update.events.DownloadErrorEvent;
 			import air.update.events.StatusFileUpdateEvent;
@@ -30,34 +23,17 @@
 			
 			import flash.system.fscommand;
 			
-=======
-			import biz.fulltime.conf.GeneralOptions;
-			import biz.fulltime.event.ExportToCSVEvent;
-			import biz.fulltime.event.ExportToExcelEvent;
-			import biz.fulltime.event.ExportToPDFEvent;
-			import biz.fulltime.model.CotizacionesModel;
-			import biz.fulltime.model.Usuario;
-			import biz.fulltime.ui.forms.FrmCotizaciones;
-			
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			import mx.controls.Alert;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.formatters.DateFormatter;
 			import mx.managers.PopUpManager;
-<<<<<<< HEAD
 			import mx.rpc.remoting.RemoteObject;
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			
 			import org.alivepdf.pdf.PDF;
 			import org.alivepdf.saving.Method;
 			
-<<<<<<< HEAD
-=======
-			import spark.components.Application;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			import spark.components.TitleWindow;
 			
 			import util.CatalogoFactory;
@@ -68,19 +44,11 @@
 			private var stream:FileStream;
 			
 			[Embed(source="assets/alerts/Info.png")] 
-<<<<<<< HEAD
-=======
-			
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			[Bindable]
 			public var iconSymbol:Class; 
 			
 			[Bindable]
-<<<<<<< HEAD
-			public var version:String = "FullTime - Facturador v1.6.501";
-=======
-			public var version:String = "FullTime - Facturador v1.5.001";
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
+			public var version:String = "FullTime - Facturador v1.6.502";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);
@@ -99,7 +67,6 @@
 				loadOpciones();
 			}
 			
-<<<<<<< HEAD
 			private function onError(event:ErrorEvent):void {
 				Alert.show(event.toString(), "Error");	
 			}
@@ -108,8 +75,6 @@
 				Alert.show("Status available:: " + event.available);	
 			}
 			
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private function loadOpciones():void {
 				var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Opciones.xml");
 				if (file.exists) {
@@ -132,20 +97,6 @@
 
 			}
 
-<<<<<<< HEAD
-=======
-			private function saveXML():void {
-				var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Cotizaciones.xml");
-
-				var newXMLStr:String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" + CotizacionesModel.getInstance().cotizaciones.toXMLString();
-				var fs:FileStream = new FileStream();
-				fs.open(file, FileMode.WRITE);
-				fs.writeUTFBytes(newXMLStr);
-				fs.close();
-			}
-
-
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private function loggedHandler(event:Event):void {
 				currentState = 'logged';
 				
@@ -154,30 +105,20 @@
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
 				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
 					permiso = "Supervisor";
-<<<<<<< HEAD
 				} else if (loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 					permiso = "Facturación";
 				} else if (loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
 					permiso = "Administrador";
 				} else if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
 					permiso = "Taller y mantenimiento";
-=======
-				} else if (loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
-					permiso = "Administrador";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
-					permiso = "Tito";
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR) {
 					permiso = "Vendedor Senior";
 				} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
 					permiso = "Vendedor Distribuidor";
 				} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR) {
 					permiso = "Vendedor Junior";
-<<<<<<< HEAD
 				} else if (loggedUser.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES) {
 					permiso = "Aliado Comercial";
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				}
 				
 				this.title = version + " [Usuario: " + GeneralOptions.getInstance().loggedUser.nombre + "]" + 
@@ -196,13 +137,10 @@
 				helpWindow.addElement(frmCotizaciones);
 				
 				CatalogoFactory.getInstance().loadAllCatalogs();
-<<<<<<< HEAD
 				
 				if (pnlMain.mainMenuBar) {
 					pnlMain.mainMenuBar.updatePermissions();
 				}
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 
 				// Hide the close button.
 				helpWindow.closeButton.visible = false;
@@ -214,10 +152,7 @@
 				pnlMain.addEventListener(ExportToCSVEvent.EXPORT_TO_CSV, exportToCSV);
 				pnlMain.addEventListener(ExportToExcelEvent.EXPORT_TO_EXCEL, exportToExcel);
 				pnlMain.addEventListener(ExportToPDFEvent.EXPORT_TO_PDF, exportToPDF);
-<<<<<<< HEAD
 				pnlMain.addEventListener(ExportToPDFEvent.CREATE_EFACTURA, createEFactura);
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				
 				GeneralOptions.getInstance().cargarArticulosServicio();
 			}
@@ -227,11 +162,8 @@
 				currentState = 'login';
 				
 				callLater(function():void {
-<<<<<<< HEAD
 					pnlLogin.logout();
 					
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					pnlLogin.tiPwd.text = "";
 					pnlLogin.tiPwd.setFocus();
 				});
@@ -246,25 +178,16 @@
 				Alert.buttonWidth = 60;
 				
 				var alert:Alert = Alert.show("¿Esta seguro de cerrar el Facturador?", "Salir", Alert.YES + Alert.NO, null, myCloseHandler, iconSymbol);
-<<<<<<< HEAD
 				alert.width = 400;
 				alert.height = 200;
-=======
-				alert.width = 340;
-				alert.height = 180
-			
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				
 			}
 						
 			private function myCloseHandler(evt:CloseEvent):void {
 				if (evt.detail == Alert.YES) {
 					NativeApplication.nativeApplication.exit();
-<<<<<<< HEAD
 					
 					fscommand("quit");
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				}
 			}
 			
@@ -327,16 +250,12 @@
 					
 					file.openWithDefaultApplication();
 				} catch (e:Error) {
-<<<<<<< HEAD
 					trace(e.message);
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					trace("Problemas con el archivo a abrir.");
 				}				
 				
 			}
 			
-<<<<<<< HEAD
 			private function createEFactura(event:ExportToPDFEvent):void {
 				var efactura:EFacturaResult = event.eFactura;
 				
@@ -368,11 +287,6 @@
 			private function exportToPDF(event:ExportToPDFEvent):void {
 				var myPDF:PDF = event.pdf;
 		
-=======
-			private function exportToPDF(event:ExportToPDFEvent):void {
-				var myPDF:PDF = event.pdf;
-				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				var fechaHoy:Date = new Date();
 				
 				var dateFormatter:DateFormatter = new DateFormatter();
@@ -421,7 +335,6 @@
 				}
 				return result;
 			}
-<<<<<<< HEAD
 			
 			public var appUpdater:ApplicationUpdaterUI;
 			
@@ -446,10 +359,6 @@
 				});
 				
 			}
-=======
-
-
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			
 		]]>
 	</fx:Script>
@@ -459,10 +368,6 @@
 		<s:State name="logged" />
 	</s:states>
 
-<<<<<<< HEAD
 	<ui:LoginPnl id="pnlLogin" width="100%" height="100%" includeIn="login" creationComplete="pnlLogin_creationCompleteHandler(event)"/>
-=======
-	<ui:LoginPnl id="pnlLogin" width="100%" height="100%" includeIn="login" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 	<ui:MainApp id="pnlMain" width="100%" height="100%" creationComplete="pnlMain_creationCompleteHandler(event)" includeIn="logged" />
 </s:WindowedApplication>

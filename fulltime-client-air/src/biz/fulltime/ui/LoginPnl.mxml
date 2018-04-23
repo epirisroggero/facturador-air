@@ -34,11 +34,7 @@
 
 			[Bindable]
 			private var _usuarioAsignado:Usuario;
-<<<<<<< HEAD
  
-=======
-
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			[Bindable]
 			private var enabledButtons:Boolean = false;
 
@@ -50,13 +46,8 @@
 			private var _configuracion:XML =
 				<configuracion>
 					<server>
-<<<<<<< HEAD
 						<host>fulltime2.dyndns.org</host>
 						<port>8180</port>
-=======
-						<host>localhost</host>
-						<port>8080</port>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					</server>
 				</configuracion>
 				;
@@ -66,11 +57,7 @@
 			private var _configuracionChanged:Boolean;
 
 			private var lastConnectedUserLoadded:Boolean;
-<<<<<<< HEAD
 			
-=======
-
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private var lastConnectedUser:String;
 
 			private function loadLastConnectedUser():void {
@@ -89,10 +76,7 @@
 					if (startIndex >= 0 && endIndex >= 0) {
 						lastConnectedUser = str.substring(startIndex + 1, endIndex);
 					}
-<<<<<<< HEAD
 					
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				}
 			}
 
@@ -103,21 +87,11 @@
 					tiUsr.dataProvider = GeneralOptions.getInstance().usuarios;
 
 					loadLastConnectedUser();
-<<<<<<< HEAD
 					lastConnectedUserLoadded = true;
 					invalidateProperties();
 					enabledButtons = true;
 				});
 				
-=======
-
-					lastConnectedUserLoadded = true;
-
-					invalidateProperties();
-
-					enabledButtons = true;
-				});
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			}
 
 			override protected function commitProperties():void {
@@ -140,34 +114,24 @@
 							}
 						}
 					}
-<<<<<<< HEAD
 				}				
 
-=======
-				}
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			}
 
 			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
 				tiUsr.setFocus();
 			}
-<<<<<<< HEAD
 			
 			public function logout():void {
 				remObjLogin.logout();
 			}
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 
 			protected function loginButton_clickHandler(event:Event):void {
 				enabledButtons = false;
 
 				remObjLogin.channelSet = ServerConfig.getInstance().channelSet;
 				_usuarioAsignado = tiUsr.selectedItem as Usuario;
-<<<<<<< HEAD
 				
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				var codigo:String = _usuarioAsignado ? _usuarioAsignado.codigo : ""; 
 
 				var future:AsyncToken = remObjLogin.channelSet.login(codigo, tiPwd.text);
@@ -201,11 +165,7 @@
 				if (helpWindow == null) {
 					helpWindow = new TitleWindow();
 					helpWindow.width = 350;
-<<<<<<< HEAD
 					helpWindow.height = 200;
-=======
-					helpWindow.height = 240;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					helpWindow.title = "Configuración";
 					helpWindow.visible = true;
 
@@ -229,7 +189,6 @@
 				helpWindow = null;
 			}
 
-<<<<<<< HEAD
 			[Bindable]
 			private var error_visible:Boolean;
 			
@@ -237,8 +196,6 @@
 			private var error_text:String;
 
 			
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			private function loadConfiguracion():void {
 				var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Configuracion.xml");
 				if (file.exists) {
@@ -259,27 +216,16 @@
 					invalidateProperties();
 
 				} else {
-<<<<<<< HEAD
 					saveConfiguracion(null);
-=======
-					lblError.visible = true;
-					lblError.text = "Debe Configurar el servidor."
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				}
 			}
 
 			private function saveConfiguracion(event:Event):void {
-<<<<<<< HEAD
 				if (helpWindow) {
 					helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
 					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 					helpWindow = null;
 				}
-=======
-				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandler);
-				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-				helpWindow = null;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 
 				var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Configuracion.xml");
 
@@ -297,13 +243,9 @@
 
 				invalidateProperties();
 
-<<<<<<< HEAD
 				if (lblError) {
 					lblError.visible = false;
 				}
-=======
-				lblError.visible = false;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			}
 
 			public function handleFault(event:FaultEvent):void {
@@ -321,7 +263,6 @@
 					remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 						var user:Usuario = evt.result as Usuario;
 
-<<<<<<< HEAD
 						GeneralOptions.getInstance().cargarLocalesComerciales();
 						GeneralOptions.getInstance().loggedUser = user;
 
@@ -329,11 +270,6 @@
 						
 //						GeneralOptions.getInstance().cajaSeleccionada = _cajaAsignada;
 						
-=======
-						GeneralOptions.getInstance().loggedUser = user;
-						_model.user = user;
-						
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 						CotizacionesModel.getInstance().loadCotizacionesMonedas();
 						
 						lblError.visible = false;
@@ -345,11 +281,7 @@
 
 					// Guardar último usuario conectado
 					var file:File = File.applicationStorageDirectory.resolvePath("FullTime/user.properties");
-<<<<<<< HEAD
 					var newStr:String = "codigo:" + _usuarioAsignado.codigo + ";" + "\ncaja:" + "1" + ";";
-=======
-					var newStr:String = "codigo:" + _usuarioAsignado.codigo + ";";
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					var fs:FileStream = new FileStream();
 					fs.open(file, FileMode.WRITE);
 					fs.writeUTFBytes(newStr);
@@ -395,7 +327,6 @@
 				}
 				return label;
 			}
-<<<<<<< HEAD
 						
 			protected function tiLocalComercial_changeHandler(event:Event):void {
 				invalidateProperties();
@@ -409,8 +340,6 @@
 				
 			}
 			
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 		]]>
 	</fx:Script>
 
@@ -424,7 +353,6 @@
 	</fx:Declarations>
 
 	<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="top">
-<<<<<<< HEAD
 		<mx:Image id="loader1" source="@Embed(source='assets/logo/logo_oscuro.gif')" scaleX=".75" scaleY=".75" />
 	</s:HGroup>
 
@@ -436,19 +364,6 @@
 						<mx:GradientEntry color="0xC5C5C5" ratio="0.0" alpha="0.3" />
 						<mx:GradientEntry color="0xC5C5C5" ratio="0.6" alpha="0.2" />
 						<mx:GradientEntry color="0xECECEC" ratio="1.0" alpha="0.4" />
-=======
-		<mx:Image id="loader1" source="@Embed(source='assets/logo/logo_oscuro.gif')" />
-	</s:HGroup>
-
-	<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="75" verticalAlign="middle">
-		<s:BorderContainer width="300" borderColor="#C5C5C5" borderStyle="inset" cornerRadius="10" dropShadowVisible="true">
-			<s:backgroundFill>
-				<mx:LinearGradient rotation="90">
-					<mx:entries>
-						<mx:GradientEntry color="0xC5C5C5" ratio="0.00" alpha="0.5" />
-						<mx:GradientEntry color="0xFEFEFE" ratio="0.33" alpha="0.5" />
-						<mx:GradientEntry color="0xECECEC" ratio="0.66" alpha="0.5" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					</mx:entries>
 				</mx:LinearGradient>
 			</s:backgroundFill>
@@ -456,23 +371,15 @@
 				<s:VerticalLayout horizontalAlign="center" paddingBottom="20" paddingLeft="30" paddingRight="30" paddingTop="30" verticalAlign="middle" />
 			</s:layout>
 
-<<<<<<< HEAD
 			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
 				<s:Label text="Usuario" width="80" styleName="myLabel" />
 				<components:MyAutoComplete id="tiUsr" width="100%" textAlign="left" change="tiUsr_changeHandler(event)" dataProvider="{ GeneralOptions.getInstance().usuarios }"
 										   labelField="nombre" matchType="anyPart" prompt="Ingrese Usuario" allowNewValues="false"
-=======
-			<s:VGroup width="100%" horizontalAlign="left" gap="2">
-				<s:Label text="Usuario" styleName="myLabel" />
-				<components:MyAutoComplete id="tiUsr" width="100%" textAlign="left" change="tiUsr_changeHandler(event)" dataProvider="{ GeneralOptions.getInstance().usuarios }"
-										   labelField="nombre" matchType="anyPart" prompt="Ingrese Usuario" allowNewValues="true"
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 										   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" enabled="{enabledButtons}"
 										   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownRowCount="10" next_focus="{tiPwd}" />
 
 
-<<<<<<< HEAD
 			</s:HGroup>
 			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
 				<s:Label text="Contraseña" width="80" styleName="myLabel" />
@@ -482,16 +389,6 @@
 			<s:HGroup width="100%" horizontalAlign="center">
 				<s:Label id="lblError" color="#CD0000" visible="{error_visible}" text="{error_text}" styleName="myLabel" maxDisplayedLines="2" />
 			</s:HGroup>
-=======
-			</s:VGroup>
-			<mx:Spacer height="5" />
-			<s:VGroup width="100%" horizontalAlign="left" gap="2">
-				<s:Label text="Contraseña" styleName="myLabel" />
-				<s:TextInput id="tiPwd" width="100%" keyDown="tiPwd_keyDownHandler(event)" displayAsPassword="true" text="" maxChars="16" enabled="{enabledButtons}" focusEnabled="true"/>
-			</s:VGroup>
-			<mx:Spacer height="10" />
-			<s:Label id="lblError" width="100%" color="#CD0000" fontSize="10" visible="false" text="Usuario o Contraseña inválida." styleName="myLabel" maxDisplayedLines="2" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 
 			<s:HGroup width="100%" horizontalAlign="center" paddingTop="10">
 				<s:Button id="loginButton" click="loginButton_clickHandler(event)" label="Ingresar" enabled="{enabledButtons &amp;&amp; _configuracion != null}"
@@ -499,13 +396,9 @@
 			</s:HGroup>
 		</s:BorderContainer>
 
-<<<<<<< HEAD
 		<s:HGroup width="440" horizontalAlign="right" paddingTop="10">
 			<mx:LinkButton click="linkbutton2_clickHandler(event)" label="Buscar actualizaciones" />
 			<s:Spacer width="100%" />
-=======
-		<s:HGroup width="230" horizontalAlign="right" paddingTop="10">
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			<mx:LinkButton icon="{configIcon}" click="linkbutton1_clickHandler(event)" label="Configuración" />
 		</s:HGroup>
 	</s:VGroup>

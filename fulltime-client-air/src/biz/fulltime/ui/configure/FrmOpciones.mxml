@@ -9,7 +9,6 @@
 			import biz.fulltime.dto.CodigoNombre;
 			import biz.fulltime.model.CotizacionesMonedas;
 			import biz.fulltime.model.Deposito;
-<<<<<<< HEAD
 			import biz.fulltime.model.Fanfold;
 			import biz.fulltime.model.ParametrosAdministracion;
 			import biz.fulltime.model.PreciosVenta;
@@ -17,20 +16,12 @@
 
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
-=======
-			import biz.fulltime.model.ParametrosAdministracion;
-			import biz.fulltime.model.PreciosVenta;
-			import biz.fulltime.model.Usuario;
-			
-			import mx.collections.ArrayCollection;
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			import mx.events.CalendarLayoutChangeEvent;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.remoting.RemoteObject;
-<<<<<<< HEAD
 			import mx.validators.Validator;
 
 			import util.CatalogoFactory;
@@ -42,17 +33,6 @@
 			[Bindable]
 			private var prnFacturacion:String;
 
-=======
-			
-			import util.CatalogoFactory;
-
-			[Bindable]
-			private var arrPrinters:ArrayCollection;
-			
-			[Bindable]
-			private var prnFacturacion:String;
-			
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			[Bindable]
 			private var prnRemitos:String;
 
@@ -61,7 +41,6 @@
 
 			[Bindable]
 			private var prnOtros:String;
-<<<<<<< HEAD
 
 			[Bindable]
 			private var fanfoldF:Fanfold;
@@ -143,18 +122,6 @@
 
 				}
 
-=======
-			
-			[Bindable]
-			private var modoMostrador:Boolean;
-			
-			[Bindable]
-			private var envioAutMail:Boolean;
-
-			private var remObjCotizaciones:RemoteObject;
-			
-			protected function cmdGuardar_clickHandler(event:MouseEvent):void {
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				if (ddlFacturacion) {
 					GeneralOptions.getInstance().opciones.impresoras.facturacion = ddlFacturacion.selectedItem;
 				}
@@ -167,17 +134,12 @@
 				if (ddlNotasEnvio) {
 					GeneralOptions.getInstance().opciones.impresoras.notasEnvio = ddlNotasEnvio.selectedItem;
 				}
-<<<<<<< HEAD
-=======
-
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				if (chbModoMostrador) {
 					GeneralOptions.getInstance().opciones.modoMostrador = chbModoMostrador.selected;
 					GeneralOptions.getInstance().dispatchEvent(new Event("_changeModoMostrador"));
 				}
 				if (chbEnvioAutomaticoMail) {
 					GeneralOptions.getInstance().opciones.envioAutomaticoMail = chbEnvioAutomaticoMail.selected;
-<<<<<<< HEAD
 				}
 				if (chbUsarCajaPrincipal) {
 					GeneralOptions.getInstance().opciones.usarCajaPrincipal = chbUsarCajaPrincipal.selected;
@@ -189,21 +151,11 @@
 				var newXMLStr:String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" + GeneralOptions.getInstance().opciones.toXMLString();
 
 				trace(newXMLStr);
-=======
-				}			
-				var file:File = File.applicationStorageDirectory.resolvePath("FullTime/Opciones.xml");
-				
-				var newXMLStr:String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" + GeneralOptions.getInstance().opciones.toXMLString();
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				var fs:FileStream = new FileStream();
 				fs.open(file, FileMode.WRITE);
 				fs.writeUTFBytes(newXMLStr);
 				fs.close();
-<<<<<<< HEAD
 
-=======
-				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 
@@ -217,18 +169,12 @@
 
 				for (var i:int = 0; i < printers.length; i++) {
 					arrPrinters.addItem(printers[i]);
-<<<<<<< HEAD
 				}
 
-=======
-				}				
-				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				prnFacturacion = GeneralOptions.getInstance().opciones.impresoras.facturacion;
 				prnRemitos = GeneralOptions.getInstance().opciones.impresoras.remitos;
 				prnOtros = GeneralOptions.getInstance().opciones.impresoras.otros;
 				prnNotasEnvio = GeneralOptions.getInstance().opciones.impresoras.notasEnvio;
-<<<<<<< HEAD
 
 				modoMostrador = GeneralOptions.getInstance().opciones.modoMostrador == "true";
 				usarCajaPrincipal = GeneralOptions.getInstance().opciones.usarCajaPrincipal == "true";
@@ -254,13 +200,6 @@
 
 			}
 
-=======
-				
-				modoMostrador = GeneralOptions.getInstance().opciones.modoMostrador == "true";
-				envioAutMail = GeneralOptions.getInstance().opciones.envioAutomaticoMail == "true";
-			}
-			
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			protected function formitem1_creationCompleteHandler(event:FlexEvent):void {
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
 				if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR || loggedUser.permisoId == Usuario.USUARIO_TITO) {
@@ -268,7 +207,6 @@
 				} else {
 					frmItemModoMostrador.visible = true;
 				}
-<<<<<<< HEAD
 
 			}
 
@@ -310,41 +248,10 @@
 				cotizacion.dia = txtFecha.selectedDate;
 				cotizacion.empId = "FULLTIME2";
 
-=======
-				
-			}
-			
-			protected function vgroup2_creationCompleteHandler(event:FlexEvent):void {
-				var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
-				
-				var depPpal:String = param.depIdParAdm.toString();
-				for each (var deposito:Deposito in CatalogoFactory.getInstance().depositos) {
-					if (depPpal == deposito.codigo) {
-						txtDepPpal.text	= deposito.nombre;
-					}
-				}
-				
-				var precioVta:String = param.precioVentaIdParAdm.toString();
-				for each (var precioVenta:PreciosVenta in CatalogoFactory.getInstance().preciosVenta) {
-					if (precioVta == precioVenta.codigo) {
-						txtPV.text	= precioVenta.nombre;
-					}
-				}
-				
-			}
-			
-			protected function cmdSaveCotizacion_clickHandler(event:MouseEvent):void {
-				var cotizacion:CotizacionesMonedas = new CotizacionesMonedas();
-				
-				cotizacion.dia = txtFecha.selectedDate;
-				cotizacion.empId = "FULLTIME2";
-				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				cotizacion.dolarCompra = txtDolarCompra.text;
 				cotizacion.dolarVenta = txtDolarVenta.text;
 				cotizacion.euroCompra = txtEuroCompra.text;
 				cotizacion.euroVenta = txtEuroVenta.text;
-<<<<<<< HEAD
 
 				var remObj:RemoteObject = new RemoteObject();
 				remObj.destination = "CreatingRpc";
@@ -396,65 +303,10 @@
 				var fecha:Date = new Date();
 				var now:util.DateUtil = new util.DateUtil(fecha);
 
-=======
-				
-				var remObj:RemoteObject = new RemoteObject();					
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					var result:Boolean = evt.result as Boolean;
-					
-					remObjCotizaciones.getCotizacion(txtFecha.selectedDate);
-				});				
-				remObj.altaCotizacion(cotizacion);
-
-			}
-			
-			protected function txtFecha_changeHandler(event:CalendarLayoutChangeEvent):void	{
-				remObjCotizaciones.getCotizacion(txtFecha.selectedDate);
-			}
-			
-			protected function cotizaciones_creationCompleteHandler(event:FlexEvent):void {
-				remObjCotizaciones = new RemoteObject();					
-				remObjCotizaciones.destination = "CreatingRpc";
-				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
-				remObjCotizaciones.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					var cotizacion:CotizacionesMonedas = evt.result as CotizacionesMonedas;
-					
-					txtDolarCompra.text = new BigDecimal(cotizacion.dolarCompra).setScale(4).toString(); 
-					txtDolarVenta.text = new BigDecimal(cotizacion.dolarVenta).setScale(4).toString();
-					txtEuroCompra.text = new BigDecimal(cotizacion.euroCompra).setScale(4).toString();
-					txtEuroVenta.text = new BigDecimal(cotizacion.euroVenta).setScale(4).toString();
-					
-					txtCotizacionesError.text = "";
-				});
-				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
-					txtDolarCompra.text = BigDecimal.ZERO.setScale(4).toString(); 
-					txtDolarVenta.text = BigDecimal.ZERO.setScale(4).toString();
-					txtEuroCompra.text = BigDecimal.ZERO.setScale(4).toString();
-					txtEuroVenta.text = BigDecimal.ZERO.setScale(4).toString();
-					
-					if (txtCotizacionesError) {
-						txtCotizacionesError.text = "* " + evt.fault.rootCause.message;
-						
-					}
-					
-				});
-				
-				remObjCotizaciones.getCotizacion(new Date());
-				
-			}
-			
-			public function getStartDate():Date {
-				var fecha:Date = new Date();
-				var now:util.DateUtil = new util.DateUtil(fecha);
-				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				now.add(util.DateUtil.DAY, 1);
 				return now.date;
 			}
 
-<<<<<<< HEAD
 
 			protected function txtConfirmPsw_enterHandler(event:FlexEvent):void {
 				cmdGuardar.setFocus();
@@ -483,36 +335,17 @@
 		<mx:DateFormatter id="dateFormatter" formatString="EEEE, DD de MMMM de YYYY" />
 
 		<mx:EmailValidator id="email_emailValidator1" source="{txtEmail}" required="false" property="text" />
-=======
-			
-		]]>
-	</fx:Script>
-	
-	<fx:Declarations>
-		<mx:DateFormatter id="dt" formatString="DD/MM/YYYY" />
-		<mx:DateFormatter id="dateFormatter" formatString="EEEE, DD de MMMM de YYYY" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 	</fx:Declarations>
 
 
 	<s:BorderContainer width="100%" height="100%" backgroundColor="#DADADA" borderAlpha="0" minHeight="25">
 		<s:layout>
-<<<<<<< HEAD
 			<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" />
 		</s:layout>
 
 		<mx:TabNavigator id="tn" width="100%" height="100%" backgroundColor="0xFAFAFA" verticalGap="0">
 			<mx:VBox width="100%" height="100%" label="General">
 				<s:Panel width="100%" height="100%" title="Opciones Generales" styleName="pnlForm" dropShadowVisible="false">
-=======
-			<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" />
-		</s:layout>
-	
-		<mx:TabNavigator id="tn"  width="100%" height="100%">
-			<!-- Define each panel using a VBox container. -->
-			<mx:VBox label="General" width="100%" height="100%">
-				<s:Panel title="Opciones Generales" styleName="pnlForm" height="100%" width="100%" dropShadowVisible="false" >
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
 						<s:layout>
 							<s:VerticalLayout paddingLeft="5" paddingRight="5" />
@@ -522,47 +355,28 @@
 							<s:layout>
 								<s:FormLayout gap="-12" />
 							</s:layout>
-<<<<<<< HEAD
 							<s:FormItem id="frmItemModoMostrador" width="100%" creationComplete="formitem1_creationCompleteHandler(event)" label="Modo mostrador">
 								<s:CheckBox id="chbModoMostrador" selected="{modoMostrador}" />
 							</s:FormItem>
 							<s:FormItem width="100%" label="Envío automático de correo">
 								<s:CheckBox id="chbEnvioAutomaticoMail" selected="{envioAutMail}" />
-=======
-							<s:FormItem id="frmItemModoMostrador" label="Modo Mostrador" width="100%" creationComplete="formitem1_creationCompleteHandler(event)">
-								<s:CheckBox id="chbModoMostrador" selected="{modoMostrador}"/>
-							</s:FormItem>
-							<s:FormItem label="Envío Automático de Correo" width="100%">
-								<s:CheckBox id="chbEnvioAutomaticoMail" selected="{envioAutMail}"/>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 							</s:FormItem>
 						</s:Form>
 					</s:BorderContainer>
 				</s:Panel>
 			</mx:VBox>
-<<<<<<< HEAD
 
 			<mx:VBox width="100%" height="100%" paddingTop="0" verticalGap="0" label="Impresoras">
 				<s:Panel width="100%" height="60%" title="Configuración de impresoras" styleName="pnlForm" dropShadowVisible="false">
-=======
-				
-			<mx:VBox label="Impresoras" width="100%" height="100%">
-				<s:Panel title="Configuración de Impresoras" styleName="pnlForm" height="100%" width="100%" dropShadowVisible="false" >
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
 						<s:layout>
 							<s:VerticalLayout paddingLeft="5" paddingRight="5" />
 						</s:layout>
-<<<<<<< HEAD
 
-=======
-						
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 						<s:Form width="100%" height="100%">
 							<s:layout>
 								<s:FormLayout gap="-12" />
 							</s:layout>
-<<<<<<< HEAD
 							<s:FormItem width="100%" label="Facturas">
 								<s:DropDownList id="ddlFacturacion" width="100%" dataProvider="{arrPrinters}" selectedItem="{prnFacturacion}" />
 							</s:FormItem>
@@ -686,65 +500,10 @@
 
 						<mx:DateChooser id="txtFecha" change="txtFecha_changeHandler(event)" yearNavigationEnabled="true" selectedDate="{new Date()}" borderAlpha=".2" contentBackgroundAlpha="0.1"
 										disabledRanges="{[ {rangeStart: getStartDate()} ]}" />
-=======
-							<s:FormItem label="Facturas" width="100%">
-								<s:DropDownList id="ddlFacturacion" dataProvider="{arrPrinters}" width="100%" selectedItem="{prnFacturacion}" />
-							</s:FormItem>
-							<s:FormItem label="Remitos" width="100%">
-								<s:DropDownList id="ddlremitos" dataProvider="{arrPrinters}" width="100%" selectedItem="{prnRemitos}" />
-							</s:FormItem>
-							<s:FormItem label="Notas de Envío" width="100%">
-								<s:DropDownList id="ddlNotasEnvio" dataProvider="{arrPrinters}" width="100%" selectedItem="{prnNotasEnvio}" />
-							</s:FormItem>
-							<s:FormItem label="Otros" width="100%">
-								<s:DropDownList id="ddlOtros" dataProvider="{arrPrinters}" width="100%" selectedItem="{prnOtros}" />
-							</s:FormItem>
-						</s:Form>
-					</s:BorderContainer>
-
-				</s:Panel>
-			</mx:VBox>
-
-			<mx:VBox label="Administración" width="100%" height="100%">
-				<s:Panel title="Administración" styleName="pnlForm" height="100%" width="100%" dropShadowVisible="false" >
-					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
-						<s:layout>
-							<s:VerticalLayout paddingTop="20" paddingLeft="5" paddingRight="5" />
-						</s:layout>
-						
-						<s:VGroup width="100%" height="100%" gap="10" creationComplete="vgroup2_creationCompleteHandler(event)" paddingLeft="15" paddingRight="15">
-							<s:VGroup width="100%" paddingBottom="10">
-								<s:Label text="Trabado de Comprobantes:"/>
-								<mx:DateField id="chbFechaTrabado" selectedDate="{CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado}" enabled="false"/>
-							</s:VGroup>
-							<s:VGroup width="100%">
-								<s:Label text="Depósito principal del local:"/>
-								<s:TextInput id="txtDepPpal" enabled="false" width="100%"/>
-							</s:VGroup>
-							<s:VGroup width="100%">								
-								<s:Label text="Precio de Venta predeterminado:"/>
-								<s:TextInput id="txtPV" enabled="false" width="100%"/>
-							</s:VGroup>
-						</s:VGroup>
-						
-					</s:BorderContainer>
-				</s:Panel>
-			</mx:VBox>
-			
-			<mx:VBox label="Tipo Cambio" width="100%" height="100%" enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
-				<s:Panel title="Cotizaciones" styleName="pnlForm" height="100%" width="100%" dropShadowVisible="false" creationComplete="cotizaciones_creationCompleteHandler(event)" >
-					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
-						<s:layout>
-							<s:HorizontalLayout paddingLeft="0" paddingRight="0" paddingTop="-3" gap="0" />
-						</s:layout>
-						
-						<mx:DateChooser id="txtFecha" yearNavigationEnabled="true" selectedDate="{new Date()}" borderAlpha=".2" contentBackgroundAlpha="0.1" change="txtFecha_changeHandler(event)" disabledRanges="{[ {rangeStart: getStartDate()} ]}"/>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 						<s:VGroup width="100%">
 							<s:Panel width="100%" title="{dateFormatter.format(txtFecha.selectedDate)}" styleName="pnlCotizaciones">
 								<s:Form width="100%" height="100%">
 									<s:layout>
-<<<<<<< HEAD
 										<s:FormLayout paddingBottom="-10" paddingTop="-10" gap="-12" />
 									</s:layout>
 									<s:FormItem width="100%" label="Dolar compra">
@@ -773,45 +532,11 @@
 				</s:Panel>
 
 
-=======
-										<s:FormLayout gap="-12" paddingTop="-10" paddingBottom="-10"/>
-									</s:layout>
-									<s:FormItem label="Dolar Compra" width="100%">
-										<s:TextInput id="txtDolarCompra" width="100" textAlign="right" restrict="0-9." enter="{txtDolarVenta.setFocus()}"/>
-									</s:FormItem>
-									<s:FormItem label="Dolar Venta" width="100%">
-										<s:TextInput id="txtDolarVenta" width="100" textAlign="right" restrict="0-9." enter="{txtEuroCompra.setFocus()}"/>
-									</s:FormItem>
-									<s:FormItem label="Euro Compra" width="100%">
-										<s:TextInput id="txtEuroCompra" width="100" textAlign="right" restrict="0-9." enter="{txtEuroVenta.setFocus()}"/>
-									</s:FormItem>
-									<s:FormItem label="Euro Venta" width="100%">
-										<s:TextInput id="txtEuroVenta" width="100" textAlign="right" restrict="0-9." enter="{cmdSaveCotizacion.setFocus()}"/>
-									</s:FormItem>								
-								</s:Form>
-								<s:controlBarContent>
-									<s:HGroup width="100%" horizontalAlign="right">
-										<s:Button id="cmdSaveCotizacion" label="Guardar" click="cmdSaveCotizacion_clickHandler(event)"/>
-									</s:HGroup>
-								</s:controlBarContent>
-							</s:Panel>
-							<s:Label id="txtCotizacionesError" width="100%" text="" fontSize="12" maxDisplayedLines="1" />
-						</s:VGroup>
-						
-					</s:BorderContainer>
-				</s:Panel>
-				
-				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			</mx:VBox>
 
 		</mx:TabNavigator>
 	</s:BorderContainer>
-<<<<<<< HEAD
 
-=======
-	
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 	<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
 		<s:layout>
 			<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" />

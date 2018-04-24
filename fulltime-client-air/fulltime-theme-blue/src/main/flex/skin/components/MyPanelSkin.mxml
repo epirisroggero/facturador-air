@@ -128,13 +128,10 @@ in accordance with the terms of the license agreement accompanying it.
 				
 				tbFill.alpha = getStyle("headerTitleAlpha") == undefined ? 1.0 : getStyle("headerTitleAlpha");
 				
-<<<<<<< HEAD
 				if (getStyle("titleBackgroundColor") != undefined) {
 					tBackgroundFill.color = getStyle("titleBackgroundColor");
 				}
 				
-=======
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				var fontSize:int = Number(getStyle("fontLabelTitle"));
 				
 				titleDisplay.setStyle("fontSize", fontSize);
@@ -166,11 +163,7 @@ in accordance with the terms of the license agreement accompanying it.
 	
 	<!-- drop shadow can't be hittable so it stays sibling of other graphics -->
 	<!--- @private -->
-<<<<<<< HEAD
 	<s:RectangularDropShadow id="dropShadow" blurX="2" blurY="2" alpha="0.12" distance="0" 
-=======
-	<s:RectangularDropShadow id="dropShadow" blurX="20" blurY="20" alpha="0.32" distance="11" 
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 							 angle="90" color="#000000" left="0" top="0" right="0" bottom="0"/>
 	
 	<!-- drop shadow can't be hittable so all other graphics go in this group -->
@@ -178,19 +171,11 @@ in accordance with the terms of the license agreement accompanying it.
 		
 		<!-- top group mask -->
 		<!--- @private -->
-<<<<<<< HEAD
 		<s:Group left="1" top="1" right="1" bottom="1" id="topGroupMask">
 			<!--- @private -->
 			<s:Rect id="topMaskRect" left="0" top="0" right="0" bottom="0" alpha="0">
 				<s:fill>
 					<s:SolidColor />
-=======
-		<s:Group left="1" top="1" right="1" bottom="1" id="topGroupMask" >
-			<!--- @private -->
-			<s:Rect id="topMaskRect" left="0" top="0" right="0" bottom="0">
-				<s:fill>
-					<s:SolidColor alpha="0"/>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				</s:fill>
 			</s:Rect>
 		</s:Group>
@@ -200,42 +185,25 @@ in accordance with the terms of the license agreement accompanying it.
 		<s:Group left="1" top="1" right="1" bottom="1" id="bottomGroupMask" 
 				 includeIn="normalWithControlBar, disabledWithControlBar">
 			<!--- @private -->
-<<<<<<< HEAD
 			<s:Rect id="bottomMaskRect" left="0" top="0" right="0" bottom="0" alpha="0">
 				<s:fill>
 					<s:SolidColor />
-=======
-			<s:Rect id="bottomMaskRect" left="0" top="0" right="0" bottom="0">
-				<s:fill>
-					<s:SolidColor alpha="0"/>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				</s:fill>
 			</s:Rect>
 		</s:Group>
 		
 		<!-- layer 1: border -->
 		<!--- @private -->
-<<<<<<< HEAD
 		<s:Rect id="border" left="0" right="0" top="0" bottom="0" alpha="0">
 			<s:stroke>
 				<!--- @private -->
 				<s:SolidColorStroke id="borderStroke" weight="0" />
-=======
-		<s:Rect id="border" left="0" right="0" top="0" bottom="0" >
-			<s:stroke>
-				<!--- @private -->
-				<s:SolidColorStroke id="borderStroke" weight=".5" />
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			</s:stroke>
 		</s:Rect>
 		
 		<!-- layer 2: background fill -->
 		<!--- Defines the appearance of the PanelSkin class's background. -->
-<<<<<<< HEAD
 		<s:Rect id="background" left="0" top="0" right="0" bottom="0">
-=======
-		<s:Rect id="background" left="1" top="1" right="1" bottom="1">
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 			<s:fill>
 				<!--- @private
 				Defines the  PanelSkin class's background fill. The default color is 0xFFFFFF. -->
@@ -255,24 +223,14 @@ in accordance with the terms of the license agreement accompanying it.
 				
 				<!-- layer 0: title bar fill -->
 				<!--- @private -->
-<<<<<<< HEAD
 				<s:Rect id="tbFill" left="0" right="0" top="0" bottom="1" alpha="0">
 					<s:fill>
 						<s:SolidColor id="tBackgroundFill" color="0x97AACF"/>
-=======
-				<s:Rect id="tbFill" left="0" right="0" top="0" bottom="1">
-					<s:fill>
-						<s:LinearGradient rotation="90">
-							<s:GradientEntry color="0xADBDD9" />
-							<s:GradientEntry color="0x97AACF" />
-						</s:LinearGradient>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					</s:fill>
 				</s:Rect>
 				
 				<!-- layer 1: title bar highlight -->
 				<!--- @private -->
-<<<<<<< HEAD
 				<!-- s:Rect id="tbHilite" left="0" right="0" top="0" bottom="0">
 					<s:fill>
 						<s:SolidColor color="0x97AACF"/>
@@ -282,20 +240,6 @@ in accordance with the terms of the license agreement accompanying it.
 				<!-- layer 2: title bar divider -->
 				<!--- @private -->
 				<!-- s:Rect id="tbDiv" left="0" right="0" height="1" bottom="1">
-=======
-				<s:Rect id="tbHilite" left="0" right="0" top="0" bottom="0">
-					<s:stroke>
-						<s:LinearGradientStroke rotation="90" weight="1">
-							<s:GradientEntry color="0xADBDD9" />
-							<s:GradientEntry color="0x97AACF" />
-						</s:LinearGradientStroke>
-					</s:stroke>
-				</s:Rect>
-				
-				<!-- layer 2: title bar divider -->
-				<!--- @private -->
-				<s:Rect id="tbDiv" left="0" right="0" height="1" bottom="1">
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 					<s:fill>
 						<s:SolidColor color="0x3D547D" />
 					</s:fill>
@@ -304,26 +248,16 @@ in accordance with the terms of the license agreement accompanying it.
 					<s:fill>
 						<s:SolidColor color="0xFFFFFF" />
 					</s:fill>
-<<<<<<< HEAD
 				</s:Rect -->
-=======
-				</s:Rect>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				
 				<!-- layer 3: text -->
 				<!--- @copy spark.components.Panel#titleDisplay -->
 				<s:Label id="titleDisplay" maxDisplayedLines="1" styleName="myLabel" fontSize="20" 
 						 left="9" right="3" top="1" bottom="0" minHeight="30" color="white"
 						 verticalAlign="middle" textAlign="start"> 
-<<<<<<< HEAD
 					<!--s:filters>
 						<s:DropShadowFilter distance="2" color="#00111a"/>
 					</s:filters-->
-=======
-					<s:filters>
-						<s:DropShadowFilter distance="2" color="{shadowFilterColor}"/>
-					</s:filters>
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				</s:Label>
 			</s:Group>
 			

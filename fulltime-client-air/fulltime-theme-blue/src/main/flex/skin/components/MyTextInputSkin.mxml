@@ -207,6 +207,6 @@
 
 	<!-- text -->
 	<!--- @copy spark.components.supportClasses.SkinnableTextBase#textDisplay -->
-	<s:RichEditableText id="textDisplay" bottom="1" left="1" right="1" top="1" verticalAlign="middle" widthInChars="10" />
+	<s:RichEditableText id="textDisplay" bottom="1" left="1" right="1" top="1" verticalAlign="middle" widthInChars="10" fontFamily="Sansation"/>
 
 </s:SparkSkin>

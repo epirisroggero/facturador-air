@@ -17,11 +17,9 @@ public class ServerConfig {
 
 	private static var _instance:ServerConfig;
 
-	//private var _host:String = "localhost";
-	private var _host:String = "apps.fulltime.uy";
+	private var _host:String = "localhost";
 
-	//private var _port:String = "8080";
-	private var _port:String = "8180";
+	private var _port:String = "8080";
 
 	private var secure:Boolean = false;
 

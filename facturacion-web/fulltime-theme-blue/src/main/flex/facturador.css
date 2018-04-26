@@ -13,7 +13,7 @@
 //------------------------------
 */
 global {
-	font-family: Arial,Verdana,Tahoma;
+	font-family: "Arial","Verdana","Tahoma";
 	fontWeight: normal;
 	
 	locale: 'es-ES'; 
@@ -28,6 +28,10 @@ s|Application {
 	skinClass:  				ClassReference("skin.components.CustomApplicationSkin");
 }
 
+s|TextInput {
+	fontFamily: Arial;
+}
+
 s|Button.emphasized {
 	skinClass: ClassReference("skin.components.ButtonSkin");
 }
@@ -36,13 +40,11 @@ s|TitleWindow {
 	skinClass: ClassReference("skin.components.MyTitleWindowSkin");
 }
 
-
 s|DropDownList {
 	skinClass: ClassReference("skin.components.comboBox.MyDropDownListSkin");
 	
 	cornerRadius: 0;
 }
-
 
 mx|LinkButton {
 	font-family: Arial,Verdana,Tahoma;
@@ -122,12 +124,9 @@ s|DataGrid {
 	
 }
 
-
-
 #dgExpediciones {
 	alternatingRowColors: #FF0000, #FFFFFF;
 	selectionColor: #CEDBEF;
-
 }
 
 s|DefaultGridItemRenderer
@@ -1130,7 +1129,7 @@ mx|ToolTip {
 	cornerRadius: 0;
 	color: black;
 	
-	fontSize: 12;
+	fontSize: 13pt;
 }
 
 #dgClients {
@@ -1174,33 +1173,33 @@ mx|ToolTip {
 .subtotalLabelName {
 	textAlign: left;
 	fontWeight:normal;
-	fontSize: 13;
+	fontSize: 13pt;
 	paddingLeft: 10;
 }
 
 .subtotalLabel {
 	textAlign: left;
 	font-weight: bold;
-	fontSize: 13;
+	fontSize: 13pt;
 }
 
 .clienteLabel {
 	textAlign: left;
 	font-weight: normal;
-	fontSize: 11;
+	fontSize: 12pt;
 }
 
 .clienteLabelNegrita {
 	font-family: Arial,Verdana,Tahoma;
 	textAlign: left;
 	font-weight: bold;
-	fontSize: 11;
+	fontSize: 12pt;
 }
 
 .subtotalLabelRight {
 	textAlign: right;
 	font-weight: bold;
-	fontSize: 13;
+	fontSize: 13pt;
 }
 
 .totalLabelLeft {
@@ -1208,7 +1207,7 @@ mx|ToolTip {
 	
 	textAlign: left;
 	font-weight: bold;
-	fontSize: 13;
+	fontSize: 13pt;
 }
 
 .totalLabelRight {
@@ -1216,7 +1215,7 @@ mx|ToolTip {
 	
 	textAlign: right;
 	font-weight: bold;
-	fontSize: 13;
+	fontSize: 13pt;
 }
 
 mx|VRule {
@@ -1265,33 +1264,35 @@ s|ButtonBar {
 }
 
 mx|FormItem {
-	fontFamily: Helvetica;
+	fontFamily: "Helvetica";
 	fontWeight: normal;
-	fontSize: 13;
+	fontSize: 13pt;
 }
 
 s|Label {
+	fontFamily: "Arial";
 	fontSize: 13pt;	
 }
 
 s|DefaultGridHeaderRenderer s|Label#labelDisplay {
 	color:black;
-	fontFamily: Helvetica;
-	fontSize: 12pt;	
+	fontFamily: "Helvetica";
+	fontSize: 13pt;	
 	font-weight: normal;
 
 }
 
 s|FormItem {
+	fontFamily: Helvetica;
 	skin-class: ClassReference("skin.components.MyFormItemSkin");
 }
 
 s|FormItem s|Label#labelDisplay {
 	textAlign: right;
 
-	fontFamily: Helvetica;
+	fontFamily: "Arial";
 	fontWeight: normal;
-	fontSize: 12pt;
+	fontSize: 13pt;
 	
 	color:black;
 }
@@ -1421,7 +1422,7 @@ s|FormItem s|Label#labelDisplay {
 
 	fontFamily: sans-serif, "_typewriter";
 	color: black;
-	fontSize: 12;
+	fontSize: 13pt;
 
 }
 

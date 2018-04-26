@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexProperties enableServiceManager="false" flexServerFeatures="0" flexServerType="0" toolCompile="true" useServerFlexSDK="false" version="2"/>
+<flexProperties enableServiceManager="false" flexServerFeatures="0" flexServerType="64" serverContextRoot="" serverRoot="C:/Develop/apache-tomcat-6.0.13/webapps" serverRootURL="http://localhost:8180/" toolCompile="true" useServerFlexSDK="false" version="2"/>

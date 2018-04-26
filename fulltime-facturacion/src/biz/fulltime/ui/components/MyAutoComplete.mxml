@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <components:AutoComplete xmlns:components="com.hillelcoren.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
-						 xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="autocomplete1_creationCompleteHandler(event)"
+						 xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="autocomplete1_creationCompleteHandler(event)" fontFamily="Helvetica"
 						 keyDown="autoCompleteClientes_keyDownHandler(event)" showRemoveIcon="true" buttonMode="true" tabFocusEnabled="true" borderAlpha="1">
 
 	<components:inlineButton>

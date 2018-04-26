@@ -3834,8 +3834,12 @@
 				 visible="{!_documento.pendiente &amp;&amp; (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR || _documento.esCompra() || _documento.comprobante.esImportacion())}" />
 		<s:VGroup width="100%" height="100%" gap="0">
 			<s:HGroup width="100%" paddingTop="0" gap="0">
-				<mx:Form id="form" width="340" horizontalGap="0" textAlign="right" maxWidth="340">
-					<mx:FormItem width="100%" label="Serie" styleName="myLabel">
+				<s:Form id="form" width="340" textAlign="right" maxWidth="340">
+					<s:layout>
+						<s:FormLayout gap="-12" />
+					</s:layout>
+
+					<s:FormItem width="100%" label="Serie" styleName="myLabel">
 						<s:HGroup width="100%" verticalAlign="middle">
 							<s:TextInput id="txtSerial" width="100%" textAlign="left" enter="{txtNumber.setFocus()}" text="@{_documento.serie}"
 										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="6" />
@@ -3844,9 +3848,9 @@
 							<s:TextInput id="txtNumber" width="100%" change="txtNumber_changeHandler(event)" enter="{cmbClient.setFocus()}" restrict="0-9" text="{_documento.numero}"
 										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="20" />
 						</s:HGroup>
-					</mx:FormItem>
+					</s:FormItem>
 					<s:Spacer height="25" />
-					<mx:FormItem width="100%" label="Cliente" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+					<s:FormItem width="100%" label="Cliente" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
 						<s:VGroup width="100%" gap="3">
 							<components:MyAutoComplete id="cmbClient" width="100%" textAlign="left" change="cmbClient_changeHandler(event)" keyDown="capture_keyDownHandlerCliente(event)"
 													   dataProvider="{ CatalogoFactory.getInstance().getClientesVendedor() }" labelField="nombre" matchType="anyPart" prompt="Ingrese cliente"
@@ -3857,8 +3861,8 @@
 							<s:Label id="lblCorreoCliente" fontSize="9" fontWeight="normal" text="Correo: {_documento.cliente.contacto.ctoEmail1}"
 									 visible="{_documento.cliente &amp;&amp; _documento.cliente.contacto.ctoEmail1}" />
 						</s:VGroup>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Proveedor" visible="{modoSolicitud}" includeInLayout="{modoSolicitud}">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Proveedor" visible="{modoSolicitud}" includeInLayout="{modoSolicitud}">
 						<s:VGroup width="100%" gap="3">
 							<components:MyAutoComplete id="cmbProveedor" width="100%" textAlign="left" change="cmbProveedor_changeHandler(event)" keyDown="capture_keyDownHandlerProveedor(event)"
 													   dataProvider="{_proveedores}" labelField="nombre" matchType="anyPart" prompt="Ingrese proveedor" allowNewValues="false"
@@ -3868,19 +3872,19 @@
 							<s:Label id="lblCorreoProveedor" fontSize="9" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
 									 visible="{_documento.proveedor &amp;&amp; _documento.proveedor.contacto.ctoEmail1}" />
 						</s:VGroup>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Razón social">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Razón social">
 						<s:TextInput id="txtRazonSocial" width="100%" textAlign="left" enter="{txtVendedores.setFocus()}" prompt="Ingrese razón social" text="@{_documento.razonSocial}"
 									 editable="{!_modoVisualizacion}" maxChars="100" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="País" visible="{modoSolicitud}" includeInLayout="{modoSolicitud}">
+					</s:FormItem>
+					<s:FormItem width="100%" label="País" visible="{modoSolicitud}" includeInLayout="{modoSolicitud}">
 						<s:TextInput id="txtPais" width="100%" textAlign="left" text="{_pais ? _pais.nombre : ''}" prompt="Uruguay" enter="{txtVendedores.setFocus()}" editable="false" maxChars="100" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Vendedores" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Vendedores" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
 						<s:TextInput id="txtVendedores" width="100%" textAlign="left" keyDown="txtVendedores_keyDownHandler(event)" keyUp="txtVendedores_keyUpHandler(event)"
 									 enter="{cmbEntrega.setFocus()}" prompt="F1 Comisiones" text="{_comisiones}" toolTip="{_comisiones}" editable="{!_modoVisualizacion}" maxChars="256" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Entrega" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Entrega" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
 						<s:VGroup width="100%" horizontalAlign="right">
 							<components:MyAutoComplete id="cmbEntrega" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().entrega }" labelField="nombre" matchType="anyPart"
 													   prompt="No Tiene" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
@@ -3892,12 +3896,16 @@
 									  toolTip="Imprimir Notas de Envío" styleName="textButton" enabled="{_documento.lineas.lineas.length > 0}" focusEnabled="false"
 									  visible="{!_documento.esCotizacionDeVenta &amp;&amp; !_documento.esOrdenDeVenta}" />
 						</s:VGroup>
-					</mx:FormItem>
-				</mx:Form>
+					</s:FormItem>
+				</s:Form>
 
-				<mx:Form width="100%" textAlign="right">
+				<s:Form width="100%" textAlign="right">
+					<s:layout>
+						<s:FormLayout gap="-12" />
+					</s:layout>
+
 					<s:Spacer height="56" />
-					<mx:FormItem width="100%" label="Moneda">
+					<s:FormItem width="100%" label="Moneda">
 						<s:VGroup>
 							<components:MyAutoComplete id="cmbMoney" width="200" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart" prompt="Ingrese moneda"
 													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
@@ -3906,28 +3914,28 @@
 													   previous_focus="{cmdNotasEnvio}" enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
 						</s:VGroup>
 
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Depto.">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Depto.">
 						<s:TextInput id="txtDpto" width="100%" textAlign="left" enter="{txtDirection.setFocus()}" prompt="" text="@{_documento.departamento}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="40" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Dirección">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Dirección">
 						<s:TextInput id="txtDirection" width="100%" textAlign="left" enter="{txtRUT.setFocus()}" prompt="" text="@{_documento.direccion}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="100" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Documento">
-						<s:HGroup>
+					</s:FormItem>
+					<s:FormItem width="100%" label="Documento">
+						<s:HGroup width="100%">
 							<s:DropDownList id="ddlTipoDoc" dataProvider="{tiposDocList}" width="75" textAlign="left" change="ddlTipoDoc_changeHandler(event)" selectedItem="{tipoDoc}"/>
 							<s:TextInput id="txtRUT" textAlign="left" enter="{txtTelephone.setFocus()}" prompt="No tiene" text="@{_documento.rut}" change="txtRUT_changeHandler(event)" restrict="0-9"
 										 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="{tipoDoc != null &amp;&amp; tipoDoc.value == 'C' ? 8 : 12}" widthInChars="12" />
 							
 						</s:HGroup>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Teléfono">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Teléfono">
 						<s:TextInput id="txtTelephone" width="100%" textAlign="left" enter="{cmbDepositoD.setFocus()}" prompt="No tiene" text="@{_documento.telefono}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="50" />
-					</mx:FormItem>
-				</mx:Form>
+					</s:FormItem>
+				</s:Form>
 
 				<s:VGroup width="340">
 					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
@@ -3936,42 +3944,45 @@
 									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
 					</s:HGroup>
 					<s:Spacer height="5" />
-					<mx:Form width="100%" paddingTop="0" textAlign="right">
-						<mx:FormItem width="100%" label="Depósito desde">
+					<s:Form width="100%" textAlign="right">
+						<s:layout>
+							<s:FormLayout gap="-12" />
+						</s:layout>
+						<s:FormItem width="100%" label="Depósito desde">
 							<components:MyAutoComplete id="cmbDepositoD" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre"
 													   matchType="anyPart" prompt="Ninguno" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
 													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbDepositoH}" previous_focus="{txtTelephone}"
 													   selectedItem="@{_documento.depositoOrigen}" enabled="{!_modoVisualizacion}" />
-						</mx:FormItem>
-						<mx:FormItem width="100%" label="Depósito hasta">
+						</s:FormItem>
+						<s:FormItem width="100%" label="Depósito hasta">
 							<components:MyAutoComplete id="cmbDepositoH" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre"
 													   matchType="anyPart" prompt="Ninguno" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
 													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbListaPrecios}" previous_focus="{cmbDepositoD}"
 													   selectedItem="@{_documento.depositoDestino}" enabled="{!_modoVisualizacion}" />
-						</mx:FormItem>
-						<mx:FormItem width="100%" label="Lista precios" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
+						</s:FormItem>
+						<s:FormItem width="100%" label="Lista precios" visible="{!modoSolicitud}" includeInLayout="{!modoSolicitud}">
 							<components:MyAutoComplete id="cmbListaPrecios" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().preciosVentaUsuario }" labelField="nombre"
 													   matchType="anyPart" prompt="Ingrese Lista Precios" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
 													   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
 													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{txtCotizacion}" previous_focus="{cmbDepositoH}"
 													   selectedItem="@{_documento.preciosVenta}" enabled="{!_modoVisualizacion}" />
-						</mx:FormItem>
+						</s:FormItem>
 
-						<mx:FormItem width="100%" label="T.C.Fiscal">
+						<s:FormItem width="100%" label="T.C.Fiscal">
 							<components1:MyTextInput id="txtTCF" width="100" text="{_documento.docTCF}" enter="cmdEditSL.setFocus()"
 										 editable="false" permitirNegativos="false"/>
-						</mx:FormItem>
-						<mx:FormItem width="100%" label="T.C.Comercial">
+						</s:FormItem>
+						<s:FormItem width="100%" label="T.C.Comercial">
 							<components1:MyTextInput id="txtCotizacion" width="100" text="@{_documento.docTCC}" enter="cmdEditSL.setFocus()" change="txtCotizacion_changeHandler(event)" 
 										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" permitirNegativos="false"/>
-						</mx:FormItem>
-						<mx:FormItem width="100%" label="Coeficiente" visible="{_documento.comprobante.codigo == '122'}" includeInLayout="{_documento.comprobante.codigo == '122'}">
+						</s:FormItem>
+						<s:FormItem width="100%" label="Coeficiente" visible="{_documento.comprobante.codigo == '122'}" includeInLayout="{_documento.comprobante.codigo == '122'}">
 							<s:TextInput id="txtCoeficiente" width="100" textAlign="right" change="txtCoeficiente_changeHandler(event)" text="{_documento.coeficienteImp}" enter="cmdEditSL.setFocus()"
 										 prompt="1.00" restrict="0-9.," editable="{!_modoVisualizacion}" />
-						</mx:FormItem>
-					</mx:Form>
+						</s:FormItem>
+					</s:Form>
 				</s:VGroup>
 			</s:HGroup>
 
@@ -4034,7 +4045,7 @@
 							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length > 0)}"
 									  includeInLayout="{(_documento.cuponeras.length > 0)}">
 								<s:DropDownList id="cmbCuponera" width="100%" textAlign="left" change="combobox1_changeHandler(event)" dataProvider="{_documento.cuponeras}" labelField="nombre"
-												prompt="Seleccionar una" />
+												prompt="Seleccionar cuponera" />
 								<s:Group width="100%" height="100%" visible="{cmbCuponera.selectedIndex >= 0}">
 									<s:layout>
 										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />

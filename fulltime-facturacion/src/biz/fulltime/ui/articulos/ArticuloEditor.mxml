@@ -62,11 +62,7 @@
 				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
 				if (!message) {
 					message = event.message.toString();
-<<<<<<< HEAD
-				}
-=======
 				}				
->>>>>>> 2bc97bdc3d8e12a43610e1a2eeae6222c8ad4665
 				Alert.show(message, "Error");
 			}
 		]]>

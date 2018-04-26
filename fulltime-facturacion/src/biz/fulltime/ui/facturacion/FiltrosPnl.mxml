@@ -332,42 +332,51 @@
 
 	<s:VGroup width="100%" height="100%">
 		<s:HGroup height="100%" paddingBottom="0">
-			<mx:Form visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Serie">
-					<mx:TextInput id="txtSerie" width="90" enter="txtNumero.setFocus()" />
-				</mx:FormItem>
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Número">
+			<s:Form visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
+				<s:layout>
+					<s:FormLayout gap="-12" />
+				</s:layout>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Serie">
+					<s:TextInput id="txtSerie" width="90" enter="txtNumero.setFocus()" />
+				</s:FormItem>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Número">
 					<s:TextInput id="txtNumero" width="90" restrict="0-9" enter="acTipoComprobante.setFocus()" />
-				</mx:FormItem>
-			</mx:Form>
-			<mx:Form>
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Comprobante" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
+				</s:FormItem>
+			</s:Form>
+			<s:Form>
+				<s:layout>
+					<s:FormLayout gap="-12" />
+				</s:layout>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Comprobante" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
 					<components1:MyAutoComplete id="acTipoComprobante" width="260" labelField="nombre" matchType="anyPart" prompt="Filtrar por Comprobante" allowNewValues="false"
 												selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 												dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" />
-				</mx:FormItem>
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Cliente" visible="{!modoSolicitudes}" includeInLayout="{!modoSolicitudes}">
+				</s:FormItem>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Cliente" visible="{!modoSolicitudes}" includeInLayout="{!modoSolicitudes}">
 					<components1:MyAutoComplete id="acCliente" width="260" keyDown="capture_keyDownHandler(event)" labelField="nombre" matchType="anyPart" prompt="Filtrar por Cliente"
 												allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 												allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
 												dataProvider="{CatalogoFactory.getInstance().clientes}" />
-				</mx:FormItem>
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Proveedor" visible="{modoSolicitudes &amp;&amp; !modoRecibo}" includeInLayout="{modoSolicitudes &amp;&amp; !modoRecibo}">
+				</s:FormItem>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Proveedor" visible="{modoSolicitudes &amp;&amp; !modoRecibo}" includeInLayout="{modoSolicitudes &amp;&amp; !modoRecibo}">
 					<components1:MyAutoComplete id="acProveedor" width="260" labelField="nombre" matchType="anyPart" prompt="Filtrar por Proveedor" allowNewValues="false"
 												selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 												dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus"
 												dataProvider="{CatalogoFactory.getInstance().proveedores}" />
-				</mx:FormItem>
+				</s:FormItem>
 
-			</mx:Form>
-			<mx:Form>
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Fecha desde">
-					<mx:DateField id="txtFechaDesde" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
-				</mx:FormItem>
-				<mx:FormItem fontSize="13" fontWeight="normal" label="Fecha hasta">
-					<mx:DateField id="txtFechaHasta" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
-				</mx:FormItem>
-			</mx:Form>
+			</s:Form>
+			<s:Form fontFamily="Helvetica">
+				<s:layout>
+					<s:FormLayout gap="-12" />
+				</s:layout>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Fecha desde">
+					<mx:DateField id="txtFechaDesde" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
+				</s:FormItem>
+				<s:FormItem fontSize="13" fontWeight="normal" label="Fecha hasta">
+					<mx:DateField id="txtFechaHasta" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
+				</s:FormItem>
+			</s:Form>
 			<s:VGroup paddingTop="20" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
 				<s:CheckBox id="chbRecibosConSaldo" fontSize="13" fontWeight="normal" label="Solo recibos con saldo" selected="true" visible="{modoRecibo}" includeInLayout="{modoRecibo}" />
 				<s:CheckBox id="chbPendientes" fontSize="13" fontWeight="normal" label="Pendientes y/o NO emitidos" selected="true" visible="{!modoRecibo}" includeInLayout="{!modoRecibo}"/>

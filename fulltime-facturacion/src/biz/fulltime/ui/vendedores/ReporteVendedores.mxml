@@ -222,7 +222,7 @@
 		</s:HGroup>
 		<s:HGroup width="100%" paddingBottom="20" paddingLeft="20" paddingRight="10" paddingTop="10" verticalAlign="middle">
 			<s:Label width="120" fontSize="12" textAlign="left" text="Fecha del Informe:" />
-			<mx:DateField id="txtDate" fontSize="14" change="txtDate_changeHandler(event)" selectedDate="{new Date()}" formatString="DD/MM/YYYY" locale="es" yearNavigationEnabled="true" />
+			<mx:DateField id="txtDate" fontSize="14" fontFamily="Helvetica" change="txtDate_changeHandler(event)" selectedDate="{new Date()}" formatString="DD/MM/YYYY" locale="es" yearNavigationEnabled="true" />
 
 			<s:HGroup horizontalAlign="center" paddingLeft="20" paddingRight="40" verticalAlign="middle">
 				<components1:IconButton id="cmdPrevious" width="24" height="24" cornerRadius="6" click="cmdPrevious_clickHandler(event)" styleName="previousButton" focusEnabled="false"

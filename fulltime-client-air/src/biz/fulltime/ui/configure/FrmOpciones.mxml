@@ -458,7 +458,7 @@
 								<s:FormLayout paddingBottom="-10" paddingTop="-10" gap="-12" />
 							</s:layout>
 							<s:FormItem width="100%" label="Trabado de comprobantes">
-								<mx:DateField id="chbFechaTrabado" selectedDate="{CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado}" enabled="false" />
+								<mx:DateField id="chbFechaTrabado" selectedDate="{CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado}" enabled="false" fontFamily="Helvetica" />
 							</s:FormItem>
 							<s:FormItem width="100%" label="Depósito principal del local">
 								<s:TextInput id="txtDepPpal" width="100%" enabled="false" />

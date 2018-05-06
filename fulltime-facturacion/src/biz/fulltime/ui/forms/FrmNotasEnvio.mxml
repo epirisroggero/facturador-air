@@ -173,52 +173,52 @@
 	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
 		<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
 			<s:VGroup width="100%" height="100%">
-				<mx:Form width="100%" height="100%">
-					<mx:FormItem width="100%" label="Bultos">
+				<s:Form width="100%" height="100%">
+					<s:layout>
+						<s:FormLayout gap="-12" />
+					</s:layout>
+
+					<s:FormItem width="100%" label="Bultos">
 						<s:TextInput id="txtBultos" width="60" textAlign="right" change="txtBultos_changeHandler(event)" enter="txtAgencia.setFocus()" prompt="Nro. Bultos"
 									 restrict="0-9" text="{factura.cantidadBultos}" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Agencia">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Agencia">
 						<s:TextInput id="txtAgencia" width="100%" textAlign="left" enter="txtLocalidad.setFocus()" prompt="Agencia" text="{_agencia}" change="txtAgencia_changeHandler(event)"/>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Localidad">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Localidad">
 						<s:TextInput id="txtLocalidad" width="100%" textAlign="left" enter="txtDepartamento.setFocus()" prompt="Localidad" text="{_localidad}" change="txtLocalidad_changeHandler(event)"/>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Departamento">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Departamento">
 						<s:TextInput id="txtDepartamento" width="100%" textAlign="left" enter="txtDireccionEntrega.setFocus()" prompt="Departamento" text="{_departamento}" change="txtDepartamento_changeHandler(event)"/>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Dirección de Entrega">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Dirección de Entrega">
 						<s:TextInput id="txtDireccionEntrega" width="100%" textAlign="left" enter="txtChofer.setFocus()" prompt="Dirección de Entrega" text="{_dirEntrega}" change="txtDireccionEntrega_changeHandler(event)"/>
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Chofer">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Chofer">
 						<s:TextInput id="txtChofer" width="100%" textAlign="left" enter="txtOrderVenta.setFocus()" prompt="Chofer" text="@{factura.chofer}" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Orden Venta">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Orden Venta">
 						<s:TextInput id="txtOrderVenta" width="100%" textAlign="left" enter="txtOrdenCompra.setFocus()" prompt="Orden Venta" text="@{factura.ordenVenta}" />
-					</mx:FormItem>
-					<mx:FormItem width="100%" label="Orden Compra">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Orden Compra">
 						<s:TextInput id="txtOrdenCompra" width="100%" textAlign="left" enter="txtNroEnvio.setFocus()" prompt="Orden Compra" text="@{factura.ordenCompra}" />
-					</mx:FormItem>
-					<s:Spacer height="5" />
-					<s:Group width="100%">
+					</s:FormItem>
+					<s:FormItem width="100%" >
 						<s:Line width="100%" height="1" left="0">
 							<s:stroke>
 								<s:SolidColorStroke id="lineStroke" color="blue" alpha="0.4" />
 							</s:stroke>
 						</s:Line>
-					</s:Group>
-					<s:Spacer height="5" />
-					<mx:FormItem width="100%" label="Número de Envío">
+					</s:FormItem>
+					<s:FormItem width="100%" label="Número de Envío">
 						<s:HGroup width="100%" verticalAlign="middle">
 								<s:TextInput id="txtNroEnvio" width="100%" textAlign="left" enter="cmdImprimir.setFocus()" prompt="Ingrese Nº Envio" text="@{factura.nroEnvio}" restrict="0-9"/>	
 								<components:IconButton id="cmdGuardarNroEnvio" width="24" height="24" cornerRadius="0" click="cmdGuardarNroEnvio_clickHandler(event)"
 												   styleName="saveButtonNotas" toolTip="Guardar Nº Envío" enabled="{txtNroEnvio.text.length > 0 &amp;&amp; factura.docId}" />
 						</s:HGroup>
 						<s:Label text="Número dado por la agencia" fontSize="10" fontStyle="italic"/>
-						
-					</mx:FormItem>
-
-				</mx:Form>
+					</s:FormItem>
+				</s:Form>
 			</s:VGroup>
 
 			<s:controlBarContent>

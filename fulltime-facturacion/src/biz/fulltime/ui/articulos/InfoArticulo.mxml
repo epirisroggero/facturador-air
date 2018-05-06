@@ -871,7 +871,7 @@
 						<s:VGroup width="230" height="100%">
 							<s:Panel width="100%" height="75" title="Stock principal" styleName="pnlInternoArticulo" minHeight="0">
 								<s:HGroup width="100%" horizontalAlign="right" paddingTop="10" paddingRight="10">
-									<s:Label fontSize="22" fontStyle="italic" text="{nf_Espanol_Espanol.format(_stock)}" maxDisplayedLines="1" />
+									<s:Label fontSize="22" text="{nf_Espanol_Espanol.format(_stock)}" maxDisplayedLines="1" />
 								</s:HGroup>
 							</s:Panel>
 							<s:Panel width="100%" height="100%" title="Otros datos" styleName="pnlInternoArticulo" fontWeight="normal">

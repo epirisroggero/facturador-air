@@ -1878,8 +1878,8 @@
 			protected function cmdDocumentos_clickHandler(event:MouseEvent):void {
 				var facPendWindow:TitleWindow = new TitleWindow();
 				facPendWindow.title = "Documentos y Valores";
-				facPendWindow.width = 500;
-				facPendWindow.height = 420;
+				facPendWindow.width = 720;
+				facPendWindow.height = 500;
 				
 				var frmDocumentosValores:FrmDocumentosValores = new FrmDocumentosValores();
 				frmDocumentosValores.documento = recibo;
@@ -1904,6 +1904,8 @@
 				});
 				
 				facPendWindow.addElement(frmDocumentosValores);
+				
+				facPendWindow.closeButton.visible = false;
 			}
 			
 			protected function txtDate_changeHandler(event:CalendarLayoutChangeEvent):void {
@@ -2087,9 +2089,9 @@
 											selectedItem="{serieSelected}" change="ddlSerie_changeHandler(event)" fontSize="18"/>
 						</s:HGroup>
 					</s:Panel>
-					<s:Panel width="180" title="NÚMERO" styleName="pnlInterno" minHeight="0">
+					<s:Panel width="180" title="NÚMERO" styleName="pnlInterno" minHeight="0" >
 						<s:HGroup width="100%" horizontalAlign="center">
-							<s:TextInput id="txtNumero" width="100%" height="36" fontSize="20" paddingRight="15" textAlign="right" 
+							<s:TextInput id="txtNumero" width="100%" height="36" paddingRight="15" textAlign="right"  fontSize="18"
 										 text="@{recibo.numero}" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido &amp;&amp; !tieneVinculos}" enter="{txtTipoCambio.setFocus()}"/>
 						</s:HGroup>
 					</s:Panel>
@@ -2099,7 +2101,7 @@
 				
 					<s:Panel width="180" title="FECHA" styleName="pnlInterno" minHeight="0">
 						<s:HGroup width="100%" horizontalAlign="center">
-							<mx:DateField id="txtDate" width="100%" fontSize="18" paddingLeft="10" focusEnabled="false" selectedDate="{recibo.fechaDoc}" yearNavigationEnabled="true"
+							<mx:DateField id="txtDate" width="100%" fontSize="18" fontFamily="Helvetica" paddingLeft="10" focusEnabled="false" selectedDate="{recibo.fechaDoc}" yearNavigationEnabled="true"
 										  formatString="DD/MM/YYYY" locale="es" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" change="txtDate_changeHandler(event)" close="txtDate_closeHandler(event)"/>
 						</s:HGroup>
 					</s:Panel>
@@ -2136,16 +2138,20 @@
 							<s:HGroup width="100%" gap="0">
 								<s:Panel width="100%" minHeight="0" title="R.U.T COMPRADOR" styleName="pnlInterno">
 									<s:HGroup width="100%" horizontalAlign="center">
-										<s:TextInput id="txtRUT" width="100%" height="36" fontSize="16" paddingLeft="12" textAlign="left" change="txtRUT_changeHandler(event)" prompt="No tiene"
-													 text="@{recibo.rut}" restrict="0-9" editable="true" maxChars="12" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}"/>
+										<s:TextInput id="txtRUT" width="100%" height="36" fontSize="18" paddingLeft="12" textAlign="left" change="txtRUT_changeHandler(event)" prompt="No tiene"
+													 text="@{recibo.rut}" restrict="0-9" editable="true" maxChars="12" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" />
 									</s:HGroup>
 								</s:Panel>
 							</s:HGroup>
 	
 							<s:Panel width="100%" height="100%" title="DATOS CLIENTE" styleName="pnlInterno" minHeight="0" >
 								<s:HGroup width="100%" horizontalAlign="center">
-									<mx:Form width="100%" textAlign="right">
-										<mx:FormItem width="100%" label="Cliente">
+									<s:Form width="100%" textAlign="right">
+										<s:layout>
+											<s:FormLayout gap="-12" />
+										</s:layout>
+
+										<s:FormItem width="100%" label="Cliente">
 											<s:HGroup width="100%" gap="3" verticalAlign="middle">
 												<components:MyAutoComplete id="cmbClient" width="100%" textAlign="left" change="cmbClient_changeHandler(event)"
 																		   keyDown="capture_keyDownHandlerCliente(event)" dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre"
@@ -2159,18 +2165,18 @@
 																		 enabled="{recibo.cliente &amp;&amp; recibo.cliente.documentsPendientes}" />
 
 											</s:HGroup>
-										</mx:FormItem>
-										<mx:FormItem width="100%" label="Razón social">
+										</s:FormItem>
+										<s:FormItem width="100%" label="Razón social">
 											<s:TextInput id="txtRazonSocial" width="100%" textAlign="left" prompt="Ingrese razón social" text="@{recibo.razonSocial}" editable="{!_modoVisualizacion}"
 														 maxChars="128" enabled="{!tieneVinculos}" enter="{txtDate.setFocus();txtDate.open();}"/>
-										</mx:FormItem>
-										<mx:FormItem width="100%" label="Departamento">
+										</s:FormItem>
+										<s:FormItem width="100%" label="Departamento">
 											<s:TextInput id="txtDpto" width="100%" textAlign="left" enter="{txtDirection.setFocus()}" prompt="Departamento" text="@{recibo.departamento}" editable="false" maxChars="40" enabled="{!tieneVinculos}"/>
-										</mx:FormItem>
-										<mx:FormItem width="100%" label="Dirección">
+										</s:FormItem>
+										<s:FormItem width="100%" label="Dirección">
 											<s:TextInput id="txtDirection" width="100%" textAlign="left" enter="{txtRUT.setFocus()}" prompt="Dirección" text="@{recibo.direccion}" editable="false" maxChars="100" enabled="{!tieneVinculos}"/>
-										</mx:FormItem>
-									</mx:Form>
+										</s:FormItem>
+									</s:Form>
 								</s:HGroup>
 							</s:Panel>
 						</s:VGroup>
@@ -2344,16 +2350,26 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 	
-											<s:GridColumn width="78" dataField="factura.fecha" headerText="FECHA" editable="false" labelFunction="date_labelFunction" />
+											<s:GridColumn width="78" dataField="factura.fecha" headerText="FECHA" editable="false" labelFunction="date_labelFunction">
+												<s:itemRenderer>
+													<fx:Component>
+														<s:DefaultGridItemRenderer fontSize="12" textAlign="left"/>
+													</fx:Component>
+												</s:itemRenderer>
+											</s:GridColumn>
 	
-											<s:GridColumn width="78" dataField="factura.moneda" resizable="false" headerText="MONEDA" editable="false" labelFunction="moneda_labelFunction" />
+											<s:GridColumn width="78" dataField="factura.moneda" resizable="false" headerText="MONEDA" editable="false" labelFunction="moneda_labelFunction" >
+												<s:itemRenderer>
+													<fx:Component>
+														<s:DefaultGridItemRenderer fontSize="12" textAlign="left"/>
+													</fx:Component>
+												</s:itemRenderer>
+											</s:GridColumn>
 											
 											<s:GridColumn width="80" dataField="factura.total" headerText="TOTAL" editable="false" labelFunction="total_labelFunction">
 												<s:itemRenderer>
 													<fx:Component>
-														<s:GridItemRenderer>
-															<s:Label id="labelDisplay" textAlign="right" right="3" top="3" height="100%" verticalAlign="middle" fontSize="12"/>
-														</s:GridItemRenderer>
+														<s:DefaultGridItemRenderer fontSize="12" textAlign="right"/>
 													</fx:Component>
 												</s:itemRenderer>
 											</s:GridColumn>
@@ -2361,9 +2377,7 @@
 											<s:GridColumn width="80" dataField="factura.saldo" resizable="false" headerText="SALDO" editable="false" labelFunction="saldo_labelFunction" >
 												<s:itemRenderer>
 													<fx:Component>
-														<s:GridItemRenderer>
-															<s:Label id="labelDisplay" textAlign="right" right="3" top="3" height="100%" verticalAlign="middle" fontSize="12"/>
-														</s:GridItemRenderer>
+														<s:DefaultGridItemRenderer fontSize="12" textAlign="right"/>
 													</fx:Component>
 												</s:itemRenderer>
 											</s:GridColumn>
@@ -2544,7 +2558,7 @@
 							<s:controlBarContent>
 								<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
 									<s:Spacer width="100%" />
-									<s:Button id="cmdAgregar" width="110" click="cmdAgregar_clickHandler(event)" styleName="textButton" label="Agregar vinculo" toolTip="Agregar factura"
+									<s:Button id="cmdAgregar" width="140" click="cmdAgregar_clickHandler(event)" styleName="textButton" label="Agregar vinculo" toolTip="Agregar factura"
 											  focusEnabled="true" enabled="{saldoPendiente.numberValue() > 0}" visible="{!recibo.emitido}"/>
 								</s:HGroup>
 							</s:controlBarContent>

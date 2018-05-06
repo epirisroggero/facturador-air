@@ -257,11 +257,11 @@
 			<s:HGroup width="100%" paddingTop="10" gap="25">
 				<s:VGroup>
 					<s:Label text="Fecha desde" />
-					<mx:DateField id="txtFechaDesde" yearNavigationEnabled="true" creationComplete="txtFechaDesde_creationCompleteHandler(event)"/>
+					<mx:DateField id="txtFechaDesde" yearNavigationEnabled="true" fontFamily="Helvetica" creationComplete="txtFechaDesde_creationCompleteHandler(event)"/>
 				</s:VGroup>
 				<s:VGroup>
 					<s:Label text="Fecha hasta" />
-					<mx:DateField id="txtFechaHasta" selectedDate="{new Date()}" yearNavigationEnabled="true"/>
+					<mx:DateField id="txtFechaHasta" selectedDate="{new Date()}" fontFamily="Helvetica" yearNavigationEnabled="true"/>
 				</s:VGroup>
 				<s:VGroup>
 					<s:Label text="Gastos período" />

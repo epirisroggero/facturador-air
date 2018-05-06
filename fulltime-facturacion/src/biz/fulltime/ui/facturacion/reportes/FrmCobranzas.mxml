@@ -242,10 +242,10 @@
 					<s:FormLayout gap="-12" />
 				</s:layout>
 				<s:FormItem label="Desde:">
-					<mx:DateField id="txtFechaDesde" change="txtFechaDesde_changeHandler(event)" yearNavigationEnabled="true"/>
+					<mx:DateField id="txtFechaDesde" change="txtFechaDesde_changeHandler(event)" yearNavigationEnabled="true" fontFamily="Helvetica"/>
 				</s:FormItem>
 				<s:FormItem label="Hasta:">
-					<mx:DateField id="txtFechaHasta" change="txtFechaHasta_changeHandler(event)" selectedDate="{new Date()}" yearNavigationEnabled="true"/>
+					<mx:DateField id="txtFechaHasta" change="txtFechaHasta_changeHandler(event)" selectedDate="{new Date()}" yearNavigationEnabled="true" fontFamily="Helvetica"/>
 				</s:FormItem>
 				<s:Spacer height="30" />
 			</s:Form>

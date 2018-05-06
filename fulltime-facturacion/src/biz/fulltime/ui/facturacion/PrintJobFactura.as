@@ -40,6 +40,8 @@ import flash.text.TextFormatAlign;
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 
+import flashx.textLayout.container.ISandboxSupport;
+
 import mx.controls.Alert;
 import mx.core.FlexGlobals;
 import mx.events.CloseEvent;
@@ -82,13 +84,13 @@ public class PrintJobFactura {
 
 	private var _print_vias:Array = [VIA_CLIENTE, VIA_COBRANZA];
 
-	private var url_factura:String = "/assets/general/Factura.jpg";
+	private var url_factura:String = "http://localhost:8180/facturador/assets/general/Factura.jpg";
 
-	private var url_ordenCompra:String = "/assets/general/OrdenDeCompra.jpg";
+	private var url_ordenCompra:String = "http://localhost:8180/facturador/assets/general/OrdenDeCompra.jpg";
 
-	private var url_cotizacion:String = "/assets/general/Cotizacion.jpg";
+	private var url_cotizacion:String = "http://localhost:8180/facturador/assets/general/Cotizacion.jpg";
 
-	private var url_importacion:String = "/assets/general/ImportacionDeCompra.png";
+	private var url_importacion:String = "http://localhost:8180/facturador/assets/general/ImportacionDeCompra.png";
 
 	private var loader:Loader = new Loader();
 
@@ -400,13 +402,13 @@ public class PrintJobFactura {
 		var matrix:Matrix = new Matrix();
 		matrix.scale((626 / bitmap.width), (557 / bitmap.height));
 
-		frame.graphics.lineStyle(1, 0xffffff);
+		frame.graphics.lineStyle(1, 0xff0000);
 		if (isEMail || print_vias.length == 1 || (_documento.esRemito() && !_documento.esCotizacionDeVenta && !_documento.esOrdenDeVenta)) {
 			frame.graphics.beginBitmapFill(bitmap, matrix, true);
 		}
 		frame.graphics.drawRect(0, 0, 626, 557);
 		frame.graphics.endFill();
-
+		
 		sheet.addChild(frame);
 
 		// Agregar campos de la factura.				
@@ -620,46 +622,45 @@ public class PrintJobFactura {
 	}
 
 	private function printOnePerPage():void {
-		var _printer:String;
-		if (!forzarRemitos && (!_documento.esRemito() || _documento.esCotizacionDeVenta || _documento.esOrdenDeVenta)) {
-			_printer = GeneralOptions.getInstance().opciones.impresoras.facturacion;
+//		var _printer:String;
+//		if (!forzarRemitos && (!_documento.esRemito() || _documento.esCotizacionDeVenta || _documento.esOrdenDeVenta)) {
+//			_printer = GeneralOptions.getInstance().opciones.impresoras.facturacion;
+//		} else {
+//			_printer = GeneralOptions.getInstance().opciones.impresoras.remitos;
+//		}
+//
+//		if (_printer == null || _printer == "") {
+//			throw new Error("No hay impresora definida. Ir a Configuración > Preferencias");
+//		}
+		
+		sheet1 = new Sprite();
+		if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" || _documento.comprobante.esImportacion()) {
+			createSheetSMS(sheet1);
 		} else {
-			_printer = GeneralOptions.getInstance().opciones.impresoras.remitos;
+			createSheet(sheet1);
 		}
-
-		if (_printer == null || _printer == "") {
-			throw new Error("No hay impresora definida. Ir a Configuración > Preferencias");
-		}
+		
 		var pj:PrintJob = new PrintJob();
-		pj.printer = _printer;
-		pj.orientation = PrintJobOrientation.LANDSCAPE;
-
+		pj.start();
+			
 		var pagesToPrint:uint = 0;
-		if (pj.start2(null, false)) {
-			for each (var via:String in print_vias) {
-				_via = via;
+		for each (var via:String in print_vias) {
+			_via = via;
 
-				sheet1 = new Sprite();
-				if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" || _documento.comprobante.esImportacion()) {
-					createSheetSMS(sheet1);
-				} else {
-					createSheet(sheet1);
-				}
+			sheet1.width = pj.pageWidth;
+			sheet1.height = pj.pageHeight;
 
-				sheet1.width = pj.pageWidth;
-				sheet1.height = pj.pageHeight;
-
-				try {
-					pj.addPage(sheet1);
-					pagesToPrint++;
-				} catch (e:Error) {
-					Alert.show(e.message.toString());
-				}
-			}
-			if (pagesToPrint > 0) {
-				pj.send();
+			try {
+				pj.addPage(sheet1);
+				pagesToPrint++;
+			} catch (e:Error) {
+				Alert.show(e.message.toString());
 			}
 		}
+		if (pagesToPrint > 0) {
+			pj.send();
+		}
+		
 
 	}
 

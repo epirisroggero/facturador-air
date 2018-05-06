@@ -327,11 +327,11 @@
 				</s:FormItem>
 				<s:FormItem label="Fecha desde">
 					<mx:DateField id="txtFechaDesde" change="txtFechaDesde_changeHandler(event)" creationComplete="txtFechaDesde_creationCompleteHandler(event)"
-								  yearNavigationEnabled="true"/>
+								  yearNavigationEnabled="true" fontFamily="Helvetica"/>
 				</s:FormItem>
 				<s:FormItem label="Fecha hasta">
 					<s:HGroup width="100%" verticalAlign="middle">
-						<mx:DateField id="txtFechaHasta" change="txtFechaHasta_changeHandler(event)" yearNavigationEnabled="true" />
+						<mx:DateField id="txtFechaHasta" change="txtFechaHasta_changeHandler(event)" yearNavigationEnabled="true" fontFamily="Helvetica"/>
 						<s:Label text="(Opcional)" />
 					</s:HGroup>
 

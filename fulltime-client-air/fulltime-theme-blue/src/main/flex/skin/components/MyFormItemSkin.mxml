@@ -113,7 +113,7 @@
 	<!--- @copy spark.components.FormItem#sequenceLabelDisplay -->
 	<s:Label id="sequenceLabelDisplay" bottom="row1:10" fontWeight="normal" left="sequenceCol:10" right="sequenceCol:5" baseline="row1:0" />
 	<!--- @copy spark.components.FormItem#labelDisplay -->
-	<s:Label id="labelDisplay" top="row1:5" bottom="row1:5" fontWeight="normal" left="labelCol:0" right="labelCol:10" baseline="row1:2" fontSize="13"/>
+	<s:Label id="labelDisplay" top="row1:5" bottom="row1:5" fontWeight="normal" left="labelCol:0" right="labelCol:10" baseline="row1:2" />
 	<!--- @copy spark.components.SkinnableContainer#contentGroup -->
 	<!-- Don't show the error tip on the content elements -->
 	<s:Group id="contentGroup" bottom="row1:10" left="contentCol:0" right="contentCol:1" showErrorTip="false" showErrorSkin="true" baseline="row1:0">

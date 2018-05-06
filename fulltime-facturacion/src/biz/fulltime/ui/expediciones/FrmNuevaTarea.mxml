@@ -996,7 +996,7 @@
 								<s:FormLayout paddingBottom="5" gap="-12"/>
 							</s:layout>
 							<s:FormItem fontWeight="bold" textAlign="right" label="Fecha" includeInLayout="{showFecha}" visible="{showFecha}">
-								<mx:DateField id="dfSelectedDate" selectedDate="{fecha}" width="140" change="dfSelectedDate_changeHandler(event)" yearNavigationEnabled="true" disabledRanges="{[ {rangeEnd: getEndDate()} ]}"/>
+								<mx:DateField id="dfSelectedDate" selectedDate="{fecha}" width="140" fontFamily="Helvetica" change="dfSelectedDate_changeHandler(event)" yearNavigationEnabled="true" disabledRanges="{[ {rangeEnd: getEndDate()} ]}"/>
 							</s:FormItem>
 							
 							<s:FormItem width="100%" color="red" textAlign="right" fontWeight="bold" label="Fecha Inicio:" includeInLayout="{!nueva &amp;&amp; tarea.fechaInicio != null}"

@@ -101,7 +101,7 @@
 					var vencida:Boolean = docDeudor.tieneCuotaVencida;
 
 					var lblfecha:Label = new Label();
-					lblfecha.width = 70;
+					lblfecha.width = 80;
 					lblfecha.text = fecha;
 					lblfecha.styleName = vencida ? "lblVencida" : "lblNoVencida";
 
@@ -262,7 +262,7 @@
 				<s:layout>
 					<s:HorizontalLayout paddingBottom="2" paddingLeft="3" paddingRight="3" paddingTop="2" verticalAlign="middle" gap="0" />
 				</s:layout>
-				<s:Label width="70" styleName="titleLabel" text="Fecha" />
+				<s:Label width="80" styleName="titleLabel" text="Fecha" />
 				<s:Label width="240" styleName="titleLabel" text="Comprobante" />
 				<s:Label width="50" styleName="titleNumberLabel" text="Nro" />
 				<s:Spacer width="5" />

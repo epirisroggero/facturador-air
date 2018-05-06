@@ -468,11 +468,12 @@
 						<s:HGroup verticalAlign="middle">
 							<s:Label width="90" text="Fecha Desde:" />
 							<mx:DateField id="txtFechaDesde" width="110" change="txtFechaDesde_changeHandler(event)" creationComplete="txtFechaDesde_creationCompleteHandler(event)"
-										  yearNavigationEnabled="true" focusEnabled="true" />
+										  yearNavigationEnabled="true" focusEnabled="true" fontFamily="Helvetica" />
 						</s:HGroup>
 						<s:HGroup verticalAlign="middle">
 							<s:Label width="90" text="Fecha Hasta:" />
-							<mx:DateField id="txtFechaHasta" width="110" change="txtFechaHasta_changeHandler(event)" yearNavigationEnabled="true" focusEnabled="true" selectedDate="{new Date()}" />
+							<mx:DateField id="txtFechaHasta" width="110" change="txtFechaHasta_changeHandler(event)" yearNavigationEnabled="true" focusEnabled="true" 
+										  fontFamily="Helvetica" selectedDate="{new Date()}" />
 						</s:HGroup>
 					</s:VGroup>
 				</s:BorderContainer>

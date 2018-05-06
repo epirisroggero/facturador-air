@@ -114,7 +114,7 @@
 			<mx:VRule height="100%" />
 			<s:VGroup width="100%" height="100%" verticalAlign="middle" paddingLeft="4" paddingTop="5" paddingBottom="5">
 				<s:Label id="lblNombre" width="100%" fontSize="{_fontSize}" text="{_nombre}" showTruncationTip="true" maxDisplayedLines="1" color="{_color}"/>
-				<s:Label id="lblRazonSocial" width="100%" fontSize="{_fontSize - 2}" text="{_razonSocial}" fontStyle="italic" showTruncationTip="true" maxDisplayedLines="1" color="{_color}"/>
+				<s:Label id="lblRazonSocial" width="100%" fontSize="{_fontSize - 1}" text="{_razonSocial}" color="#666666" showTruncationTip="true" maxDisplayedLines="1"/>
 			</s:VGroup>
 			<s:VGroup width="20" height="100%" horizontalAlign="center" paddingRight="10" verticalAlign="middle">
 				<mx:Button id="btnRemove" width="8" height="8" click="remove(event)" styleName="buttonRemoveIcon" visible="{_removeEnabled}" toolTip="Borrar Cliente"/>

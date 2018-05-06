@@ -152,7 +152,7 @@
 					<s:ArrayList>
 						<s:GridColumn width="90" dataField="comprobante.nombre" headerText="Tipo" sortable="true" />
 						<s:GridColumn dataField="documentoSerie" headerText="Serie" sortable="true" />
-						<s:GridColumn dataField="documentoNumero" headerText="Número" sortable="true" />
+						<s:GridColumn dataField="documentoNumero" headerText="Número" sortable="true"  />
 						<s:GridColumn dataField="fecha" headerText="Fecha" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
@@ -181,7 +181,18 @@
 							</s:itemRenderer>
 						</s:GridColumn>
 						<s:GridColumn width="150" dataField="cliente.nombre" headerText="Contato" sortable="true" visible="{showCliente}" />
-						<s:GridColumn dataField="cantidad" headerText="Cant." sortable="true" />
+						<s:GridColumn dataField="cantidad" headerText="Cant." sortable="true">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="left">
+										<fx:Script>
+											<![CDATA[
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
 						<s:GridColumn dataField="moneda.nombre" headerText="Moneda" sortable="true" />
 						<s:GridColumn dataField="precioUnitario" headerText="Precio" sortable="true">
 							<s:itemRenderer>

@@ -357,7 +357,7 @@
 	</s:HGroup>
 
 	<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="75" verticalAlign="middle">
-		<s:BorderContainer width="440" borderColor="#999999" borderStyle="inset" cornerRadius="1" dropShadowVisible="false">
+		<s:BorderContainer width="400" borderColor="#999999" borderStyle="inset" cornerRadius="5" dropShadowVisible="false">
 			<s:backgroundFill>
 				<mx:LinearGradient rotation="90">
 					<mx:entries>
@@ -370,9 +370,10 @@
 			<s:layout>
 				<s:VerticalLayout horizontalAlign="center" paddingBottom="20" paddingLeft="30" paddingRight="30" paddingTop="30" verticalAlign="middle" />
 			</s:layout>
-
+			<s:Label text="Ingresar" fontSize="20"/>
+			<s:Spacer height="15"/>
 			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
-				<s:Label text="Usuario" width="80" styleName="myLabel" />
+				<s:Label text="Usuario:" width="80" fontSize="14"/>
 				<components:MyAutoComplete id="tiUsr" width="100%" textAlign="left" change="tiUsr_changeHandler(event)" dataProvider="{ GeneralOptions.getInstance().usuarios }"
 										   labelField="nombre" matchType="anyPart" prompt="Ingrese Usuario" allowNewValues="false"
 										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
@@ -381,11 +382,11 @@
 
 
 			</s:HGroup>
-			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
-				<s:Label text="Contraseña" width="80" styleName="myLabel" />
+			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle" paddingTop="20">
+				<s:Label text="Contraseña:" width="80" fontSize="14"/>
 				<s:TextInput id="tiPwd" width="100%" keyDown="tiPwd_keyDownHandler(event)" displayAsPassword="true" text="" maxChars="16" enabled="{enabledButtons}" focusEnabled="true" enter="{loginButton.setFocus()}"/>
 			</s:HGroup>
-			<mx:Spacer height="10" />
+			<s:Spacer height="10" />
 			<s:HGroup width="100%" horizontalAlign="center">
 				<s:Label id="lblError" color="#CD0000" visible="{error_visible}" text="{error_text}" styleName="myLabel" maxDisplayedLines="2" />
 			</s:HGroup>
@@ -396,7 +397,7 @@
 			</s:HGroup>
 		</s:BorderContainer>
 
-		<s:HGroup width="440" horizontalAlign="right" paddingTop="10">
+		<s:HGroup width="400" horizontalAlign="right" paddingTop="10">
 			<mx:LinkButton click="linkbutton2_clickHandler(event)" label="Buscar actualizaciones" />
 			<s:Spacer width="100%" />
 			<mx:LinkButton icon="{configIcon}" click="linkbutton1_clickHandler(event)" label="Configuración" />

@@ -408,7 +408,7 @@
 			}
 
 			private function comprobante_cod_labelFunction(item:Object, column:GridColumn):String {
-				return /*item.comprobante.codigo + " - " + */item.comprobante.nombre;
+				return item.comprobante.nombre ? String(item.comprobante.nombre).toUpperCase() : "";
 			}
 
 			private function cae_labelFunction(item:Object, column:GridColumn):String {

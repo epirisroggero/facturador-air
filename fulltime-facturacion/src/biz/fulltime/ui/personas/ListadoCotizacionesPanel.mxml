@@ -300,21 +300,7 @@
 			<s:GridColumn width="85" dataField="fecha" headerText="Fecha" labelFunction="date_labelFunction" />
 			<s:GridColumn width="120" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
 			<s:GridColumn width="250" dataField="cliente" headerText="Cliente" labelFunction="cliente_labelFunction" />
-			<s:GridColumn dataField="total" headerText="Total">
-				<s:headerRenderer>
-					<fx:Component>
-						<s:DefaultGridHeaderRenderer width="90" textAlign="right" textAlignLast="end" textJustify="distribute">
-							<fx:Script>
-								<![CDATA[
-									override public function prepare(hasBeenRecycled:Boolean):void {
-										super.labelDisplay.setStyle("textAlign", "end");
-										super.prepare(hasBeenRecycled);
-									}
-								]]>
-							</fx:Script>
-						</s:DefaultGridHeaderRenderer>
-					</fx:Component>
-				</s:headerRenderer>
+			<s:GridColumn width="90" dataField="total" headerText="Total">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -419,20 +405,6 @@
 										<s:columns>
 											<s:ArrayList>
 												<s:GridColumn width="80" dataField="documento.numero" headerText="Cotización">
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="left">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "start");
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer textAlign="left">
@@ -454,20 +426,6 @@
 												</s:GridColumn>
 												
 												<s:GridColumn width="80" dataField="cantidad" headerText="Cantidad">
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "start");
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer textAlign="right">
@@ -489,20 +447,6 @@
 												</s:GridColumn>
 												
 												<s:GridColumn width="250" dataField="cliente" headerText="Cliente" >
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "start");
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer fontSize="11" textAlign="left">
@@ -529,20 +473,6 @@
 												
 												
 												<s:GridColumn width="130" dataField="articulo" headerText="Artículo">
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "start");
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer fontSize="11" textAlign="left">
@@ -566,21 +496,6 @@
 													</s:itemRenderer>
 												</s:GridColumn>
 												<s:GridColumn dataField="concepto" headerText="Descripción">
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "start");
-																			
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer fontSize="11" textAlign="left" verticalCenter="0">
@@ -600,20 +515,6 @@
 													</s:itemRenderer>
 												</s:GridColumn>
 												<s:GridColumn width="80" dataField="precio" headerText="P. Unitario">
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "end");
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer textAlign="right">
@@ -635,20 +536,6 @@
 												</s:GridColumn>
 												
 												<s:GridColumn width="80" headerText="Importe" editable="false">
-													<s:headerRenderer>
-														<fx:Component>
-															<s:DefaultGridHeaderRenderer width="100%" fontSize="11" fontWeight="bold" textJustify="distribute" textAlignLast="right">
-																<fx:Script>
-																	<![CDATA[
-																		override public function prepare(hasBeenRecycled:Boolean):void {
-																			super.labelDisplay.setStyle("textAlign", "end");
-																			super.prepare(hasBeenRecycled);
-																		}
-																	]]>
-																</fx:Script>
-															</s:DefaultGridHeaderRenderer>
-														</fx:Component>
-													</s:headerRenderer>
 													<s:itemRenderer>
 														<fx:Component>
 															<s:DefaultGridItemRenderer textAlign="right">

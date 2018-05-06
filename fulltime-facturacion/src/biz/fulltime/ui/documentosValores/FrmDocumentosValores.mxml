@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
-		 width="100%" height="100%">
+		 width="100%" height="100%" xmlns:components="biz.fulltime.ui.components.*" xmlns:forms="biz.fulltime.ui.forms.*" xmlns:components1="components.*">
 
 	<fx:Script>
 		<![CDATA[
@@ -26,14 +26,6 @@
 			[Bindable]
 			private var netoComprobante:BigDecimal = BigDecimal.ZERO;
 			
-
-			private function moneda_labelFunction(item:Object, column:GridColumn):String {
-				return item.moneda.codigo + " - " + item.moneda.simbolo;
-			}
-
-			private function documento_labelFunction(item:Object, column:GridColumn):String {
-				return item.formaPago.codigo + " - " + item.formaPago.nombre;
-			}
 
 			[Bindable]
 			public function get documentosValores():ArrayCollection {
@@ -87,12 +79,50 @@
 			}
 			
 			
+			protected function cmdCheques_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function cmdTarjetas_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function cmdDocumentos_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function cmdBanco_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			private function hasPermEdition():Boolean {
+				return true;
+			}
+
+			
+			protected function cmdNuevo_clickHandler(event:MouseEvent):void {
+				var docFormaPago:DocumentoFormaPago = new DocumentoFormaPago()
+				
+				documentosValores.addItem(docFormaPago);
+				
+			}
+			
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
 		]]>
 	</fx:Script>
 
 	<fx:Declarations>
 		<s:ArrayList id="cols">
-			<s:GridColumn width="40" dataField="selected" headerText="">
+			<s:GridColumn width="40" dataField="selected" headerText="" rendererIsEditable="true">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:GridItemRenderer>
@@ -114,39 +144,238 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn dataField="documento" headerText="Documento" labelFunction="documento_labelFunction" />
-			<s:GridColumn width="60" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
-			<s:GridColumn width="120" dataField="total" headerText="Monto" />
-			<s:GridColumn width="120" dataField="importe" headerText="Importe" />
+
+			<s:GridColumn dataField="formaPago" headerText="Documento" rendererIsEditable="true">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer>
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.model.DocumentoFormaPago;
+									import biz.fulltime.model.FormaPago;
+									
+									import spark.events.IndexChangeEvent;
+									
+									import util.CatalogoFactory;
+									
+									public function codigoNombreLabelFunction(item:Object):String {
+										var label:String = "";
+										
+										if (item && item.hasOwnProperty("codigo")) {
+											label = item.codigo;
+										}
+										if (item && item.hasOwnProperty("nombre")) {
+											label += " - " + item.nombre;
+										}
+										return label;
+									}
+									
+									public override function set data(value:Object):void {
+										super.data = value;
+										
+										if (DocumentoFormaPago(data).formaPago) {
+											for each (var formaPago:FormaPago in CatalogoFactory.getInstance().formasPago) {
+												if (formaPago.codigo == DocumentoFormaPago(data).formaPago.codigo) {
+													ddlFormaPago.selectedItem = formaPago;
+													break;
+												}
+											}
+										}										
+									}
+									
+									protected function ddlDocumento_changeHandler(event:IndexChangeEvent):void {
+										var formaPago:FormaPago = ddlFormaPago.selectedItem as FormaPago;
+										if (formaPago != null) {
+											DocumentoFormaPago(data).formaPago = formaPago;
+										} else {
+											DocumentoFormaPago(data).formaPago = CatalogoFactory.getInstance().formasPago.getItemAt(0) as FormaPago;
+										}
+										
+									}
+									
+								]]>
+							</fx:Script>
+							<s:HGroup width="100%" height="100%" paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2">
+								<s:DropDownList id="ddlFormaPago" width="100%" height="100%" dataProvider="{CatalogoFactory.getInstance().formasPago}" textAlign="left" 
+												labelFunction="codigoNombreLabelFunction" selectedItem="{DocumentoFormaPago(data).formaPago}" change="ddlDocumento_changeHandler(event)"/>
+							</s:HGroup>
+
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn width="120" dataField="moneda" headerText="Moneda" rendererIsEditable="true">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer>
+							<fx:Script>
+								<![CDATA[
+									import spark.events.IndexChangeEvent;
+									import biz.fulltime.model.Articulo;
+									import biz.fulltime.model.DocumentoFormaPago;
+									import biz.fulltime.model.LineaDocumento;
+									import biz.fulltime.model.Moneda;
+									
+									import com.hillelcoren.components.AutoComplete;
+									
+									import mx.events.FlexEvent;
+									
+									import spark.components.DataGrid;
+									
+									import util.CatalogoFactory;
+																		
+									public function codigoNombreLabelFunction(item:Object):String {
+										var label:String = "";
+										
+										if (item && item.hasOwnProperty("codigo")) {
+											label = item.codigo;
+										}
+										if (item && item.hasOwnProperty("simbolo")) {
+											label += " - " + item.simbolo;
+										}
+										return label;
+									}
+									
+									public override function set data(value:Object):void {
+										super.data = value;
+										
+										if (DocumentoFormaPago(data).moneda) {
+											for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+												if (moneda.codigo == DocumentoFormaPago(data).moneda.codigo) {
+													ddlMoneda.selectedItem = moneda;
+													break;
+												}
+											}
+										}										
+									}
+
+									protected function ddlMoneda_changeHandler(event:IndexChangeEvent):void {
+										var moneda:Moneda = ddlMoneda.selectedItem as Moneda;
+										if (moneda != null) {
+											DocumentoFormaPago(data).moneda = moneda;
+										} else {
+											DocumentoFormaPago(data).moneda = CatalogoFactory.getInstance().monedas.getItemAt(0) as Moneda;
+										}
+										
+									}
+									
+								]]>
+							</fx:Script>
+							<s:HGroup width="100%" height="100%" paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2">
+								<s:DropDownList id="ddlMoneda" width="100%" height="100%"  dataProvider="{CatalogoFactory.getInstance().monedas}" textAlign="left" 
+												labelFunction="codigoNombreLabelFunction" change="ddlMoneda_changeHandler(event)" />
+								
+								
+							</s:HGroup>
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+
+			</s:GridColumn>
+			<s:GridColumn width="120" dataField="total" headerText="Monto" rendererIsEditable="true">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer>
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.model.DocumentoFormaPago;
+									
+									import spark.events.IndexChangeEvent;
+									
+								]]>
+							</fx:Script>
+							
+							<s:HGroup width="100%" height="100%" paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2">
+								<components1:MyTextInput id="ns" width="100%" height="100%" permitirNegativos="false" data="{DocumentoFormaPago(data).total}" />
+							</s:HGroup>
+							
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn width="120" dataField="importe" headerText="Importe" editable="false">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer>
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.model.DocumentoFormaPago;
+									
+									import spark.events.IndexChangeEvent;
+									
+								]]>
+							</fx:Script>
+							
+							<fx:Declarations>
+								<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="2"  useGrouping="true" />
+							</fx:Declarations>
+							
+							<s:HGroup width="100%" height="100%" paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" horizontalAlign="right" verticalAlign="middle">
+								<s:Label text="{nf_Espanol_Espanol.format(DocumentoFormaPago(data).importe)}"/>
+							</s:HGroup>
+							
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+
+			</s:GridColumn>
 		</s:ArrayList>
 
-		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" decimalSeparator=","/>
 
-		<s:NumberFormatter id="nf_Espanol_Espanol2" fractionalDigits="2" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol2" fractionalDigits="2" decimalSeparator="," locale="es_ES" />
 	</fx:Declarations>
 
 
-	<s:Panel width="100%" height="100%" title="{documento.comprobante.nombre.toUpperCase()} Nro. {documento.serie + documento.numero}" styleName="pnlForm">
+	<s:Panel width="100%" height="100%" title="{documento.comprobante.nombre.toUpperCase()} N° {documento.serie + documento.numero}" styleName="pnlForm">
 		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
 			<s:VGroup width="100%" height="100%" gap="10" horizontalAlign="right">
+				<s:VGroup paddingRight="10" paddingTop="5" horizontalAlign="right">
+					<s:Label width="160" text="Cotización {_documento.moneda.simbolo}" />
+					<s:TextInput width="160" text="0.00000" textAlign="right"/>
+				</s:VGroup>
+
 				<s:DataGrid id="dgDocumentosValores" width="100%" height="100%" doubleClick="dgDocumentosValores_doubleClickHandler(event)" keyDown="dgDocumentosValores_keyDownHandler(event)"
-							sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" dataProvider="{documentosValores}">
+							sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" dataProvider="{documentosValores}" editable="{hasPermEdition()}">
 				</s:DataGrid>
+				<s:HGroup paddingRight="10" paddingTop="5" paddingBottom="20" horizontalAlign="right">
+					<s:Button id="cmdNuevo" width="90" styleName="nuevoButton" label="Nuevo" click="cmdNuevo_clickHandler(event)"/>
+				</s:HGroup>
+
+				<s:Line width="100%" height="2" left="0">
+					<s:stroke>
+						<s:SolidColorStroke id="lineStroke" color="blue" alpha="1" />
+					</s:stroke>
+				</s:Line>
+
 				<s:HGroup paddingRight="10" paddingTop="5" horizontalAlign="right">
-					<s:Label width="160" text="Total Importe: " />
-					<s:Label width="80" text="{documento.moneda.simbolo} {importeTotal}" textAlign="right"/>
+					<s:Label width="160" text="Total Importe {documento.moneda.simbolo}" />
+					<s:Label width="80" text="{importeTotal}" textAlign="right"/>
 				</s:HGroup>
 				<s:HGroup paddingRight="10" paddingTop="5" paddingBottom="10" horizontalAlign="right">
-					<s:Label width="160"  text="Neto Comprobante: " />
-					<s:Label width="80" text="{documento.moneda.simbolo} {netoComprobante}" textAlign="right"/>
+					<s:Label width="160"  text="Neto Comprobante {documento.moneda.simbolo}" />
+					<s:Label width="80" text="{netoComprobante}" textAlign="right"/>
 				</s:HGroup>
 			</s:VGroup>
+			<s:HGroup paddingBottom="7" paddingLeft="5">
+				<s:BorderContainer backgroundAlpha=".75" backgroundColor="0xFFCACA" cornerRadius="5" minWidth="0" minHeight="0" borderWeight="2">
+					<s:layout>
+						<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" />
+					</s:layout>
+					<mx:LinkButton id="cmdCheques" height="32" click="cmdCheques_clickHandler(event)" label="Cheques" enabled="true" styleName="prueba1" />
+					<mx:LinkButton id="cmdTarjetas" height="32" click="cmdTarjetas_clickHandler(event)" label="Tarjetas" enabled="true" styleName="prueba1" cornerRadius="0"/>
+					<mx:LinkButton id="cmdDocumentos" height="32" click="cmdDocumentos_clickHandler(event)" label="Documentos" enabled="true" styleName="prueba1" cornerRadius="0"/>
+					<mx:LinkButton id="cmdBanco" height="32" click="cmdBanco_clickHandler(event)" label="Banco" styleName="prueba1"/>
+				</s:BorderContainer>
+			</s:HGroup>
 		</s:VGroup>
+		
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" minWidth="80" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="110" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

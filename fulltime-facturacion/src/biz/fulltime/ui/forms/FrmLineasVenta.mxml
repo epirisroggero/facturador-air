@@ -693,7 +693,7 @@
 	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
 		<s:VGroup width="100%" height="100%">
 			<s:HGroup width="100%" height="100%" gap="0">
-				<s:DataGrid id="dgLineasVenta" width="100%" height="100%" fontSize="10" creationComplete="dgLineasVenta_creationCompleteHandler(event)" keyDown="dg_keyDownHandler(event)"
+				<s:DataGrid id="dgLineasVenta" width="100%" height="100%" fontSize="12" creationComplete="dgLineasVenta_creationCompleteHandler(event)" keyDown="dg_keyDownHandler(event)"
 							gridItemEditorSessionSave="dgLineasVenta_gridItemEditorSessionSaveHandler(event)" dataProvider="{lineasVenta.lineas}" selectionMode="singleCell" sortableColumns="false"
 							rowHeight="25" selectionChange="dgLineasVenta_selectionChangeHandler(event)" editable="{hasPermEdition()}">
 					<s:columns>

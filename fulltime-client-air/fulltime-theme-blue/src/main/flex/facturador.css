@@ -13,43 +13,213 @@
 //------------------------------
 */
 
+
+
 @font-face {
 	src:url("./assets/fonts/Sansation_Regular.ttf");
-	fontFamily: Sansation;
+	fontFamily: 'Sansation';
+	embedAsCFF: true;
+}
+
+@font-face {
+	src:url("./assets/fonts/Sansation_Bold.ttf");
+	fontFamily: 'Sansation';
+	fontWeight: bold;
+	embedAsCFF: true;
+}
+
+@font-face {
+	src:url("./assets/fonts/Sansation_Italic.ttf");
+	fontFamily: 'Sansation';
+	fontStyle: italic;
+	embedAsCFF: true;
+}
+
+@font-face {
+	src:url("./assets/fonts/Roboto/Roboto-Regular.ttf");
+	fontFamily: 'Roboto';
+	embedAsCFF: true;
+}
+
+@font-face {
+	src:url("./assets/fonts/Roboto/Roboto-Bold.ttf");
+	fontFamily: 'Roboto';
+	fontWeight: bold;
+	embedAsCFF: true;
+}
+
+@font-face {
+	src:url("./assets/fonts/Roboto/Roboto-Italic.ttf");
+	fontFamily: 'Roboto';
+	fontStyle: italic;
 	embedAsCFF: true;
 }
 
 
 global {
-	font-family: Helvetica;
+	font-family: arial,sans-serif;
 	fontWeight: normal;
 }
 
-s|Button.emphasized {
-	skinClass: ClassReference("skin.components.ButtonSkin");
-}
 
 s|TitleWindow {
 	skinClass: ClassReference("skin.components.MyTitleWindowSkin");
 }
 
-
 s|DropDownList {
-	font-family: Sansation;
+	font-family: 'Roboto';
+	font-size: 13pt;
 	skinClass: ClassReference("skin.components.comboBox.MyDropDownListSkin");
-	
 	cornerRadius: 0;
 }
 
+s|TextInput {
+	font-family: 'Roboto';
+	color: #000000;
+}
+
+s|TextInput:normalWithPrompt {
+	font-family: 'Roboto';
+	color: #C1C1C1;
+}
+
+s|TextInput:disabledWithPrompt {
+	font-family: 'Roboto';
+	color: #CCFFFF;
+}
+
+s|WindowedApplication {	 
+	skinClass: ClassReference("skin.components.CustomApplicationSkin");
+	background-blend: difference;	
+	background-position: center;
+}
+
+s|Panel {
+	skinClass: ClassReference("skin.components.MyPanelSkin");
+	fontLabelTitle: 18;
+	shadowFilterColor: "0x000000";
+}
+
+s|DataGrid {	
+	font-family: arial,sans-serif;
+	font-size: 13pt;
+	
+	skinClass: ClassReference("skin.components.dataGrid.AbstractDataGridSkin");
+	selectionColor: #CEDBEF;
+	borderAlpha: 0.2;
+}
+
+s|DefaultGridItemRenderer {
+	font-family: 'Roboto';
+	font-size: 13pt;
+	font-weight: normal;
+
+	color: #000000;
+}
+
+s|DefaultGridHeaderRenderer s|Label#labelDisplay {
+	font-family: 'Roboto';
+	fontSize: 13pt;	
+	font-weight: normal;
+	
+	color:black;
+}
+
+s|RichText {
+	font-family: 'Roboto';
+}
+
+s|RichEditableText {
+	font-family: 'Roboto';
+}	
+
+s|TextArea {
+	font-family: 'Roboto';
+	font-size: 13pt;
+}
+
+s|Label {
+	font-family: 'Sansation';
+	font-size: 13pt;
+}
+
+s|FormItem {
+	font-family: 'Sansation';
+	font-size: 13pt;
+	skin-class: ClassReference("skin.components.MyFormItemSkin");
+}
+
+s|FormItem s|Label#labelDisplay {
+	font-family: 'Sansation';
+	fontWeight: normal;
+	fontSize: 13pt;
+	
+	textAlign: right;
+	color:black;
+}
+
+s|Button.emphasized {
+	font-family: 'Sansation';
+	font-size: 13pt;
+	skinClass: ClassReference("skin.components.ButtonSkin");
+}
+
+s|ButtonBar {
+	font-family: 'Sansation';
+	font-size: 13pt;
+	skin-class: ClassReference("skin.components.MyButtonBarSkin"); 
+}
+
+/*s|ButtonBar s|ButtonBarButton:upAndSelected,
+s|ButtonBar s|ButtonBarButton:overAndSelected,
+s|ButtonBar s|ButtonBarButton:downAndSelected,
+s|ButtonBar s|ButtonBarButton:disabledAndSelected {
+color: #FFFFFF;
+}
+s|ButtonBar { 
+color: #000000;
+fontFamily:Helvetica;
+fontSize:14;
+}*/
+
+
 
 mx|LinkButton {
-	font-family: "Helvetica";
+	font-family: 'Helvetica';
 	fontLookup: embeddedCFF;
 	font-weight: normal;
 	font-size: 14;
 
 	cornerRadius: 5;
 }
+
+mx|ToolTip {
+	font-family: 'Helvetica';
+	fontLookup: embeddedCFF;
+
+	backgroundColor: white;
+	backgroundAlpha: 1;
+	cornerRadius: 0;
+	color: black;
+	
+	fontSize: 13pt;
+}
+
+mx|FormItem {
+	font-family: 'Helvetica';
+	fontWeight: normal;
+	fontSize: 13pt;
+}
+
+mx|VRule {
+	color: #ffffff;
+}
+
+
+components|AutoComplete {
+	selected-item-style-name: macMail;
+}
+
 
 .prueba1 {
 	color:					#220000;
@@ -76,68 +246,17 @@ mx|LinkButton {
 .myLabel {
 	font-family: "Helvetica";
 	font-weight: normal;
-	font-size: 13;
-	
-}
-
-s|WindowedApplication {	 
-	background-blend:			difference;	
-	background-position: 		center;
-	
-	skinClass:  				ClassReference("skin.components.CustomApplicationSkin");
+	font-size: 13pt;
 }
 
 .cotizacionSkin {
 	skinClass: ClassReference("skin.components.CotizacionTitleWindow");
 }
 
-
-s|TextInput:normalWithPrompt {
-	font-family: Sansation;
-	color: #C1C1C1;
-}
-
-s|TextInput:disabledWithPrompt {
-	font-family: Sansation;
-	color: #CCFFFF;
-}
-
-s|Panel {
-	skinClass: ClassReference("skin.components.MyPanelSkin");
-	fontLabelTitle: 18;
-	shadowFilterColor: "0x000000";
-}
-
-
-s|DataGrid {
-	font-family: Sansation;
-	skinClass: ClassReference("skin.components.dataGrid.AbstractDataGridSkin");
-	selectionColor: #CEDBEF;
-	borderAlpha: 0.2;
-	
-	/*
-	caretColor: #333333;*/
-	/*alternatingRowColors: #FAFBFF, #FFFFFF;*/
-	/*alternatingRowColors: #FFFFFF, #EDEFF5;*/
-	
-	
-}
-
-
-
 #dgExpediciones {
 	alternatingRowColors: #FF0000, #FFFFFF;
 	selectionColor: #CEDBEF;
-
 }
-
-s|DefaultGridItemRenderer {	
-	color: #000000;
-	font-family: Sansation,Verdana,Tahoma;
-	font-size: 12;
-	font-weight: normal;
-}
-
 
 .txtCotizaciones {
 	skinClass: ClassReference("skin.components.CotizacioesTextInput");
@@ -217,13 +336,8 @@ s|DefaultGridItemRenderer {
 }
 
 
-components|AutoComplete
-{
-	selected-item-style-name: macMail;
-}
 
-.none 
-{
+.none {
 	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
 	up-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
 	down-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
@@ -239,8 +353,7 @@ components|AutoComplete
 	show-comma: yes;
 }
 
-.underline
-{
+.underline {
 	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
 	up-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
 	down-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
@@ -257,8 +370,7 @@ components|AutoComplete
 	show-comma: yes;
 }
 
-.macMail 
-{
+.macMail {
 	over-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
 	up-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
 	down-skin: ClassReference("com.hillelcoren.assets.skins.MacMailSkin");
@@ -273,8 +385,7 @@ components|AutoComplete
 	font-weight: normal; 
 }
 
-.facebook 
-{
+.facebook  {
 	over-skin: ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
 	up-skin: ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
 	down-skin: ClassReference("com.hillelcoren.assets.skins.FacebookSkin");
@@ -289,8 +400,7 @@ components|AutoComplete
 	font-weight: normal;                
 }
 
-.actionsMenuButton
-{
+.actionsMenuButton {
 	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
 	up-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
 	down-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");
@@ -304,8 +414,7 @@ components|AutoComplete
 }
 
 
-.saveButton
-{
+.saveButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 		
 	iconUp: 		Embed("/assets/general/icon24/Save.png");
@@ -815,6 +924,10 @@ components|AutoComplete
 	iconDown:		Embed("/assets/general/icon16/Login.png");
 	iconDisabled:	Embed("/assets/general/icon16/Login.png");
 	
+	font-size: 16pt;
+	width: 120;
+	height: 45;
+	
 	iconWidth: 16;
 	iconHeight: 16;
 	
@@ -1124,14 +1237,6 @@ components|AutoComplete
 	
 }
 
-mx|ToolTip {
-	backgroundColor: white;
-	backgroundAlpha: 1;
-	cornerRadius: 0;
-	color: black;
-	
-	fontSize: 12;
-}
 
 #dgClients {
 	alternating-item-colors: #FFFFFF, #EDEFF5;
@@ -1169,7 +1274,6 @@ mx|ToolTip {
 	color: #ff0000;
 	fontWeight:normal;
 }
-
 
 .subtotalLabelName {
 	textAlign: left;
@@ -1219,28 +1323,7 @@ mx|ToolTip {
 	fontSize: 13;
 }
 
-mx|VRule {
-	color: #ffffff;
-	
-}
 
-s|ButtonBar {
-	font-family: Helvetica;
-	
-	skin-class: ClassReference("skin.components.MyButtonBarSkin"); 
-}
-
-/*s|ButtonBar s|ButtonBarButton:upAndSelected,
-s|ButtonBar s|ButtonBarButton:overAndSelected,
-s|ButtonBar s|ButtonBarButton:downAndSelected,
-s|ButtonBar s|ButtonBarButton:disabledAndSelected {
-	color: #FFFFFF;
-}
-s|ButtonBar { 
-	color: #000000;
-	fontFamily:Helvetica;
-	fontSize:14;
-}*/
 
 .goButton {
 	skin-class: ClassReference("skin.components.IconButtonSkin"); 
@@ -1266,39 +1349,7 @@ s|ButtonBar {
 	iconHeight: 16;
 }
 
-mx|FormItem {
-	fontFamily: Helvetica;
-	fontWeight: normal;
-	fontSize: 13;
-}
 
-s|Label {
-	font-family: Sansation;
-	fontSize: 13pt;	
-}
-
-s|DefaultGridHeaderRenderer s|Label#labelDisplay {
-	font-family: Sansation;
-	fontSize: 12pt;	
-	font-weight: normal;
-
-	color:black;
-}
-
-s|FormItem {
-	font-family: Sansation;
-	skin-class: ClassReference("skin.components.MyFormItemSkin");
-}
-
-s|FormItem s|Label#labelDisplay {
-	font-family: Sansation;
-	fontWeight: normal;
-	fontSize: 12pt;
-
-	textAlign: right;
-	
-	color:black;
-}
 
 #flowBox {
 	borderStyle: solid;
@@ -1339,8 +1390,7 @@ s|FormItem s|Label#labelDisplay {
 	down-skin: 	Embed('/assets/general/icon16/Search.png');
 }
 
-.filterTextInput 
-{	
+.filterTextInput {	
 	skin-class: ClassReference("skin.components.BitmapFillBackgroundSkin");
 	
 	background-image: Embed("/assets/general/textInput.png", scaleGridTop="4", scaleGridBottom="16", scaleGridLeft="4", scaleGridRight="16");
@@ -1356,19 +1406,18 @@ s|FormItem s|Label#labelDisplay {
 	
 	font-family: Helvetica;
 	fontLookup: embeddedCFF;
-	font-size: 12;
+	font-size: 13pt;
 	font-weight: normal;
 	
 	padding-left: 3;
 	padding-top: 2;
 }
 
-.filter
-{	
+.filter {	
 	skinClass: ClassReference("skin.components.MyTextInputSkin");
 	
-	fontFamily: Helvetica;
-	font-size: 12;
+	fontFamily: "Helvetica";
+	font-size: 13pt;
 	
 	borderVisible: false;
 	backgroundVisible: false;
@@ -1379,12 +1428,11 @@ s|FormItem s|Label#labelDisplay {
 	focusColor: #ff0000;
 }
 
-#filter
-{	
+#filter {	
 	skinClass: ClassReference("skin.components.MyTextInputSkin");
 	
-	fontFamily: Helvetica;
-	font-size: 12;
+	fontFamily: "Helvetica";
+	font-size: 1;
 	
 	borderVisible: false;
 	backgroundVisible: false;

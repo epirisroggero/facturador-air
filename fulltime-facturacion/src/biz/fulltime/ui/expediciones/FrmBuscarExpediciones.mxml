@@ -355,10 +355,10 @@
 					<s:FormLayout gap="-14" paddingLeft="10" paddingBottom="10"/>
 				</s:layout>    
 				<s:FormItem label="Fecha Desde">
-					<mx:DateField id="txtFechaDesde" width="110" yearNavigationEnabled="true" focusEnabled="true" creationComplete="txtFechaDesde_creationCompleteHandler(event)"/>
+					<mx:DateField id="txtFechaDesde" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" creationComplete="txtFechaDesde_creationCompleteHandler(event)"/>
 				</s:FormItem>
 				<s:FormItem label="Fecha Hasta">
-					<mx:DateField id="txtFechaHasta" width="110" yearNavigationEnabled="true" focusEnabled="true" creationComplete="txtFechaHasta_creationCompleteHandler(event)"/>
+					<mx:DateField id="txtFechaHasta" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" creationComplete="txtFechaHasta_creationCompleteHandler(event)"/>
 				</s:FormItem>
 			</s:Form>
 		</s:HGroup>

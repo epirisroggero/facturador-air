@@ -3839,12 +3839,12 @@
 						<s:FormLayout gap="-12" />
 					</s:layout>
 
-					<s:FormItem width="100%" label="Serie" styleName="myLabel">
+					<s:FormItem width="100%" label="Serie">
 						<s:HGroup width="100%" verticalAlign="middle">
 							<s:TextInput id="txtSerial" width="100%" textAlign="left" enter="{txtNumber.setFocus()}" text="@{_documento.serie}"
 										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="6" />
 							<s:Spacer width="10" />
-							<s:Label text="Número" styleName="myLabel" />
+							<s:Label text="Número" />
 							<s:TextInput id="txtNumber" width="100%" change="txtNumber_changeHandler(event)" enter="{cmbClient.setFocus()}" restrict="0-9" text="{_documento.numero}"
 										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="20" />
 						</s:HGroup>
@@ -3858,7 +3858,7 @@
 													   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
 													   next_focus="{txtRazonSocial}" previous_focus="{txtNumber}" selectedItem="{_documento.cliente}" dropDownWidth="480" dropDownRowCount="10"
 													   enabled="{!_modoVisualizacion}" />
-							<s:Label id="lblCorreoCliente" fontSize="9" fontWeight="normal" text="Correo: {_documento.cliente.contacto.ctoEmail1}"
+							<s:Label id="lblCorreoCliente" fontSize="10" fontWeight="normal" text="Correo: {_documento.cliente.contacto.ctoEmail1}"
 									 visible="{_documento.cliente &amp;&amp; _documento.cliente.contacto.ctoEmail1}" />
 						</s:VGroup>
 					</s:FormItem>
@@ -3869,7 +3869,7 @@
 													   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 													   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus" next_focus="{txtRazonSocial}"
 													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" dropDownWidth="320" dropDownRowCount="10" enabled="{!_modoVisualizacion}" />
-							<s:Label id="lblCorreoProveedor" fontSize="9" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
+							<s:Label id="lblCorreoProveedor" fontSize="10" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
 									 visible="{_documento.proveedor &amp;&amp; _documento.proveedor.contacto.ctoEmail1}" />
 						</s:VGroup>
 					</s:FormItem>
@@ -3940,7 +3940,7 @@
 				<s:VGroup width="380">
 					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
 						<s:Label text="Fecha" styleName="myLabel" />
-						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es"
+						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"
 									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
 					</s:HGroup>
 					<s:Spacer height="5" />
@@ -3976,11 +3976,11 @@
 						</s:FormItem>
 						<s:FormItem width="100%" label="T.C.Comercial">
 							<components1:MyTextInput id="txtCotizacion" width="100" text="@{_documento.docTCC}" enter="cmdEditSL.setFocus()" change="txtCotizacion_changeHandler(event)" 
-										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" permitirNegativos="false"/>
+										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" permitirNegativos="false" fontFamily="Helvetica"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Coeficiente" visible="{_documento.comprobante.codigo == '122'}" includeInLayout="{_documento.comprobante.codigo == '122'}">
 							<s:TextInput id="txtCoeficiente" width="100" textAlign="right" change="txtCoeficiente_changeHandler(event)" text="{_documento.coeficienteImp}" enter="cmdEditSL.setFocus()"
-										 prompt="1.00" restrict="0-9.," editable="{!_modoVisualizacion}" />
+										 prompt="1.00" restrict="0-9.," editable="{!_modoVisualizacion}" fontFamily="Helvetica"/>
 						</s:FormItem>
 					</s:Form>
 				</s:VGroup>
@@ -4088,7 +4088,7 @@
 								</s:HGroup>
 								<s:HGroup verticalAlign="middle" visible="{ddlReferenciaCFE.selectedIndex == 0}" includeInLayout="{ddlReferenciaCFE.selectedIndex == 0}">
 									<s:Label text="Fecha" width="80" textAlign="right"/>
-									<mx:DateField id="txtFechaCFERef" fontSize="12" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" selectedDate="@{_documento.fechaCFERef}" yearNavigationEnabled="false" />
+									<mx:DateField id="txtFechaCFERef" fontSize="12" fontFamily="Helvetica" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" selectedDate="@{_documento.fechaCFERef}" yearNavigationEnabled="false" />
 								</s:HGroup>
 							</s:VGroup>
 						</s:Panel>

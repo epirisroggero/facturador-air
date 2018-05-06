@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml" textAlign="right" change="validateChange(event)" focusIn="textinput1_focusInHandler(event)">
+<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml" textAlign="right" change="validateChange(event)" focusIn="textinput1_focusInHandler(event)" fontFamily="Helvetica">
 
 	<mx:Script>
 		<![CDATA[
@@ -23,7 +23,7 @@
 			public function set permitirNegativos(value:Boolean):void {
 				_permitirNegativos = value;
 			}
-
+/*
 			override public function set data(value:Object):void {
 				var aux:String = XML(value).value;
 				
@@ -40,7 +40,7 @@
 				}
 								
 			}
-
+*/
 			override public function get data():Object {
 				return _value;
 			}

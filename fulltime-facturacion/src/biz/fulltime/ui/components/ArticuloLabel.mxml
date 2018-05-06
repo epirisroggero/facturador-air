@@ -110,18 +110,18 @@
 			<s:VerticalLayout horizontalAlign="left" paddingLeft="10" verticalAlign="middle" />
 		</s:layout>
 		<s:HGroup id="mainBox" width="100%" height="100%" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
-			<s:HGroup width="62" height="100%" horizontalAlign="center" verticalAlign="middle">
-				<s:Label width="100%" id="lblCodigo" fontSize="{_fontSize -1}" text="{_codigo}" showTruncationTip="true" maxDisplayedLines="2" />
+			<s:HGroup width="75" height="100%" horizontalAlign="center" verticalAlign="middle">
+				<s:Label width="100%" id="lblCodigo" fontSize="{_fontSize + 1}" text="{_codigo}" showTruncationTip="true" maxDisplayedLines="2" />
 			</s:HGroup>	
 			
 			<mx:VRule height="100%" />
 			<s:VGroup width="100%" height="100%" verticalAlign="middle" paddingLeft="3" paddingRight="3" paddingTop="3" paddingBottom="3">
 				<s:Label id="lblNombre" width="100%" fontSize="{_fontSize}" text="{_nombre}" showTruncationTip="true" maxDisplayedLines="1"/>
-				<s:Label id="lblFamilia" width="100%" fontSize="{_fontSize - 2}" text="{_familia}" fontStyle="italic" showTruncationTip="true" maxDisplayedLines="1" includeInLayout="{_familia &amp;&amp; _familia.length > 0}"/>
-				<s:Label id="lblCodigoOrigen" width="100%" fontSize="{_fontSize - 2}" text="{_codigoOrigen}" fontStyle="italic" showTruncationTip="true" maxDisplayedLines="1" includeInLayout="{_codigoOrigen &amp;&amp; _codigoOrigen.length > 0}"/>
+				<s:Label id="lblFamilia" width="100%" fontSize="{_fontSize - 1}" text="{_familia}" showTruncationTip="true" maxDisplayedLines="1" includeInLayout="{_familia &amp;&amp; _familia.length > 0}" color="#666666"/>
+				<s:Label id="lblCodigoOrigen" width="100%" fontSize="{_fontSize - 1}" text="{_codigoOrigen}" showTruncationTip="true" maxDisplayedLines="1" includeInLayout="{_codigoOrigen &amp;&amp; _codigoOrigen.length > 0}" color="#666600"/>
 			</s:VGroup>
 			<s:VGroup width="20" height="100%" horizontalAlign="center" paddingRight="10" verticalAlign="middle" includeInLayout="{_removeEnabled}">
-				<mx:Button id="btnRemove" width="8" height="8" click="remove(event)" styleName="buttonRemoveIcon" visible="{_removeEnabled}" toolTip="Borrar Articulo"/>
+				<s:Button id="btnRemove" width="8" height="8" click="remove(event)" styleName="buttonRemoveIcon" visible="{_removeEnabled}" toolTip="Borrar Articulo"/>
 			</s:VGroup>
 		</s:HGroup>
 	</s:BorderContainer>

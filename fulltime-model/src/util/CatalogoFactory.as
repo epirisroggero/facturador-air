@@ -149,6 +149,13 @@ public class CatalogoFactory extends EventDispatcher {
 	private var myTimer:Timer = new Timer(delay, repeat);
 
 	private var reloadTimer:Timer = new Timer(1000 * 60 * 20); //REcargar catalogos cada 20 minutos
+	
+	public static const INTERFACE_WEB_EVENT:String = "_web";
+	
+	public static const INTERFACE_DESCK_TOP_EVENT:String = "_desck_top";
+	
+	public var  _interface :String;
+	
 
 	public function CatalogoFactory(caller:Function = null) {
 		if (caller != CatalogoFactory.getInstance) {
@@ -1209,7 +1216,6 @@ public class CatalogoFactory extends EventDispatcher {
 	public function set ivas(value:ArrayCollection):void {
 		_ivas = value;
 	}
-
 
 
 }

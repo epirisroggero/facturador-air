@@ -30,10 +30,7 @@ public class DocumentoFormaPago {
 	 */
 	public var moneda:Moneda;
 
-	/**
-	 * Importe en la moneda del documento
-	 */
-	public var total:String;
+	private var _total:String;
 	
 	public var selected:Boolean;
 	
@@ -44,11 +41,36 @@ public class DocumentoFormaPago {
 			
 			this.docId = documento.docId;
 			this.numero = 1;
+			
+			this.moneda = documento.docRecMda;
 			this.formaPago = FormaPago.EFECTIVO;
 			this.importe = documento.docRecNeto;
 			this.total = documento.total;
-			this.moneda = documento.docRecMda;
 		}
 	}
+
+	/**
+	 * Importe en la moneda del documento
+	 */
+	public function get total():String {
+		return _total;
+	}
+
+	/**
+	 * @private
+	 */
+	public function set total(value:String):void {
+		_total = value;
+	}
+	
+	public function updateImporte():void {
+		if (documento.moneda.codigo == moneda.codigo) {
+			importe = _total;	
+		} else {
+			importe = "0.00";
+		}
+
+	}
+
 }
 }

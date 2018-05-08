@@ -72,7 +72,7 @@ package biz.fulltime.ui.deudores {
 		
 		private var moneda:Moneda;
 		
-		private var url:String = "/assets/general/banner_mail.jpg";
+		private var url:String = "http://localhost:8180/facturador/assets/general/banner_mail.jpg";
 
 		private var loader:Loader = new Loader();
 		
@@ -171,19 +171,20 @@ package biz.fulltime.ui.deudores {
 		private function completeHandler(event:Event):void {
 			isEMail = false;
 
-			if (GeneralOptions.getInstance().opciones.impresoras.otros == null && GeneralOptions.getInstance().opciones.impresoras.otros == "") {
-				throw new Error("No hay impresora por defecto definida. Ir a Configuración > Preferencias > Impresoras");
-			}
+//			if (GeneralOptions.getInstance().opciones.impresoras.otros == null && GeneralOptions.getInstance().opciones.impresoras.otros == "") {
+//				throw new Error("No hay impresora por defecto definida. Ir a Configuración > Preferencias > Impresoras");
+//			}
 			
 			var pj:PrintJob = new PrintJob();
-			pj.printer = GeneralOptions.getInstance().opciones.impresoras.otros;
-			pj.orientation = PrintJobOrientation.PORTRAIT;
+			pj.start();
+//			pj.printer = GeneralOptions.getInstance().opciones.impresoras.otros;
+//			pj.orientation = PrintJobOrientation.PORTRAIT;
 
 			var pagesToPrint:uint = 0;
-			if (pj.start2(null, false)) {
-				if (pj.orientation == PrintJobOrientation.LANDSCAPE) {
-					throw new Error("La Orientación de página en la Impresora debe estar en Vertical.");
-				}				
+//			if (pj.start2(null, false)) {
+//				if (pj.orientation == PrintJobOrientation.LANDSCAPE) {
+//					throw new Error("La Orientación de página en la Impresora debe estar en Vertical.");
+//				}				
 				var fromItem:int = 0;
 				var toItem:int = 0;
 
@@ -231,7 +232,7 @@ package biz.fulltime.ui.deudores {
 				if (pagesToPrint > 0) {
 					pj.send();
 				}
-			}
+//			}
 
 		}
 		

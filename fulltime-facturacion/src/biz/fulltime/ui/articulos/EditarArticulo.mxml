@@ -670,7 +670,7 @@
 		<renderers:CodigoNombreItemRenderer />
 	</mx:Component>
 	
-	<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+	<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>
 	
 	<mx:StringValidator id="fname_stringValidator" source="{fname}" required="true" property="text" requiredFieldError="El 'Nombre' no puede quedar vacio." minLength="2"
 						tooShortError="El 'Nombre' debe tener al menos 2 caracteres." />

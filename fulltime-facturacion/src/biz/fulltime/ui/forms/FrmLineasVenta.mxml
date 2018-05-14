@@ -686,8 +686,7 @@
 	</fx:Script>
 
 	<fx:Declarations>
-		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
-		<s:NumberFormatter id="nf_Espanol_Espanol2" fractionalDigits="2" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="2" locale="es_ES" />
 	</fx:Declarations>
 
 	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
@@ -783,7 +782,7 @@
 														if (!data) {
 															return;
 														}
-														label = outerDocument.nf_Espanol_Espanol2.format(LineaDocumento(data).getCantidad());
+														label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getCantidad());
 													}
 												]]>
 											</fx:Script>

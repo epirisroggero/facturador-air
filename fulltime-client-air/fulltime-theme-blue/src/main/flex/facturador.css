@@ -13,78 +13,66 @@
 //------------------------------
 */
 
-
-
 @font-face {
-	src:url("./assets/fonts/Sansation_Regular.ttf");
-	fontFamily: 'Sansation';
+	src:url("./assets/fonts/RobotoCondensed/RobotoCondensed-Regular.ttf");
+	fontFamily: 'RobotoCondensed';
+	fontStyle: normal;
+	fontWeight: normal;
 	embedAsCFF: true;
 }
 
 @font-face {
-	src:url("./assets/fonts/Sansation_Bold.ttf");
-	fontFamily: 'Sansation';
+	src:url("./assets/fonts/RobotoCondensed/RobotoCondensed-Italic.ttf");
+	fontFamily: 'RobotoCondensed';
+	fontStyle: italic;
+	fontStyle: normal;
+	embedAsCFF: true;
+}
+
+@font-face {
+	src:url("./assets/fonts/RobotoCondensed/RobotoCondensed-Bold.ttf");
+	fontFamily: 'RobotoCondensed';
+	fontStyle: normal;
 	fontWeight: bold;
 	embedAsCFF: true;
 }
 
 @font-face {
-	src:url("./assets/fonts/Sansation_Italic.ttf");
-	fontFamily: 'Sansation';
+	src:url("./assets/fonts/RobotoCondensed/RobotoCondensed-BoldItalic.ttf");
+	fontFamily: 'RobotoCondensed';
 	fontStyle: italic;
-	embedAsCFF: true;
-}
-
-@font-face {
-	src:url("./assets/fonts/Roboto/Roboto-Regular.ttf");
-	fontFamily: 'Roboto';
-	embedAsCFF: true;
-}
-
-@font-face {
-	src:url("./assets/fonts/Roboto/Roboto-Bold.ttf");
-	fontFamily: 'Roboto';
 	fontWeight: bold;
 	embedAsCFF: true;
 }
-
-@font-face {
-	src:url("./assets/fonts/Roboto/Roboto-Italic.ttf");
-	fontFamily: 'Roboto';
-	fontStyle: italic;
-	embedAsCFF: true;
-}
-
 
 global {
-	font-family: arial,sans-serif;
+	font-family: 'Helvetica', 'sans-serif';
+	font-size: 14pt;
 	fontWeight: normal;
 }
-
 
 s|TitleWindow {
 	skinClass: ClassReference("skin.components.MyTitleWindowSkin");
 }
 
 s|DropDownList {
-	font-family: 'Roboto';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
 	skinClass: ClassReference("skin.components.comboBox.MyDropDownListSkin");
 	cornerRadius: 0;
 }
 
 s|TextInput {
-	font-family: 'Roboto';
+	font-family: 'RobotoCondensed';
 	color: #000000;
 }
 
 s|TextInput:normalWithPrompt {
-	font-family: 'Roboto';
+	font-family: 'RobotoCondensed';
 	color: #C1C1C1;
 }
 
 s|TextInput:disabledWithPrompt {
-	font-family: 'Roboto';
+	font-family: 'RobotoCondensed';
 	color: #CCFFFF;
 }
 
@@ -101,7 +89,7 @@ s|Panel {
 }
 
 s|DataGrid {	
-	font-family: arial,sans-serif;
+	font-family: 'RobotoCondensed';
 	font-size: 13pt;
 	
 	skinClass: ClassReference("skin.components.dataGrid.AbstractDataGridSkin");
@@ -110,64 +98,66 @@ s|DataGrid {
 }
 
 s|DefaultGridItemRenderer {
-	font-family: 'Roboto';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
+	font-size: 14pt;
 	font-weight: normal;
 
 	color: #000000;
 }
 
 s|DefaultGridHeaderRenderer s|Label#labelDisplay {
-	font-family: 'Roboto';
-	fontSize: 13pt;	
+	font-family: 'RobotoCondensed';
+	fontSize: 14pt;	
 	font-weight: normal;
 	
 	color:black;
 }
 
 s|RichText {
-	font-family: 'Roboto';
+	font-family: 'RobotoCondensed';
 }
 
 s|RichEditableText {
-	font-family: 'Roboto';
+	font-family: 'RobotoCondensed';
 }	
 
 s|TextArea {
-	font-family: 'Roboto';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
 }
 
 s|Label {
-	font-family: 'Sansation';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
 }
 
 s|FormItem {
-	font-family: 'Sansation';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
 	skin-class: ClassReference("skin.components.MyFormItemSkin");
 }
 
 s|FormItem s|Label#labelDisplay {
-	font-family: 'Sansation';
+	font-family: 'RobotoCondensed';
 	fontWeight: normal;
-	fontSize: 13pt;
 	
 	textAlign: right;
 	color:black;
 }
 
 s|Button.emphasized {
-	font-family: 'Sansation';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
 	skinClass: ClassReference("skin.components.ButtonSkin");
 }
 
 s|ButtonBar {
-	font-family: 'Sansation';
-	font-size: 13pt;
+	font-family: 'RobotoCondensed';
 	skin-class: ClassReference("skin.components.MyButtonBarSkin"); 
+}
+
+s|RadioButton {
+	font-family: 'RobotoCondensed';
+}
+
+s|CheckBox {
+	font-family: 'RobotoCondensed';
 }
 
 /*s|ButtonBar s|ButtonBarButton:upAndSelected,
@@ -201,14 +191,11 @@ mx|ToolTip {
 	backgroundAlpha: 1;
 	cornerRadius: 0;
 	color: black;
-	
-	fontSize: 13pt;
 }
 
 mx|FormItem {
 	font-family: 'Helvetica';
 	fontWeight: normal;
-	fontSize: 13pt;
 }
 
 mx|VRule {
@@ -244,9 +231,7 @@ components|AutoComplete {
 }
 
 .myLabel {
-	font-family: "Helvetica";
 	font-weight: normal;
-	font-size: 13pt;
 }
 
 .cotizacionSkin {
@@ -1406,7 +1391,6 @@ components|AutoComplete {
 	
 	font-family: Helvetica;
 	fontLookup: embeddedCFF;
-	font-size: 13pt;
 	font-weight: normal;
 	
 	padding-left: 3;
@@ -1417,7 +1401,6 @@ components|AutoComplete {
 	skinClass: ClassReference("skin.components.MyTextInputSkin");
 	
 	fontFamily: "Helvetica";
-	font-size: 13pt;
 	
 	borderVisible: false;
 	backgroundVisible: false;
@@ -1432,7 +1415,6 @@ components|AutoComplete {
 	skinClass: ClassReference("skin.components.MyTextInputSkin");
 	
 	fontFamily: "Helvetica";
-	font-size: 1;
 	
 	borderVisible: false;
 	backgroundVisible: false;
@@ -1473,7 +1455,7 @@ components|AutoComplete {
 
 	fontFamily: sans-serif, "_typewriter";
 	color: black;
-	fontSize: 12;
+	fontSize: 13;
 
 }
 

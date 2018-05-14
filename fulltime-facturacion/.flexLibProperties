@@ -95,6 +95,8 @@
     <classEntry path="components.MyTextInput"/>
     <classEntry path="biz.fulltime.ui.documentosValores.FrmDocumentosValores"/>
     <classEntry path="biz.fulltime.event.ListadoFacturasEvent"/>
+    <classEntry path="biz.fulltime.ui.documentosValores.FrmChequeRecibido"/>
+    <classEntry path="biz.fulltime.ui.documentosValores.FrmTarjetas"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

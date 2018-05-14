@@ -78,7 +78,7 @@
 		]]>
 	</fx:Script>
 	<fx:Declarations>
-		<mx:NumberFormatter id="sizeFormatter" useThousandsSeparator="true" />
+		<s:NumberFormatter id="sizeFormatter" useGrouping="true" fractionalDigits="2" />
 		<mx:DateFormatter id="dateFormatter" formatString="MM/DD/YYYY L:NN A" />
 	</fx:Declarations>
 	

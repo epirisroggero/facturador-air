@@ -252,7 +252,7 @@ in accordance with the terms of the license agreement accompanying it.
 				
 				<!-- layer 3: text -->
 				<!--- @copy spark.components.Panel#titleDisplay -->
-				<s:Label id="titleDisplay" maxDisplayedLines="1" styleName="myLabel" fontFamily="Sansation" fontSize="20" 
+				<s:Label id="titleDisplay" maxDisplayedLines="1" styleName="myLabel" fontSize="20" 
 						 left="9" right="3" top="1" bottom="0" minHeight="30" color="white"
 						 verticalAlign="middle" textAlign="start"> 
 					<!--s:filters>

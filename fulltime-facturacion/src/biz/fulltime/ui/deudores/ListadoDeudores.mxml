@@ -584,7 +584,7 @@
 		<fx:Component id="dropDownItemRenderer">
 			<renderers:CodigoNombreItemRenderer />
 		</fx:Component>
-		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>
 	</fx:Declarations>
 
 	<s:states>

@@ -9,6 +9,7 @@
 package biz.fulltime.ui.deudores {
 	
 	import biz.fulltime.conf.GeneralOptions;
+	import biz.fulltime.conf.ServerConfig;
 	import biz.fulltime.model.Cliente;
 	import biz.fulltime.model.Moneda;
 	import biz.fulltime.model.Vendedor;
@@ -72,13 +73,17 @@ package biz.fulltime.ui.deudores {
 		
 		private var moneda:Moneda;
 		
-		private var url:String = "http://localhost:8180/facturador/assets/general/banner_mail.jpg";
+		private var url:String = "/assets/general/banner_mail.jpg";
+		//private var url:String = "http://localhost:8180/facturador/assets/general/banner_mail.jpg";
 
 		private var loader:Loader = new Loader();
 		
 		private var _documetosPendientes:ArrayCollection = new ArrayCollection();
 		
 		private var isEMail:Boolean = false;
+		
+		
+		private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
 		
 		
 		public function PrintJobDeudores(loadImage:Boolean = true) {
@@ -106,7 +111,7 @@ package biz.fulltime.ui.deudores {
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandlerMail);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 			
-			var request:URLRequest = new URLRequest(url);
+			var request:URLRequest = new URLRequest(ServerConfig.getInstance().getFullPath(url));
 			loader.load(request);
 		}
 
@@ -163,7 +168,7 @@ package biz.fulltime.ui.deudores {
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandler);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 			
-			var request:URLRequest = new URLRequest(url);
+			var request:URLRequest = new URLRequest(ServerConfig.getInstance().getFullPath(url));
 			loader.load(request);
 
 		}
@@ -175,65 +180,125 @@ package biz.fulltime.ui.deudores {
 //				throw new Error("No hay impresora por defecto definida. Ir a Configuración > Preferencias > Impresoras");
 //			}
 			
-			var pj:PrintJob = new PrintJob();
-			pj.start();
-//			pj.printer = GeneralOptions.getInstance().opciones.impresoras.otros;
-//			pj.orientation = PrintJobOrientation.PORTRAIT;
-
-			var pagesToPrint:uint = 0;
-//			if (pj.start2(null, false)) {
-//				if (pj.orientation == PrintJobOrientation.LANDSCAPE) {
-//					throw new Error("La Orientación de página en la Impresora debe estar en Vertical.");
-//				}				
-				var fromItem:int = 0;
-				var toItem:int = 0;
-
+			
+			if (catalogs._interface ==  CatalogoFactory.INTERFACE_WEB_EVENT) {
+				var pj:PrintJob = new PrintJob();
 				
-				var rows:int = 0;
-				for each (var data:DocPendientesCliente in _documetosPendientes) {
-					rows += 3; 
-					rows += data.documentos.length;
-					rows += 7;
+				var pagesToPrint:uint = 0;
+				if (pj.start()) {
+							
+					var fromItem:int = 0;
+					var toItem:int = 0;
 					
-					if (rows > 64) {
-						rows = 0;  
+					
+					var rows:int = 0;
+					for each (var data:DocPendientesCliente in _documetosPendientes) {
+						rows += 3; 
+						rows += data.documentos.length;
+						rows += 7;
+						
+						if (rows > 64) {
+							rows = 0;  
+							try {	
+								sheet = new Sprite();										
+								createSheet(sheet, fromItem, toItem);				
+								sheet.width = pj.paperWidth;
+								sheet.height = pj.paperHeight;
+								
+								fromItem = toItem;
+								
+								pj.addPage(sheet);
+								pagesToPrint++;
+							} catch (e:Error) {
+								Alert.show(e.toString(), "Error al imprimir la Listado de Deudores.\n");
+							}
+						}
+						toItem++
+					}	
+					if (fromItem != toItem) {
 						try {	
 							sheet = new Sprite();										
-							createSheet(sheet, fromItem, toItem);				
+									
+							
+							createSheet(sheet, fromItem, toItem);
 							sheet.width = pj.paperWidth;
 							sheet.height = pj.paperHeight;
-							
-							fromItem = toItem;
 							
 							pj.addPage(sheet);
 							pagesToPrint++;
 						} catch (e:Error) {
 							Alert.show(e.toString(), "Error al imprimir la Listado de Deudores.\n");
-						}
+						}	
 					}
-					toItem++
-				}	
-				if (fromItem != toItem) {
-					try {	
-						sheet = new Sprite();										
-						//createSheet(sheet, fromItem, toItem);				
-						
-						createSheet(sheet, fromItem, toItem);
-						sheet.width = pj.paperWidth;
-						sheet.height = pj.paperHeight;
-						
-						pj.addPage(sheet);
-						pagesToPrint++;
-					} catch (e:Error) {
-						Alert.show(e.toString(), "Error al imprimir la Listado de Deudores.\n");
-					}	
+					
+					if (pagesToPrint > 0) {
+						pj.send();
+					}
 				}
+			}
+			else {
+				//**********   AIR ***************************
 				
-				if (pagesToPrint > 0) {
-					pj.send();
+				
+				var pj:PrintJob = new PrintJob();
+				pj.printer = GeneralOptions.getInstance().opciones.impresoras.otros;
+				pj.orientation = PrintJobOrientation.PORTRAIT;
+				
+				var pagesToPrint:uint = 0;
+				if (pj.start2(null, false)) {
+					if (pj.orientation == PrintJobOrientation.LANDSCAPE) {
+						throw new Error("La Orientación de página en la Impresora debe estar en Vertical.");
+					}			
+					var fromItem:int = 0;
+					var toItem:int = 0;
+					
+					
+					var rows:int = 0;
+					for each (var data:DocPendientesCliente in _documetosPendientes) {
+						rows += 3; 
+						rows += data.documentos.length;
+						rows += 7;
+						
+						if (rows > 64) {
+							rows = 0;  
+							try {	
+								sheet = new Sprite();										
+								createSheet(sheet, fromItem, toItem);				
+								sheet.width = pj.paperWidth;
+								sheet.height = pj.paperHeight;
+								
+								fromItem = toItem;
+								
+								pj.addPage(sheet);
+								pagesToPrint++;
+							} catch (e:Error) {
+								Alert.show(e.toString(), "Error al imprimir la Listado de Deudores.\n");
+							}
+						}
+						toItem++
+					}	
+					if (fromItem != toItem) {
+						try {	
+							sheet = new Sprite();										
+							//createSheet(sheet, fromItem, toItem);				
+							
+							createSheet(sheet, fromItem, toItem);
+							sheet.width = pj.paperWidth;
+							sheet.height = pj.paperHeight;
+							
+							pj.addPage(sheet);
+							pagesToPrint++;
+						} catch (e:Error) {
+							Alert.show(e.toString(), "Error al imprimir la Listado de Deudores.\n");
+						}	
+					}
+					
+					if (pagesToPrint > 0) {
+						pj.send();
+					}
 				}
-//			}
-
+			}
+			
 		}
 		
 		private function ioErrorHandler(event:IOErrorEvent):void {
@@ -271,6 +336,7 @@ package biz.fulltime.ui.deudores {
 
 			var nf:NumberFormatter = new NumberFormatter();
 			nf.setStyle("locale", "es_ES");
+			nf.fractionalDigits = 2;
 
 			var dtf:DateTimeFormatter = new DateTimeFormatter();
 			dtf.dateTimePattern = "dd/MM/yyyy - hh:mm";			

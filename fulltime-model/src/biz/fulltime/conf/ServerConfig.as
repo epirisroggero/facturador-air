@@ -8,6 +8,7 @@
 
 package biz.fulltime.conf {
 
+import mx.controls.Alert;
 import mx.messaging.Channel;
 import mx.messaging.ChannelSet;
 import mx.messaging.channels.AMFChannel;
@@ -17,9 +18,9 @@ public class ServerConfig {
 
 	private static var _instance:ServerConfig;
 
-	private var _host:String = "localhost";
+	private var _host:String = "apps.fulltime.uy";
 
-	private var _port:String = "8080";
+	private var _port:String = "8180";
 
 	private var secure:Boolean = false;
 
@@ -67,6 +68,18 @@ public class ServerConfig {
 			_instance = new ServerConfig(arguments.callee);
 		}
 		return _instance;
+	}
+	
+	public function getBasePath(secure:Boolean = false):String {
+		if (secure) {
+			return "https://" + host + ":" + port;
+		} else {
+			return "http://" + host + ":" + port;
+		}
+	}
+	
+	public function getFullPath(path:String, secure:Boolean = false):String {
+		return getBasePath(secure) + "/facturador" + path;
 	}
 }
 }

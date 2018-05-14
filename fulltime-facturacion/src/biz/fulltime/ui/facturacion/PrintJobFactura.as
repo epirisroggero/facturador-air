@@ -40,8 +40,6 @@ import flash.text.TextFormatAlign;
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 
-import flashx.textLayout.container.ISandboxSupport;
-
 import mx.controls.Alert;
 import mx.core.FlexGlobals;
 import mx.events.CloseEvent;
@@ -84,13 +82,17 @@ public class PrintJobFactura {
 
 	private var _print_vias:Array = [VIA_CLIENTE, VIA_COBRANZA];
 
-	private var url_factura:String = "http://localhost:8180/facturador/assets/general/Factura.jpg";
+	private var url_factura:String = "/assets/general/Factura.jpg";
 
-	private var url_ordenCompra:String = "http://localhost:8180/facturador/assets/general/OrdenDeCompra.jpg";
+	private var url_ordenCompra:String = "/assets/general/OrdenDeCompra.jpg";
 
-	private var url_cotizacion:String = "http://localhost:8180/facturador/assets/general/Cotizacion.jpg";
+	private var url_cotizacion:String = "/assets/general/Cotizacion.jpg";
 
-	private var url_importacion:String = "http://localhost:8180/facturador/assets/general/ImportacionDeCompra.png";
+	private var url_importacion:String = "/assets/general/ImportacionDeCompra.png";
+
+	
+	private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+
 
 	private var loader:Loader = new Loader();
 
@@ -101,7 +103,7 @@ public class PrintJobFactura {
 	private var _automatic:Boolean = false;
 
 	public var forzarRemitos:Boolean = false;
-	
+
 	public var printNotasInterlineadas:Boolean = true;
 
 	private var frameQR:Sprite = new Sprite();
@@ -132,13 +134,13 @@ public class PrintJobFactura {
 
 		var request:URLRequest = null;
 		if (_documento.esCotizacionDeVenta || _documento.esOrdenDeVenta || _documento.comprobante.codigo == "1" || _documento.comprobante.codigo == "10") {
-			request = new URLRequest(url_cotizacion);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_cotizacion));
 		} else if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111") {
-			request = new URLRequest(url_ordenCompra);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_ordenCompra));
 		} else if (_documento.comprobante.esImportacion()) {
-			request = new URLRequest(url_importacion);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_importacion));
 		} else {
-			request = new URLRequest(url_factura);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_factura));
 		}
 
 		loader.load(request);
@@ -213,7 +215,7 @@ public class PrintJobFactura {
 				remObj.addEventListener(ResultEvent.RESULT, resultSendEMail);
 				remObj.addEventListener(FaultEvent.FAULT, handleFault);
 				remObj.showBusyCursor = false;
-				
+
 				var comprobante:String = _documento.comprobante.nombre;
 
 				remObj.sendEmail(addresses, "FULLTIME - " + comprobante.toUpperCase(), "", byteArray);
@@ -244,9 +246,9 @@ public class PrintJobFactura {
 			if (documento.proveedor) {
 				emailPnl.proveedor = documento.proveedor;
 			}
-			
+
 			var comprobante:String = documento.comprobante.nombre;
-			
+
 			emailPnl.asunto = "FULLTIME - " + comprobante.toUpperCase();
 			emailPnl.takeSnapshot(sheet1);
 			emailPnl.addEventListener(CloseEvent.CLOSE, function():void {
@@ -349,13 +351,13 @@ public class PrintJobFactura {
 	private function init():void {
 		var request:URLRequest = null;
 		if (_documento.esCotizacionDeVenta) {
-			request = new URLRequest(url_cotizacion)
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_cotizacion));
 		} else if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111") {
-			request = new URLRequest(url_ordenCompra);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_ordenCompra));
 		} else if (_documento.comprobante.esImportacion()) {
-			request = new URLRequest(url_importacion);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_importacion));
 		} else {
-			request = new URLRequest(url_factura);
+			request = new URLRequest(ServerConfig.getInstance().getFullPath(url_factura));
 		}
 
 		loader.load(request);
@@ -402,13 +404,13 @@ public class PrintJobFactura {
 		var matrix:Matrix = new Matrix();
 		matrix.scale((626 / bitmap.width), (557 / bitmap.height));
 
-		frame.graphics.lineStyle(1, 0xff0000);
+		frame.graphics.lineStyle(1, 0xffffff);
 		if (isEMail || print_vias.length == 1 || (_documento.esRemito() && !_documento.esCotizacionDeVenta && !_documento.esOrdenDeVenta)) {
 			frame.graphics.beginBitmapFill(bitmap, matrix, true);
 		}
 		frame.graphics.drawRect(0, 0, 626, 557);
 		frame.graphics.endFill();
-		
+
 		sheet.addChild(frame);
 
 		// Agregar campos de la factura.				
@@ -421,13 +423,13 @@ public class PrintJobFactura {
 					sheet.addChild(createText(documento.comprobante.nombre, {x:356, y:44, width:124, height:18, fontSize:9, align:'center'}));
 				} else {
 					sheet.addChild(createText("CRÉDITO", {x:356, y:44, width:124, height:18, fontSize:9, align:'center'}));
-				}					
-				
+				}
+
 			} else {
 				sheet.addChild(createText("CONTADO", {x:356, y:44, width:124, height:18, fontSize:9, align:'center'}));
 			}
 		}
-		
+
 		var dtf:DateTimeFormatter = new DateTimeFormatter();
 		dtf.dateTimePattern = "dd/MM/yy";
 
@@ -449,8 +451,7 @@ public class PrintJobFactura {
 		}
 
 		sheet.addChild(createText(documento.getAgencia(), {x:413, y:65, width:67, height:14, fontSize:8, align:'left'}));
-		sheet.addChild(createText((documento.direccion ? documento.direccion : "No Tiene") + (documento.getLocalidad() ? " | " + documento.getLocalidad().toUpperCase() : "") + ((documento.departamento && !(documento.getLocalidad() && documento.departamento.toUpperCase() == documento.getLocalidad().toUpperCase())) ? " | " + documento.departamento : ""), 
-			{x:32, y:82, width:286, height:14, fontSize:8,
+		sheet.addChild(createText((documento.direccion ? documento.direccion : "No Tiene") + (documento.getLocalidad() ? " | " + documento.getLocalidad().toUpperCase() : "") + ((documento.departamento && !(documento.getLocalidad() && documento.departamento.toUpperCase() == documento.getLocalidad().toUpperCase())) ? " | " + documento.departamento : ""), {x:32, y:82, width:286, height:14, fontSize:8,
 				align:'left'}));
 		sheet.addChild(createText(documento.telefono, {x:338, y:82, width:142, height:14, fontSize:8, align:'left'}));
 
@@ -563,7 +564,7 @@ public class PrintJobFactura {
 		sheet.addChild(createText((documento.planPagos != null ? documento.planPagos.nombre : (documento.condicion ? documento.condicion.nombre : "")), {x:38, y:432, width:202, height:20, fontSize:10, align:'center'}));
 
 		var YY_TOTALES:int = 5;
-		
+
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:338, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:425, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'})); // Sub total Neto
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.iva), {x:512, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
@@ -584,7 +585,7 @@ public class PrintJobFactura {
 	public function nl2br(str:String):String {
 		return str.replace(new RegExp("[\n\r]", "g"), " | ");
 	}
-	
+
 	private function createText(text:String, propValue:Object):TextField {
 		var txt:TextField = new TextField();
 		txt.text = text != null ? text : "";
@@ -622,45 +623,78 @@ public class PrintJobFactura {
 	}
 
 	private function printOnePerPage():void {
-//		var _printer:String;
-//		if (!forzarRemitos && (!_documento.esRemito() || _documento.esCotizacionDeVenta || _documento.esOrdenDeVenta)) {
-//			_printer = GeneralOptions.getInstance().opciones.impresoras.facturacion;
-//		} else {
-//			_printer = GeneralOptions.getInstance().opciones.impresoras.remitos;
-//		}
-//
-//		if (_printer == null || _printer == "") {
-//			throw new Error("No hay impresora definida. Ir a Configuración > Preferencias");
-//		}
-		
-		sheet1 = new Sprite();
-		if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" || _documento.comprobante.esImportacion()) {
-			createSheetSMS(sheet1);
+
+		if (catalogs._interface == CatalogoFactory.INTERFACE_WEB_EVENT) {
+			sheet1 = new Sprite();
+			if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" || _documento.comprobante.esImportacion()) {
+				createSheetSMS(sheet1);
+			} else {
+				createSheet(sheet1);
+			}
+
+			var pj:PrintJob = new PrintJob();
+			pj.start();
+
+			var pagesToPrint:uint = 0;
+			for each (var via:String in print_vias) {
+				_via = via;
+
+				sheet1.width = pj.pageWidth;
+				sheet1.height = pj.pageHeight;
+
+				try {
+					pj.addPage(sheet1);
+					pagesToPrint++;
+				} catch (e:Error) {
+					Alert.show(e.message.toString());
+				}
+			}
+			if (pagesToPrint > 0) {
+				pj.send();
+			}
 		} else {
-			createSheet(sheet1);
-		}
-		
-		var pj:PrintJob = new PrintJob();
-		pj.start();
-			
-		var pagesToPrint:uint = 0;
-		for each (var via:String in print_vias) {
-			_via = via;
+			//*********** AIR **********************
+			var _printer:String;
+			if (!forzarRemitos && (!_documento.esRemito() || _documento.esCotizacionDeVenta || _documento.esOrdenDeVenta)) {
+				_printer = GeneralOptions.getInstance().opciones.impresoras.facturacion;
+			} else {
+				_printer = GeneralOptions.getInstance().opciones.impresoras.remitos;
+			}
 
-			sheet1.width = pj.pageWidth;
-			sheet1.height = pj.pageHeight;
+			if (_printer == null || _printer == "") {
+				throw new Error("No hay impresora definida. Ir a Configuración > Preferencias");
+			}
+			var pj:PrintJob = new PrintJob();
+			pj.printer = _printer;
+			pj.orientation = PrintJobOrientation.LANDSCAPE;
 
-			try {
-				pj.addPage(sheet1);
-				pagesToPrint++;
-			} catch (e:Error) {
-				Alert.show(e.message.toString());
+			var pagesToPrint:uint = 0;
+			if (pj.start2(null, false)) {
+				for each (var via:String in print_vias) {
+					_via = via;
+
+					sheet1 = new Sprite();
+					if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" || _documento.comprobante.esImportacion()) {
+						createSheetSMS(sheet1);
+					} else {
+						createSheet(sheet1);
+					}
+
+					sheet1.width = pj.pageWidth;
+					sheet1.height = pj.pageHeight;
+
+					try {
+						pj.addPage(sheet1);
+						pagesToPrint++;
+					} catch (e:Error) {
+						Alert.show(e.message.toString());
+					}
+				}
+				if (pagesToPrint > 0) {
+					pj.send();
+				}
 			}
 		}
-		if (pagesToPrint > 0) {
-			pj.send();
-		}
-		
 
 	}
 
@@ -703,14 +737,14 @@ public class PrintJobFactura {
 		// Agregar campos de la factura.				
 		if (!esOrdenCompra) {
 			sheet.addChild(createText(documento.CAEnom ? documento.CAEnom : documento.comprobante.nombre, {x:544, y:52, width:171, height:18, fontSize:12, align:'center'}));
-			
+
 			if (documento.CAEnom) {
 				if (documento.comprobante.isCredito()) {
 					if (documento.comprobante.codigo == "7" || documento.comprobante.codigo == "8" || documento.comprobante.codigo == "9") {
 						sheet.addChild(createText(documento.comprobante.nombre, {x:544, y:66, width:171, height:18, fontSize:10, align:'center'}));
 					} else {
 						sheet.addChild(createText("CRÉDITO", {x:544, y:66, width:171, height:18, fontSize:10, align:'center'}));
-					}					
+					}
 				} else {
 					sheet.addChild(createText("CONTADO", {x:544, y:66, width:171, height:18, fontSize:10, align:'center'}));
 				}
@@ -831,7 +865,7 @@ public class PrintJobFactura {
 		}
 		if (!esImportacion) {
 			sheet.addChild(createText((documento.planPagos != null ? documento.planPagos.nombre : (documento.condicion ? documento.condicion.nombre : "")), {x:67, y:656, width:305, height:18, fontSize:12, align:'center'}));
-			
+
 			if (documento.CAEnro) {
 				var YY_CAE:int = 698;
 				sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:188, y:YY_CAE, width:190, height:22, fontSize:13, align:'left'}));

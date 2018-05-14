@@ -21,32 +21,43 @@ public class DocumentoFormaPago {
 	public var formaPago:FormaPago;
 
 	/**
-	 * Importe en una moneda que puede ser diferente a la del documento, {@link #moneda}
-	 */
-	public var importe:String;
-
-	/**
 	 * Moneda en que esta expresado el importe
 	 */
 	public var moneda:Moneda;
 
 	private var _total:String;
 	
+	private var _importe:String;
+	
 	public var selected:Boolean;
 	
 	
-	public function DocumentoFormaPago(documento:Documento = null) {
+	public function DocumentoFormaPago(documento:Documento = null, initValues:Boolean = true) {
 		if (documento) {
 			this.documento = documento;
 			
 			this.docId = documento.docId;
-			this.numero = 1;
 			
 			this.moneda = documento.docRecMda;
 			this.formaPago = FormaPago.EFECTIVO;
-			this.importe = documento.docRecNeto;
-			this.total = documento.total;
+			this.numero = 1;
+
+			if (initValues) {
+				this.importe = documento.docRecNeto;
+				this.total = documento.total;
+			} else {
+				this.importe = "0.00";
+				this.total = "0.00";
+			}
 		}
+	}
+	
+	public function get importe():String {
+		return _importe;
+	}
+
+	public function set importe(value:String):void {
+		_importe = value;
 	}
 
 	/**
@@ -63,11 +74,14 @@ public class DocumentoFormaPago {
 		_total = value;
 	}
 	
-	public function updateImporte():void {
-		if (documento.moneda.codigo == moneda.codigo) {
-			importe = _total;	
+	public function updateTotal():void {
+		var monedaOrigenCode:String = moneda.codigo;
+		var monedaDestinoCode:String = documento.moneda.codigo;
+		
+		if (monedaOrigenCode == monedaDestinoCode) {
+			total = _importe;	
 		} else {
-			importe = "0.00";
+			total = documento.convertirMonedaStr(monedaOrigenCode, monedaDestinoCode, new BigDecimal(_importe ? _importe : "0"), false).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 		}
 
 	}

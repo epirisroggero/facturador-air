@@ -67,6 +67,7 @@
 
 			private function init():void {
 				mainMenuBar.addEventListener(MenuEventFT.MENU_CHANGE, menuChanged);
+				CatalogoFactory.getInstance()._interface =  CatalogoFactory.INTERFACE_WEB_EVENT;
 			}
 			
 			private function searchElement(name:String):Boolean {

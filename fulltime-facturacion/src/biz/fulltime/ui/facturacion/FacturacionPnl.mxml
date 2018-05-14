@@ -944,7 +944,8 @@
 					var simbolo:String = _documento.cliente.moneda ? _documento.cliente.moneda.simbolo : "U$S";
 					var nf:NumberFormatter = new NumberFormatter();
 					nf.setStyle("locale", "es_ES");
-
+					nf.fractionalDigits = 2;
+					
 					probMsg += "Crédito: " + simbolo + " " + nf.format(deuda.add(solicitado).toString()) + ", Tope Crédito: " + simbolo + " " + nf.format(topeCredito.toString()) + "\n\n";
 				}
 

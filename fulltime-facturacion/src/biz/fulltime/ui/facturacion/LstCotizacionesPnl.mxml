@@ -401,7 +401,7 @@
 
 		</s:ArrayList>
 		
-		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES"/>
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>
 		
 	</fx:Declarations>
 	<s:VGroup width="100%" height="100%" gap="0">

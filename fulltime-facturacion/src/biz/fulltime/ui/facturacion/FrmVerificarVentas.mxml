@@ -102,7 +102,7 @@
 	</fx:Script>
 	
 	<fx:Declarations>
-		<s:NumberFormatter id="numberFormatter" locale="es_ES"/>
+		<s:NumberFormatter id="numberFormatter" locale="es_ES" fractionalDigits="2"/>
 	</fx:Declarations>
 	
 	<s:Panel width="100%" height="100%" title="Artículos">

@@ -1747,12 +1747,18 @@ public class Documento extends DocumentoBase {
 		
 	}
 	
-	public function convertirMoneda(monedaOrigen:Moneda, monedaDestino:Moneda, monto:BigDecimal):BigDecimal {
-		return convertirMonedaStr(monedaOrigen.codigo, monedaDestino.codigo, monto);
+	public function convertirMoneda(monedaOrigen:Moneda, monedaDestino:Moneda, monto:BigDecimal, useTCC:Boolean = true):BigDecimal {
+		return convertirMonedaStr(monedaOrigen.codigo, monedaDestino.codigo, monto, useTCC);
 	}
 	
-	public function convertirMonedaStr(monedaOrigen:String, monedaDestino:String, monto:BigDecimal):BigDecimal {
-		var tipoCambio:BigDecimal = docTCC ? new BigDecimal(docTCC) : BigDecimal.ZERO;
+	public function convertirMonedaStr(monedaOrigen:String, monedaDestino:String, monto:BigDecimal, useTCC:Boolean = true):BigDecimal {
+		var tipoCambio:BigDecimal;
+		if (useTCC) {
+			tipoCambio = docTCF ? new BigDecimal(docTCC) : BigDecimal.ZERO;
+		} else {
+			tipoCambio = docTCF ? new BigDecimal(docTCC) : BigDecimal.ZERO;
+		}
+		
 		var result:BigDecimal = monto;
 		
 		// Convertir de Dolar o Euro --> Pesos

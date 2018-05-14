@@ -589,7 +589,7 @@
 	<fx:Declarations>
 		<mx:DateFormatter id="datet" formatString="DD/MM/YYYY" />
 
-		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>
 	</fx:Declarations>
 
 

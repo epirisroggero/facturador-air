@@ -125,6 +125,9 @@ public class CatalogoFactory extends EventDispatcher {
 	private var _fanfold:ArrayCollection = new ArrayCollection();
 
 	private var _formasPago:ArrayCollection = new ArrayCollection();
+	
+	private var _bancos:ArrayCollection = new ArrayCollection();
+	
 
 	private var _ivas:ArrayCollection = new ArrayCollection();
 
@@ -174,6 +177,14 @@ public class CatalogoFactory extends EventDispatcher {
 
 		reloadTimer.addEventListener(TimerEvent.TIMER, timerReloadHandler);
 		reloadTimer.start();
+	}
+
+	public function get bancos():ArrayCollection {
+		return _bancos;
+	}
+
+	public function set bancos(value:ArrayCollection):void {
+		_bancos = value;
 	}
 
 	private function timerReloadHandler(e:TimerEvent):void {
@@ -567,6 +578,7 @@ public class CatalogoFactory extends EventDispatcher {
 		zonas = new ArrayCollection();
 		paises = new ArrayCollection();
 		giros = new ArrayCollection();
+		bancos = new ArrayCollection();
 
 
 		// Para el tema expediciones
@@ -1073,6 +1085,16 @@ public class CatalogoFactory extends EventDispatcher {
 					{
 						if (values) {
 							ivas = sort(values, false);
+						}
+						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Bancos'.";
+						remObjCat.getCatalogoByName("Banco");
+						break;
+					}
+				case 26:
+					{
+						if (values) {
+							bancos = sort(values, false);
 						}
 						resetRemoteObject();
 						errorPanel.errorText = "Catálogos cargados.";

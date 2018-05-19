@@ -89,6 +89,7 @@
     <classEntry path="biz.fulltime.model.ArticuloCompraVentaCosto"/>
     <classEntry path="util.PNGDecoder"/>
     <classEntry path="util.Maths"/>
+    <classEntry path="biz.fulltime.model.Banco"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

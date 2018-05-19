@@ -39,6 +39,14 @@ public class VinculoDocumentos {
 		if (serie == "A" || serie == "P") {
 			vinRtaFin = BigDecimal.ZERO.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 		} else {
+//			var montoo:BigDecimal = new BigDecimal(cancela).setScale(4, MathContext.ROUND_HALF_EVEN);
+//			var desto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+//			
+//			var desc36:BigDecimal = montoo.multiply(new BigDecimal(36)).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN);
+//			var descReal:BigDecimal = montoo.multiply(desto).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN);
+//			
+//			vinRtaFin = desc36.subtract(descReal).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
+			
 			var montoDto:BigDecimal = new BigDecimal(descuentoMonto).setScale(4, MathContext.ROUND_HALF_EVEN);
 			
 			var neto:BigDecimal = new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN);
@@ -47,7 +55,7 @@ public class VinculoDocumentos {
 			var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
 			var desc36:BigDecimal = neto.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(2, MathContext.ROUND_HALF_EVEN);
 			
-			vinRtaFin = desc36.subtract(montoDto).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
+			vinRtaFin = desc36.subtract(montoDto).multiply(cociente.divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN)).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 		}
 		
 	}
@@ -73,8 +81,7 @@ public class VinculoDocumentos {
 		if (recibo && recibo.comprobante.aster) {
 			return mto.toString();
 		} else {
-			var dto:String = descuentoMonto;
-			var mtoDto:BigDecimal = new BigDecimal(dto ? dto : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
+			var mtoDto:BigDecimal = new BigDecimal(descuentoMonto ? descuentoMonto : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
 			
 			return mto.add(mtoDto).toString();
 		}

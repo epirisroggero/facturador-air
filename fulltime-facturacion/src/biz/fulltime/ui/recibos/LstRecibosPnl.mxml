@@ -493,7 +493,7 @@
 												   styleName="firstButton" />
 							<s:Button id="cmdPrevious" width="32" height="24" cornerRadius="6" click="{_current--; queryDocumentos()}" enabled="{_current&gt;1}"
 												   styleName="previousButton" />
-							<s:Label width="90" fontSize="16" fontWeight="bold" paddingLeft="5" paddingRight="5" paddingTop="4" textAlign="center" verticalAlign="middle"
+							<s:Label width="90" fontSize="16" paddingLeft="5" paddingRight="5" paddingTop="4" textAlign="center" verticalAlign="middle"
 									 styleName="myLabel" text="{_current} de {_pages}"/>
 							<s:Button id="cmdNext" width="32" height="24" cornerRadius="6" click="{_current++; queryDocumentos()}" enabled="{_current &lt; _pages}"
 												   styleName="nextButton" />

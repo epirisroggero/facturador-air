@@ -10,12 +10,15 @@
 			import biz.fulltime.model.Moneda;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
 			import mx.managers.ISystemManager;
 			import mx.managers.PopUpManager;
 			
+			import spark.collections.Sort;
+			import spark.collections.SortField;
 			import spark.components.TitleWindow;
 			
 			import util.CatalogoFactory;
@@ -46,11 +49,12 @@
 			}
 
 			public function set documentosValores(value:ArrayCollection):void {
-				_documentosValores = value;
+				_documentosValores = sort(value, true);
 				
 				_documentosValoresAux = new ArrayCollection();
 				for each (var e:DocumentoFormaPago in _documentosValores) {
 					_documentosValoresAux.addItem(e);
+					e.numero = _documentosValoresAux.length;
 				}
 				
 			}
@@ -93,7 +97,9 @@
 			public function calcularTotales():void {
 				importeTotal = BigDecimal.ZERO;
 				for each (var formaPago:DocumentoFormaPago in _documentosValoresAux) {
-					importeTotal = importeTotal.add(new BigDecimal(formaPago.total ? formaPago.total : BigDecimal.ZERO));
+					if (!formaPago.selected) {
+						importeTotal = importeTotal.add(new BigDecimal(formaPago.total ? formaPago.total : BigDecimal.ZERO));
+					}
 				}
 				
 			}
@@ -192,16 +198,53 @@
 					}
 				}
 				_documentosValoresAux.addItem(docFormaPago);
+				
+				docFormaPago.numero = _documentosValoresAux.length;
+				_documentosValoresAux = sort(_documentosValoresAux, true);
 			}
 			
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
 				_documentosValores.removeAll();
 				for each (var formaPago:DocumentoFormaPago in _documentosValoresAux) {
-					formaPago.numero = _documentosValoresAux.length + 1;
-					_documentosValores.addItem(formaPago);
+					if (!formaPago.selected) {
+						_documentosValores.addItem(formaPago);
+						formaPago.numero = _documentosValores.length;
+					}
 				}
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				
+				_documentosValoresAux.removeAll();
+				for each (var fPago:DocumentoFormaPago in _documentosValores) {
+					_documentosValoresAux.addItem(fPago);
+				}
+				
+				_documentosValoresAux = sort(_documentosValoresAux, true);
+				
+				if (importeTotal.compareTo(netoComprobante) == 0) {
+					Alert.show("Los totales no suman lo mismo que el total del comprobante.", "Información"); 
+				}
+				
+				dispatchEvent(new Event("save_documentos_y_valores"));
+				
+				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
+			
+			private function sort(arrColl:ArrayCollection, isNumeric:Boolean = true):ArrayCollection {
+				/* Create the SortField object for the "data" field in the ArrayCollection object, and make sure we do a numeric sort. */
+				var dataSortField:SortField = new SortField();
+				dataSortField.name = "numero";
+				dataSortField.numeric = isNumeric;
+				
+				/* Create the Sort object and add the SortField object created earlier to the array of fields to sort on. */
+				var numericDataSort:Sort = new Sort();
+				numericDataSort.fields = [dataSortField];
+				
+				/* Set the ArrayCollection object's sort property to our custom sort, and refresh the ArrayCollection. */
+				arrColl.sort = numericDataSort;
+				arrColl.refresh();
+				
+				return arrColl;
+			}
+
 			
 		]]>
 	</fx:Script>
@@ -218,6 +261,8 @@
 
 									protected function checkBox_changeHandler(event:Event):void {
 										DocumentoFormaPago(data).selected = checkBox.selected;
+										
+										outerDocument.calcularTotales();
 									}
 								]]>
 							</fx:Script>
@@ -424,16 +469,18 @@
 	<s:Panel width="100%" height="100%" title="{documento.comprobante.nombre.toUpperCase()} N° {documento.serie + documento.numero}" styleName="pnlForm">
 		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
 			<s:VGroup width="100%" height="100%" gap="10" horizontalAlign="right">
-				<s:HGroup paddingRight="10" paddingTop="5" horizontalAlign="right">
-					<s:Label width="110" text="Cotización {_documento.moneda.simbolo}" />
-					<s:TextInput width="110" text="{documento.docTCC}" textAlign="right"/>
+				<s:HGroup paddingRight="10" paddingTop="5" horizontalAlign="right" verticalAlign="middle">
+					<s:Label text="Cotización {_documento.moneda.simbolo}" />
+					<s:TextInput width="110" text="{nf_Espanol_Espanol2.format(documento.docTCC)}" textAlign="right" editable="false"/>
 				</s:HGroup>
 
 				<s:DataGrid id="dgDocumentosValores" width="100%" height="100%" doubleClick="dgDocumentosValores_doubleClickHandler(event)" keyDown="dgDocumentosValores_keyDownHandler(event)"
 							sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" dataProvider="{_documentosValoresAux}" editable="{hasPermEdition()}">
 				</s:DataGrid>
-				<s:HGroup paddingRight="10" paddingTop="5" paddingBottom="5" horizontalAlign="right">
-					<s:Button id="cmdNuevo" width="90" styleName="nuevoButton" label="Nuevo" click="cmdNuevo_clickHandler(event)"/>
+				<s:HGroup paddingLeft="10" paddingRight="10" paddingTop="5" paddingBottom="0"  width="100%">
+					<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="120" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
+					<s:Spacer width="100%" />
+					<s:Button id="cmdNuevo" width="120" styleName="nuevoButton" label="Agregar" click="cmdNuevo_clickHandler(event)" toolTip="Agregar filas"/>
 				</s:HGroup>
 
 				<s:Line width="100%" height="2" left="0">
@@ -472,7 +519,6 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="110" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
 				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>

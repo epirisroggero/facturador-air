@@ -272,10 +272,10 @@
 						<s:FormLayout gap="-12" />
 					</s:layout>
 					<s:FormItem label="Fecha desde">
-						<mx:DateField id="txtFechaDesde" yearNavigationEnabled="true"/>
+						<mx:DateField id="txtFechaDesde" yearNavigationEnabled="true" fontFamily="Helvetica"/>
 					</s:FormItem>
 					<s:FormItem label="Fecha hasta">
-						<mx:DateField id="txtFechaHasta" selectedDate="{new Date()}" yearNavigationEnabled="true"/>
+						<mx:DateField id="txtFechaHasta" selectedDate="{new Date()}" fontFamily="Helvetica" yearNavigationEnabled="true"/>
 					</s:FormItem>
 				</s:Form>
 			</s:Panel>

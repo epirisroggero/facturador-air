@@ -288,22 +288,22 @@
 			<s:HGroup horizontalAlign="center" paddingLeft="20" paddingRight="40" verticalAlign="middle">
 				<components:IconButton id="cmdPrevious" width="24" height="24" cornerRadius="6" click="cmdPrevious_clickHandler(event)" styleName="previousButton"
 									   focusEnabled="false" toolTip="Día Anterior" />
-				<s:Button id="cmdFechaHoy" width="60" height="24" cornerRadius="6" fontWeight="bold" click="cmdFechaHoy_clickHandler(event)" label="Hoy" toolTip="Ir Día de hoy"
+				<s:Button id="cmdFechaHoy" width="60" height="24" cornerRadius="6" click="cmdFechaHoy_clickHandler(event)" label="Hoy" toolTip="Ir Día de hoy"
 						  focusEnabled="false" />
 				<components:IconButton id="cmdNext" width="24" height="24" cornerRadius="6" click="cmdNext_clickHandler(event)" styleName="nextButton" toolTip="Día Siguiente"
 									   focusEnabled="false" />
 				<s:Spacer width="8" />
-				<s:Button id="cmdRefrescar" fontWeight="bold" click="cmdRefrescar_clickHandler(event)" label="Refrescar" toolTip="Refrescar" focusEnabled="false"
+				<s:Button id="cmdRefrescar" click="cmdRefrescar_clickHandler(event)" label="Refrescar" toolTip="Refrescar" focusEnabled="false"
 						  styleName="refrescarButton16" />
 			</s:HGroup>
 			<s:Spacer width="100%" />
-			<s:Label fontSize="14" text="{dateFormatter.format(txtDate.selectedDate)}" />
+			<s:Label fontSize="16" text="{dateFormatter.format(txtDate.selectedDate)}" />
 		</s:HGroup>
 
 		<s:HGroup width="100%" paddingBottom="10" paddingLeft="20" paddingRight="10" paddingTop="10" verticalAlign="top">
 
 			<s:VGroup width="170" gap="0">
-				<s:Label width="100%" fontWeight="bold" paddingTop="5" textAlign="left" text="Área" />
+				<s:Label width="100%" paddingTop="5" textAlign="left" text="Área" />
 				<components1:MyAutoComplete id="cmbCapitulo" width="100%" textAlign="left" change="cmbCapitulo_changeHandler(event)" dataProvider="{ catalogs.capitulos }"
 											labelField="nombre" matchType="anyPart" prompt="Filtrar por Área" allowNewValues="false"
 											selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
@@ -311,7 +311,7 @@
 			</s:VGroup>
 
 			<s:VGroup width="240" gap="0">
-				<s:Label width="100%" fontWeight="bold" paddingTop="5" textAlign="left" text="Tareas" />
+				<s:Label width="100%" paddingTop="5" textAlign="left" text="Tareas" />
 				<components1:MyAutoComplete id="cmbTarea" width="100%" textAlign="left" change="cmbTarea_changeHandler(event)" dataProvider="{ catalogs.tareas }"
 											labelField="nombre" matchType="anyPart" prompt="Filtrar por Tareas" allowNewValues="false"
 											selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="{ true }"
@@ -321,16 +321,16 @@
 
 			<s:Spacer width="20" />
 			<s:VGroup width="240" gap="0">
-				<s:Label width="100%" fontWeight="bold" paddingTop="5" textAlign="left" text="Asignados" />
+				<s:Label width="100%" paddingTop="5" textAlign="left" text="Asignados" />
 				<components1:MyAutoComplete id="cmbUsuarioAsignado" width="100%" textAlign="left" change="cmbUsuarioAsignado_changeHandler(event)"
 											dataProvider="{ catalogs.usuarios }" labelField="nombre" matchType="anyPart" prompt="Filtrar por Usuario Asignado"
-											allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }"
-											allowMultipleSelection="{ true }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+											allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+											allowMultipleSelection="true" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
 											labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
 			</s:VGroup>
 
 			<s:VGroup width="240" gap="0">
-				<s:Label width="100%" fontWeight="bold" paddingTop="5" textAlign="left" text="Contacto" />
+				<s:Label width="100%" paddingTop="5" textAlign="left" text="Contacto" />
 				<components1:MyAutoComplete id="cmbContacto" width="100%" textAlign="left" change="cmbContacto_changeHandler(event)" dataProvider="{ catalogs.getContactosActivos() }"
 											labelField="nombre" matchType="anyPart" prompt="Filtrar por Contacto" allowNewValues="false"
 											selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"

@@ -1,28 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+<s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
 		  width="100%" height="100%">
-	
+
 	<fx:Script>
 		<![CDATA[
-			protected function cmdAceptar_clickHandler(event:MouseEvent):void
-			{
-				// TODO Auto-generated method stub
-				
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Documento;
+			import biz.fulltime.model.Moneda;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.collections.ArrayCollection;
+			
+			import util.CatalogoFactory;
+
+			private var _moneda:Moneda;
+
+			private var _recibo:Documento;
+
+			public function get recibo():Documento {
+				return _recibo;
+			}
+
+			public function set recibo(value:Documento):void {
+				_recibo = value;
+			}
+
+			[Bindable]
+			public function get moneda():Moneda {
+				return _moneda;
+			}
+
+			public function set moneda(value:Moneda):void {
+				_moneda = value;
+			}
+
+			public function codigoNombreLabelFunction(item:Object):String {
+				var label:String = "";
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+
+				return label.toUpperCase();
 			}
 			
-			protected function cmdCancel_clickHandler(event:MouseEvent):void
-			{
-				// TODO Auto-generated method stub
+			public function clienteLabelFunction(item:Object):String {
+				var client:Cliente = item as Cliente;
 				
+				var label:String;
+				if (item && item.hasOwnProperty("codigo")) {
+					label = item.codigo;
+				}
+				if (item && item.hasOwnProperty("nombre")) {
+					label += " - " + item.nombre;
+				}
+				if (client && client.razonSocial != client.nombre) {
+					label += " [" + client.razonSocial + "] ";
+				}
+				
+				return label;
 			}
-			
+
+
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+
+			}
+
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				// TODO Auto-generated method stub
+
+			}
 		]]>
 	</fx:Script>
-	
+
 	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+
 	</fx:Declarations>
 
-	<s:HGroup width="100%" gap="10" paddingTop="10" paddingLeft="20" paddingBottom="10" paddingRight="20">
+	<s:HGroup width="100%" paddingBottom="10" paddingLeft="20" paddingRight="20" paddingTop="10" gap="10">
 		<s:VGroup>
 			<s:Label text="Comprobante" />
 			<s:DropDownList id="cmbComprobante" />
@@ -44,7 +107,12 @@
 			<mx:DateField id="dfEmision" width="100%" />
 		</s:VGroup>
 		<s:VGroup>
-			<s:Label text="Moneda"  />
+			<s:Label text="Moneda" />
+			<components:MyAutoComplete id="cmbMoney" width="100%" height="24" fontSize="14" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().monedas }" labelField="nombre"
+									   matchType="anyPart" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+									   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+									   dropDownRowCount="{CatalogoFactory.getInstance().monedas.length}" selectedItem="@{moneda}" next_focus="{txtConcepto}" previous_focus="{dfEmision}" />
+
 			<s:DropDownList id="cmbMoneda" />
 		</s:VGroup>
 	</s:HGroup>
@@ -56,23 +124,31 @@
 			<s:TextInput id="txtConcepto" width="100%" />
 		</s:FormItem>
 		<s:FormItem label="Banco">
-			<s:DropDownList id="ddlBanco" />
+			<components:MyAutoComplete id="cmbBanco" width="100%" height="24" fontSize="14" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().bancos }" labelField="nombre"
+									   matchType="anyPart" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+									   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+									   dropDownRowCount="{CatalogoFactory.getInstance().bancos.length}" selectedItem="@{moneda}" next_focus="{cmbCliente}" previous_focus="{txtConcepto}" />
 		</s:FormItem>
 		<s:FormItem label="Cliente">
-			<s:DropDownList id="ddlCliente" />
+			<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left"
+									   dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre" matchType="anyPart" prompt="Ingrese cliente" allowNewValues="false"
+									   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+									   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus" next_focus="{txtTitular}" dropDownWidth="480"
+									   dropDownRowCount="10" selectedItem="{recibo.cliente}" />
+
 		</s:FormItem>
 		<s:FormItem label="Titular">
-			<s:TextInput width="100%" />
+			<s:TextInput id="txtTitular" width="100%" />
 		</s:FormItem>
 		<s:FormItem label="Caja">
 			<s:DropDownList id="ddlCaja" />
 		</s:FormItem>
-		
+
 	</s:Form>
-	
-	<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10">
-		<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="110" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
-		<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+
+	<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+		<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
+		<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 	</s:HGroup>
 
 </s:VGroup>

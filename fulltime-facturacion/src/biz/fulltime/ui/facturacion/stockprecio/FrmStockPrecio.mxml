@@ -1213,10 +1213,10 @@
 	<s:BorderContainer width="100%" height="100%" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0" visible="{!loading}">
 		<s:VGroup bottom="0" left="10" right="10" top="10">
 			<s:HGroup paddingBottom="10" paddingLeft="16" paddingRight="16" paddingTop="5" gap="12">
-				<s:RadioButton id="rbNoFiltrar" fontWeight="bold" label="No Filtrar" groupName="filtro" selected="true" value="noFiltrar" />
-				<s:RadioButton id="rbCodigo" fontWeight="bold" label="Código" groupName="filtro" value="filtrarCod" />
-				<s:RadioButton id="rbProveedor" fontWeight="bold" label="Proveedor" groupName="filtro" value="filtrarProv" visible="{hasPerm()}" includeInLayout="{hasPerm()}" />
-				<s:RadioButton id="rbFamilia" fontWeight="bold" label="Familia" groupName="filtro" value="filtrarFam" />
+				<s:RadioButton id="rbNoFiltrar"  label="No Filtrar" groupName="filtro" selected="true" value="noFiltrar" />
+				<s:RadioButton id="rbCodigo" label="Código" groupName="filtro" value="filtrarCod" />
+				<s:RadioButton id="rbProveedor" label="Proveedor" groupName="filtro" value="filtrarProv" visible="{hasPerm()}" includeInLayout="{hasPerm()}" />
+				<s:RadioButton id="rbFamilia" label="Familia" groupName="filtro" value="filtrarFam" />
 			</s:HGroup>
 
 			<s:VGroup id="pnlNoFiltrar" width="100%" height="100%" includeIn="default" />
@@ -1310,7 +1310,7 @@
 								<s:HGroup width="100%" height="100%">
 									<s:VGroup width="100%" height="100%">
 										<s:HGroup width="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="5">
-											<s:Label id="lblFilterFamilias" width="90" fontSize="12" left="5" text="Nombre: " />
+											<s:Label id="lblFilterFamilias" width="90" left="5" text="Nombre: " />
 											<s:SkinnableContainer width="240" styleName="filterTextInput">
 												<s:layout>
 													<s:HorizontalLayout horizontalAlign="center" paddingBottom="1" paddingLeft="2" paddingRight="5" paddingTop="1" verticalAlign="middle" />
@@ -1492,7 +1492,7 @@
 		<s:HGroup width="100%" paddingBottom="0" paddingTop="0" verticalAlign="middle">
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
-			<s:Label fontSize="14" text="Exportar a:" styleName="myLabel" />
+			<s:Label fontSize="14" text="Exportar a:" />
 			<s:DropDownList id="cmbExportType" width="90" textAlign="left" labelField="nombre" selectedIndex="0">
 				<s:dataProvider>
 					<s:ArrayList source="[Excel, PDF]" />

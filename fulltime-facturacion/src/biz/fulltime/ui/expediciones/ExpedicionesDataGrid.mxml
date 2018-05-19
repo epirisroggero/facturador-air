@@ -374,6 +374,7 @@
 	<fx:Declarations>
 		<s:ArrayCollection id="arr" />
 	</fx:Declarations>
+	
 
 	<mx:AdvancedDataGrid id="grid" width="100%" height="100%" fontSize="12" dataProvider="{_dataProvider}" borderAlpha="0.2" editable="true" verticalGridLines="false"
 						 itemEditBeginning="grid_itemEditBeginningHandler(event)" itemEditEnd="grid_itemEditEndHandler(event)"
@@ -668,11 +669,10 @@
 	</mx:AdvancedDataGrid>
 
 	<s:HGroup width="100%" height="32" paddingLeft="10" paddingRight="10" verticalAlign="middle" includeInLayout="{showDateColumn}" visible="{showDateColumn}">
-		<s:Label fontSize="14" fontFamily="Verdana" text="Cantidad de registros: " alpha=".76" />
-		<s:Label fontSize="14" fontFamily="Verdana" text="{_dataProvider.length}" />
+		<s:Label text="Cantidad de registros: " alpha=".76" />
+		<s:Label text="{_dataProvider.length}" />
 		<s:Spacer width="100%" />
-		<s:CheckBox id="chbPendientes" fontSize="13" fontWeight="bold" verticalCenter="0" change="chbPendientes_changeHandler(event)" label="Pendientes"
-					selected="{_mostrarPendientes}" />
+		<s:CheckBox id="chbPendientes" verticalCenter="0" change="chbPendientes_changeHandler(event)" label="Pendientes" selected="{_mostrarPendientes}" />
 	</s:HGroup>
 
 </s:VGroup>

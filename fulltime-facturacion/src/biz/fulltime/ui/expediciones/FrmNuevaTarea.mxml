@@ -991,7 +991,7 @@
 			<mx:ViewStack id="myViewStack" width="100%" height="100%" paddingTop="5">
 				<s:NavigatorContent label="General" width="100%" height="100%">
 					<s:VGroup width="100%" height="100%" paddingTop="-10">
-						<s:Form width="100%" height="100%" fontFamily="Verdana" fontStyle="normal" fontSize="13">
+						<s:Form width="100%" height="100%" fontStyle="normal">
 							<s:layout>
 								<s:FormLayout paddingBottom="5" gap="-12"/>
 							</s:layout>
@@ -1001,7 +1001,7 @@
 							
 							<s:FormItem width="100%" color="red" textAlign="right" fontWeight="bold" label="Fecha Inicio:" includeInLayout="{!nueva &amp;&amp; tarea.fechaInicio != null}"
 										visible="{!nueva &amp;&amp; tarea.fechaInicio != null}">
-								<s:Label text="{_fechaInicio}" />
+								<s:Label text="{_fechaInicio}" fontSize="15" />
 							</s:FormItem>
 							<s:FormItem width="100%" textAlign="right" label="Tarea">
 								<components:MyAutoComplete id="cmbTarea" width="100%" textAlign="left" change="cmbTarea_changeHandler(event)"

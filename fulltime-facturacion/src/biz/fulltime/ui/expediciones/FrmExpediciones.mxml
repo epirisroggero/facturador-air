@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <components1:PnlButtons xmlns:classes="com.hillelcoren.components.autoComplete.classes.*" xmlns:componentes="componentes.*" xmlns:components="biz.fulltime.ui.components.*"
-						xmlns:components1="components.*" xmlns:expediciones="biz.fulltime.ui.expediciones.*" xmlns:facturacion="biz.fulltime.ui.facturacion.*"
-						xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*"
-						xmlns:s="library://ns.adobe.com/flex/spark"
-						width="100%" height="100%" backgroundAlpha="0.5" creationComplete="creationCompleteHandler(event)" title="EXPEDICIONES" xmlns:loader="biz.fulltime.util.loader.*">
+						xmlns:components1="components.*" xmlns:expediciones="biz.fulltime.ui.expediciones.*" xmlns:facturacion="biz.fulltime.ui.facturacion.*" xmlns:fx="http://ns.adobe.com/mxml/2009"
+						xmlns:loader="biz.fulltime.util.loader.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+						width="100%" height="100%" backgroundAlpha="0.5" creationComplete="creationCompleteHandler(event)" title="EXPEDICIONES">
 
 	<fx:Script>
 		<![CDATA[
@@ -16,10 +15,10 @@
 			import biz.fulltime.model.Contacto;
 			import biz.fulltime.model.Tarea;
 			import biz.fulltime.model.Usuario;
-			
+
 			import com.adobe.utils.DateUtil;
 			import com.hillelcoren.components.AutoComplete;
-			
+
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.controls.advancedDataGridClasses.AdvancedDataGridColumn;
@@ -34,10 +33,10 @@
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.remoting.RemoteObject;
 			import mx.utils.ObjectUtil;
-			
+
 			import spark.components.TitleWindow;
 			import spark.events.IndexChangeEvent;
-			
+
 			import util.CatalogoFactory;
 
 			[Bindable]
@@ -58,14 +57,14 @@
 
 			[Bindable]
 			private var _enabledButtons:Boolean = true;
-			
+
 			[Bindable]
 			private var _cargando:Boolean = true;
 
 			private var _iniciando:Boolean = true;
 
 			private const WINDOW_WIDTH:Number = 800;
-			
+
 			private const WINDOW_HEIGHT:Number = 640;
 
 
@@ -78,30 +77,30 @@
 				remObj.addEventListener(FaultEvent.FAULT, onFault);
 
 				callLater(function():void {
-					txtDate.selectedDate = new Date();
-					
-					moverseA(txtDate.selectedDate);
+						txtDate.selectedDate = new Date();
 
-				});				
+						moverseA(txtDate.selectedDate);
+
+					});
 				addEventListener(IndexChangeEvent.CHANGE, changeSelectedItem);
-				
+
 				cmbTarea.dataProvider = CatalogoFactory.getInstance().tareas;
-				
+
 			}
-			
+
 			private var _selectedIndex:int = 0;
-			
+
 			private function changeSelectedItem(event:IndexChangeEvent):void {
 				var index:Number = event.newIndex;
-				
+
 				if (index == 0) {
-					currentState = "default";		
+					currentState = "default";
 				} else if (index == 1) {
 					currentState = "advanced";
 				} else {
 					currentState = "supervisar";
 				}
-				
+
 				_selectedIndex = index;
 			}
 
@@ -122,7 +121,7 @@
 				}
 				if (_iniciando) {
 					_iniciando = false;
-				}				
+				}
 				_cargando = false;
 			}
 
@@ -145,46 +144,46 @@
 					imprimirModoNormal();
 				}
 			}
-			
+
 			private function imprimirModoAvanzado():void {
 				var pjTareas:PrintJobTareasAvanzado = new PrintJobTareasAvanzado();
-				
+
 				var tareas:ArrayCollection = new ArrayCollection();
-				
+
 				var tareasPendientes:ArrayCollection = new ArrayCollection();
 				for each (var tarea:AgendaTareaDTO in frmAvanzado.tareas) {
 					if (tarea.estado == "P") {
 						tareasPendientes.addItem(tarea);
 					}
-				}					
+				}
 				for each (var t:AgendaTareaDTO in tareasPendientes) {
 					if (t.selected) {
 						tareas.addItem(t);
 					}
-				}				
+				}
 				if (tareas.length == 0) {
 					tareas.addAll(tareasPendientes);
 				}
 				pjTareas.tareas = tareas;
-				
+
 				try {
 					pjTareas.imprimirTareas();
-					
+
 				} catch (e) {
 					Alert.show(e.toString(), "Error");
-					
+
 				}
 			}
-			
+
 			private function imprimirModoNormal():void {
 				var wndImprimirTareas:TitleWindow = new TitleWindow();
 				wndImprimirTareas.title = "Imprimir Expediciones";
 
 				var frmImprimir:FrmImprimirExpediciones = new FrmImprimirExpediciones();
 				frmImprimir.addEventListener(CloseEvent.CLOSE, function():void {
-					wndImprimirTareas.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndImprimirTareas as IFlexDisplayObject);
-				});
+						wndImprimirTareas.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndImprimirTareas as IFlexDisplayObject);
+					});
 
 				var _matutinas:ArrayCollection = new ArrayCollection();
 				var _vespertinas:ArrayCollection = new ArrayCollection();
@@ -239,15 +238,15 @@
 				frmNuevaTarea.fecha = txtDate.selectedDate;
 
 				frmNuevaTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+					});
 
 				frmNuevaTarea.addEventListener("_savedOk", function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-					moverseA(txtDate.selectedDate);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						moverseA(txtDate.selectedDate);
+					});
 
 
 				PopUpManager.addPopUp(wndAltaTarea, this, false);
@@ -273,15 +272,15 @@
 
 				wndAltaTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmNuevaTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+					});
 
 				frmNuevaTarea.addEventListener("_savedOk", function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-					moverseA(txtDate.selectedDate);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						moverseA(txtDate.selectedDate);
+					});
 
 				wndAltaTarea.addElement(frmNuevaTarea);
 
@@ -316,16 +315,16 @@
 
 				wndAltaTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmNuevaTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
 
-				});
+					});
 
 				frmNuevaTarea.addEventListener("_savedOk", function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-					moverseA(txtDate.selectedDate);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						moverseA(txtDate.selectedDate);
+					});
 
 				wndAltaTarea.addElement(frmNuevaTarea);
 			}
@@ -348,15 +347,15 @@
 
 				wndAltaTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmNuevaTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+					});
 
 				frmNuevaTarea.addEventListener("_savedOk", function():void {
-					wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
-					moverseA(txtDate.selectedDate);
-				});
+						wndAltaTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
+						moverseA(txtDate.selectedDate);
+					});
 
 				wndAltaTarea.addElement(frmNuevaTarea);
 
@@ -383,15 +382,15 @@
 
 				wndReagendarTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmReagendarTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndReagendarTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndReagendarTarea as IFlexDisplayObject);
+						wndReagendarTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndReagendarTarea as IFlexDisplayObject);
 
-					if (!frmReagendarTarea.cancelPressed) {
-						var nuevaFecha:Date = frmReagendarTarea.nuevaFecha;
-						txtDate.selectedDate = nuevaFecha;
-						moverseA(nuevaFecha);
-					}
-				});
+						if (!frmReagendarTarea.cancelPressed) {
+							var nuevaFecha:Date = frmReagendarTarea.nuevaFecha;
+							txtDate.selectedDate = nuevaFecha;
+							moverseA(nuevaFecha);
+						}
+					});
 
 				wndReagendarTarea.addElement(frmReagendarTarea);
 			}
@@ -413,15 +412,15 @@
 
 				wndReagendarTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmReagendarTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndReagendarTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndReagendarTarea as IFlexDisplayObject);
+						wndReagendarTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndReagendarTarea as IFlexDisplayObject);
 
-					if (!frmReagendarTarea.cancelPressed) {
-						var nuevaFecha:Date = frmReagendarTarea.nuevaFecha;
-						txtDate.selectedDate = nuevaFecha;
-						moverseA(nuevaFecha);
-					}
-				});
+						if (!frmReagendarTarea.cancelPressed) {
+							var nuevaFecha:Date = frmReagendarTarea.nuevaFecha;
+							txtDate.selectedDate = nuevaFecha;
+							moverseA(nuevaFecha);
+						}
+					});
 				wndReagendarTarea.addElement(frmReagendarTarea);
 			}
 
@@ -452,12 +451,12 @@
 					if (fechaHoy.hours > 12) {
 						cmdNuevaTareaM.enabled = false;
 					}
-				}			
+				}
 
 				nuevaFecha.hours = 18;
 
 				var query:AgendaTareaQuery = new AgendaTareaQuery();
-				
+
 				var tareas:ArrayCollection = cmbTarea.selectedItems;
 				var selectedTareas:ArrayCollection = new ArrayCollection();
 				for each (var itemT:Tarea in tareas) {
@@ -465,22 +464,22 @@
 				}
 
 				var capitulo:Capitulo = cmbCapitulo.selectedItem as Capitulo;
-				if (capitulo) {					
+				if (capitulo) {
 					if (tareas.length == 0) {
-						query.capituloId = capitulo.codigo; 												
+						query.capituloId = capitulo.codigo;
 					} else {
 						query.tareas = selectedTareas;
 					}
 				} else {
 					query.tareas = selectedTareas;
-				}				
-				
+				}
+
 				var contacto:Contacto = cmbContacto.selectedItem;
-				query.contacto = contacto ? contacto.codigo : null;	
+				query.contacto = contacto ? contacto.codigo : null;
 				query.fecha = com.adobe.utils.DateUtil.getUTCDate(nuevaFecha);
-				
+
 				var selectedUsuarios:ArrayCollection = new ArrayCollection();
-				
+
 				if (chbMisAsignados.selected) {
 					selectedUsuarios.addItem(GeneralOptions.getInstance().loggedUser.codigo)
 				} else {
@@ -491,12 +490,12 @@
 						for each (var item:Usuario in usuarios) {
 							selectedUsuarios.addItem(item.codigo);
 						}
-					}					
+					}
 				}
-				query.usuarios = selectedUsuarios;	
+				query.usuarios = selectedUsuarios;
 
 				_cargando = true
-				
+
 				remObj.queryTareas(query);
 			}
 
@@ -552,9 +551,9 @@
 				remObjMod.channelSet = ServerConfig.getInstance().channelSet;
 				remObjMod.showBusyCursor = true;
 				remObjMod.addEventListener(ResultEvent.RESULT, function():void {
-					trace(" Se modificaron correctamente las tareas seleccionadas.");
-					moverseA(txtDate.selectedDate);
-				});
+						trace(" Se modificaron correctamente las tareas seleccionadas.");
+						moverseA(txtDate.selectedDate);
+					});
 				remObjMod.addEventListener(FaultEvent.FAULT, onFault);
 				remObjMod.modificarTareas(tareasM, false);
 			}
@@ -572,9 +571,9 @@
 				remObjMod.channelSet = ServerConfig.getInstance().channelSet;
 				remObjMod.showBusyCursor = true;
 				remObjMod.addEventListener(ResultEvent.RESULT, function():void {
-					trace(" Se MODIFICARON correctamente las tareas seleccionadas.");
-					moverseA(txtDate.selectedDate);
-				});
+						trace(" Se MODIFICARON correctamente las tareas seleccionadas.");
+						moverseA(txtDate.selectedDate);
+					});
 				remObjMod.addEventListener(FaultEvent.FAULT, onFault);
 				remObjMod.modificarTareas(tareasV, true);
 			}
@@ -595,10 +594,10 @@
 
 				wndTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndTarea as IFlexDisplayObject);
+						wndTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndTarea as IFlexDisplayObject);
 
-				});
+					});
 
 				wndTarea.addElement(frmTarea);
 
@@ -610,7 +609,7 @@
 				wndTarea.width = WINDOW_WIDTH;
 				wndTarea.height = WINDOW_HEIGHT;
 
-				var tarea:AgendaTarea = dgVespertinas.currentSelected  as AgendaTarea;
+				var tarea:AgendaTarea = dgVespertinas.currentSelected as AgendaTarea;
 
 				var frmTarea:FrmDetalleTarea = new FrmDetalleTarea();
 				frmTarea.tarea = tarea;
@@ -620,10 +619,10 @@
 
 				wndTarea.addEventListener(CloseEvent.CLOSE, closeHandler);
 				frmTarea.addEventListener(CloseEvent.CLOSE, function():void {
-					wndTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
-					PopUpManager.removePopUp(wndTarea as IFlexDisplayObject);
+						wndTarea.removeEventListener(CloseEvent.CLOSE, closeHandler);
+						PopUpManager.removePopUp(wndTarea as IFlexDisplayObject);
 
-				});
+					});
 
 				wndTarea.addElement(frmTarea);
 			}
@@ -631,14 +630,14 @@
 			protected function chbTaresPendientes(event:Event):void {
 				// TODO Auto-generated method stub
 			}
-			
+
 			protected function cmdRefrescar_clickHandler(event:MouseEvent):void {
 				moverseA(txtDate.selectedDate);
 			}
-			
+
 			protected function cmbCapitulo_changeHandler(event:Event):void {
 				var selectedItem:Capitulo = cmbCapitulo.selectedItem as Capitulo;
-				
+
 				var tareas:ArrayCollection = new ArrayCollection();
 				for each (var tarea:Tarea in CatalogoFactory.getInstance().tareas) {
 					if (selectedItem == null || tarea.capituloId == selectedItem.codigo) {
@@ -648,23 +647,22 @@
 				cmbTarea.clear();
 				cmbTarea.selectedItems = new ArrayCollection();
 				cmbTarea.dataProvider = tareas;
-				
+
 				callLater(function():void {
-					moverseA(txtDate.selectedDate);
-				});								
+						moverseA(txtDate.selectedDate);
+					});
 			}
-			
+
 			protected function cmbContacto_keyDownHandler(event:KeyboardEvent):void {
 			}
-			
+
 			protected function cmbContacto_changeHandler(event:Event):void {
 				moverseA(txtDate.selectedDate);
 			}
-			
+
 			protected function chbMisAsignados_changeHandler(event:Event):void {
 				moverseA(txtDate.selectedDate);
 			}
-			
 		]]>
 	</fx:Script>
 
@@ -684,45 +682,42 @@
 		<s:State name="advanced" />
 		<s:State name="supervisar" />
 	</components1:states>
-	
+
 	<s:VGroup width="100%" height="100%" gap="-1" includeIn="advanced">
-		<expediciones:FrmBuscarExpediciones id="frmAvanzado"/>
+		<expediciones:FrmBuscarExpediciones id="frmAvanzado" />
 	</s:VGroup>
-	
+
 	<s:VGroup width="100%" height="100%" gap="-1" includeIn="supervisar">
 		<expediciones:FrmSupervision id="frmSupervision" />
 	</s:VGroup>
-	
+
 	<s:VGroup width="100%" height="100%" gap="-1" includeIn="default">
 		<s:HGroup width="100%" paddingLeft="20" paddingRight="10" paddingTop="10" verticalAlign="middle">
-			<s:Label fontSize="12" textAlign="right" text="Fecha" />
-			<mx:DateField id="txtDate" fontSize="14" fontFamily="Helvetica" change="txtDate_changeHandler(event)" selectedDate="{new Date()}" yearNavigationEnabled="true" />
+			<s:Label textAlign="right" text="Fecha" />
+			<mx:DateField id="txtDate" fontFamily="Helvetica" fontSize="14" change="txtDate_changeHandler(event)" selectedDate="{new Date()}" yearNavigationEnabled="true" />
 
 			<s:HGroup horizontalAlign="center" paddingLeft="20" paddingRight="40" verticalAlign="middle">
-				<components1:IconButton id="cmdPrevious" width="24" height="24" cornerRadius="6" click="cmdPrevious_clickHandler(event)" styleName="previousButton"
-										focusEnabled="false" toolTip="Día anterior" />
-				<s:Button id="cmdFechaHoy" click="cmdFechaHoy_clickHandler(event)" label="Hoy" toolTip="Ir al día de hoy"
-						  focusEnabled="false" styleName="textButton"/>
-				<components1:IconButton id="cmdNext" width="24" height="24" cornerRadius="6" click="cmdNext_clickHandler(event)" styleName="nextButton" toolTip="Día siguiente"
-										focusEnabled="false" />
-				
+				<components1:IconButton id="cmdPrevious" width="24" height="24" cornerRadius="6" click="cmdPrevious_clickHandler(event)" styleName="previousButton" focusEnabled="false"
+										toolTip="Día anterior" />
+				<s:Button id="cmdFechaHoy" click="cmdFechaHoy_clickHandler(event)" label="Hoy" toolTip="Ir al día de hoy" focusEnabled="false" styleName="textButton" />
+				<components1:IconButton id="cmdNext" width="24" height="24" cornerRadius="6" click="cmdNext_clickHandler(event)" styleName="nextButton" toolTip="Día siguiente" focusEnabled="false" />
+
 				<s:Spacer width="8" />
-				<s:Button id="cmdRefrescar" click="cmdRefrescar_clickHandler(event)" label="Refrescar" toolTip="Refrescar"
-						  focusEnabled="false" styleName="refrescarButton16" />
+				<s:Button id="cmdRefrescar" click="cmdRefrescar_clickHandler(event)" label="Refrescar" toolTip="Refrescar" focusEnabled="false" styleName="refrescarButton16" />
 
 
 				<s:Spacer width="8" />
 				<s:BorderContainer width="160" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0.5" minHeight="0">
 					<s:layout>
-						<s:VerticalLayout horizontalAlign="center" paddingLeft="20" paddingRight="20" paddingBottom="5" paddingTop="5" verticalAlign="middle" />
+						<s:VerticalLayout horizontalAlign="center" paddingBottom="5" paddingLeft="20" paddingRight="20" paddingTop="5" verticalAlign="middle" />
 					</s:layout>
-					<s:CheckBox id="chbPendientes" fontSize="12" label="Pendientes" selected="true" />
+					<s:CheckBox id="chbPendientes" label="Pendientes" selected="true" />
 				</s:BorderContainer>
 				<s:BorderContainer width="160" backgroundAlpha=".16" backgroundColor="#6E87B5" borderAlpha="0.5" minHeight="0">
 					<s:layout>
-						<s:VerticalLayout horizontalAlign="center" paddingLeft="20" paddingRight="20" paddingBottom="5" paddingTop="5" verticalAlign="middle" />
+						<s:VerticalLayout horizontalAlign="center" paddingBottom="5" paddingLeft="20" paddingRight="20" paddingTop="5" verticalAlign="middle" />
 					</s:layout>
-					<s:CheckBox id="chbMisAsignados" fontSize="12" label="Mis asignadas" selected="true" change="chbMisAsignados_changeHandler(event)"/>
+					<s:CheckBox id="chbMisAsignados" change="chbMisAsignados_changeHandler(event)" label="Mis asignadas" selected="true" />
 				</s:BorderContainer>
 			</s:HGroup>
 			<s:Spacer width="100%" />
@@ -733,119 +728,112 @@
 		<s:HGroup width="100%" paddingBottom="10" paddingLeft="20" paddingRight="10" paddingTop="10" verticalAlign="top">
 			<s:VGroup width="170" gap="0">
 				<s:Label width="100%" paddingTop="5" textAlign="left" text="Área" />
-				<components:MyAutoComplete id="cmbCapitulo" width="100%" textAlign="left" change="cmbCapitulo_changeHandler(event)"
-										   dataProvider="{ catalogs.capitulos }" labelField="nombre" matchType="anyPart" prompt="Filtrar por Área" allowNewValues="false"
-										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-										   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" 
-										   backspaceAction="focus" dropDownRowCount="5" />
+				<components:MyAutoComplete id="cmbCapitulo" width="100%" textAlign="left" change="cmbCapitulo_changeHandler(event)" dataProvider="{ catalogs.capitulos }" labelField="nombre"
+										   matchType="anyPart" prompt="Filtrar por área" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+										   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" backspaceAction="focus" dropDownRowCount="5" />
 			</s:VGroup>
 
 			<s:VGroup width="240" gap="0">
 				<s:Label width="100%" paddingTop="5" textAlign="left" text="Tareas" />
 				<components:MyAutoComplete id="cmbTarea" width="100%" textAlign="left" change="cmbTarea_changeHandler(event)" keyDown="cmbTarea_keyDownHandler(event)"
-										   dataProvider="{ catalogs.tareas }" labelField="nombre" matchType="anyPart" prompt="Filtrar por Tareas" allowNewValues="false"
-										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="true"
-										   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
-										   backspaceAction="remove" dropDownRowCount="10" maxHeight="72" />
+										   dataProvider="{ catalogs.tareas }" labelField="nombre" matchType="anyPart" prompt="Filtrar por tareas" allowNewValues="false"
+										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="true" allowEditingNewValues="false"
+										   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="remove" dropDownRowCount="10" maxHeight="72" />
 			</s:VGroup>
 
 			<s:Spacer width="20" />
 			<s:VGroup width="240" gap="0">
 				<s:Label width="100%" paddingTop="5" textAlign="left" text="Asignados" />
-				<components:MyAutoComplete id="cmbUsuarioAsignado" width="100%" textAlign="left" change="cmbUsuarioAsignado_changeHandler(event)"
-										   dataProvider="{ catalogs.usuarios }" labelField="nombre" matchType="anyPart" prompt="Filtrar por Usuario Asignado" allowNewValues="false"
-										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="{ true }"
-										   allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
-										   backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" enabled="{!chbMisAsignados.selected}"/>
+				<components:MyAutoComplete id="cmbUsuarioAsignado" width="100%" textAlign="left" change="cmbUsuarioAsignado_changeHandler(event)" dataProvider="{ catalogs.usuarios }"
+										   labelField="nombre" matchType="anyPart" prompt="Filtrar por usuario asignado" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+										   allowDuplicates="{ false }" allowMultipleSelection="{ true }" allowEditingNewValues="{ false }" dropDownItemRenderer="{ dropDownItemRenderer }"
+										   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" enabled="{!chbMisAsignados.selected}" />
 			</s:VGroup>
-			
+
 			<s:VGroup width="240" gap="0">
 				<s:Label width="100%" paddingTop="5" textAlign="left" text="Contacto" />
-				<components:MyAutoComplete id="cmbContacto" width="100%" textAlign="left" change="cmbContacto_changeHandler(event)"
-											keyDown="cmbContacto_keyDownHandler(event)"  dataProvider="{ catalogs.getContactosActivos() }" labelField="nombre"
-											matchType="anyPart" prompt="Filtrar por Contacto" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-											allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-											dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
-											dropDownWidth="320" dropDownRowCount="10" />
+				<components:MyAutoComplete id="cmbContacto" width="100%" textAlign="left" change="cmbContacto_changeHandler(event)" keyDown="cmbContacto_keyDownHandler(event)"
+										   dataProvider="{ catalogs.getContactosActivos() }" labelField="nombre" matchType="anyPart" prompt="Filtrar por contacto" allowNewValues="false"
+										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+										   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
 			</s:VGroup>
 
 		</s:HGroup>
-		
+
 		<s:Group width="100%" height="100%">
-			<s:VGroup width="100%" height="100%" visible="{_cargando}" horizontalAlign="center" verticalAlign="middle">
+			<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" visible="{_cargando}">
 				<loader:LoadComponent />
 			</s:VGroup>
-			
+
 			<s:VGroup width="100%" height="100%" visible="{!_cargando}">
 				<components1:PanelShowHide id="pshTareasManana" width="100%" height="100%" title="Tareas para la Mañana" styleName="pnlInterno" defaultHeight="-1" minHeight="0">
-					<s:HGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" >
-						<expediciones:ExpedicionesDataGrid id="dgMatutinas" tareas="{_tareasMat}" turno="{ExpedicionesDataGrid.TURNO_MATUTINO}"
-														   mostrarSoloPendientes="{chbPendientes.selected}" showDateColumn="false"/>
+					<s:HGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0">
+						<expediciones:ExpedicionesDataGrid id="dgMatutinas" tareas="{_tareasMat}" turno="{ExpedicionesDataGrid.TURNO_MATUTINO}" mostrarSoloPendientes="{chbPendientes.selected}"
+														   showDateColumn="false" />
 						<s:BorderContainer width="110" height="100%" backgroundColor="0xF6F6F6" borderAlpha="0">
 							<s:layout>
 								<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="30" verticalAlign="top" />
 							</s:layout>
-							<s:Button id="cmdNuevaTareaM" width="100%" click="cmdNuevaTareaM_clickHandler(event)" label="Nueva" toolTip="Agregar una nueva tarea para la Mañana"
-									  styleName="nuevaButton" focusEnabled="false" />
+							<s:Button id="cmdNuevaTareaM" width="100%" click="cmdNuevaTareaM_clickHandler(event)" label="Nueva" toolTip="Agregar una nueva tarea para la Mañana" styleName="nuevaButton"
+									  focusEnabled="false" />
 							<s:Button id="cmdEditarTareaM" width="100%" click="cmdEditarTareaM_clickHandler(event)" label="Editar" toolTip="Editar tarea seleccionada"
 									  visible="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'P'}"
-									  includeInLayout="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'P'}"
-									  styleName="editarButton" focusEnabled="false" />
+									  includeInLayout="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'P'}" styleName="editarButton"
+									  focusEnabled="false" />
 							<s:Button id="cmdDetalleTareaM" width="100%" click="cmdDetalleTareaM_clickHandler(event)" label="Ver detalles" toolTip="Ver detalle tarea finalizada"
 									  visible="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'C'}"
-									  includeInLayout="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'C'}"
-									  styleName="editarButton" focusEnabled="false" />
+									  includeInLayout="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'C'}" styleName="editarButton"
+									  focusEnabled="false" />
 							<s:Spacer height="5" />
 							<s:Button id="cmdReagendarM" width="100%" click="cmdReagendarM_clickHandler(event)" label="Reagendar" toolTip="Reagendar tarea"
-									  enabled="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'P'}"
-									  styleName="textButton" focusEnabled="false" />
+									  enabled="{dgMatutinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgMatutinas.grid.selectedItem).estado == 'P'}" styleName="textButton" focusEnabled="false" />
 						</s:BorderContainer>
 					</s:HGroup>
 				</components1:PanelShowHide>
-				<s:HGroup width="100%" height="32" minHeight="32" maxHeight="32" horizontalAlign="center" verticalAlign="middle" visible="{pshTareasManana.height > 30 &amp;&amp; pshTareasTarde.height > 30 }"
-						  includeInLayout="{pshTareasManana.height > 30 &amp;&amp; pshTareasTarde.height > 30}">
-					<s:Button id="cmdMoverManana" width="24" height="24" cornerRadius="6" click="cmdMoverManana_clickHandler(event)"
-							  toolTip="Pasar elementos seleccionados arriba a la tarde" styleName="nextButton" focusEnabled="false" rotation="90" />
+				<s:HGroup width="100%" height="32" horizontalAlign="center" verticalAlign="middle" minHeight="32" maxHeight="32"
+						  visible="{pshTareasManana.height > 30 &amp;&amp; pshTareasTarde.height > 30 }" includeInLayout="{pshTareasManana.height > 30 &amp;&amp; pshTareasTarde.height > 30}">
+					<s:Button id="cmdMoverManana" width="24" height="24" cornerRadius="6" click="cmdMoverManana_clickHandler(event)" toolTip="Pasar elementos seleccionados arriba a la tarde"
+							  styleName="nextButton" focusEnabled="false" rotation="90" />
 					<s:Button id="cmdMoverTarde" width="24" height="24" cornerRadius="6" click="cmdMoverTarde_clickHandler(event)" toolTip="Pasar elementos seleccionados abajo a la mañana"
 							  styleName="nextButton" focusEnabled="false" rotation="270" />
 				</s:HGroup>
 				<components1:PanelShowHide id="pshTareasTarde" width="100%" height="100%" title="Tareas para la Tarde" styleName="pnlInterno" defaultHeight="-1">
 					<s:HGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0">
-						<expediciones:ExpedicionesDataGrid id="dgVespertinas" tareas="{_tareasVes}" turno="{ExpedicionesDataGrid.TURNO_VESPERTINO}"
-														   mostrarSoloPendientes="{chbPendientes.selected}" showDateColumn="false"/>
+						<expediciones:ExpedicionesDataGrid id="dgVespertinas" tareas="{_tareasVes}" turno="{ExpedicionesDataGrid.TURNO_VESPERTINO}" mostrarSoloPendientes="{chbPendientes.selected}"
+														   showDateColumn="false" />
 						<s:BorderContainer width="110" height="100%" backgroundColor="0xF6F6F6" borderAlpha="0">
 							<s:layout>
 								<s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="30" verticalAlign="top" />
 							</s:layout>
-							<s:Button id="cmdNuevaTareaT" width="100%" click="cmdNuevaTareaT_clickHandler(event)" label="Nueva" styleName="nuevaButton"
-									  toolTip="Agregar una nueva tarea para la Tarde" focusEnabled="false" />
+							<s:Button id="cmdNuevaTareaT" width="100%" click="cmdNuevaTareaT_clickHandler(event)" label="Nueva" styleName="nuevaButton" toolTip="Agregar una nueva tarea para la Tarde"
+									  focusEnabled="false" />
 							<s:Button id="cmdEditarTareaT" width="100%" click="cmdEditarTareaT_clickHandler(event)" label="Editar"
 									  visible="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'P'}"
-									  includeInLayout="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'P'}"
-									  styleName="editarButton" focusEnabled="false" />
+									  includeInLayout="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'P'}" styleName="editarButton"
+									  focusEnabled="false" />
 							<s:Button id="cmdDetalleTareaT" width="100%" click="cmdDetalleTareaT_clickHandler(event)" label="Ver Detalles" toolTip="Ver detalle tarea finalizada"
 									  visible="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'C'}"
-									  includeInLayout="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'C'}"
-									  styleName="editarButton" focusEnabled="false" />
+									  includeInLayout="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'C'}" styleName="editarButton"
+									  focusEnabled="false" />
 							<s:Spacer height="5" />
-							
+
 							<s:Button id="cmdReagendarT" width="100%" click="cmdReagendarT_clickHandler(event)" label="Reagendar" toolTip="Reagendar tarea"
-									  enabled="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'P'}"
-									  styleName="textButton" focusEnabled="false" />
+									  enabled="{dgVespertinas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgVespertinas.grid.selectedItem).estado == 'P'}" styleName="textButton"
+									  focusEnabled="false" />
 						</s:BorderContainer>
 					</s:HGroup>
 				</components1:PanelShowHide>
 			</s:VGroup>
-			
+
 		</s:Group>
-		
+
 	</s:VGroup>
 
 	<components1:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
-			<s:Button id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" focusEnabled="false" excludeFrom="supervisar"/>
+			<s:Button id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" focusEnabled="false" excludeFrom="supervisar" />
 		</s:HGroup>
 	</components1:controlBarContent>
 

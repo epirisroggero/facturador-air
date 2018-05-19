@@ -109,7 +109,7 @@
 					<s:TextInput id="tiPwd" width="100%" change="tiPwd_changeHandler(event)" displayAsPassword="true" text="" maxChars="16" focusEnabled="true" enter="tiPwd_enterHandler(event)" />
 				</s:FormItem>
 			</s:Form>
-			<s:Label id="lblError" width="100%" color="#CD0000" fontSize="12" fontWeight="bold" textAlign="center" visible="{clave_invalida}" text="Clave supervisora inválida" />
+			<s:Label id="lblError" width="100%" color="#CD0000" textAlign="center" visible="{clave_invalida}" text="Clave supervisora inválida" />
 		</s:VGroup>
 	</s:BorderContainer>
 	<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">

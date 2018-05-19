@@ -69,7 +69,7 @@
 		<s:VGroup width="100%" height="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
 			<s:HGroup width="100%" verticalAlign="middle" gap="10">
 				<mx:Image source="@Embed(source='assets/general/exclamation.png')" />
-				<s:Label fontWeight="bold" text="Factura con stock insuficiente y/o limite de crédito exedido." />
+				<s:Label text="Factura con stock insuficiente y/o limite de crédito exedido." />
 			</s:HGroup>
 			<s:Label paddingTop="15" text="Problemas encontrados" />
 			<s:TextArea id="txtErrors" width="100%" height="100%" editable="false" text="{errorText}" borderAlpha=".1" />

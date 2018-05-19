@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <actionScriptProperties analytics="false" mainApplicationPath="FullTimeAir.mxml" projectUUID="e6974236-6780-4332-be12-f8a43d09fd1f" version="10">
   <compiler additionalCompilerArguments="-locale es_ES" autoRSLOrdering="true" copyDependentFiles="true" flex3CompatMode="false" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderLocation="C:/Develop/servers/jboss-4.2.3.GA/server/default/deploy/facturator-server-ear.ear/facturator-server.war/fulltime-client-air-debug" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
-    <compilerSourcePath>
+  
+  <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="fulltime-theme-blue/src/main/flex"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">

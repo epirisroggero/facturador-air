@@ -1234,7 +1234,6 @@ components|AutoComplete {
 
 .titleNumberLabel {
 	color: #ffffff;
-	fontWeight:bold;
 	textAlign: right;
 }
 
@@ -1269,43 +1268,38 @@ components|AutoComplete {
 
 .subtotalLabel {
 	textAlign: left;
-	font-weight: bold;
-	fontSize: 13;
+	fontSize: 14;
 }
 
 .clienteLabel {
 	textAlign: left;
 	font-weight: normal;
-	fontSize: 11;
+	fontSize: 13;
 }
 
 .clienteLabelNegrita {
 	fontFamily: "Helvetica";
 	textAlign: left;
-	font-weight: bold;
-	fontSize: 11;
+	fontSize: 13;
 }
 
 .subtotalLabelRight {
 	textAlign: right;
-	font-weight: bold;
-	fontSize: 13;
+	fontSize: 14;
 }
 
 .totalLabelLeft {
 	color: #ffffff;
 	
 	textAlign: left;
-	font-weight: bold;
-	fontSize: 13;
+	fontSize: 14;
 }
 
 .totalLabelRight {
 	color: #ffffff;
 	
 	textAlign: right;
-	font-weight: bold;
-	fontSize: 13;
+	fontSize: 14;
 }
 
 

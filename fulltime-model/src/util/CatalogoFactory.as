@@ -125,9 +125,9 @@ public class CatalogoFactory extends EventDispatcher {
 	private var _fanfold:ArrayCollection = new ArrayCollection();
 
 	private var _formasPago:ArrayCollection = new ArrayCollection();
-	
+
 	private var _bancos:ArrayCollection = new ArrayCollection();
-	
+
 
 	private var _ivas:ArrayCollection = new ArrayCollection();
 
@@ -152,13 +152,13 @@ public class CatalogoFactory extends EventDispatcher {
 	private var myTimer:Timer = new Timer(delay, repeat);
 
 	private var reloadTimer:Timer = new Timer(1000 * 60 * 20); //REcargar catalogos cada 20 minutos
-	
+
 	public static const INTERFACE_WEB_EVENT:String = "_web";
-	
+
 	public static const INTERFACE_DESCK_TOP_EVENT:String = "_desck_top";
-	
-	public var  _interface :String;
-	
+
+	public var _interface:String;
+
 
 	public function CatalogoFactory(caller:Function = null) {
 		if (caller != CatalogoFactory.getInstance) {
@@ -635,7 +635,7 @@ public class CatalogoFactory extends EventDispatcher {
 			// Cuando es una aliado comercial obtener solamente los clientes que lo tienen como vendedor o encargado de cuentas
 			var user:Usuario = GeneralOptions.getInstance().loggedUser;
 			if (user.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES) {
-				var clients_aux:ArrayCollection = new ArrayCollection(); 
+				var clients_aux:ArrayCollection = new ArrayCollection();
 				for each (var c:Cliente in values) {
 					if ((c.vendedor && c.vendedor.codigo == user.venId) || (c.encargadoCuenta == user.venId)) {
 						clients_aux.addItem(c);
@@ -842,7 +842,7 @@ public class CatalogoFactory extends EventDispatcher {
 				case 4:
 					{
 						clientes = values;
-						
+
 						resetRemoteObject();
 						errorPanel.errorText = "Cargando catálogo de 'Artículos'.";
 						remObjCat.getCatalogoByName("Articulo");
@@ -1097,6 +1097,16 @@ public class CatalogoFactory extends EventDispatcher {
 							bancos = sort(values, false);
 						}
 						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Cajas'.";
+						remObjCat.getCatalogoByName("Caja");
+						break;
+					}
+				case 27:
+					{
+						if (values) {
+							cajas = sort(values, false);
+						}
+						resetRemoteObject();
 						errorPanel.errorText = "Catálogos cargados.";
 						myTimer.start();
 						break;
@@ -1237,6 +1247,14 @@ public class CatalogoFactory extends EventDispatcher {
 
 	public function set ivas(value:ArrayCollection):void {
 		_ivas = value;
+	}
+
+	public function get cajas():ArrayCollection {
+		return _cajas;
+	}
+
+	public function set cajas(value:ArrayCollection):void {
+		_cajas = value;
 	}
 
 

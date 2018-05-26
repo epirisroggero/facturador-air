@@ -48,7 +48,7 @@
 			public var iconSymbol:Class; 
 			
 			[Bindable]
-			public var version:String = "FullTime - Facturador v1.6.515";
+			public var version:String = "FullTime - Facturador v1.6.516";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);

@@ -61,6 +61,12 @@ public class DocumentoDTO {
 	
 	public var caeNombre:String;
 
+	public var titular:String;
+	
+	public var bancoIdDoc:String;
+	
+	public var concepto:String;
+
 
 	public function DocumentoDTO() {
 	}

@@ -69,7 +69,9 @@ public class Comprobante extends CodigoNombreEntity {
 	
 	public var cmpiva:String;
 	
-	public function Comprobante() {
+
+	public function Comprobante(codigo:String = null, nombre:String = null) {
+		super(codigo, nombre);
 	}
 
 	public function get exento():Boolean {

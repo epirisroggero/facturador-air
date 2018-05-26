@@ -189,6 +189,11 @@ public class Documento extends DocumentoBase {
 	
 	public var docRenFin:String = BigDecimal.ZERO.toString();
 	
+	public var titular:String;
+	
+	public var bancoIdDoc:String;
+	
+	public var concepto:String;
 	
 		// FIN FACTURA ELECTRÓNICA
 

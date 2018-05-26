@@ -95,7 +95,7 @@
 			 @playerversion AIR 2.0
 			 @productversion Flex 4.5
 		-->
-		<s:Label id="labelDisplay" bottom="0" fontWeight="bold" left="0" right="0" textAlign="start" top="0" verticalAlign="middle" verticalCenter="1" maxDisplayedLines="1" showTruncationTip="true" />
+		<s:Label id="labelDisplay" bottom="0" left="0" right="0" textAlign="start" top="0" verticalAlign="middle" verticalCenter="1" maxDisplayedLines="1" showTruncationTip="true" />
 	</fx:Declarations>
 
 	<fx:Script>

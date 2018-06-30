@@ -1256,6 +1256,18 @@ public class CatalogoFactory extends EventDispatcher {
 	public function set cajas(value:ArrayCollection):void {
 		_cajas = value;
 	}
+	
+	public function getLocalidades():ArrayCollection {
+		var aux:ArrayCollection = new ArrayCollection();
+		for each (var elem:Cliente in clientes) {
+			var localidad:String = elem.contacto.ctoLocalidad ? elem.contacto.ctoLocalidad.toLowerCase() : null;
+			if (localidad && localidad.length > 0 && !aux.contains(localidad)) {
+				aux.addItem(localidad);
+			}
+		}
+		return aux;
+	}
+
 
 
 }

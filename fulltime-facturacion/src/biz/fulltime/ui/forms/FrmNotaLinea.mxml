@@ -150,6 +150,7 @@
 						collection.addItemAt(doc.numero, 1);
 						collection.addItemAt(cliente.nombre, 2);
 						
+						linea.rubIdlin = cliente.codigo;
 						linea.docRefId = new Number(doc.numero);
 						linea.contactoId = cliente.codigo;
 						
@@ -216,9 +217,9 @@
 				<s:Label text="Cliente" width="90" textAlign="right"/>
 				<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left" change="cmbProveedor_changeHandler(event)" keyDown="cmbProveedor_keyDownHandler(event)"
 										   dataProvider="{CatalogoFactory.getInstance().clientes}" labelField="nombre" matchType="anyPart" prompt="Ingrese proveedor" allowNewValues="false"
-										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="{ false }" allowMultipleSelection="false" allowEditingNewValues="false"
+										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 										   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus" next_focus="{txtNotas}"
-										   previous_focus="{txtConcepto}" dropDownRowCount="10" enabled="{true}" />
+										   previous_focus="{txtConcepto}" dropDownRowCount="10" enabled="true" />
 			</s:HGroup>
 			<s:HGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="0" verticalAlign="middle" enabled="{cmbCliente.selectedItem != null}" >			
 				<s:Label text="Factura" width="90" textAlign="right"/>

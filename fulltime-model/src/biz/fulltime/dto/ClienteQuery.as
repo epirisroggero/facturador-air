@@ -23,6 +23,7 @@ public class ClienteQuery {
 	public var giro:String;
 	public var encargadoCuenta:String; 
 	public var razonSocial:String;
+	public var localidad:String;
 	
 	public var proveedor:Boolean; 
 	

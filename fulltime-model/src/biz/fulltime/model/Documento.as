@@ -1579,6 +1579,7 @@ public class Documento extends DocumentoBase {
 					break;
 				}
 			}
+			Alert.show("El cliente '" + cliente.nombre +  "' no tiene vendedor asignado.");
 		}
 		
 		if (vendedor) {
@@ -1600,8 +1601,8 @@ public class Documento extends DocumentoBase {
 					var _nueva2:ParticipacionVendedor = new ParticipacionVendedor();
 					_nueva2.vendedor = encargadoDeCuenta;
 					
-					_nueva.porcentaje = 50;
-					_nueva2.porcentaje = 50;
+					_nueva.porcentaje = 97;
+					_nueva2.porcentaje = 3;
 					
 					comisiones.participaciones.addItem(_nueva);
 					comisiones.participaciones.addItem(_nueva2);

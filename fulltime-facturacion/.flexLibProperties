@@ -97,6 +97,7 @@
     <classEntry path="biz.fulltime.event.ListadoFacturasEvent"/>
     <classEntry path="biz.fulltime.ui.documentosValores.FrmChequeRecibido"/>
     <classEntry path="biz.fulltime.ui.documentosValores.FrmTarjetas"/>
+    <classEntry path="biz.fulltime.ui.documentosValores.ListDocumentosValores"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

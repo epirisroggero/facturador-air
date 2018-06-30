@@ -26,7 +26,7 @@
 			private var _documentosValores:ArrayCollection;
 			
 			[Bindable]
-			private var _documentosValoresAux:ArrayCollection;
+			private var _documentosValoresAux:ArrayCollection= new ArrayCollection();
 
 			private var _documento:Documento;
 			
@@ -117,6 +117,8 @@
 				});
 				
 				var lstDocumentosValores:ListDocumentosValores = new ListDocumentosValores();
+				lstDocumentosValores.cliente = documento.cliente;
+				
 				window.addElement(lstDocumentosValores);
 				
 				lstDocumentosValores.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
@@ -310,6 +312,10 @@
 									public override function set data(value:Object):void {
 										super.data = value;
 										
+										if (!value) {
+											return;
+										}
+										
 										if (DocumentoFormaPago(data).formaPago) {
 											for each (var formaPago:FormaPago in CatalogoFactory.getInstance().formasPago) {
 												if (formaPago.codigo == DocumentoFormaPago(data).formaPago.codigo) {
@@ -375,6 +381,10 @@
 									
 									public override function set data(value:Object):void {
 										super.data = value;
+										
+										if (!value) {
+											return;
+										}
 										
 										if (DocumentoFormaPago(data).moneda) {
 											for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
@@ -497,7 +507,7 @@
 
 			</s:VGroup>
 			<s:HGroup paddingTop="15" paddingBottom="7" paddingLeft="5" width="100%" >
-				<s:BorderContainer backgroundAlpha=".75" backgroundColor="0xFFCACA" cornerRadius="5" minWidth="0" minHeight="0" borderWeight="2" >
+				<s:BorderContainer backgroundAlpha=".75" backgroundColor="0xFFCACA" cornerRadius="5" minWidth="0" minHeight="0" borderWeight="2" visible="false">
 					<s:layout>
 						<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" />
 					</s:layout>

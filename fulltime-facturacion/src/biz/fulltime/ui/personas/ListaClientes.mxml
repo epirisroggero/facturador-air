@@ -34,9 +34,14 @@
 			[Bindable]
 			private var clientes:ArrayCollection = new ArrayCollection();
 
+			[Bindable]
+			private var localidades:ArrayCollection = new ArrayCollection();
+
 			private var cliente:ClienteDTO;
 
 			private var _loading:Boolean = false;
+			
+			private var _first:Boolean = true;
 			
 			
 			[Bindable]
@@ -231,6 +236,18 @@
 				}
 				return false;
 			}
+			
+			public function obtenerLocalidades():void {
+				localidades.removeAll();
+				for each (var elem:ClienteDTO in clientes) {
+					var localidad:String = elem.localidad ? elem.localidad.toLowerCase() : null;
+					if (localidad && localidad.length > 0 && !localidades.contains(localidad)) {
+						localidades.addItem(localidad);
+					}
+				}
+				
+			}
+
 
 			public function refrescarClientes(event:Event = null, select:ClienteDTO = null):void {
 				filter.text = "";
@@ -244,6 +261,11 @@
 				clienteRemObj.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
 					clientes = event.result as ArrayCollection;
 					listaClientes.dataProvider = sort(clientes, true);
+					
+					if (_first) {
+						obtenerLocalidades();
+						_first = false;
+					}
 					
 					loading = false;
 					
@@ -261,6 +283,8 @@
 						callLater(function():void {
 							listaClientes.scrollToIndex(index);
 						});
+						
+						var label:String;
 						var clienteDTO:ClienteDTO = ArrayCollection(listaClientes.dataProvider).getItemAt(index) as ClienteDTO;
 						dispatchEvent(new ClienteEvent(ClienteEvent.CLIENTE_SELECCIONADO, null, clienteDTO));
 					}
@@ -304,7 +328,13 @@
 					query.giro = (cmbGiro.selectedItem as Giro).codigo;	
 				} else {
 					query.giro = null;
+				}
+				if (cmbLocalidad.selectedItem) {
+					query.localidad = cmbLocalidad.selectedItem as String;	
+				} else {
+					query.localidad = null;
 				}				
+
 				query.activo = chbActivos.selected;
 				
 				clienteRemObj.queryClientes(query);
@@ -353,7 +383,12 @@
 				}
 				return label;
 			}
-			
+
+			public function localidadLabelFunction(item:Object):String {
+				return item.toString();
+				
+			}
+				
 			public function getPersonas():ArrayCollection {
 				var c:ArrayCollection = new ArrayCollection();
 				for each (var p:ClienteDTO in listaClientes.dataProvider) {
@@ -378,6 +413,7 @@
 				cmbEspecialista.clear();
 				if (cmbVendedor) cmbVendedor.clear();
 				cmbZona.clear();
+				cmbLocalidad.clear();
 			}
 
 
@@ -488,6 +524,16 @@
 										   dropDownItemRenderer="{ dropDownItemRenderer }" />
 			</s:VGroup>
 		</s:HGroup>	
+		<s:HGroup width="100%">			
+			<s:VGroup width="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="0" >
+				<s:Label fontSize="12" text="LOCALIDAD" width="100%" left="5"/>
+				<components:MyAutoComplete id="cmbLocalidad" width="100%" textAlign="left" labelFunction="localidadLabelFunction"
+										   dataProvider="{ localidades }" matchType="anyPart" prompt="No Filtrar"
+										   allowNewValues="true" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+										   allowMultipleSelection="false" allowEditingNewValues="false"  backspaceAction="focus" />
+			</s:VGroup>
+		</s:HGroup>	
+
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right">
 				<s:CheckBox id="chbActivos" label="Activos" selected="true" />

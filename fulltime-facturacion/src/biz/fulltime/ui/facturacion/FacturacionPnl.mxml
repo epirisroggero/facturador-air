@@ -124,7 +124,7 @@
 
 			private var notas:String;
 
-			private var error:ErrorPanel;
+			private var customPopup:ErrorPanel;
 
 			private var frmNuevaTarea:FrmNuevaTarea;
 
@@ -467,7 +467,7 @@
 					if (!_documento.esSolicitudCompra) {
 						callLater(function():void {
 								_documento.comisiones.participaciones.addEventListener(CollectionEvent.COLLECTION_CHANGE, function(event:CollectionEvent):void {
-										trace("Propery Name :: ", "changeComisiones");
+										trace("Property Name :: ", "changeComisiones");
 										tieneCambios = true;
 									});
 								// Setear el foco en el campo cliente.-
@@ -552,29 +552,43 @@
 			}
 
 			private function resultGuardarDocumento(event:ResultEvent):void {
-				if (_documento && _documento.docId) {
-					reloadDocumento(_documento.docId, true);
-				}
-				error = new ErrorPanel();
-				error.cornerRadius = 10;
-				error.backgroundAlpha = .95;
-				error.showButtons = false;
-				error.type = 2;
-
-				error.errorText = "El documento ha sido GUARDADO.";
-
-				PopUpManager.addPopUp(error, this, true);
-				PopUpManager.centerPopUp(error);
-
-				tieneCambios = false;
-				lineastienenCambios = false;
+				factura = event.result as Documento;
 				running = false;
+				
+				if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' 
+					|| _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
+					
+					Alert.buttonWidth = 60;
+					
+					var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
+					alert.width = 340;
+					alert.height = 180
+				}
+				
+				currentState = "default";
+
+				customPopup = new ErrorPanel();
+				customPopup.cornerRadius = 10;
+				customPopup.backgroundAlpha = .95;
+				customPopup.showButtons = false;
+				customPopup.type = 2;
+
+				customPopup.errorText = "El documento ha sido GUARDADO.";
+
+				PopUpManager.addPopUp(customPopup, this, true);
+				PopUpManager.centerPopUp(customPopup);
 
 				setTimeout(function():void {
-						PopUpManager.removePopUp(error);
+						PopUpManager.removePopUp(customPopup);
 						actualizarPrecios(_documento);
 					}, 1500);
 
+				setTimeout(function():void {
+					tieneCambios = false;
+					lineastienenCambios = false;
+					running = false;
+					
+				}, 1000);
 			}
 			
 			private function actualizarPrecios(doc:Documento):void {				
@@ -646,21 +660,19 @@
 			}
 
 			private function resultGuardarNroEnvio(event:ResultEvent):void {
-				trace("Número de envío guardado.");
+				customPopup = new ErrorPanel();
+				customPopup.cornerRadius = 10;
+				customPopup.backgroundAlpha = .95;
+				customPopup.showButtons = false;
+				customPopup.type = 2;
 
-				error = new ErrorPanel();
-				error.cornerRadius = 10;
-				error.backgroundAlpha = .95;
-				error.showButtons = false;
-				error.type = 2;
+				customPopup.errorText = "Número de envío guardado.";
 
-				error.errorText = "Número de envío guardado.";
-
-				PopUpManager.addPopUp(error, this, true);
-				PopUpManager.centerPopUp(error);
+				PopUpManager.addPopUp(customPopup, this, true);
+				PopUpManager.centerPopUp(customPopup);
 
 				setTimeout(function():void {
-						PopUpManager.removePopUp(error);
+						PopUpManager.removePopUp(customPopup);
 					}, 1000);
 
 			}
@@ -928,8 +940,8 @@
 					}
 					running = false;
 
-				} catch (error:Error) {
-					Alert.show(error.toString(), "Error");
+				} catch (customPopup:Error) {
+					Alert.show(customPopup.toString(), "Error");
 				}
 
 			}
@@ -1378,7 +1390,7 @@
 					} else {
 						monedas = new ArrayCollection();
 						for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
-							if (mda.nombre.indexOf("*") > 0 || _documento.comprobante.codigo == '19') { // Agrega las monedas NO oficiales.
+							if (mda.nombre.indexOf("*") > 0 /*|| _documento.comprobante.codigo == '19'*/) { // Agrega las monedas NO oficiales.
 								monedas.addItem(mda);
 							}
 						}
@@ -1941,19 +1953,19 @@
 					Alert.show("No se grabó correctamente el documento", "Error");
 					return;
 				}
-				error = new ErrorPanel();
-				error.cornerRadius = 10;
-				error.backgroundAlpha = .95;
-				error.showButtons = false;
-				error.type = 2;
+				customPopup = new ErrorPanel();
+				customPopup.cornerRadius = 10;
+				customPopup.backgroundAlpha = .95;
+				customPopup.showButtons = false;
+				customPopup.type = 2;
 
-				error.errorText = "Documento GUARDADO.";
+				customPopup.errorText = "Documento GUARDADO.";
 
-				PopUpManager.addPopUp(error, this, true);
-				PopUpManager.centerPopUp(error);
+				PopUpManager.addPopUp(customPopup, this, true);
+				PopUpManager.centerPopUp(customPopup);
 
 				setTimeout(function():void {
-						PopUpManager.removePopUp(error);
+						PopUpManager.removePopUp(customPopup);
 					}, 1500);
 
 				_documento.docId = docId;
@@ -3315,60 +3327,60 @@
 							telefono = proveedor.contacto.ctoTelefono;
 						}
 					}
-					var documento:Documento = Documento.getNuevoDocumento(comprobante);
-					documento.proveedor = proveedor;
+					var nuevoDoc:Documento = Documento.getNuevoDocumento(comprobante);
+					nuevoDoc.proveedor = proveedor;
 
-					documento.lineas = doc.lineas;
-					documento.lineas.documento = documento;
-					documento.moneda = doc.moneda;
-					documento.prevDocSerieNro = doc.serie + doc.numero;
+					nuevoDoc.lineas = doc.lineas;
+					nuevoDoc.lineas.documento = nuevoDoc;
+					nuevoDoc.moneda = doc.moneda;
+					nuevoDoc.prevDocSerieNro = doc.serie + doc.numero;
 
-					documento.direccion = doc.direccion ? doc.direccion : direccion;
-					documento.razonSocial = doc.razonSocial ? doc.razonSocial : razonSocial;
-					documento.rut = doc.rut ? doc.rut : rut;
-					documento.telefono = doc.telefono ? doc.telefono : telefono;
+					nuevoDoc.direccion = doc.direccion ? doc.direccion : direccion;
+					nuevoDoc.razonSocial = doc.razonSocial ? doc.razonSocial : razonSocial;
+					nuevoDoc.rut = doc.rut ? doc.rut : rut;
+					nuevoDoc.telefono = doc.telefono ? doc.telefono : telefono;
 
-					documento.docTCF = doc.docTCF;
-					documento.docTCC = doc.docTCC;
+					nuevoDoc.docTCF = doc.docTCF;
+					nuevoDoc.docTCC = doc.docTCC;
 
-					documento.agencia = doc.agencia;
-					documento.chofer = doc.chofer;
-					documento.fechaDoc = new Date();
-					documento.localidad = doc.localidad;
-					documento.notas = doc.notas;
-					documento.cuotasDocumento = doc.cuotasDocumento;
-					documento.pendiente = true;
+					nuevoDoc.agencia = doc.agencia;
+					nuevoDoc.chofer = doc.chofer;
+					nuevoDoc.fechaDoc = new Date();
+					nuevoDoc.localidad = doc.localidad;
+					nuevoDoc.notas = doc.notas;
+					nuevoDoc.cuotasDocumento = doc.cuotasDocumento;
+					nuevoDoc.pendiente = true;
 
-					documento.update(ajustarPrecio, factor);
+					nuevoDoc.update(ajustarPrecio, factor);
 
 					if (doc.prevDocId && doc.prevDocId.length > 0) {
-						documento.prevDocId = doc.prevDocId;
+						nuevoDoc.prevDocId = doc.prevDocId;
 					} else {
-						documento.prevDocId = String(doc.docId);
+						nuevoDoc.prevDocId = String(doc.docId);
 					}
-					documento.usuIdAut = doc.usuIdAut;
+					nuevoDoc.usuIdAut = doc.usuIdAut;
 
-					documento.updateCaja();
+					nuevoDoc.updateCaja();
 
 					if (comprobante.isCredito()) {
-						documento.condicion = null;
-						documento.planPagos = doc.planPagos ? doc.planPagos : (doc.condicion ? doc.condicion : planPagos);
-						if (documento.pagos == null) {
-							documento.pagos = new ArrayCollection();
+						nuevoDoc.condicion = null;
+						nuevoDoc.planPagos = doc.planPagos ? doc.planPagos : (doc.condicion ? doc.condicion : planPagos);
+						if (nuevoDoc.pagos == null) {
+							nuevoDoc.pagos = new ArrayCollection();
 						}
-						if (documento.recibosVinculados == null) {
-							documento.recibosVinculados = new ArrayCollection();
+						if (nuevoDoc.recibosVinculados == null) {
+							nuevoDoc.recibosVinculados = new ArrayCollection();
 						}
-						documento.cuotasDocumento.documento = documento;
-						documento.cuotasDocumento.inicializarCuotas();
+						nuevoDoc.cuotasDocumento.documento = nuevoDoc;
+						nuevoDoc.cuotasDocumento.inicializarCuotas();
 
 					} else {
-						documento.planPagos = null;
-						documento.condicion = doc.condicion ? doc.condicion : planPagos;
-						documento.cuotasDocumento.cuotas = new ArrayCollection();
+						nuevoDoc.planPagos = null;
+						nuevoDoc.condicion = doc.condicion ? doc.condicion : planPagos;
+						nuevoDoc.cuotasDocumento.cuotas = new ArrayCollection();
 					}
 
-					var numerador:String = documento.comprobante.numCmpId;
+					var numerador:String = nuevoDoc.comprobante.numCmpId;
 					var tieneNumerador:Boolean = numerador && numerador.length > 0;
 					if (tieneNumerador) {
 						var remGenerateSN:RemoteObject = new RemoteObject();
@@ -3377,18 +3389,18 @@
 						remGenerateSN.showBusyCursor = true;
 						remGenerateSN.addEventListener(FaultEvent.FAULT, handleFault);
 						remGenerateSN.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
-								var serie:SerieNumero = event.result as SerieNumero;
-								if (serie) {
-									documento.serie = serie.serie;
-									documento.numero = serie.numero;
-								}
-								altaSolicitud(doc, documento);
-							});
+							var serie:SerieNumero = event.result as SerieNumero;
+							if (serie) {
+								nuevoDoc.serie = serie.serie;
+								nuevoDoc.numero = serie.numero;
+							}
+							altaSolicitud(doc, nuevoDoc);
+						});
 						remGenerateSN.generateSerieNumero(comprobante);
 					} else {
-						documento.serie = codigo + "/";
-						documento.numero = doc.numero;
-						altaSolicitud(doc, documento)
+						nuevoDoc.serie = codigo + "/";
+						nuevoDoc.numero = doc.numero;
+						altaSolicitud(doc, nuevoDoc)
 					}
 				});
 				
@@ -3399,12 +3411,13 @@
 
 			}
 
-			private function altaSolicitud(oldDoc:Documento, documento:Documento):void {
+			private function altaSolicitud(oldDoc:Documento, newDoc:Documento):void {
 				var remObjR:RemoteObject = new RemoteObject();
 				remObjR.destination = "CreatingRpc";
 				remObjR.showBusyCursor = true;
 				remObjR.channelSet = ServerConfig.getInstance().channelSet;
 				remObjR.addEventListener(FaultEvent.FAULT, handleFault);
+				
 				remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
 						var remObjAlta:RemoteObject = new RemoteObject();
 						remObjAlta.destination = "CreatingRpc";
@@ -3422,6 +3435,7 @@
 										factura = evt.result as Documento;
 										currentState = "default";
 										_convirtiendo = false;
+										
 										if (factura.comprobante.codigo == '101') {
 											Alert.buttonWidth = 60;
 											var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
@@ -3434,10 +3448,13 @@
 									});
 								remObj1.getDocumento(docId);
 							});
-						remObjAlta.alta(documento);
+						remObjAlta.alta(newDoc);
 						
 
 					});
+				
+				
+				
 				if (oldDoc.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
 					remObjR.finalizarMovimientoStock(oldDoc);
 				} else {
@@ -4179,11 +4196,6 @@
 					  enabled="{!_convirtiendo &amp;&amp; !_documento.nuevo &amp;&amp; _documento.proveedor &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"
 					  visible="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; !_documento.emitido)}"
 					  includeInLayout="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; !_documento.emitido)}" />
-
-			<!--s:Button id="cmdMostrarFacturasPendientes" click="cmdMostrarFacturasPendientes_clickHandler(event)" styleName="moneyButton" label="Pendientes cliente" toolTip="Facturas pendientes"
-					  enabled="{_documento.cliente &amp;&amp; _documento.cliente.documentsPendientes}"
-					  visible="{!_documento.emitido &amp;&amp; _documento.comprobante.codigo == '28'}" 
-					  includeInLayout="{!_documento.emitido &amp;&amp; _documento.comprobante.codigo == '28'}" /-->
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false"

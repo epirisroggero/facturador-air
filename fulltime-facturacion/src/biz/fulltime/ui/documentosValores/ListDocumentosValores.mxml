@@ -34,6 +34,8 @@
 						
 			private var _valores:ArrayCollection;
 			
+			private var _cliente:Cliente;
+			
 			private var remObjQuery:RemoteObject;
 			
 			
@@ -45,7 +47,6 @@
 				remObjQuery.addEventListener(ResultEvent.RESULT, resultQuery);
 				remObjQuery.addEventListener(FaultEvent.FAULT, onFault);
 			}
-			
 			
 			private function resultQuery(event:ResultEvent):void {
 				valores = event.result as ArrayCollection;
@@ -115,11 +116,10 @@
 			
 			private function queryDocumentos():void {
 				_query = new DocumentoQuery();
-				_query.emitido = false;
-				_query.pendiente = false;
 				_query.start = 0;
 				_query.limit = 10000;
-				_query.comprobantes = "43";
+				_query.esCheque = true;
+				_query.cliente = cliente.codigo;
 				
 				remObjQuery.queryDocumentos(_query);
 			}
@@ -150,6 +150,7 @@
 				});
 
 				var frmChequeRecibido:FrmChequeRecibido = new FrmChequeRecibido();
+				frmChequeRecibido.cliente = cliente;
 				window.addElement(frmChequeRecibido);
 								
 				frmChequeRecibido.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
@@ -164,6 +165,16 @@
 				window.closeButton.visible = true;
 
 			}
+
+			[Bindable]
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+
+			public function set cliente(value:Cliente):void {
+				_cliente = value;
+			}
+
 			
 		]]>
 	</fx:Script>
@@ -187,7 +198,7 @@
 											var serie:String = DocumentoDTO(data).serie ? DocumentoDTO(data).serie : "";
 											var numero:String = DocumentoDTO(data).numero ? DocumentoDTO(data).numero : "";
 											
-											label = serie + numero;
+											label = serie + " " +  numero;
 										}
 										
 									}
@@ -199,7 +210,7 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="100" dataField="banco" headerText="BANCO" />
+			<s:GridColumn width="100" dataField="bancoIdDoc" headerText="BANCO" />
 			<s:GridColumn width="85" dataField="fecha" headerText="FECHA" />
 			<s:GridColumn width="60" dataField="emitido" headerText="EMISIÓN">
 				<s:itemRenderer>

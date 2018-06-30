@@ -81,7 +81,8 @@ public class LineaDocumento extends EventDispatcher {
 	
 	public var ivaArticulo:Iva;
 	
-
+	public var rubIdlin:String;
+	
 	public function LineaDocumento() {
 		remObjPS = new RemoteObject();
 		remObjPS.destination = "CreatingRpc";

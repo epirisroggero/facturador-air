@@ -361,8 +361,10 @@
 						});
 					
 					serieReciboList.removeAll();
-					serieReciboList.addItem({value:"C", label:"C"});
-					if (!isAster) {
+					if (_recibo.comprobante.codigo != "32") { 
+						serieReciboList.addItem({value:"C", label:"C"});
+					}
+					if (!isAster || _recibo.comprobante.codigo == "32") {
 						serieReciboList.addItem({value:"A", label:"A"});
 					}
 					serieReciboList.addItem({value:"P", label:"P"});
@@ -987,7 +989,7 @@
 								} else {
 									vinculo.descuentoMonto = BigDecimal.ZERO.toString();
 								}
-								vinculo.calcularMontoCancelado(isAster);
+								vinculo.cambioMontoCancelado(isAster);
 								vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 								
 								running = false;
@@ -1082,7 +1084,7 @@
 									} else {
 										vinculo.descuentoMonto = BigDecimal.ZERO.toString();
 									}
-									vinculo.calcularMontoCancelado(isAster);
+									vinculo.cambioMontoCancelado(isAster);
 									vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 									
 									running = false;
@@ -1147,7 +1149,9 @@
 				var vinculo:VinculoDocumentos = recibo.facturasVinculadas.getItemAt(event.rowIndex) as VinculoDocumentos;
 				var monto:BigDecimal = (vinculo.monto && vinculo.monto.length > 0) ? new BigDecimal(vinculo.monto) : BigDecimal.ZERO;
 				var neto:BigDecimal = (vinculo.neto && vinculo.neto.length > 0) ? new BigDecimal(vinculo.neto) : BigDecimal.ZERO;
-				
+
+				var dataField:String = event.column.dataField;
+								
 				if (event.columnIndex == 0) {
 					var serie:String = vinculo.factura.serie;
 					var numero:String = vinculo.factura.numero;
@@ -1215,7 +1219,7 @@
 							} else {
 								vinculo.descuentoMonto = BigDecimal.ZERO.toString();
 							}
-							vinculo.calcularMontoCancelado(isAster);
+							vinculo.cambioMontoCancelado(isAster);
 							vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 							
 							updateTotalFacturasVinculadas();
@@ -1224,63 +1228,34 @@
 						remObj.getDocumento(factura.docId);
 					}
 					 
-				} else if (event.columnIndex == 6) {					
-					neto_ = vinculo.neto;
-					var porcDesc_:String = vinculo.descuentoPorc;
+				} else if (dataField == "descuentoPorc") {
+					vinculo.cambios["descuentoPorc"] = true; 
 
-					neto = neto.setScale(4, MathContext.ROUND_HALF_EVEN);
-					var porcDesc:BigDecimal = porcDesc_ ? new BigDecimal(porcDesc_).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-					cociente = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
-					
-					if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-						vinculo.descuentoMonto = neto.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-					} else {
-						vinculo.descuentoMonto = BigDecimal.ZERO.toString();
-					}
-										
-					vinculo.calcularMontoCancelado(isAster);
+					vinculo.cambioPorcDto(isAster);
 					vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 					updateTotalFacturasVinculadas();
 					
-				} else if (event.columnIndex == 7) {
-					neto_ = vinculo.neto;
-					var montoDesc_:String = vinculo.descuentoMonto;
+				} else if (dataField == "descuentoMonto") {
+					vinculo.cambios["descuentoMonto"] = true;
 
-					neto = neto.setScale(4, MathContext.ROUND_HALF_EVEN);
-					var montoDesc:BigDecimal = montoDesc_ ? new BigDecimal(montoDesc_).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-					cociente = neto.add(montoDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
-					
-					if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-						vinculo.descuentoPorc = Maths.ONE_HUNDRED.multiply(montoDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-					} else {
-						vinculo.descuentoPorc = BigDecimal.ZERO.toString();
-					}
-					vinculo.calcularMontoCancelado(isAster);
+					vinculo.cambioMontoDto(isAster);
 					vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 					updateTotalFacturasVinculadas();
 
-				} else if (event.columnIndex == 9) {
-					vinculo.calcularMontoCancelado(isAster);
+				} else if (dataField == "neto") {
+					vinculo.cambios["neto"] = true;
+					
+					vinculo.cambioMontoNeto(isAster);
+					vinculo.calcularRentaFinanciera(isAster, recibo.serie);
+					updateTotalFacturasVinculadas();
+				
+				} else if (dataField == "cancela") {
+					vinculo.cambios["cancela"] = true;
+					
+					vinculo.cambioMontoCancelado(isAster);
 					vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 					updateTotalFacturasVinculadas();
 					
-				} else if (event.columnIndex == 8) {
-					neto_ = vinculo.neto;
-					var porcDesc_:String = vinculo.descuentoPorc;
-					
-					neto = neto.setScale(4, MathContext.ROUND_HALF_EVEN);
-					var porcDesc:BigDecimal = porcDesc_ ? new BigDecimal(porcDesc_).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-					cociente = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
-					
-					if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-						vinculo.descuentoMonto = neto.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-					} else {
-						vinculo.descuentoMonto = BigDecimal.ZERO.toString();
-					}
-					
-					vinculo.calcularMontoCancelado(isAster);
-					vinculo.calcularRentaFinanciera(isAster, recibo.serie);
-					updateTotalFacturasVinculadas();
 				} 
 			}
 			
@@ -1373,7 +1348,7 @@
 					recibo.total = montoTotal.add(desctoTotal).setScale(presicion, MathContext.ROUND_HALF_EVEN).toString();
 					
 					if (txtTotalVinculado) {
-						txtTotalVinculado.text = recibo.total;
+						//txtTotalVinculado.text = recibo.total;
 					}
 				} else {
 					recibo.descuentos = BigDecimal.ZERO.toString();
@@ -1543,7 +1518,7 @@
 					txtNumero.text = _recibo.numero.toString();
 				}
 				emitiendo_recibo = false;
-				_recibo.emitido = true;
+				recibo.emitido = true;
 
 				running = false;
 				currentState = "default";
@@ -1951,36 +1926,31 @@
 				recibo.docRecNeto = txtTotal.text;
 				recibo.saldo = txtTotal.text;
 
-				if (isAster) {
-					return;
-				}				
-				var monedaVinculos:Moneda = cmbMonedaVinculos.selectedItem;
-				var monedaDocRecNeto:Moneda = cmbMoney.selectedItem;
-
-				var docReciboNeto:BigDecimal = recibo.getDocRecNeto();
-				var docReciboTotal:BigDecimal = BigDecimal.ZERO;
-				if (recibo.total && recibo.total.length > 0) {
-					docReciboTotal = new BigDecimal(recibo.total); 
-				}
-				
-				if (monedaDocRecNeto.codigo == monedaVinculos.codigo) {
-					recibo.total = recibo.docRecNeto;
+				if (!isAster) {
+					var monedaVinculos:Moneda = cmbMonedaVinculos.selectedItem;
+					var monedaDocRecNeto:Moneda = cmbMoney.selectedItem;
 					
-				} else {
-					var total:BigDecimal = recibo.convertirMoneda(monedaDocRecNeto, monedaVinculos, recibo.getDocRecNeto());
-					recibo.total = total.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
-				}
-				txtTotalVinculado.text = recibo.total;
-				
-				updateTotalFacturasVinculadas();
+					var docReciboNeto:BigDecimal = recibo.getDocRecNeto();
+					var docReciboTotal:BigDecimal = BigDecimal.ZERO;
+					if (recibo.total && recibo.total.length > 0) {
+						docReciboTotal = new BigDecimal(recibo.total); 
+					}
+					
+					if (monedaDocRecNeto.codigo == monedaVinculos.codigo) {
+						recibo.total = recibo.docRecNeto;
+						
+					} else {
+						var total:BigDecimal = recibo.convertirMoneda(monedaDocRecNeto, monedaVinculos, recibo.getDocRecNeto());
+						recibo.total = total.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
+					}
+					txtTotalVinculado.text = recibo.total;
+					
+					updateTotalFacturasVinculadas();
+				}			
 			}
-			
+						
 			protected function txtTotalVinculado_changeHandler(event:Event):void {
-				if (isAster) {
-					return;
-				}
 				recibo.total = txtTotalVinculado.text;
-				
 				var monedaVinculos:Moneda = cmbMonedaVinculos.selectedItem;
 				var monedaDocRecNeto:Moneda = cmbMoney.selectedItem;
 				
@@ -1990,10 +1960,10 @@
 					docReciboTotal = new BigDecimal(recibo.total); 
 				}
 				
-				if (monedaVinculos.codigo == Moneda.PESOS) {
+				if (monedaVinculos.codigo == Moneda.PESOS || monedaVinculos.codigo == Moneda.PESOS_ASTER) {
 					recibo.docTCC = docReciboTotal.divideRound(docReciboNeto, MathContext.ROUND_HALF_EVEN).toString(); 	
 				}
-				if (monedaVinculos.codigo == Moneda.DOLARES) {
+				if (monedaVinculos.codigo == Moneda.DOLARES || monedaVinculos.codigo == Moneda.DOLARES_ASTER) {
 					if (docReciboTotal.compareTo(BigDecimal.ZERO) > 0) {
 						recibo.docTCC = docReciboNeto.divideRound(docReciboTotal, MathContext.ROUND_HALF_EVEN).toString();
 					} else {
@@ -2005,36 +1975,28 @@
 			}
 			
 			protected function cmbMonedaVinculos_changeHandler(event:Event):void {
-				if (isAster) {
-					return;
-				}
 				var monedaVinculos:Moneda = cmbMonedaVinculos.selectedItem;
 				var monedaTotal:Moneda = cmbMoney.selectedItem;
-				
 				monedasDistintas = monedaTotal.codigo != monedaVinculos.codigo;
 				
 				if (monedaTotal.codigo == monedaVinculos.codigo) {
 					recibo.total = recibo.docRecNeto;
-					
 				} else {
 					txtTotalVinculado.enabled = true;
 					var total:BigDecimal = recibo.convertirMoneda(monedaTotal, monedaVinculos, recibo.getDocRecNeto());
 					recibo.total = total.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 				}
 				txtTotalVinculado.text = recibo.total;
+
 			}
 			
 			protected function txtTipoCambio_changeHandler(event:Event):void {
-				if (isAster) {
-					return;
-				}
 				var monedaVinculos:Moneda = cmbMonedaVinculos.selectedItem;
-				var monedaDocRecNeto:Moneda = cmbMoney.selectedItem;
+				var monedaRecibo:Moneda = cmbMoney.selectedItem;
 				
-				var total:BigDecimal = recibo.convertirMoneda(monedaDocRecNeto, monedaVinculos, recibo.getDocRecNeto());
+				var total:BigDecimal = recibo.convertirMoneda(monedaRecibo, monedaVinculos, recibo.getDocRecNeto());
 				recibo.total = total.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 				txtTotalVinculado.text = recibo.total;
-				
 			}
 			
 			protected function txtDate_closeHandler(event:DropdownEvent):void {
@@ -2183,29 +2145,26 @@
 									</s:Form>
 								</s:HGroup>
 							</s:Panel>
-						</s:VGroup>
-	
+						</s:VGroup>	
 					</s:VGroup>
 	
 					<s:VGroup width="100%" height="100%" paddingTop="5">
 						<s:Panel id="pnlFacturasVinculadas" width="100%" height="100%" title="FACTURAS VINCULADAS" styleName="pnlInterno" enabled="{recibo.docId != null}">
 							<s:VGroup width="100%" height="100%" gap="0">
 								<s:HGroup width="100%">
-									<s:Panel width="180"  title="MONEDA VINCULOS" styleName="pnlInterno" minHeight="0" visible="{!recibo.emitido}" includeInLayout="{!recibo.emitido}">
+									<s:Panel width="180" title="MONEDA VINCULOS" styleName="pnlInterno" minHeight="0" visible="{!recibo.emitido}" includeInLayout="{!recibo.emitido}">
 										<s:HGroup width="100%" horizontalAlign="center">
 											<components:MyAutoComplete id="cmbMonedaVinculos" width="100%" height="36" fontSize="14" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart"
 																	   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 																	   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" 
 																	   backspaceAction="focus" dropDownRowCount="{monedas.length}" selectedItem="@{recibo.moneda}" enabled="{!tieneVinculos}"
 																	   change="cmbMonedaVinculos_changeHandler(event)"/>
-										
 										</s:HGroup>
 									</s:Panel>
-									<s:Panel width="180" title="MONTO A VINCULAR" styleName="pnlInterno" minHeight="0" visible="{!recibo.emitido &amp;&amp; !isAster}" includeInLayout="{!recibo.emitido}">
+									<s:Panel width="180" title="{isAster ? 'NETO' : 'TOTAL' }" styleName="pnlInterno" minHeight="0" visible="{!recibo.emitido}" includeInLayout="{!recibo.emitido}">
 										<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10">
 											<components1:MyTextInput id="txtTotalVinculado" width="100%" height="36" fontSize="16" textAlign="right" permitirNegativos="false" text="{recibo.total}" 
-																	 change="txtTotalVinculado_changeHandler(event)" 
-																	 enabled="{!tieneVinculos &amp;&amp; monedasDistintas}"/>
+																	 change="txtTotalVinculado_changeHandler(event)" enabled="{!tieneVinculos &amp;&amp; monedasDistintas}"/>
 										</s:HGroup>
 									</s:Panel>
 								</s:HGroup>
@@ -2216,7 +2175,7 @@
 									
 									<s:columns>
 										<s:ArrayList>
-											<s:GridColumn width="80" sortable="false" headerText="S/N" editable="{!recibo.emitido}" resizable="false">
+											<s:GridColumn  width="80" sortable="false" headerText="S/N" editable="{!recibo.emitido}" resizable="false">
 												<s:itemEditor>
 													<fx:Component>
 														<s:GridItemEditor>
@@ -2386,7 +2345,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="60" dataField="descuentoPorc" headerText="DESCUENTO" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+											<s:GridColumn width="60" dataField="descuentoPorc" headerText="DESCUENTO" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2402,6 +2361,8 @@
 																		var descuento:BigDecimal = new BigDecimal(desc ? desc : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
 																		
 																		label = outerDocument.nf_Espanol_Espanol.format(descuento) + "%";
+																		
+																		setStyle("color",  VinculoDocumentos(data).cambios["descuentoPorc"] ? "#ff0000" : "#003300");
 																	}
 																]]>
 															</fx:Script>
@@ -2410,7 +2371,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="70" dataField="descuentoMonto" headerText="M.DESCUENTO" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+											<s:GridColumn width="70" dataField="descuentoMonto" headerText="M.DESCUENTO" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2428,6 +2389,8 @@
 																		var montoDto:BigDecimal = montoDto_ ? new BigDecimal(montoDto_).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
 
 																		label = outerDocument.nf_Espanol_Espanol.format(montoDto);
+																		
+																		setStyle("color",  VinculoDocumentos(data).cambios["descuentoMonto"] ? "#ff0000" : "#003300");
 																	}
 																]]>
 															</fx:Script>
@@ -2445,13 +2408,14 @@
 																	import biz.fulltime.model.VinculoDocumentos;
 	
 																	override public function prepare(hasBeenRecycled:Boolean):void {
-																		if (!data) {
-																			return;
-																		}
-																		var m:String = VinculoDocumentos(data).neto;
-																		var monto:BigDecimal = new BigDecimal(m ? m : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
+																		if (!data)  return;
 																		
-																		label = outerDocument.nf_Espanol_Espanol.format(monto);
+																		var n:String = VinculoDocumentos(data).neto;
+																		var neto:BigDecimal = new BigDecimal(n ? n : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
+																		
+																		label = outerDocument.nf_Espanol_Espanol.format(neto);
+																		
+																		setStyle("color",  VinculoDocumentos(data).cambios["neto"] ? "#ff0000" : "#000000");
 																	}
 																]]>
 															</fx:Script>
@@ -2460,7 +2424,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 											
-											<s:GridColumn width="70" dataField="cancela"  headerText="M.CANCELA" editable="{!isAster}">
+											<s:GridColumn width="70" dataField="cancela"  headerText="M.CANCELA" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2468,13 +2432,15 @@
 																<![CDATA[
 																	import biz.fulltime.model.VinculoDocumentos;
 																	
-																	import util.Maths;
-																	
 																	override public function prepare(hasBeenRecycled:Boolean):void {
-																		if (!data) {
-																			return;
-																		}
-																		label = outerDocument.nf_Espanol_Espanol.format(VinculoDocumentos(data).cancela);
+																		if (!data) return;
+																		
+																		var c:String = VinculoDocumentos(data).cancela;
+																		var cancela:BigDecimal = new BigDecimal(c ? c : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
+																		
+																		label = outerDocument.nf_Espanol_Espanol.format(cancela);
+
+																		setStyle("color",  VinculoDocumentos(data).cambios["cancela"] ? "#ff0000" : "#000000");
 																	}
 																]]>
 															</fx:Script>
@@ -2611,12 +2577,9 @@
 			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" focusEnabled="false" 
 					  enabled="{!recibo.emitido &amp;&amp; tieneCambios}" />
 			
-			<!--s:Button id="cmdFinalizar" click="cmdFinalizar_clickHandler(event)" styleName="finishButton" label="Finalizar" toolTip="Finalizar"
-					  visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}"
-					  enabled="{!recibo.emitido}" focusEnabled="false" /-->
 			<s:Button id="cmdEmitir" click="cmdEmitir_clickHandler(event)" styleName="emitirButton" label="Emitir" toolTip="Emitir" 
 					  visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" 
-					  focusEnabled="false" enabled="{!recibo.emitido &amp;&amp; tieneVinculos}" />
+					  focusEnabled="false" enabled="{(!recibo.emitido &amp;&amp; tieneVinculos) || (recibo.serie == 'P')}" />
 
 			<s:Spacer width="10" />
 			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />

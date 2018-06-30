@@ -19,10 +19,17 @@
 			import util.CatalogoFactory;
 
 			private var _banco:Banco;
+			
+			private var _cliente:Cliente;
 
 			private var _recibo:Documento;
 			
 			private var _cheque:Documento = new Documento(new Comprobante("43", "Cheque Rec"));
+			
+			// Estados C,D,E
+			// C
+			// D
+			// E
 
 
 			[Bindable]
@@ -90,6 +97,21 @@
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
+			
+			[Bindable]
+			public function get cliente():Cliente {
+				return _cliente;
+			}
+
+			public function set cliente(value:Cliente):void {
+				for each (var c:Cliente in CatalogoFactory.getInstance().clientes)  {
+					if (c.codigo == value.codigo) {
+						_cliente = c;		
+					}
+				}
+				
+			}
+
 		]]>
 	</fx:Script>
 
@@ -144,7 +166,7 @@
 					<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre" matchType="anyPart"
 											   prompt="Ingrese cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 											   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
-											   next_focus="{txtTitular}" dropDownWidth="480" dropDownRowCount="10" selectedItem="{recibo.cliente}" />
+											   next_focus="{txtTitular}" dropDownWidth="480" dropDownRowCount="10" selectedItem="{cliente}" />
 					
 				</s:FormItem>
 				<s:FormItem label="Titular" width="100%">

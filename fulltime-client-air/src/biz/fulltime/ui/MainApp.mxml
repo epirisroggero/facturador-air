@@ -23,6 +23,7 @@
 			import biz.fulltime.ui.crud.tipoEntrega.FrmTipoEntrega;
 			import biz.fulltime.ui.crud.usuarios.FormUsuario;
 			import biz.fulltime.ui.deudores.ListadoDeudores;
+			import biz.fulltime.ui.efactura.FrmEFactura;
 			import biz.fulltime.ui.expediciones.FrmExpediciones;
 			import biz.fulltime.ui.facturacion.FacturacionPnl;
 			import biz.fulltime.ui.facturacion.LstComprasPlazaPnl;
@@ -550,6 +551,10 @@
 					showCRUDUsuarios();
 				} else if (event.navigate == MenuEventFT.DESCUENTOS_PROMETIDOS_EVENT) {
 					showEditarDescuentosPrometidos();
+				
+				} else if (event.navigate == MenuEventFT.EFACTURA_EVENT) {
+					showEFacturaUtilities();
+					
 				} else if (event.navigate == MenuEventFT.EXIT) {
 					if (myViewStack) {
 						myViewStack.removeAllElements();
@@ -667,7 +672,25 @@
 					wndDialog.addElement(frmFanfold);
 				}
 			}
-
+			
+			private function showEFacturaUtilities():void {
+				if (wndDialog == null) {
+					wndDialog = new TitleWindow();
+					wndDialog.title = "EFactura - Utilidades";
+					wndDialog.width = 800;
+					wndDialog.height = 600;
+					
+					var frmEFactura:FrmEFactura = new FrmEFactura();
+					
+					PopUpManager.addPopUp(wndDialog, this, true);
+					PopUpManager.centerPopUp(wndDialog);
+					
+					wndDialog.addEventListener(CloseEvent.CLOSE, closeHandler);
+					frmEFactura.addEventListener(CloseEvent.CLOSE, closeHandler);
+					
+					wndDialog.addElement(frmEFactura);
+				}
+			}
 			
 			private function showCRUDUsuarios():void {
 				if (wndDialog == null) {

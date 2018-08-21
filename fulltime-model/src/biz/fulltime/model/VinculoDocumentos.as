@@ -19,30 +19,36 @@ public class VinculoDocumentos {
 
 	public var docIdVin2:String;
 
-	public var monto:String = "0.00";
-
-	public var neto:String = "0.00";
-
-	public var vinRtaFin:String = "0.00";
-
 	public var descuentoPorc:String = "0.00";
 
 	public var descuentoMonto:String = "0.00";
 
+	public var neto:String = "0.00";
+	
+	public var monto:String = "0.00";
+
+	public var vinRtaFin:String = "0.00";
+
 	public var factura:Documento;
 
 	public var recibo:Documento;
+	
+	public var nuevo:Boolean = false;
 
 	private var _cambios:Dictionary = new Dictionary();
 	
-	private var keys:Array = ["descuentoPorc", "descuentoMonto", "neto", "cancela"];
+	private var keys:Array = [
+		"descuentoPorc", 
+		"descuentoMonto", 
+		"neto", 
+		"cancela"
+	];
 
 
 	public function VinculoDocumentos() {
-		cambios["descuentoPorc"] = false;
-		cambios["descuentoMonto"] = false;
-		cambios["neto"] = false;
-		cambios["cancela"] = false;
+		for each (var index:int in keys) {
+			cambios[keys[index]] = false;
+		}
 	}
 
 	public function calcularRentaFinanciera(aster:Boolean, serie:String):void {
@@ -64,23 +70,36 @@ public class VinculoDocumentos {
 	}
 	
 	public function cambioPorcDto(aster:Boolean):void {
-		var netoo:BigDecimal = (neto && neto.length > 0) ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
+		cambios["descuentoPorc"] = true;
+
+		var porcentageDto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoDto:BigDecimal = descuentoMonto ? new BigDecimal(descuentoMonto).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoNeto:BigDecimal = neto ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoCancelado:BigDecimal = monto ? new BigDecimal(monto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
 		
-		var porcDesc:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
-		
-		var montoDto:BigDecimal = BigDecimal.ZERO;
-		if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-			montoDto = netoo.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN);
-		}		
-		descuentoMonto = montoDto.toString();
-	 
-		if (aster) {
-			monto = netoo.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
+		if (cambios["neto"]) {
+			// 1.1) Cancelado =  100/0.64 = 156.25   esto es neto / ( 1 - % del descuento )
+			// 1.2) Luego monto del descuento =  100/0.64 – 100 = 56.25 esto es (neto / (1-% del descuento )) – neto
+			montoCancelado = calcularMontoCancelado(porcentageDto, null, montoNeto, aster);
+			montoDto = calcularMontoDescuento(null, porcentageDto, montoNeto, aster);		
+			
+		} else if (cambios["cancela"]) {
+			// 2.1) neto = 156.25 * 0.64 = 100  esto es  Cancelado * (1 - % del dto )				
+			// 2.2) monto del descuento = 156 *36 /100 = 56.25  esto es Cancelado * % de dto / 100
+			montoNeto = calcularMontoNeto(montoCancelado, porcentageDto, null, aster);
+			montoDto = calcularMontoDescuento(montoCancelado, porcentageDto, null, aster);
+			
 		} else {
-			monto = netoo.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
+			// sino ajusto monto de descuento y monto cancelado			
+			montoDto = calcularMontoDescuento(null, porcentageDto, montoNeto, aster);
+			montoCancelado = calcularMontoCancelado(porcentageDto, null, montoNeto, aster);
 		}
-		
+			
+		descuentoPorc = porcentageDto.toString();
+		descuentoMonto = montoDto.toString();
+		neto = montoNeto.toString();
+		monto = montoCancelado.toString();
+					
 		for each (var key:String in keys) {
 			if (key != "descuentoPorc" && cambios[key]) {
 				resetCambios();
@@ -88,176 +107,212 @@ public class VinculoDocumentos {
 		}
 	}
 	
-	public function cambioMontoDto(aster:Boolean):void {
-		var montoDesc_:String = descuentoMonto;
-		var neto_:BigDecimal = (neto && neto.length > 0) ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
-	
-		var montoDto:BigDecimal = montoDesc_ ? new BigDecimal(montoDesc_).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		var cociente:BigDecimal = neto_.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN);
-		
-		if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-			descuentoPorc = Maths.ONE_HUNDRED.multiply(montoDto).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
-		} else {
-			descuentoPorc = BigDecimal.ZERO.toString();
-		}
-		var desto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		
-		if (aster) {
-			monto = neto_.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-		} else {
-			monto = neto_.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-		}
-		
-		for each (var key:String in keys) {
-			if (key != "descuentoMonto" && cambios[key]) {
-				resetCambios();
-			}			
-		}
-
-	}
-	
 	public function cambioMontoNeto(aster:Boolean):void {
-		var netoo:BigDecimal = (neto && neto.length > 0) ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
+		cambios["neto"] = true;
+		
+		var porcentageDto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoDto:BigDecimal = descuentoMonto ? new BigDecimal(descuentoMonto).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoNeto:BigDecimal = neto ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoCancelado:BigDecimal = monto ? new BigDecimal(monto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+					
+		if (cambios["descuentoPorc"]) {
+			// 1.1) Cancelado =  100/0.64 = 156.25   esto es neto / ( 1 - % del descuento )
+			// 1.2) Luego monto del descuento =  100/0.64 – 100 = 56.25 esto es (neto / (1-% del descuento )) – neto
+			montoCancelado = calcularMontoCancelado(null ,montoDto, montoNeto, aster);
+			montoDto = calcularMontoDescuento(null, porcentageDto, montoNeto, aster);
 
-		var porcDesc:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
+		} else if (cambios["cancela"]) {
+			// 5.1) Monto del Descuento =  156.25 – 100 = 56.25  esto es = Monto a Cancelar menos Monto neto = 56.25
+			// 5.2) % del descuento = (156.25 – 100)  / 156.25 = 36%  esto es Monto cancelado menos neto dividido cancelado = 36%
+			montoDto = calcularMontoDescuento(montoCancelado, null, montoNeto, aster);
+			porcentageDto = calcularPorcentageDescuento(montoCancelado, null, montoNeto, aster);
 		
-		var montoDto:BigDecimal = BigDecimal.ZERO;
-		if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-			montoDto = netoo.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN);
-		}		
-		descuentoMonto = montoDto.toString();
-		
-		if (aster) {
-			monto = netoo.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
 		} else {
-			monto = netoo.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
+			// Sinó solo ajusto el monto cancelado			
+			montoDto = calcularMontoDescuento(null, porcentageDto, montoNeto, aster);
+			montoCancelado = calcularMontoCancelado(null, montoDto, montoNeto, aster);
 		}
+		
+		descuentoPorc = porcentageDto.toString();
+		descuentoMonto = montoDto.toString();
+		neto = montoNeto.toString();
+		monto = montoCancelado.toString();
 		
 		for each (var key:String in keys) {
 			if (key != "neto" && cambios[key]) {
 				resetCambios();
 			}			
 		}
+	}	
+	
+	public function cambioMontoDto(aster:Boolean):void {
+		cambios["descuentoMonto"] = true;
+		
+		var porcentageDto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoDto:BigDecimal = descuentoMonto ? new BigDecimal(descuentoMonto).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoNeto:BigDecimal = neto ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoCancelado:BigDecimal = monto ? new BigDecimal(monto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		
+		if (cambios["neto"]) {
+			// 3.1)  % de dto =   56.25 / (100 + 56.25) = 36 esto es monto dto. Dividido el neto + monto del descuento = 36 %
+			// 3.2) Monto a Cancelar = 56.25 + 100 esto es = monto del descuento + neto
+			porcentageDto = calcularPorcentageDescuento(null, montoDto, montoNeto, aster);
+			montoCancelado = calcularMontoCancelado(null, montoDto, montoNeto, aster); 
+			
+		} else if (cambios["cancela"]) {
+			// 4.1) % descuento = 56.25 / 156.25 = 36%  esto es = monto del descuento / monto a cancelar
+			// 4.2) Monto neto =  156.25 – 56.25 esto es = monto a cancelar menos monto del descuento.
+			porcentageDto = calcularPorcentageDescuento(montoCancelado, montoDto, null, aster);
+			montoNeto = calcularMontoNeto(montoCancelado, null, montoDto, aster);
+		
+		} else {
+			porcentageDto = calcularPorcentageDescuento(null, montoDto, montoNeto, aster);
+			montoCancelado = calcularMontoCancelado(null, montoNeto, montoDto, aster); 
+		}
+		
+		descuentoPorc = porcentageDto.toString();
+		descuentoMonto = montoDto.toString();
+		neto = montoNeto.toString();
+		monto = montoCancelado.toString();
 
+		for each (var key:String in keys) {
+			if (key != "descuentoMonto" && cambios[key]) {
+				resetCambios();
+			}			
+		}		
 	}
 	
 	public function cambioMontoCancelado(aster:Boolean):void {
-		if (aster) {
-			//calcularNetoyDsto(monto);
-			return;
-		}
-		var desto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		var netoo:BigDecimal = neto ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		
-		if (aster) {
-			var montoDto:BigDecimal = BigDecimal.ZERO;
-			if ((Maths.ONE_HUNDRED.subtract(desto)).compareTo(BigDecimal.ZERO) != 0) {
-				montoDto = netoo.multiply(desto).divideScaleRound(Maths.ONE_HUNDRED.subtract(desto), 4, MathContext.ROUND_HALF_EVEN);
-			}
-			monto = netoo.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-		} else {
-			monto = netoo.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-		}
+		cambios["cancela"] = true;
 
+		var porcentageDto:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoDto:BigDecimal = descuentoMonto ? new BigDecimal(descuentoMonto).setScale(2, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoNeto:BigDecimal = neto ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		var montoCancelado:BigDecimal = monto ? new BigDecimal(monto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
+		
+		if (cambios["descuentoPorc"]) { 
+			//Cargo % descuento y Cancelado : 36% y 156.25
+			//2.1) neto = 156.25 * 0.64 = 100  esto es  Cancelado * (1 - % del dto )
+			//2.2) monto del descuento = 156 *36 /100 = 56.25  esto es Cancelado * % de dto / 100
+			montoNeto = calcularMontoNeto(montoCancelado, porcentageDto, null, aster);
+			montoDto = calcularMontoDescuento(montoCancelado, porcentageDto, null, aster);
+		
+		} else if (cambios["descuentoMonto"]) {
+			//Cargo Monto Descuento = 56.25 y Monto a Cancelar = 156.25
+			//4.1) % descuento = 56.25 / 156.25 = 36%  esto es = monto del descuento / monto a cancelar
+			//4.2) Monto neto = 156.25 – 56.25 esto es = monto a cancelar menos monto del descuento.
+			porcentageDto = calcularPorcentageDescuento(montoCancelado, montoDto, null, aster);
+			montoNeto = calcularMontoNeto(montoCancelado, null, montoDto, aster);
+			
+		} else if (cambios["neto"]){
+			// Cambio Monto neto y monto a cancelar
+			//5.1) Monto del Descuento = 156.25 – 100 = 56.25  esto es = Monto a Cancelar menos Monto neto = 56.25
+			//5.2) % del descuento = (156.25 – 100)  / 156.25 = 36%  esto es Monto cancelado menos neto dividido cancelado = 36%
+			montoDto = calcularMontoDescuento(montoCancelado, null, montoNeto, aster);
+			porcentageDto = calcularPorcentageDescuento(montoCancelado, null, montoNeto, aster);
+			
+		} else {			
+			montoDto = calcularMontoDescuento(montoCancelado, porcentageDto, null, aster);
+			montoNeto = calcularMontoNeto(montoCancelado, porcentageDto, null, aster);
+		}
+		
+		descuentoPorc = porcentageDto.toString();
+		descuentoMonto = montoDto.toString();
+		neto = montoNeto.toString();
+		monto = montoCancelado.toString();
+		
 		for each (var key:String in keys) {
 			if ((key != "cancela") && cambios[key]) {
 				resetCambios();
 			}			
 		}
-	}
+	}	
 
-	public function get cancela():String {
-		var mto:BigDecimal = new BigDecimal(monto ? monto : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
-
-		if (recibo && recibo.comprobante.aster) {
-			return mto.toString();
-		} else {
-			var mtoDto:BigDecimal = new BigDecimal(descuentoMonto ? descuentoMonto : "0").setScale(4, MathContext.ROUND_HALF_EVEN);
-
-			return mto.add(mtoDto).toString();
-		}
-	}
-
-	/*
-	public function set cancela(value:String):void {
-		if (recibo && recibo.comprobante.aster) { // Para los comprobantes aster
-			monto = new BigDecimal(value).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
-			//calcularNetoyDsto(monto);
-			neto = calcularMontoNeto().toString();
-			descuentoMonto = calcularMontoDto().toString();
-			return;
-		}
-		if (!value || value.length < 1) {
-			value = "0";
-		}
-		var cancelaMonto:BigDecimal = new BigDecimal(value);
-		var cancelaNeto:BigDecimal = new BigDecimal(neto);
-		var desMonto:BigDecimal = cancelaMonto.subtract(cancelaNeto);
-
-		var desPorc:BigDecimal = BigDecimal.ZERO;
-		if (cancelaMonto.compareTo(BigDecimal.ZERO) > 0) {
-			desPorc = desMonto.multiply(Maths.ONE_HUNDRED).divideScaleRound(cancelaMonto, 2, MathContext.ROUND_HALF_EVEN);
-		}
-		descuentoPorc = desPorc.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
-		descuentoMonto = desMonto.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
-	}
-	*/
-	/*private function calcularNetoyDsto(monto:String) {
-		var porcDesc_:String = descuentoPorc
-		var porcDescu:BigDecimal = porcDesc_ ? new BigDecimal(porcDesc_).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		var multiplicador1:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDescu).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN); // .64
-		var multiplicador2:BigDecimal = porcDescu.divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN); // .36
+	public function calcularPorcentageDescuento(montoCancelado:BigDecimal, montoDto:BigDecimal, montoNeto:BigDecimal, aster:Boolean):BigDecimal {
+		var porcentageDto:BigDecimal = BigDecimal.ZERO;
 		
-		if (!cambios["neto"]) { // cambio el neto en caso de este no estar fijo
-			neto = new BigDecimal(monto).multiply(multiplicador1).setScale(2, MathContext.ROUND_HALF_EVEN).toString();
+		if (montoDto) {
+			var cociente:BigDecimal = BigDecimal.ZERO;
+			if (montoNeto) {
+				cociente = montoNeto.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN);
+			} else if (montoCancelado) {
+				// Calcular el monto neto.
+				montoNeto = calcularMontoNeto(montoCancelado, null, montoDto, aster);
+				cociente = montoNeto.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN);
+			}
+			if (cociente.compareTo(BigDecimal.ZERO) > 0) {
+				porcentageDto = Maths.ONE_HUNDRED.multiply(montoDto).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(2, MathContext.ROUND_HALF_EVEN);
+			}
+		} else if (montoNeto) {
+			//5.2) % del descuento = (156.25 – 100)  / 156.25 * 100 = 36%  esto es Monto cancelado menos neto dividido cancelado = 36%
+			if (montoCancelado && montoCancelado.compareTo(BigDecimal.ZERO) > 0) {
+				porcentageDto = montoCancelado.subtract(montoNeto).divideScaleRound(montoCancelado, 4, MathContext.ROUND_HALF_EVEN).multiply(Maths.ONE_HUNDRED);
+			}
 		}
-		descuentoMonto = new BigDecimal(monto).multiply(multiplicador2).setScale(2, MathContext.ROUND_HALF_EVEN).toString();	
-	}*/
+		
+		return porcentageDto;
+	}
 	
-	private function calcularPorcentageDto():BigDecimal {
-		var cancelaMonto:BigDecimal = new BigDecimal(monto);
-		var desMonto:BigDecimal = new BigDecimal(descuentoMonto);
-		
-		var desPorc:BigDecimal = BigDecimal.ZERO;
-		if (cancelaMonto.compareTo(BigDecimal.ZERO) > 0) {
-			desPorc = desMonto.multiply(Maths.ONE_HUNDRED).divideScaleRound(cancelaMonto, 2, MathContext.ROUND_HALF_EVEN);
-		}
-		return desPorc;
-	}
-
-	private function calcularMontoDto():BigDecimal {
-		var netoo:BigDecimal = (neto && neto.length > 0) ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
-		var porcDesc:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		
+	public function calcularMontoDescuento(montoCancelado:BigDecimal, porcDto:BigDecimal, montoNeto:BigDecimal, aster:Boolean):BigDecimal {
 		var montoDto:BigDecimal = BigDecimal.ZERO;
 		
-		var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
-		if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-			montoDto = netoo.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN);
-		}		
+		if (montoNeto) {
+			if (montoCancelado) {
+				// 5.1) Monto del Descuento =  156.25 – 100 = 56.25  esto es = Monto a Cancelar menos Monto neto = 56.25
+				montoDto = montoCancelado.subtract(montoNeto).setScale(4, MathContext.ROUND_HALF_EVEN);
+			
+			} else if (porcDto) {
+				var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDto).setScale(4, MathContext.ROUND_HALF_EVEN);
+				if (cociente.compareTo(BigDecimal.ZERO) > 0) {
+					montoDto = montoNeto.multiply(porcDto).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN);
+				}
+			}
+		} else if (montoCancelado) {
+			if (porcDto) {
+				//2.2) monto del descuento = 156 *36 /100 = 56.25  esto es Cancelado * % de dto / 100
+				montoDto = montoCancelado.multiply(porcDto).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN)
+			}
+		}
 		return montoDto;
 	}
+	
+	public function calcularMontoCancelado(porcDto:BigDecimal, montoDto:BigDecimal, montoNeto:BigDecimal, aster:Boolean):BigDecimal {
+		var montoCancelado:BigDecimal = BigDecimal.ZERO;
 
-	private function calcularMontoNeto():BigDecimal {
-		var descPorcValue:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-		var multiplicador1:BigDecimal = Maths.ONE_HUNDRED.subtract(descPorcValue).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN);
-		var neto:BigDecimal = new BigDecimal(monto).multiply(multiplicador1).setScale(2, MathContext.ROUND_HALF_EVEN);
-
-		return neto;
+		if (montoNeto) {
+			if (porcDto) {
+				// 1.1) Cancelado =  100/0.64 = 156.25   esto es neto / ( 1 - % del descuento )
+				var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDto).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN);
+				montoCancelado = montoNeto.divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN);
+				
+			} else if (montoDto) {
+				montoCancelado = montoNeto.add(montoDto).setScale(4, MathContext.ROUND_HALF_EVEN);
+			}
+		} else if (porcDto) {
+					
+		}		
+		
+		return montoCancelado;
 	}
 	
-	private function calcularMontoCancelado():BigDecimal {
-		var netoo:BigDecimal = (neto && neto.length > 0) ? new BigDecimal(neto).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
-		var porcDesc:BigDecimal = descuentoPorc ? new BigDecimal(descuentoPorc).setScale(4, MathContext.ROUND_HALF_EVEN) : BigDecimal.ZERO;
-
-		var montoDto:BigDecimal = BigDecimal.ZERO;
-
-		var cociente:BigDecimal = Maths.ONE_HUNDRED.subtract(porcDesc).setScale(4, MathContext.ROUND_HALF_EVEN);
-		if (cociente.compareTo(BigDecimal.ZERO) > 0) {
-			montoDto = netoo.multiply(porcDesc).divideScaleRound(cociente, 4, MathContext.ROUND_HALF_EVEN).setScale(4, MathContext.ROUND_HALF_EVEN);
-		}		
-		return netoo.add(montoDto);
+	public function calcularMontoNeto(montoCancelado:BigDecimal, porcentageDto:BigDecimal, montoDto:BigDecimal, aster:Boolean):BigDecimal {
+		var neto:BigDecimal = BigDecimal.ZERO;
+		if (montoCancelado) {
+			if (porcentageDto) {
+				var multiplicador:BigDecimal = Maths.ONE_HUNDRED.subtract(porcentageDto).divideScaleRound(Maths.ONE_HUNDRED, 4, MathContext.ROUND_HALF_EVEN);
+				neto = montoCancelado.multiply(multiplicador).setScale(2, MathContext.ROUND_HALF_EVEN);
+				
+			} else if (montoDto) {
+				//4.2) Monto neto =  156.25 – 56.25 esto es = monto a cancelar menos monto del descuento.
+				neto = montoCancelado.subtract(montoDto);
+			}
+		} else if (montoDto) {
+			if (porcentageDto) {
+				
+			}
+		}
+		
+		return neto;
 	}
 	
 	

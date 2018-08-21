@@ -121,6 +121,7 @@ public class Recibo extends DocumentoBase {
 		recibo.comprobante = comprobante;
 		recibo.nuevo = true;
 		recibo.fechaDoc = fecha;
+		recibo.fechaEmision = fecha;
 		recibo.registroFecha = new Date();
 		recibo.registroHora = new Date();
 		

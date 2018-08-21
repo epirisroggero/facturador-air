@@ -25,5 +25,5 @@
 		</s:layout>
 		<loader:AnimatedGIFImage x="12" y="12" />
 	</s:SkinnableContainer>
-	<s:Label fontSize="14" fontWeight="bold" text="{label}" />
+	<s:Label fontSize="14" fontWeight="bold" text="{label}" color="black"/>
 </s:VGroup>

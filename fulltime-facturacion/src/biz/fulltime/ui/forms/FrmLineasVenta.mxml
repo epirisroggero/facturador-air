@@ -212,6 +212,8 @@
 				if (codigoComprobante == "120" || codigoComprobante == "121" || codigoComprobante == "122" || codigoComprobante == "124") {
 					permitirNegativos = true;
 				}
+				
+				var maxRow:int = 0;
 
 				if (event.keyCode == Keyboard.F1) {
 					if (cellPos.columnIndex == 2 || cellPos.columnIndex == 3) {
@@ -283,7 +285,7 @@
 					mostrarDepositos(event);
 					
 				} else if (event.keyCode == Keyboard.INSERT) { // Se presiono la tecla 'INSERT'
-					var maxRow:int = dgLineasVenta.dataProvider.length - 1;
+					maxRow = dgLineasVenta.dataProvider.length - 1;
 					if (hasPermEdition())
 						if (maxRow + 2 > 17 && !documento.comprobante.esImportacion()) {
 							Alert.show("Se pueden agregar un máximo de 17 líneas por documento.");
@@ -301,7 +303,7 @@
 						}
 					}
 					var maxCol:int = columns.length - 3;
-					var maxRow:int = dgLineasVenta.dataProvider.length - 1;
+					maxRow = dgLineasVenta.dataProvider.length - 1;
 
 					var colIndex:int;
 					var rowIndex:int;
@@ -484,7 +486,7 @@
 				}
 				if (colIndex == 1 || colIndex == 2) {
 					currentLine.obtenerStock();
-						//txtStock.text = currentLine.stockValue;
+					//txtStock.text = currentLine.stockValue;
 				}
 
 				callLater(function():void {
@@ -530,7 +532,6 @@
 
 			public function editarNotas(linea:LineaDocumento):void {
 				if (helpWindow == null) {
-					
 					tieneCambios = true;
 					
 					helpWindow = new TitleWindow();
@@ -568,7 +569,12 @@
 				cellPos = dgLineasVenta.selectedCell;
 
 				var lineaVenta:LineaDocumento = lineasVenta.lineas.getItemAt(cellPos.rowIndex) as LineaDocumento;
-				if (documento.esSolicitudCompra || !lineaVenta.articulo || !lineaVenta.articulo.codigo || !documento.cliente.codigo) {
+				
+				var codigoContacto:String = documento.esSolicitudCompra 
+					? (documento.proveedor ? documento.proveedor.codigo : null) 
+					: (documento.cliente ? documento.cliente.codigo : null); 
+			
+				if (!lineaVenta.articulo || !lineaVenta.articulo.codigo || !codigoContacto) {
 					return;
 				}
 				if (helpWindow) {
@@ -576,14 +582,14 @@
 				}
 
 				helpWindow = new TitleWindow();
-				helpWindow.title = "Antecedentes artículo para el cliente";
+				helpWindow.title = "Antecedentes artículo";
 				helpWindow.width = 1000;
 				helpWindow.height = 500;
 
 				var antecedentesPnl:AntecedentesPnl = new AntecedentesPnl();
 				antecedentesPnl.articulo = lineaVenta.articulo.codigo;
-				antecedentesPnl.cliente = _documento.cliente.codigo;
-				antecedentesPnl.obtenerAntecedentes();
+				antecedentesPnl.cliente = codigoContacto;
+				antecedentesPnl.obtenerAntecedentes(!documento.esSolicitudCompra);
 
 				PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
 				PopUpManager.centerPopUp(helpWindow);
@@ -600,8 +606,7 @@
 				var lineaVenta:LineaDocumento = lineasVenta.lineas.getItemAt(cellPos.rowIndex) as LineaDocumento;
 				if (documento.esSolicitudCompra || !lineaVenta.articulo || !lineaVenta.articulo.codigo || !documento.cliente.codigo) {
 					return;
-				}								
-
+				}
 				if (helpWindow) {
 					return;
 				}
@@ -694,7 +699,7 @@
 			<s:HGroup width="100%" height="100%" gap="0">
 				<s:DataGrid id="dgLineasVenta" width="100%" height="100%" fontSize="12" creationComplete="dgLineasVenta_creationCompleteHandler(event)" keyDown="dg_keyDownHandler(event)"
 							gridItemEditorSessionSave="dgLineasVenta_gridItemEditorSessionSaveHandler(event)" dataProvider="{lineasVenta.lineas}" selectionMode="singleCell" sortableColumns="false"
-							rowHeight="25" selectionChange="dgLineasVenta_selectionChangeHandler(event)" editable="{hasPermEdition()}">
+							selectionChange="dgLineasVenta_selectionChangeHandler(event)" editable="{hasPermEdition()}">
 					<s:columns>
 						<s:ArrayList>
 							<s:GridColumn id="colState" width="10" minWidth="10" sortable="false" headerText="" editable="false" dataField="state" resizable="false">
@@ -714,8 +719,7 @@
 
 													[Bindable]
 													private var _alpha:Number = 1;
-
-
+													
 													override public function prepare(hasBeenRecycled:Boolean):void {
 														if (!data) {
 															return;
@@ -863,7 +867,7 @@
 													}
 												]]>
 											</fx:Script>
-											<components1:MyAutoComplete id="acArticulo" width="100%" change="acArticulo_changeHandler(event)"
+											<components1:MyAutoComplete id="acArticulo" width="100%" height="100%" change="acArticulo_changeHandler(event)"
 																		creationComplete="acArticulo_creationCompleteHandler(event)" keyDown="acArticulo_keyDownHandler(event)"
 																		dataProvider="{ outerDocument._articulos }" matchType="anyPart" selectedItemStyleName="underline" allowMultipleSelection="false"
 																		labelField="nombre" labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false"
@@ -873,7 +877,7 @@
 								</s:itemEditor>
 								<s:itemRenderer>
 									<fx:Component>
-										<s:DefaultGridItemRenderer fontSize="11" textAlign="left">
+										<s:DefaultGridItemRenderer textAlign="left">
 											<fx:Script>
 												<![CDATA[
 													import biz.fulltime.model.Articulo;
@@ -930,7 +934,7 @@
 							<s:GridColumn dataField="concepto" resizable="false" headerText="Concepto" editable="{hasPermEdition()}">
 								<s:itemRenderer>
 									<fx:Component>
-										<s:DefaultGridItemRenderer fontSize="11" textAlign="left" verticalCenter="0" percentWidth="100">
+										<s:DefaultGridItemRenderer textAlign="left" verticalCenter="0" percentWidth="100">
 											<fx:Script>
 												<![CDATA[
 													import biz.fulltime.model.LineaDocumento;
@@ -1221,7 +1225,7 @@
 										  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().modoMostrador &amp;&amp; (documento.nuevo || documento.permisosDocumentoUsuario.rentaDistribuidor || documento.permisosDocumentoUsuario.rentaReal) &amp;&amp; !documento.esSolicitudCompra}">
 								<s:itemRenderer>
 									<fx:Component>
-										<s:DefaultGridItemRenderer color="0x734669" fontStyle="italic" fontWeight="bold" textAlign="right">
+										<s:DefaultGridItemRenderer color="0x734669" fontStyle="italic" fontWeight="bold" textAlign="right" verticalCenter="0">
 											<fx:Script>
 												<![CDATA[
 													import biz.fulltime.model.LineaDocumento;

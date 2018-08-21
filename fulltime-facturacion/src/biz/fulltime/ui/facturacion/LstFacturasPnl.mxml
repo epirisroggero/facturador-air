@@ -724,9 +724,9 @@
 
 	<fx:Declarations>
 		<s:ArrayList id="cols">
-			<s:GridColumn width="200" dataField="comprobante" headerText="Tipo" labelFunction="comprobante_cod_labelFunction" />
-			<s:GridColumn width="90" dataField="comprobante" headerText="Tipo CFE" labelFunction="cae_labelFunction" visible="{!modoSolicitud &amp;&amp; !pnlFilters.soloPendientes}"/>
-			<s:GridColumn width="90" dataField="numero" headerText="Comprobante">
+			<s:GridColumn width="200" dataField="comprobante" headerText="TIPO" labelFunction="comprobante_cod_labelFunction" />
+			<s:GridColumn width="160" dataField="comprobante" headerText="TIPO CFE" labelFunction="cae_labelFunction" visible="{!modoSolicitud &amp;&amp; !pnlFilters.soloPendientes}"/>
+			<s:GridColumn width="90" dataField="numero" headerText="COMOROBANTE">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -750,7 +750,7 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="60" dataField="emitido" headerText="Emitido" visible="{!modoSolicitud}">
+			<s:GridColumn width="60" dataField="emitido" headerText="EMITIDO" visible="{!modoSolicitud}">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:GridItemRenderer clipAndEnableScrolling="true">
@@ -778,7 +778,7 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="60" dataField="pendiente" headerText="Pend.">
+			<s:GridColumn width="60" dataField="pendiente" headerText="PEND.">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:GridItemRenderer clipAndEnableScrolling="true">
@@ -806,9 +806,9 @@
 				</s:itemRenderer>
 
 			</s:GridColumn>
-			<s:GridColumn width="85" dataField="fecha" headerText="Fecha" />
-			<s:GridColumn width="60" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
-			<s:GridColumn width="100" dataField="total" headerText="Total">
+			<s:GridColumn width="85" dataField="fecha" headerText="FECHA" />
+			<s:GridColumn width="60" dataField="moneda" headerText="MONEDA" labelFunction="moneda_labelFunction" />
+			<s:GridColumn width="100" dataField="total" headerText="TOTAL">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -835,8 +835,33 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn dataField="cliente" headerText="{modoSolicitud ? 'Proveedor' : 'Cliente'}" labelFunction="cliente_labelFunction"/>
-			<s:GridColumn dataField="razonSocial" headerText="Razón Social" />
+			<s:GridColumn width="100" dataField="saldo" headerText="PENDIENTE">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="right">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+									
+									import util.CatalogoFactory;
+									
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {											
+											if (DocumentoDTO(data).total) {
+												label = outerDocument.nf_Espanol_Espanol.format(DocumentoDTO(data).saldo);
+											} else {
+												label = outerDocument.nf_Espanol_Espanol.format(0);
+											}
+										}
+									}
+								]]>
+							</fx:Script>
+						</s:DefaultGridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:GridColumn>
+			<s:GridColumn dataField="cliente" headerText="{modoSolicitud ? 'PROVEEDOR' : 'CLIENTE'}" labelFunction="cliente_labelFunction"/>
+			<s:GridColumn dataField="razonSocial" headerText="RAZÓN SOCIAL" />
 		</s:ArrayList>
 		
 		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>

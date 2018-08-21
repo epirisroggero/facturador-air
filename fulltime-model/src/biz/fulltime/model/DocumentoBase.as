@@ -35,18 +35,16 @@ public class DocumentoBase extends EventDispatcher {
 
 	public var numero:String;
 
-	public var fecha2:Date = new Date();
-
 	public var docTCF:String;
-	
+
 	public var docTCC:String;
-	
+
 	public var docVinculado:String = "N";
-	
+
 	public var conciliado:String = "";
-	
+
 	public var coeficienteImp:String;
-	
+
 	private var _moneda:Moneda;
 
 	public var razonSocial:String;
@@ -54,7 +52,7 @@ public class DocumentoBase extends EventDispatcher {
 	public var direccion:String;
 
 	public var dirEntrega:String;
-	
+
 	public var tipoDoc:String = "R";
 
 	public var rut:String;
@@ -64,27 +62,31 @@ public class DocumentoBase extends EventDispatcher {
 	private var _comprobante:Comprobante;
 
 	public var notas:String;
-	
+
 	public var total:String;
 
 	public var registroFecha:Date;
 
 	public var registroHora:Date;
-	
 
 	public var cuponeras:ArrayCollection = new ArrayCollection();
-	
+
 	private var _cliente:Cliente;
-	
+
 	private var _proveedor:Proveedor;
 	
-	private var _fechaDoc:Date;
-		
+	private var _fechaDoc:Date = new Date();
+
 	private var _fechaStr:String;
+
+	private var _fechaEmision:Date = new Date();
+
+	private var _fechaEmisionStr:String;
 	
+	public var estado:String;
+
 	private var clienteRemObj:RemoteObject;
 
-	
 	
 	public function DocumentoBase() {
 		// Remote object
@@ -103,24 +105,59 @@ public class DocumentoBase extends EventDispatcher {
 
 	public function set fechaStr(value:String):void {
 		_fechaStr = value;
-		
+
 		var formatter:DateFormatter = new DateFormatter();
 		_fechaDoc = DateFormatter.parseDateString(_fechaStr);
 		_fechaDoc.hours = 12;
 		_fechaDoc.minutes = 00;
 	}
-
-	public function get fechaDoc():Date{
-		return _fechaDoc;
+	
+	public function get fechaEmisionStr():String {
+		return _fechaEmisionStr;
 	}
 	
+	public function set fechaEmisionStr(value:String):void {
+		_fechaEmisionStr = value;
+		
+		var formatter:DateFormatter = new DateFormatter();
+		_fechaEmision= DateFormatter.parseDateString(_fechaEmisionStr);
+		_fechaEmision.hours = 12;
+		_fechaEmision.minutes = 00;
+	}
+
+
+	public function get fechaDoc():Date {
+		return _fechaDoc;
+	}
+
 	public function set fechaDoc(value:Date):void {
+		if (value == null) {
+			value = new Date();
+		}
+
 		this._fechaDoc = value;
 
 		var formatter:DateFormatter = new DateFormatter();
 		formatter.formatString = "YYYY-MM-DD";
 		_fechaStr = formatter.format(value);
 	}
+	
+	public function get fechaEmision():Date {
+		return _fechaEmision;
+	}
+	
+	public function set fechaEmision(value:Date):void {
+		if (value == null) {
+			value = new Date();
+		}
+		_fechaEmision = value;
+				
+		var formatter:DateFormatter = new DateFormatter();
+		formatter.formatString = "YYYY-MM-DD";
+		_fechaEmisionStr = formatter.format(value);
+	}
+	
+
 
 	public function get moneda():Moneda {
 		return _moneda;
@@ -154,11 +191,11 @@ public class DocumentoBase extends EventDispatcher {
 
 		dispatchEvent(new Event("_changeCliente", true, true));
 	}
-	
+
 	public function get proveedor():Proveedor {
 		return _proveedor;
 	}
-	
+
 	public function set proveedor(value:Proveedor):void {
 		_proveedor = value;
 	}
@@ -190,7 +227,7 @@ public class DocumentoBase extends EventDispatcher {
 	private function filtrarArticulos(item:Object):Boolean {
 		var articulo:Articulo = item as Articulo;
 		var codigo:String = articulo.codigo;
-		var familiaId:String = articulo.familiaId;
+		var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
 
 		var filtrar:Boolean = false;
 		if (codigo) {
@@ -216,15 +253,15 @@ public class DocumentoBase extends EventDispatcher {
 		if (codigoCliente == null) {
 			return;
 		}
-		
+
 		// Obtener todos los dataos del cliente ...
 		clienteRemObj.findCatalogEntity("Cliente", codigoCliente);
 	}
-	
+
 	private function handleFault(event:FaultEvent):void {
 		Alert.show(event.fault.faultString, "Error");
 	}
-	
+
 	private function resultCliente(event:ResultEvent):void {
 		var result:* = event.result;
 		if (result == null) {
@@ -232,19 +269,17 @@ public class DocumentoBase extends EventDispatcher {
 		}
 		if (result is Cliente) {
 			cliente = result as Cliente;
-			
+
 			clienteLoaded();
 		}
 	}
-	
 
-	
 	public function clienteLoaded():void {
-		
 	}
-	
-	
-	
+
+
+
+
 
 }
 

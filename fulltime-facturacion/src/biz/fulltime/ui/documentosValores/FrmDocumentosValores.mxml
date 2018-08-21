@@ -28,7 +28,7 @@
 			[Bindable]
 			private var _documentosValoresAux:ArrayCollection= new ArrayCollection();
 
-			private var _documento:Documento;
+			private var _recibo:Documento;
 			
 			[Bindable]
 			private var importeTotal:BigDecimal = BigDecimal.ZERO;
@@ -75,21 +75,23 @@
 			}
 
 			[Bindable]
-			public function get documento():Documento {
-				return _documento;
+			public function get recibo():Documento {
+				return _recibo;
 			}
 
-			public function set documento(value:Documento):void {
-				_documento = value;
+			public function set recibo(value:Documento):void {
+				_recibo = value;
 				
-				if (!_documento.pagos) {
-					_documento.pagos = new ArrayCollection();
+				if (!_recibo.pagos) {
+					_recibo.pagos = new ArrayCollection();
 				}
 				
 				importeTotal = BigDecimal.ZERO;
-				netoComprobante = documento.getDocRecNeto();
+				netoComprobante = _recibo.getDocRecNeto();
 				
-				documentosValores = _documento.pagos;
+				documentosValores = _recibo.pagos;
+				
+				//_documento.facturasVinculadas
 				
 				calcularTotales();
 			}
@@ -107,7 +109,7 @@
 			
 			protected function cmdCheques_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = "Lista cheques";
+				window.title = "Cheques recibidos";
 				window.width = 900;
 				window.height = 500;
 
@@ -117,7 +119,9 @@
 				});
 				
 				var lstDocumentosValores:ListDocumentosValores = new ListDocumentosValores();
-				lstDocumentosValores.cliente = documento.cliente;
+				lstDocumentosValores.formaPagoTipo = 43; // Cheque recibido
+				lstDocumentosValores.recibo = recibo;
+				lstDocumentosValores.cliente = recibo.cliente;
 				
 				window.addElement(lstDocumentosValores);
 				
@@ -131,21 +135,27 @@
 				PopUpManager.centerPopUp(window);
 								
 				window.closeButton.visible = true;
-
 				
 			}
 			
 			protected function cmdTarjetas_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = "Tarjetas";
-				window.width = 720;
+				window.title = "Tarjetas recibidas";
+				window.width = 900;
 				window.height = 500;
-				
+
 				window.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 					PopUpManager.removePopUp(window as IFlexDisplayObject);
 					window = null;
 				});
-
+				
+				var lstDocumentosValores:ListDocumentosValores = new ListDocumentosValores();
+				lstDocumentosValores.formaPagoTipo = 44; // Cheque recibido
+				lstDocumentosValores.recibo = recibo;
+				lstDocumentosValores.cliente = recibo.cliente;
+				
+				window.addElement(lstDocumentosValores);
+		
 				var frmTarjetas:FrmTarjetas = new FrmTarjetas();
 				window.addElement(frmTarjetas);
 
@@ -158,14 +168,21 @@
 			
 			protected function cmdDocumentos_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = "Documentos";
-				window.width = 720;
+				window.title = "Documentos recibidos";
+				window.width = 900;
 				window.height = 500;
 				
 				window.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 					PopUpManager.removePopUp(window as IFlexDisplayObject);
 					window = null;
 				});
+				
+				var lstDocumentosValores:ListDocumentosValores = new ListDocumentosValores();
+				lstDocumentosValores.formaPagoTipo = 45; // Cheque recibido
+				lstDocumentosValores.recibo = recibo;
+				lstDocumentosValores.cliente = recibo.cliente;
+				
+				window.addElement(lstDocumentosValores);
 				
 				PopUpManager.addPopUp(window, parent, true);
 				PopUpManager.centerPopUp(window);
@@ -175,14 +192,27 @@
 			
 			protected function cmdBanco_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = "Bancos";
-				window.width = 720;
+				window.title = "Ingresos bancarios";
+				window.width = 900;
 				window.height = 500;
-				
+
 				window.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 					PopUpManager.removePopUp(window as IFlexDisplayObject);
 					window = null;
 				});
+				
+				var lstDocumentosValores:ListDocumentosValores = new ListDocumentosValores();
+				lstDocumentosValores.formaPagoTipo = 51; // Cheque recibido
+				lstDocumentosValores.recibo = recibo;
+				lstDocumentosValores.cliente = recibo.cliente;
+				
+				window.addElement(lstDocumentosValores);
+				
+				lstDocumentosValores.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
+					PopUpManager.removePopUp(window as IFlexDisplayObject);
+					window = null;
+				});
+				
 				
 				PopUpManager.addPopUp(window, parent, true);
 				PopUpManager.centerPopUp(window);
@@ -196,12 +226,12 @@
 			
 				
 			protected function cmdNuevo_clickHandler(event:MouseEvent):void {
-				var docFormaPago:DocumentoFormaPago = new DocumentoFormaPago(_documento, false);
+				var docFormaPago:DocumentoFormaPago = new DocumentoFormaPago(_recibo, false);
 				docFormaPago.formaPago =  CatalogoFactory.getInstance().formasPago.getItemAt(0) as FormaPago;
 				
 				for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
-					if (moneda.codigo == documento.moneda.codigo) {
-						docFormaPago.moneda = documento.moneda;
+					if (moneda.codigo == _recibo.moneda.codigo) {
+						docFormaPago.moneda = _recibo.moneda;
 						break;
 					}
 				}
@@ -227,13 +257,11 @@
 				
 				_documentosValoresAux = sort(_documentosValoresAux, true);
 				
-				if (importeTotal.compareTo(netoComprobante) == 0) {
-					Alert.show("Los totales no suman lo mismo que el total del comprobante.", "Información"); 
+				if (importeTotal.compareTo(netoComprobante) != 0) {
+					Alert.show("Los totales no suman lo mismo que el total del comprobante. (" + importeTotal + " != " + netoComprobante + ")", "Información"); 
 				}
 				
 				dispatchEvent(new Event("save_documentos_y_valores"));
-				
-				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
 			private function sort(arrColl:ArrayCollection, isNumeric:Boolean = true):ArrayCollection {
@@ -252,8 +280,9 @@
 				
 				return arrColl;
 			}
-
 			
+			
+						
 		]]>
 	</fx:Script>
 
@@ -347,6 +376,7 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
+			
 			<s:GridColumn width="120" dataField="moneda" headerText="Moneda" rendererIsEditable="true">
 				<s:itemRenderer>
 					<fx:Component>
@@ -420,8 +450,8 @@
 						</s:GridItemRenderer>
 					</fx:Component>
 				</s:itemRenderer>
-
 			</s:GridColumn>
+
 			<s:GridColumn width="120" headerText="Monto" rendererIsEditable="true">
 				<s:itemRenderer>
 					<fx:Component>
@@ -448,7 +478,7 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="120" headerText="Importe {documento.moneda.simbolo}" editable="false" >
+			<s:GridColumn width="120" headerText="Importe {recibo.moneda.simbolo}" editable="false" >
 				<s:itemRenderer>
 					<fx:Component>
 						<s:GridItemRenderer focusEnabled="false">
@@ -482,12 +512,12 @@
 	</fx:Declarations>
 
 
-	<s:Panel width="100%" height="100%" title="{documento.comprobante.nombre.toUpperCase()} N° {documento.serie + documento.numero}" styleName="pnlForm">
+	<s:Panel width="100%" height="100%" title="{recibo.comprobante.nombre.toUpperCase()} N° {recibo.serie + recibo.numero}" styleName="pnlForm">
 		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
 			<s:VGroup width="100%" height="100%" gap="10" horizontalAlign="right">
 				<s:HGroup paddingRight="10" paddingTop="5" horizontalAlign="right" verticalAlign="middle">
-					<s:Label text="Cotización {_documento.moneda.simbolo}" />
-					<s:TextInput width="110" text="{nf_Espanol_Espanol2.format(documento.docTCC)}" textAlign="right" editable="false"/>
+					<s:Label text="Cotización {recibo.moneda.simbolo}" />
+					<s:TextInput width="110" text="{nf_Espanol_Espanol2.format(recibo.docTCF)}" textAlign="right" editable="false"/>
 				</s:HGroup>
 
 				<s:DataGrid id="dgDocumentosValores" width="100%" height="100%" doubleClick="dgDocumentosValores_doubleClickHandler(event)" keyDown="dgDocumentosValores_keyDownHandler(event)"
@@ -507,23 +537,23 @@
 
 			</s:VGroup>
 			<s:HGroup paddingTop="15" paddingBottom="7" paddingLeft="5" width="100%" >
-				<s:BorderContainer backgroundAlpha=".75" backgroundColor="0xFFCACA" cornerRadius="5" minWidth="0" minHeight="0" borderWeight="2" visible="false">
+				<s:BorderContainer backgroundAlpha=".75" backgroundColor="0xFFCACA" cornerRadius="5" minWidth="0" minHeight="0" borderWeight="2" visible="true">
 					<s:layout>
 						<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" />
 					</s:layout>
 					<mx:LinkButton id="cmdCheques" height="32" click="cmdCheques_clickHandler(event)" label="Cheques" enabled="true" styleName="prueba1" />
-					<mx:LinkButton id="cmdTarjetas" height="32" click="cmdTarjetas_clickHandler(event)" label="Tarjetas" enabled="true" styleName="prueba1" cornerRadius="0"/>
-					<mx:LinkButton id="cmdDocumentos" height="32" click="cmdDocumentos_clickHandler(event)" label="Documentos" enabled="true" styleName="prueba1" cornerRadius="0"/>
-					<mx:LinkButton id="cmdBanco" height="32" click="cmdBanco_clickHandler(event)" label="Banco" styleName="prueba1"/>
+					<mx:LinkButton id="cmdTarjetas" height="32" click="cmdTarjetas_clickHandler(event)" label="Tarjetas" enabled="false" styleName="prueba1" cornerRadius="0" />
+					<mx:LinkButton id="cmdDocumentos" height="32" click="cmdDocumentos_clickHandler(event)" label="Documentos" enabled="false" styleName="prueba1" cornerRadius="0" />
+					<mx:LinkButton id="cmdBanco" height="32" click="cmdBanco_clickHandler(event)" label="Banco" styleName="prueba1" enabled="false"/>
 				</s:BorderContainer>
 				<s:Spacer width="100%" />				
 				<s:VGroup>
 					<s:HGroup paddingRight="10" paddingTop="5" horizontalAlign="right">
-						<s:Label width="160" text="Total Importe {documento.moneda.simbolo}" />
+						<s:Label width="160" text="Total importe {recibo.moneda.simbolo}" />
 						<s:Label width="80" text="{nf_Espanol_Espanol2.format(importeTotal)}" textAlign="right"/>
 					</s:HGroup>
 					<s:HGroup paddingRight="10" paddingTop="5" paddingBottom="10" horizontalAlign="right">
-						<s:Label width="160"  text="Neto Comprobante {documento.moneda.simbolo}" />
+						<s:Label width="160"  text="Neto comprobante {recibo.moneda.simbolo}" />
 						<s:Label width="80" text="{nf_Espanol_Espanol2.format(netoComprobante)}" textAlign="right"/>
 					</s:HGroup>
 				</s:VGroup>

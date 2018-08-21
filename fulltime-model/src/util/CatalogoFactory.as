@@ -242,12 +242,14 @@ public class CatalogoFactory extends EventDispatcher {
 						} else if (elem.codigo != "DESCUENTO") {
 							articulosNC.addItem(elem);
 						}
-						if (elem.familiaId.toString().match(new RegExp("^980", 'i'))) {
-							articulosAfilados.addItem(elem);
-						} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
-							articulosMNeumaticas.addItem(elem);
-						} else if (elem.familiaId.toString().match(new RegExp("^970", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
-							articulosTorneria.addItem(elem);
+						if (elem.familiaId) {
+							if (elem.familiaId.toString().match(new RegExp("^980", 'i'))) {
+								articulosAfilados.addItem(elem);
+							} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
+								articulosMNeumaticas.addItem(elem);
+							} else if (elem.familiaId.toString().match(new RegExp("^970", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
+								articulosTorneria.addItem(elem);
+							}
 						}
 
 					}
@@ -493,7 +495,7 @@ public class CatalogoFactory extends EventDispatcher {
 		errorPanel.backgroundAlpha = .75;
 		errorPanel.showButtons = false;
 		errorPanel.type = 2;
-		errorPanel.errorText = "Cargando Catálogos...";
+		errorPanel.errorText = "Cargando catálogos...";
 
 		if (showErrorPanel) {
 			var parent:Sprite;
@@ -536,7 +538,7 @@ public class CatalogoFactory extends EventDispatcher {
 						remObjPV.disconnect();
 
 						resetRemoteObject();
-						errorPanel.errorText = "Cargando Catálogo de 'Monedas'.";
+						errorPanel.errorText = "Cargando catálogo de 'Monedas'.";
 						remObjCat.getCatalogoByName("Moneda");
 
 					});
@@ -875,12 +877,14 @@ public class CatalogoFactory extends EventDispatcher {
 									} else {
 										articulosNC.addItem(elem);
 									}
-									if (elem.familiaId.toString().match(new RegExp("^980", 'i'))) {
-										articulosAfilados.addItem(elem);
-									} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i'))) {
-										articulosMNeumaticas.addItem(elem);
-									} else if (elem.familiaId.toString().match(new RegExp("^970", 'i'))) {
-										articulosTorneria.addItem(elem);
+									if (elem.familiaId) {
+										if (elem.familiaId.toString().match(new RegExp("^980", 'i'))) {
+											articulosAfilados.addItem(elem);
+										} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i'))) {
+											articulosMNeumaticas.addItem(elem);
+										} else if (elem.familiaId.toString().match(new RegExp("^970", 'i'))) {
+											articulosTorneria.addItem(elem);
+										}
 									}
 								}
 							}

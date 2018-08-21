@@ -331,7 +331,7 @@
 				if (txtFamilia.selectedItem) { // Filtrar por familia
 					var familia:Object = txtFamilia.selectedItem;
 					for each (var a:AntecedentesArticulo in antecedentes) {
-						if (a.articulo && familia.codigo == a.articulo.familiaId) {
+						if (a.articulo && a.articulo.familiaId && familia.codigo == a.articulo.familiaId) {
 							elements.addItem(a);
 						}
 					}

@@ -59,6 +59,8 @@ public class MenuEventFT extends Event {
 	public static const MOSTRAR_USUARIOS_EVENT:String = "_usuarios";
 	
 	public static const REPORTE_VENDEDORES_EVENT:String = "_reporteVendedores";
+	
+	public static const EFACTURA_EVENT:String = "_eFactura";
 
 
 	public var navigate:String;

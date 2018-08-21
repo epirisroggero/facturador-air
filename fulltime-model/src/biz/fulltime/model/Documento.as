@@ -54,6 +54,8 @@ public class Documento extends DocumentoBase {
 	public var recibosVinculados:ArrayCollection = new ArrayCollection();
 	
 	public var facturasVinculadas:ArrayCollection = new ArrayCollection();
+	
+	public var vinculosfp:ArrayCollection = new ArrayCollection();
 
 	private var _emitido:Boolean;
 
@@ -189,11 +191,20 @@ public class Documento extends DocumentoBase {
 	
 	public var docRenFin:String = BigDecimal.ZERO.toString();
 	
+	// Titular de la compra o cheque
 	public var titular:String;
+
+	// Documento del titular de la compra
+	public var titularDocumento:String;
+	
+	public var mediosDePago:String;
 	
 	public var bancoIdDoc:String;
 	
 	public var concepto:String;
+	
+	public var docMensaje:String;
+	
 	
 		// FIN FACTURA ELECTRÓNICA
 
@@ -792,19 +803,6 @@ public class Documento extends DocumentoBase {
 			return null;
 		}
 	}
-
-	/**
-	 * Inicializa campos del documento a partir del cliente establecido. No tiene efecto si el valor es null.
-	 */
-	/*public function tomarCamposDelCliente(codigoCliente:String):void {
-		if (codigoCliente == null) {
-			return;
-		}
-
-		// Obtener todos los dataos del cliente ...
-		clienteRemObj.findCatalogEntity("Cliente", codigoCliente);
-	}*/
-
 
 	/**
 	 * Inicializa campos del documento a partir del cliente establecido. No tiene efecto si el valor es null.
@@ -1447,6 +1445,7 @@ public class Documento extends DocumentoBase {
 		fecha.seconds = 0;
 
 		doc.fechaDoc = fecha;
+		doc.fechaEmision = fecha;
 
 		doc.nuevo = true;
 		doc.comisiones = new ComisionesDocumento();
@@ -1760,9 +1759,9 @@ public class Documento extends DocumentoBase {
 	public function convertirMonedaStr(monedaOrigen:String, monedaDestino:String, monto:BigDecimal, useTCC:Boolean = true):BigDecimal {
 		var tipoCambio:BigDecimal;
 		if (useTCC) {
-			tipoCambio = docTCF ? new BigDecimal(docTCC) : BigDecimal.ZERO;
+			tipoCambio = docTCC ? new BigDecimal(docTCC) : BigDecimal.ZERO;
 		} else {
-			tipoCambio = docTCF ? new BigDecimal(docTCC) : BigDecimal.ZERO;
+			tipoCambio = docTCF ? new BigDecimal(docTCF) : BigDecimal.ZERO;
 		}
 		
 		var result:BigDecimal = monto;
@@ -1770,7 +1769,7 @@ public class Documento extends DocumentoBase {
 		// Convertir de Dolar o Euro --> Pesos
 		if ((monedaOrigen == Moneda.DOLARES || monedaOrigen == Moneda.EUROS || monedaOrigen == Moneda.DOLARES_ASTER || monedaOrigen == Moneda.EUROS_ASTER) 
 			&& (monedaDestino == Moneda.PESOS || monedaDestino == Moneda.PESOS_ASTER)) { 
-			result = result.multiply(tipoCambio);
+			result = result.multiply(tipoCambio).setScale(4, MathContext.ROUND_HALF_EVEN);
 			
 		// Convertir de Pesos --> Dolar o Euro 
 		} else if ((monedaOrigen == Moneda.PESOS || monedaOrigen == Moneda.PESOS_ASTER) 

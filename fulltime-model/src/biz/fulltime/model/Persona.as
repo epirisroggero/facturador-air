@@ -8,14 +8,24 @@
 
 package biz.fulltime.model {
 
+import biz.fulltime.conf.ServerConfig;
+
+import flash.display.Sprite;
 import flash.events.Event;
 
 import mx.controls.Alert;
+import mx.core.FlexGlobals;
+import mx.core.IFlexDisplayObject;
+import mx.events.CloseEvent;
+import mx.managers.ISystemManager;
+import mx.managers.PopUpManager;
 import mx.rpc.events.FaultEvent;
 import mx.rpc.events.ResultEvent;
 import mx.rpc.remoting.RemoteObject;
 
-import biz.fulltime.conf.ServerConfig;
+import spark.components.TitleWindow;
+
+import util.ErrorPanel;
 
 [Bindable]
 [RemoteClass(alias="uy.com.tmwc.facturator.entity.Persona")]
@@ -94,7 +104,40 @@ public class Persona extends CodigoNombreEntity {
 	}
 
 	private function handleFault(event:FaultEvent):void {
-		Alert.show(event.fault.faultString, "Error");
+		var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+		// no types so no dependencies
+		var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+		var parent:Sprite;
+		if (mp && mp.useSWFBridge()) {
+			parent = Sprite(sm.getSandboxRoot());
+		} else {
+			parent = Sprite(FlexGlobals.topLevelApplication);
+		}
+
+		var  helpWindow:TitleWindow = new TitleWindow();
+		helpWindow.title = "Error";
+		helpWindow.width = 640;
+		
+		var errorPnl:ErrorPanel = new ErrorPanel();
+		errorPnl.type = 0;
+		errorPnl.textColor = 0x000000;
+		errorPnl.errorText = "No se pudo guardar " + codigo + " - " + nombre + ".";
+		errorPnl.detailsText = event.fault.getStackTrace();
+		errorPnl.showButtons = true;
+		
+		PopUpManager.addPopUp(helpWindow, parent, true);
+		PopUpManager.centerPopUp(helpWindow);
+				
+		helpWindow.addElement(errorPnl);
+		
+		helpWindow.addEventListener(CloseEvent.CLOSE, function():void {
+			PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+		});					
+		errorPnl.addEventListener(CloseEvent.CLOSE, function():void {
+			PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+		});
+
+		
 	}
 
 }

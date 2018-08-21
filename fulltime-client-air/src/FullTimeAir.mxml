@@ -48,7 +48,7 @@
 			public var iconSymbol:Class; 
 			
 			[Bindable]
-			public var version:String = "FullTime - Facturador v1.6.525";
+			public var version:String = "FullTime - Facturador v1.6.612";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);
@@ -175,7 +175,8 @@
 			protected function windowedapplication1_closingHandler(e:Event):void {      
 				e.preventDefault();
 				
-				Alert.buttonWidth = 60;
+				Alert.buttonWidth = 80;
+				Alert.buttonHeight = 25;
 				
 				var alert:Alert = Alert.show("¿Esta seguro de cerrar el Facturador?", "Salir", Alert.YES + Alert.NO, null, myCloseHandler, iconSymbol);
 				alert.width = 400;

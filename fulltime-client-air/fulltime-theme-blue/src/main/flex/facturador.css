@@ -1453,3 +1453,35 @@ components|AutoComplete {
 
 }
 
+mx|Alert {
+	titleStyleName: "alertTitle";
+	messageStyleName: "alertMessage";
+	buttonStyleName: "alertButton";
+	dropShadowEnabled: true;
+	shadowDistance: 5;
+	shadowDirection: right;
+	cornerRadius: 0;
+	embedFonts: true;
+	fontFamily: 'Helvetica';
+}
+
+.alertTitle {
+	letterSpacing: 0;
+	fontSize: 14;
+}
+
+.alertMessage {
+	letterSpacing: 0;
+	fontSize: 13;
+	fontWeight: normal;
+	color: black;
+}
+
+.alertButton {
+	skin-class: ClassReference("skin.components.ButtonSkin");
+	fontWeight: normal;
+	textRollOverColor: blue;
+	fontSize: 14;
+}
+
+

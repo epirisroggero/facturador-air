@@ -146,11 +146,10 @@ public class Articulo extends CodigoNombreEntity {
 			remMerge.addEventListener(FaultEvent.FAULT, handleFault);
 		}
 		prvIdArt = this.proveedor.codigo;
-		familiaId = this.familia.codigo;
+		familiaId = this.familia ? this.familia.codigo : "";
 		
 		remMerge.modificarArticulo(this);
 	}
-	
 
 	public function updatePrecios(precios:ArrayCollection):void {
 		if (!remUpdatePrecios) { 

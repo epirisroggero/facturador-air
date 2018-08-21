@@ -112,6 +112,7 @@ public class ProcesoTorneria extends EventDispatcher {
 			documento.cantidadBultos = doc.cantidadBultos
 			documento.chofer = doc.chofer;
 			documento.fechaDoc = doc.fechaDoc;
+			documento.fechaEmision = doc.fechaEmision;
 			documento.localidad = doc.localidad;
 			documento.notas = doc.notas;
 			documento.cuotasDocumento = doc.cuotasDocumento;

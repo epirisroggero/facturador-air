@@ -66,6 +66,8 @@
 						<menuitem label="Descuentos Prometidos" data="descPrometidos" enabled="true" />
 						<menuitem type="separator" />
 						<menuitem label="Cambiar de Usuario" data="exit" />
+						<menuitem type="separator" />
+						<menuitem label="eFactura" data="eFactura" />
 					</menu>
 					<menu label="Recibos" data="top">
 						<menuitem label="Listado de recibos      " data="recibos" accelerator="F6" enabled="true"/>
@@ -265,6 +267,8 @@
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.CRUD_FANFOLD));
 				} else if (value == 'exit') {
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXIT));
+				} else if (value == 'eFactura') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EFACTURA_EVENT));
 				} 
 
 			}

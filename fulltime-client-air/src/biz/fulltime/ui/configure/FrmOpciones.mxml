@@ -113,10 +113,10 @@
 						} else {
 							claveSupervisora = txtNewPsw.text;
 
-							var remObj:RemoteObject = new RemoteObject();
-							remObj.destination = "CreatingRpc";
-							remObj.channelSet = ServerConfig.getInstance().channelSet;
-							remObj.updateClaveSup(GeneralOptions.getInstance().loggedUser.codigo, EncryptUtils.encryptString(claveSupervisora));
+							var remObj2:RemoteObject = new RemoteObject();
+							remObj2.destination = "CreatingRpc";
+							remObj2.channelSet = ServerConfig.getInstance().channelSet;
+							remObj2.updateClaveSup(GeneralOptions.getInstance().loggedUser.codigo, EncryptUtils.encryptString(claveSupervisora));
 						}
 					}
 

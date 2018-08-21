@@ -66,6 +66,8 @@ public class DocumentoDTO {
 	public var bancoIdDoc:String;
 	
 	public var concepto:String;
+	
+	public var emision:String;
 
 
 	public function DocumentoDTO() {

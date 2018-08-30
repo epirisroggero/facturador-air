@@ -32,7 +32,7 @@
 
 			private var _query:DocumentoQuery;
 
-			private var _vinculosfp:ArrayCollection = new ArrayCollection();
+			private var _documentos:ArrayCollection = new ArrayCollection();
 
 			private var _cliente:Cliente;
 
@@ -77,7 +77,7 @@
 			}
 
 			private function resultQuery(event:ResultEvent):void {
-				vinculosfp = event.result as ArrayCollection;
+				documentos = event.result as ArrayCollection;
 
 				callLater(function():void {
 						if (dgVinculos.dataProvider.length > 0) {
@@ -168,25 +168,35 @@
 
 
 			[Bindable]
-			public function get vinculosfp():ArrayCollection {
-				return _vinculosfp;
+			public function get documentos():ArrayCollection {
+				return _documentos;
 			}
 
-			public function set vinculosfp(value:ArrayCollection):void {
-				_vinculosfp = value;
+			public function set documentos(value:ArrayCollection):void {
+				_documentos = value;
 			}
 
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
-				for each (var vinculoFP:VinculosFP in vinculosfp) {
-					if (!_recibo.vinculosfp.contains(vinculoFP)) {
-						_recibo.vinculosfp.addItem(vinculoFP);
+				var documentoDTO:DocumentoDTO = dgVinculos.selectedItem as DocumentoDTO;
+				
+				var docIdNumber:Number = new Number(documentoDTO.docId);
+				
+				for each (var vinculofp:VinculosFP in _recibo.vinculosfp) {
+					if (vinculofp.docIdFP2 == docIdNumber) {
+						var vinculoFp:VinculosFP = new VinculosFP();
+						vinculoFp.docIdFP1 = new Number(recibo.docId);
+						vinculoFp.docIdFP2 = docIdNumber;
+						vinculoFp.vinFPTipo = formaPagoTipo;
+						vinculoFp.vinIE = "E";
 					}
+					_recibo.vinculosfp.addItem(vinculoFp);
+				
 				}
 
-				// Guardar recibo
-				for each (var vinculoFP:VinculosFP in _recibo.vinculosfp) {
-					trace(vinculoFP.docIdFP1, vinculoFP.docIdFP2, vinculoFP.vinFPTipo, vinculoFP.vinIE);
-				}
+				// Guardar recibo.
+//				for each (var vinculoFP:documentos in _recibo.documentos) {
+//					trace(vinculoFP.docIdFP1, vinculoFP.docIdFP2, vinculoFP.vinFPTipo, vinculoFP.vinIE);
+//				}
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 
@@ -218,7 +228,6 @@
 						PopUpManager.removePopUp(window as IFlexDisplayObject);
 						window = null;
 					});
-
 
 				PopUpManager.addPopUp(window, DisplayObject(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(window);
@@ -405,13 +414,13 @@
 
 	<s:Panel width="100%" height="100%" title="Lista cheques recibidos de {cliente.nombre}" styleName="pnlForm">
 		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
-			<s:DataGrid id="dgVinculos" width="100%" height="100%" dataProvider="{vinculosfp}" sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" />
+			<s:DataGrid id="dgVinculos" width="100%" height="100%" dataProvider="{documentos}" sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" />
 		</s:VGroup>
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Confirmar" focusEnabled="true" toolTip="Aplicar" />
+				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
 				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>

@@ -6,7 +6,7 @@
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.event.ArticuloEvent;
 			import biz.fulltime.model.Articulo;
-			
+			 
 			import mx.controls.Alert;
 			import mx.events.FlexEvent;
 			import mx.rpc.events.FaultEvent;

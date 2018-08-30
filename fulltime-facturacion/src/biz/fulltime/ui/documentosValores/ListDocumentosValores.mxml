@@ -260,7 +260,7 @@
 				var window:TitleWindow = new TitleWindow();
 				window.title = "Ver cheque recibido";
 				window.width = 650;
-				window.height = 600;
+				window.height = 400;
 
 				window.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 						PopUpManager.removePopUp(window as IFlexDisplayObject);
@@ -460,9 +460,6 @@
 	</fx:Declarations>
 
 	<s:Panel width="100%" height="100%" title="{modeStr}" styleName="pnlForm">
-		<!-- s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
-			 <s:DataGrid id="dgValores" width="100%" height="100%" dataProvider="{valores}" sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" />
-			 </s:VGroup-->
 		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
 			<s:DataGrid id="dgVinculos" width="100%" height="100%" dataProvider="{vinculosfp}" sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" />
 		</s:VGroup>
@@ -475,7 +472,7 @@
 				<s:Button id="cmdVincular" width="110" click="cmdVincular_clickHandler(event)" styleName="textButton" label="Vincular" focusEnabled="true" toolTip="Vincular" />
 				<s:Button id="cmdVer" width="110" click="cmdVer_clickHandler(event)" styleName="textButton" label="Ver" focusEnabled="true" toolTip="Ver" />
 				<s:Spacer width="10" />
-				<!--s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Aplicar" focusEnabled="true" toolTip="Aplicar" /-->
+				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Aplicar" focusEnabled="true" toolTip="Aplicar" />
 				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>

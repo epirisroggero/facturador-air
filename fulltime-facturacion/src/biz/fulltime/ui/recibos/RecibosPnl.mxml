@@ -702,6 +702,9 @@
 				var facturasVinculadas:ArrayCollection = _recibo.facturasVinculadas;
 				for each (var vinculo:VinculoDocumentos in facturasVinculadas) {
 					if (vinculo.docIdVin1 && vinculo.docIdVin2) {
+						if (!isAster) {
+							vinculo.monto = vinculo.neto;	
+						}
 						aux.addItem(vinculo);
 					}
 				}

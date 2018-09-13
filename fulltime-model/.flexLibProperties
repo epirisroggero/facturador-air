@@ -91,6 +91,7 @@
     <classEntry path="util.Maths"/>
     <classEntry path="biz.fulltime.model.Banco"/>
     <classEntry path="biz.fulltime.model.VinculosFP"/>
+    <classEntry path="biz.fulltime.model.Concepto"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

@@ -9,6 +9,7 @@
 			import biz.fulltime.model.FormaPago;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.utils.StringUtil;
@@ -22,8 +23,21 @@
 			
 			private var emitiendo:Boolean
 			
-			protected function cmdAplicar_clickHandler(event:MouseEvent):void {
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));				
+			protected function cmdAplicar_clickHandler(event:MouseEvent):void {				
+				var formaPago:FormaPago = ddlFormaPago.selectedItem as FormaPago;
+				var titularNombre:String = txtTitularNombre.text;
+				var titularDocumento:String = txtTitularDocumento.text;
+				var formaPagoData:String = txtFormaPagoData.text;
+				
+				if (formaPago != null && titularNombre && titularNombre.length > 0 && titularDocumento && titularDocumento.length > 0 
+					&& formaPagoData && formaPagoData.length > 0) {
+					
+					dispatchEvent(new Event("verificacionExitosa"));	
+					
+				} else {
+					Alert.show("Todos los datos solicitados son requeridos, los mismos no pueden estar vacios.");
+				}
+				
 			}
 			
 			protected function cmdCancelar_clickHandler(event:MouseEvent):void {
@@ -87,10 +101,18 @@
 					"Forma de pago: " + formaPago.nombre + (formaPagoData ? " Nro.: " + formaPagoData + " \n" : "\n")  +
 					"Titular: " + titularNombre + " - " + titularDocumento;
 				
-				txtAdenda.text = adenda;
+				//txtAdenda.text = adenda;
 				
 				documento.docMensaje = adenda;
 			
+			}
+			
+			protected function txtFormaPagoData_changeHandler(event:TextOperationEvent):void {
+				updateAdenda();
+			}
+			
+			protected function panel1_creationCompleteHandler(event:FlexEvent):void {
+				//updateAdenda();
 			}
 			
 		]]>
@@ -101,7 +123,7 @@
 	</fx:Declarations>
 	
 	
-	<s:Panel width="100%" height="100%" title="Datos requeridos" styleName="pnlInterno" minHeight="0" >
+	<s:Panel width="100%" height="100%" title="Datos requeridos" styleName="pnlInterno" minHeight="0" creationComplete="panel1_creationCompleteHandler(event)">
 		<s:HGroup width="100%" horizontalAlign="center">
 			<s:Form width="100%" textAlign="right">
 				<s:layout>
@@ -121,11 +143,11 @@
 						<s:DropDownList id="ddlFormaPago" width="200" height="100%" dataProvider="{CatalogoFactory.getInstance().formasPago}" textAlign="left" 
 										labelFunction="codigoNombreLabelFunction" change="ddlFormaPago_changeHandler(event)"/>
 						<s:TextInput id="txtFormaPagoData" width="100%" textAlign="left" prompt="Datos del tipo de pago" text="" 
-									 maxChars="128" enter="{cmdAplicar.setFocus()}"/>
+									 maxChars="128" enter="{cmdAplicar.setFocus()}" change="txtFormaPagoData_changeHandler(event)"/>
 					</s:HGroup>
 				</s:FormItem>
 				<s:FormItem width="100%" height="100%" label="Adenda">
-					<s:TextArea id="txtAdenda" width="100%" height="75" textAlign="left" editable="false"/>
+					<s:TextArea id="txtAdenda" width="100%" height="75" textAlign="left" editable="false" text="{documento.docMensaje}"/>
 				</s:FormItem>
 			</s:Form>
 		</s:HGroup>

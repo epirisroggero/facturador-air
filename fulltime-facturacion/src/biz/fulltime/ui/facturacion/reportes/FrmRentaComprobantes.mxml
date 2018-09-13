@@ -136,9 +136,10 @@
 				repColumns.addItem("Renta");				
 				repColumns.addItem("% de Renta");
 
+				/*
 				var formatter:DateFormatter = new DateFormatter();
 				formatter.formatString = "DD/MM/YYYY";
-
+				*/
 
 				// create a columns Array
 				var columns:Array = new Array();
@@ -168,7 +169,7 @@
 						continue;
 					}
 					var data:Object = new Object();
-					data.col_0 = formatter.format(documento.fecha);
+					data.col_0 = documento.fecha;
 					data.col_1 = documento.comprobante.codigo + " - " + documento.comprobante.nombre;
 					data.col_2 = documento.serieNumero;
 					data.col_3 = documento.cliente ? documento.cliente.nombre : "";
@@ -325,10 +326,10 @@
 
 				var date:Date = new Date();
 				var formatter:DateFormatter = new DateFormatter();
-				formatter.formatString = "DD/MM/YYYY - JJ:NN";
+				formatter.formatString = "DD-MM-YYYY JJ:NN";
 
 				var formatter2:DateFormatter = new DateFormatter();
-				formatter2.formatString = "DD/MM/YYYY";
+				formatter2.formatString = "DD-MM-YYYY";
 
 				sheet.setCell(rows, cols, "RENTAS POR COMPROBANTE");
 				cols++;
@@ -687,10 +688,7 @@
 
 
 			private function date_labelFunction(item:Object, column:spark.components.gridClasses.GridColumn):String {
-				var dateFormatter:DateFormatter = new DateFormatter();
-				dateFormatter.formatString = "DD-MM-YYYY";
-
-				return dateFormatter.format(item.fecha);
+				return item.fecha;
 			}
 
 			private function cliente_labelFunction(item:Object, column:spark.components.gridClasses.GridColumn):String {

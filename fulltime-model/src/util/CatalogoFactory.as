@@ -15,6 +15,7 @@ import biz.fulltime.model.Capitulo;
 import biz.fulltime.model.CategoriasClientes;
 import biz.fulltime.model.Cliente;
 import biz.fulltime.model.Comprobante;
+import biz.fulltime.model.Concepto;
 import biz.fulltime.model.Contacto;
 import biz.fulltime.model.Departamento;
 import biz.fulltime.model.Deposito;
@@ -127,6 +128,8 @@ public class CatalogoFactory extends EventDispatcher {
 	private var _formasPago:ArrayCollection = new ArrayCollection();
 
 	private var _bancos:ArrayCollection = new ArrayCollection();
+	
+	private var _conceptos:ArrayCollection = new ArrayCollection();
 
 
 	private var _ivas:ArrayCollection = new ArrayCollection();
@@ -151,7 +154,7 @@ public class CatalogoFactory extends EventDispatcher {
 
 	private var myTimer:Timer = new Timer(delay, repeat);
 
-	private var reloadTimer:Timer = new Timer(1000 * 60 * 20); //REcargar catalogos cada 20 minutos
+	private var reloadTimer:Timer = new Timer(1000 * 60 * 20); //Recargar catalogos cada 20 minutos
 
 	public static const INTERFACE_WEB_EVENT:String = "_web";
 
@@ -1110,6 +1113,17 @@ public class CatalogoFactory extends EventDispatcher {
 						if (values) {
 							cajas = sort(values, false);
 						}
+//						resetRemoteObject();
+//						errorPanel.errorText = "Cargando catálogo de 'Conceptos'.";
+//						remObjCat.getCatalogoByName("Concepto");
+//						break;
+//					}
+//				case 28:
+//					{
+//						var concept:Concepto = new Concepto(); 
+//						if (values) {
+//							conceptos = sort(values, false);
+//						}
 						resetRemoteObject();
 						errorPanel.errorText = "Catálogos cargados.";
 						myTimer.start();
@@ -1270,6 +1284,14 @@ public class CatalogoFactory extends EventDispatcher {
 			}
 		}
 		return aux;
+	}
+
+	public function get conceptos():ArrayCollection {
+		return _conceptos;
+	}
+
+	public function set conceptos(value:ArrayCollection):void {
+		_conceptos = value;
 	}
 
 

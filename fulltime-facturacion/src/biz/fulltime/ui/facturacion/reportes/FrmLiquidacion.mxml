@@ -122,7 +122,11 @@
 			protected function cmdExportar_clickHandler(event:MouseEvent):void {
 				loading = true;
 				
-				remObj.getReporteLiquidacion(txtFechaDesde.selectedDate, txtFechaHasta.selectedDate, txtGastosPeriodos.value.toString());
+				if (chbFechaCorte.selected) {
+					remObj.getReporteLiquidacion(txtFechaDesde.selectedDate, txtFechaHasta.selectedDate, txtFechaCorte.selectedDate, txtGastosPeriodos.value.toString());
+				} else {
+					remObj.getReporteLiquidacion(txtFechaDesde.selectedDate, txtFechaHasta.selectedDate, txtGastosPeriodos.value.toString());
+				}
 			}
 			
 			
@@ -237,6 +241,11 @@
 			}
 
 			
+			protected function txtGastosPeriodos_creationCompleteHandler(event:FlexEvent):void  {
+				var fecha:Date = new Date(2016, 11, 31, 12, 0, 0);
+				txtFechaCorte.selectedDate = fecha;
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -265,7 +274,11 @@
 				</s:VGroup>
 				<s:VGroup>
 					<s:Label text="Gastos período" />
-					<s:NumericStepper id="txtGastosPeriodos" width="90" value="0.0" maximum="9999999" allowValueWrap="true" textAlign="right"/>
+					<s:NumericStepper id="txtGastosPeriodos" width="90" value="0.0" maximum="9999999" allowValueWrap="true" textAlign="right" creationComplete="txtGastosPeriodos_creationCompleteHandler(event)"/>
+				</s:VGroup>
+				<s:VGroup paddingLeft="45">
+					<s:CheckBox id="chbFechaCorte" label="Fecha de corte" selected="false"/>
+					<mx:DateField id="txtFechaCorte" fontFamily="Helvetica" yearNavigationEnabled="true" enabled="{chbFechaCorte.selected}"/>
 				</s:VGroup>
 				<s:HGroup paddingLeft="20" paddingBottom="10" paddingRight="10" paddingTop="10">
 					<components1:IconButton id="cmdExportar" click="cmdExportar_clickHandler(event)" styleName="exportButton" label="Generar" />
@@ -338,7 +351,7 @@
 						<!--s:NavigatorContent label="Contados" id="contados">
 							<reportes:FrmCSVView id="frmContados" zipFile="{_zipFile}" entry="{entry_1}"/>
 						</s:NavigatorContent-->
-						<s:NavigatorContent label="Renta financiera" id="redjef">
+						<s:NavigatorContent label="Renta financiera Global" id="redjef">
 							<reportes:FrmCSVView id="frmRentaFinanciera" zipFile="{_zipFile}" entry="{entry_1}"/>
 						</s:NavigatorContent>
 						<s:NavigatorContent label="Redistribución Jefaturas" id="jefaturas">

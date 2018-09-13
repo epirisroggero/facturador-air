@@ -18,8 +18,10 @@ public class Contacto extends CodigoNombreEntity {
 	public function Contacto() {
 	}
 
-	public var ctoCliente:String = "S";
-
+	public var ctoCliente:String;
+	
+	public var ctoProveedor:String = "N";
+	
 	public var deptoIdCto:String = "MO";
 
 	public var paisIdCto:String = "UY";
@@ -49,8 +51,6 @@ public class Contacto extends CodigoNombreEntity {
 	public var ctoRSocial:String;
 
 	public var ctoRUT:String;
-
-	public var ctoProveedor:String = "N";
 
 	public var ctoAlta:Date = new Date();
 

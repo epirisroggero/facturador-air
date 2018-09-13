@@ -715,8 +715,6 @@
 						// en caso de estar todo correcto se guarda el doc.
 						_problemasEncontrados = false;
 
-						verificarVentaContado();
-						
 						if (_documento.cliente) {
 							verificarCreditoCliente();
 						} else {
@@ -1775,8 +1773,6 @@
 						// Si es una venta contado
 						if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO) {		
 							if (total.compareTo(maxUI.multiply(new BigDecimal(4))) > 0) { 
-								//Alert.show("Las ventas CONTADO superioriores a 40.000 UI requieren nombre y documento del titular y también la forma de pago.");
-
 								verificarVentaContado();
 								return;
 							}
@@ -1822,23 +1818,24 @@
 			
 			protected function verificarVentaContado():void {
 				if (!_documento.comprobante.aster) {
-					var total:BigDecimal = new BigDecimal(_documento.total);
-					var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
-					var maxUI:BigDecimal = new BigDecimal("39244"); // Valor de la UI año 2018
-					
-					if (_documento.moneda.codigo == Moneda.DOLARES) {
-						var dolarStr:String = cotizaciones.cotizaciones.dolarVenta.@value;
-						var dolar:BigDecimal = new BigDecimal(dolarStr);
-						
-						maxUI = maxUI.divide(dolar);
-					} else  if (_documento.moneda.codigo == Moneda.EUROS) {
-						var euroStr:String = cotizaciones.cotizaciones.euroVenta.@value;
-						var euro:BigDecimal = new BigDecimal(dolarStr);
-						
-						maxUI = maxUI.divide(euro);
-					}
 
 					if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO) {
+						var total:BigDecimal = new BigDecimal(_documento.total);
+						var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
+						var maxUI:BigDecimal = new BigDecimal("39244"); // Valor de la UI año 2018
+						
+						if (_documento.moneda.codigo == Moneda.DOLARES) {
+							var dolarStr:String = cotizaciones.cotizaciones.dolarVenta.@value;
+							var dolar:BigDecimal = new BigDecimal(dolarStr);
+							
+							maxUI = maxUI.divide(dolar);
+						} else  if (_documento.moneda.codigo == Moneda.EUROS) {
+							var euroStr:String = cotizaciones.cotizaciones.euroVenta.@value;
+							var euro:BigDecimal = new BigDecimal(euroStr);
+							
+							maxUI = maxUI.divide(euro);
+						}
+						
 						if (total.compareTo(maxUI.multiply(new BigDecimal(4))) > 0) { // para ventas superiores a los 40.000 UI
 							if (!_documento.titular || !_documento.titularDocumento || !_documento.mediosDePago) {
 								var helpWindow:TitleWindow = new TitleWindow();
@@ -1855,7 +1852,27 @@
 								
 								PopUpManager.addPopUp(helpWindow, Sprite(FlexGlobals.topLevelApplication), true);
 								PopUpManager.centerPopUp(helpWindow);
+
+								frmDatosRequeridos.addEventListener("verificacionExitosa", function closeHandler(event:Event):void {
+									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+									helpWindow = null;
 								
+									if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+										emitirFacturaOk();
+										
+									} else if (!_documento.usuIdAut || (_documento.cliente && _documento.cliente.categCliId == 'G')) {
+										obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+											PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+											helpWindow = null;
+											
+											_documento.usuIdAut = evt.usuarioId;
+											emitirFacturaOk();
+										});
+									} else {
+										emitirFacturaOk();
+									}
+								});
+
 								frmDatosRequeridos.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 									helpWindow = null;

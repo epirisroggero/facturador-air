@@ -34,7 +34,7 @@
 			import util.CatalogoFactory;
 			
 			private var _articulo:Articulo;
-						
+			
 			[Bindable]
 			private var ultimoDisponible:String;
 			
@@ -53,20 +53,20 @@
 			
 			[Bindable]
 			public var _precioMayorista:String = "";
-
+			
 			[Bindable]
 			public var _precioDistribuidor:String = "";
 			
 			[Bindable]
 			public var _precioReventa:String = "";
-
+			
 			[Bindable]
 			public var _precioFabrica:String = "";
-
+			
 			[Bindable]
 			public var _costo:String = "";
-
-
+			
+			
 			[Bindable]
 			public var _pbMinoristaIVA:Boolean;
 			
@@ -81,7 +81,7 @@
 			
 			[Bindable]
 			public var _pbFabricaIVA:Boolean;
-
+			
 			
 			private var remObj:RemoteObject;
 			
@@ -92,7 +92,7 @@
 			private var remObjPSDist:RemoteObject;
 			
 			private var artPrecios:ArrayCollection = new ArrayCollection();
-
+			
 			[Bindable]
 			public var capitulos:ArrayCollection = new ArrayCollection();
 			
@@ -110,8 +110,8 @@
 			
 			[Bindable]
 			public var ivas:ArrayCollection = new ArrayCollection();
-
-
+			
+			
 			[Bindable]
 			private var _capitulo:Object = new Object();
 			
@@ -123,7 +123,7 @@
 			
 			[Bindable]
 			private var _familia: Object = new Object();
-
+			
 			
 			protected function preinitializeHandler(event:FlexEvent):void {
 				remObj = new RemoteObject();
@@ -159,13 +159,13 @@
 						var proveedor:Proveedor = new Proveedor();
 						proveedor.codigo = contacto.codigo;
 						proveedor.nombre = contacto.nombre;
-
+						
 						proveedores.addItem(proveedor);
 					}
 				}
-
+				
 			}
-
+			
 			private function init():void {
 				validatorArr = new Array();
 				validatorArr.push(fname_stringValidator);
@@ -181,7 +181,7 @@
 			
 			private function onFileSelected(event:Event):void {
 			}
-						
+			
 			[Bindable]
 			public function get articulo():Articulo {
 				return _articulo;
@@ -189,7 +189,7 @@
 			
 			public function set articulo(value:Articulo):void {
 				this._articulo = value;
-								
+				
 				_articulo.addEventListener("_savedArticuloOk", function():void {
 					lblMsg.visible = true;
 					
@@ -239,14 +239,18 @@
 			
 			public function validateForm(evt:MouseEvent):void {
 				var validatorErrorArray:Array = Validator.validateAll(validatorArr);
+
+				var nf:NumberFormatter = new NumberFormatter();
+				nf.setStyle("locale", "es_ES");
+				nf.fractionalDigits = 5;
 				
 				var isValidForm:Boolean = validatorErrorArray.length == 0;
 				if (isValidForm) {
-					
 					var changeCosto:Boolean = false;
 					if (articulo.costo != txtCosto.text) {
-						var c1:Number = new Number(articulo.costo);
-						var c2:Number = new Number(txtCosto.text);
+						var c1:String = nf.format((articulo.costo && articulo.costo.length > 0)  ? articulo.costo : "0.0");
+						var c2:String = nf.format((txtCosto.text && txtCosto.text.length > 0) ? txtCosto.text : "0.0" );
+						
 						changeCosto = c1 != c2;
 					}
 					if (changeCosto) {
@@ -256,6 +260,9 @@
 					articulo.monedaCosto = cmbMoneyCosto.selectedItem;
 					articulo.mndIdArtCosto = new Number((cmbMoneyCosto.selectedItem as Moneda).codigo);
 					articulo.proveedor = txtProveedor.selectedItem;
+					articulo.videoYoutube = articulo.videoYoutube ? articulo.videoYoutube : "";
+					articulo.videoYoutube2 = articulo.videoYoutube2 ? articulo.videoYoutube2 : "";
+					articulo.videoYoutube3 = articulo.videoYoutube3 ? articulo.videoYoutube3 : "";
 					
 					if (txtFamilia.selectedItem != null) {
 						var familia:FamiliaArticulos = new FamiliaArticulos();
@@ -410,7 +417,6 @@
 				
 			}
 			
-			
 			private function resultPrecios(event:ResultEvent):void {
 				artPrecios = event.result as ArrayCollection;	
 				
@@ -419,7 +425,7 @@
 				_precioReventa = "";
 				_precioMayorista = "";
 				_precioMinorista = "";
-
+				
 				cmbMoneyFabrica.clear();
 				cmbMoneyDist.clear(); 
 				cmbMoneyReventa.clear(); 
@@ -508,7 +514,7 @@
 							familias.addItem(familia);
 						}	
 					}
-
+					
 				}
 				
 			}
@@ -519,7 +525,7 @@
 				
 				txtSubfamilia.clear();
 				txtFamilia.clear();
-
+				
 				if (_subtitulo) {
 					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
 						var familia:Object = new Object();
@@ -536,7 +542,7 @@
 								
 							}
 						}	
-
+						
 					}
 				} else {
 					txtCapitulos_changeHandler(null);
@@ -567,7 +573,7 @@
 					txtSubtitulo_changeHandler(null);
 				}
 			}
-						
+			
 			protected function updateFamiliaSelection():void {
 				if (articulo.familia != null) {
 					var codigo:String = articulo.familia.codigo;
@@ -579,7 +585,7 @@
 					var _capitulo:Object = new Object();
 					var _subtitulo: Object = new Object();
 					var _subfamilia: Object = new Object();
-
+					
 					var _familia: Object = new Object();
 					_familia.codigo = Number(codigo);
 					_familia.nombre = articulo.familia.nombre;
@@ -588,8 +594,8 @@
 					this.subtitulos.removeAll();
 					this.subfamilia.removeAll();
 					this.familias.removeAll();
-						
-
+					
+					
 					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
 						if (f.codigo == capitulo) {
 							_capitulo.codigo = Number(f.codigo);
@@ -609,23 +615,23 @@
 						var familia:Object = new Object();
 						familia.codigo = Number(f2.codigo);
 						familia.nombre = f2.nombre;
-
+						
 						if (Number(f2.codigo) >= 100 && Number(f2.codigo) < 10000) {
 							if (f2.codigo.toString().match(new RegExp("^" + _capitulo.codigo, 'i'))) {								
 								this.subtitulos.addItem(familia);
 							}
 						} else
-						if (Number(f2.codigo) >= 10000 && Number(f2.codigo) < 100000) {
-							if (f2.codigo.toString().match(new RegExp("^" + _subtitulo.codigo, 'i'))) {								
-								this.subfamilia.addItem(familia);
-							}
-						} else
-						if (Number(f2.codigo) >= 100000) {
-							if (f2.codigo.toString().match(new RegExp("^" + _subfamilia.codigo, 'i'))) {
-								this.familias.addItem(familia);
-								
-							}
-						}			
+							if (Number(f2.codigo) >= 10000 && Number(f2.codigo) < 100000) {
+								if (f2.codigo.toString().match(new RegExp("^" + _subtitulo.codigo, 'i'))) {								
+									this.subfamilia.addItem(familia);
+								}
+							} else
+								if (Number(f2.codigo) >= 100000) {
+									if (f2.codigo.toString().match(new RegExp("^" + _subfamilia.codigo, 'i'))) {
+										this.familias.addItem(familia);
+										
+									}
+								}			
 					}
 					
 					this._capitulo = _capitulo;
@@ -645,7 +651,7 @@
 				}
 				familias = ac;
 				txtFamilia.dataProvider = ac;
-
+				
 			}
 			
 			protected function txtIva_changeHandler(event:Event):void {
@@ -660,12 +666,12 @@
 		@namespace s "library://ns.adobe.com/flex/spark";
 		
 		.myClass {
-		fontFamily: sans-serif, "_typewriter";
-		color: black;
-		fontSize: 12;
+			fontFamily: sans-serif, "_typewriter";
+			color: black;
+			fontSize: 12;
 		}
 	</mx:Style>
-
+	
 	<mx:Component id="dropDownItemRenderer">
 		<renderers:CodigoNombreItemRenderer />
 	</mx:Component>
@@ -675,10 +681,10 @@
 	<mx:StringValidator id="fname_stringValidator" source="{fname}" required="true" property="text" requiredFieldError="El 'Nombre' no puede quedar vacio." minLength="2"
 						tooShortError="El 'Nombre' debe tener al menos 2 caracteres." />
 	
-		
+	
 	<s:Label id="lblMsg" x="0" width="100%" bottom="45" color="red" fontWeight="bold" paddingBottom="5" textAlign="center" text="Grabación Exitosa" visible="false"
 			 maxDisplayedLines="1" />
-
+	
 	<s:VGroup width="100%" height="100%">
 		<s:Scroller width="100%" height="100%">
 			<s:VGroup>
@@ -692,7 +698,10 @@
 										<mx:HRule width="100%" />
 										<s:Spacer height="10" />
 										<mx:FormItem width="100%" label="Nombre" styleName="ItemStyle">
-											<s:TextInput id="fname" width="100%" text="@{articulo.nombre}" enter="txtWebpage.setFocus()" maxChars="50"/>
+											<s:TextInput id="fname" width="100%" text="@{articulo.nombre}" enter="fnameAbr.setFocus()" maxChars="100"/>
+										</mx:FormItem>
+										<mx:FormItem width="100%" label="Abreviación" styleName="ItemStyle">
+											<s:TextInput id="fnameAbr" width="100%" text="@{articulo.abrevia}" enter="txtWebpage.setFocus()" maxChars="40"/>
 										</mx:FormItem>
 										<mx:FormItem width="100%" label="Página Web" styleName="ItemStyle">
 											<s:TextInput id="txtWebpage" width="100%" text="@{articulo.web}" enter="txtVideoYoutube.setFocus()" maxChars="100"/>
@@ -770,7 +779,7 @@
 							</s:HGroup>
 							
 							<s:HGroup width="100%">
-								<s:Panel title="Costo &amp; Precios" width="100%" styleName="pnlInternoArticulo" visible="{hasPerm()}">
+								<s:Panel title="Costo y Precios" width="100%" styleName="pnlInternoArticulo" visible="{hasPerm()}">
 									<s:layout>
 										<s:VerticalLayout gap="10" paddingRight="10" paddingLeft="0"/>
 									</s:layout>
@@ -828,7 +837,7 @@
 												<s:Spacer width="5"/>
 												<s:CheckBox id="chbPrecioBaseDistConIVA" label="Precio base con iva" selected="@{_pbDistribuidorIVA}" />
 											</s:HGroup>
-										</s:FormItem>					
+										</s:FormItem>
 										<s:FormItem>
 											<s:HGroup gap="2" verticalAlign="middle">
 												<s:BorderContainer width="120" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha=".6">

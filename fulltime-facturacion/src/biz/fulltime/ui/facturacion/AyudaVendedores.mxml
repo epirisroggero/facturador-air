@@ -90,7 +90,7 @@
 
 				var posX:int = cellPos.columnIndex;
 
-				dgVendedores.filter(colName, filter);
+				dgVendedores.filter(colName, filter, true);
 
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);

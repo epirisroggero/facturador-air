@@ -27,6 +27,8 @@ public class MenuEventFT extends Event {
 
 	public static const SOLICITUDES_EVENT:String = "_solicitudes";
 	public static const RECIBOS_EVENT:String = "_recibos";
+	public static const GASTOS_EVENT:String = "_gastos";
+	
 	/*
 	public static const SOLICITUD_GASTO:String = "_solicitudGasto";
 	public static const SOLICITUD_COMPRA:String = "_solicitudCompra";

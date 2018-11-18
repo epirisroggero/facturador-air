@@ -33,6 +33,8 @@ public class Articulo extends CodigoNombreEntity {
 	public var proveedor:Proveedor;
 
 	public var familia:FamiliaArticulos;
+	
+	public var marca:Marca;
 
 	public var inventario:Boolean;
 	
@@ -111,8 +113,6 @@ public class Articulo extends CodigoNombreEntity {
 
 	public var peso:String;
 	
-	//public var notaInterna:String;
-	
 	public var artNotasInt:String;
 	
 	private var remMerge:RemoteObject;
@@ -145,7 +145,7 @@ public class Articulo extends CodigoNombreEntity {
 			remMerge.addEventListener(ResultEvent.RESULT, resultMergeArticulo);
 			remMerge.addEventListener(FaultEvent.FAULT, handleFault);
 		}
-		prvIdArt = this.proveedor.codigo;
+		prvIdArt = this.proveedor ? this.proveedor.codigo : "";
 		familiaId = this.familia ? this.familia.codigo : "";
 		
 		remMerge.modificarArticulo(this);

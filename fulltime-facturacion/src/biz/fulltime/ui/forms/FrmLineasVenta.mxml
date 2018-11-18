@@ -94,10 +94,19 @@
 				_documento = value;
 
 				hay_vendedor_dist = false;
+				
+				var lstUsuarioDist:ArrayCollection = new ArrayCollection();
+				for each (var user:Usuario in CatalogoFactory.getInstance().usuarios) {
+					if (user.permisoId == "V2" && user.venId != null) {
+						lstUsuarioDist.addItem(user.venId);
+						// trace("Usuario: " + user.codigo + " -> Vendedor: " + user.venId);
+					}
+				}
+				
 				for each (var participacion:ParticipacionVendedor in _documento.comisiones.participaciones) {
 					if (participacion.vendedor) {
-						var numVendedor:Number = Number(participacion.vendedor.codigo);
-						if (numVendedor >= 30 && numVendedor <= 50) {
+						var codeVend:String = participacion.vendedor.codigo;
+						if (lstUsuarioDist.contains(codeVend)) {
 							hay_vendedor_dist = true;
 							break;
 						}
@@ -225,8 +234,8 @@
 						}
 						helpWindow = new TitleWindow();
 						helpWindow.title = "Artículos";
-						helpWindow.width = 640;
-						helpWindow.height = 620;
+						helpWindow.width = 1024;
+						helpWindow.height = 720;
 
 						articulosPnl = new ArticulosPnl();
 						articulosPnl.articulos = _articulos
@@ -1015,29 +1024,6 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="80" dataField="precioDistribuidor" headerText="Base Dist."
-										  visible="{hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
-										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
-										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
-								<s:itemRenderer>
-									<fx:Component>
-										<s:DefaultGridItemRenderer textAlign="right">
-											<fx:Script>
-												<![CDATA[
-													import biz.fulltime.model.LineaDocumento;
-
-													override public function prepare(hasBeenRecycled:Boolean):void {
-														if (!data) {
-															return;
-														}
-														label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getPrecioBaseDistribuidor());
-													}
-												]]>
-											</fx:Script>
-										</s:DefaultGridItemRenderer>
-									</fx:Component>
-								</s:itemRenderer>
-							</s:GridColumn>
 
 							<s:GridColumn width="50" dataField="descuento" headerText="Dcto." itemEditor="biz.fulltime.ui.forms.DGNumberEditor" editable="{hasPermEdition()}">
 								<s:itemRenderer>
@@ -1100,6 +1086,29 @@
 															return;
 														}
 														label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).valorNeto);
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="80" dataField="precioDistribuidor" headerText="Base Dist."
+										  visible="{hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
+										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
+										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (!data) {
+															return;
+														}
+														label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getPrecioBaseDistribuidor());
 													}
 												]]>
 											</fx:Script>

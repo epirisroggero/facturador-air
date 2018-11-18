@@ -37,8 +37,10 @@
 //			private var _soloConSaldo:Boolean = true;
 
 			private var _modoSolicitudes:Boolean;
+			
+			private var _modoGastos:Boolean;
 
-			private var _modoRecibo:Boolean = false;
+			private var _modoRecibo:Boolean;
 
 //			public function get soloConSaldo():Boolean {
 //				return _soloConSaldo;
@@ -321,6 +323,16 @@
 				}
 				acTipoComprobante.dataProvider = comprobantes;
 			}
+
+			[Bindable]
+			public function get modoGastos():Boolean {
+				return _modoGastos;
+			}
+
+			public function set modoGastos(value:Boolean):void {
+				_modoGastos = value;
+			}
+
 			
 		]]>
 	</fx:Script>

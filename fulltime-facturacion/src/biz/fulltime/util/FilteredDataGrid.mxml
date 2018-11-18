@@ -3,21 +3,59 @@
 
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.model.CodigoNombreEntity;
+			
 			import mx.collections.ArrayCollection;
-
-			import spark.components.gridClasses.CellPosition;
 
 			private var _selectedName:String;
 
 			private var _filter:String;
+			private var _map:Dictionary;
+			private var _keys:ArrayCollection;
+			
+			
+			public function filterM(map:Dictionary, keys:ArrayCollection) {
+				_map = map;	
+				_keys = keys;
+				
+				filtermap();
+				
+				if (this.dataProviderLength < 1) {
+					filterReset();
+				}
+			}
 
-			public function filter(colName:String, filter:String):void {
+			public function filtermap():void {
+				if (dataProvider is ArrayCollection) {
+					var _dataProviderAC:ArrayCollection = dataProvider as ArrayCollection;
+					_dataProviderAC.filterFunction = filterFirstM;
+					_dataProviderAC.refresh();
+				}
+			}
+			
+			private function filterFirstM(item:Object):Boolean {
+				var hasFiltes:Boolean = true;
+				var result:Boolean = true;
+				for each (var k:String in _keys) {
+					if (item[k] is CodigoNombreEntity) {
+						var value:String = item[k].codigo + item[k].nombre;
+						result = result && value != null && value.toLowerCase().match(new RegExp(_map[k].toLowerCase(), 'i'));
+					} else {
+						result = result && item[k] != null && item[k].match(new RegExp(_map[k].toLowerCase(), 'i'));
+					}
+				}
+				return result;
+					
+			}
+
+				
+			public function filter(colName:String, filter:String, reset:Boolean):void {
 				_selectedName = colName;
 				_filter = filter;
 
 				if (_selectedName != '') {
 					filteree();
-				} else {
+				} else if (reset) {
 					filterReset();
 				}
 
@@ -49,11 +87,18 @@
 
 			private function filterFirst(item:Object):Boolean {
 				if (item[_selectedName] != null) {
-					return item[_selectedName].match(new RegExp(_filter.toLowerCase(), 'i'));
+					if (item[_selectedName] is CodigoNombreEntity) {
+						var value:String = item[_selectedName].codigo + item[_selectedName].nombre;
+						return value.match(new RegExp(_filter.toLowerCase(), 'i'));
+					} else {
+						return item[_selectedName].match(new RegExp(_filter.toLowerCase(), 'i'));
+					}
 				} else {
 					return false;
 				}
 			}
+			
+
 		]]>
 	</fx:Script>
 </s:DataGrid>

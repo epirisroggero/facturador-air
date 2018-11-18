@@ -5,6 +5,7 @@
 
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.dto.CreditoInfo;
 			import biz.fulltime.dto.DocumentoDTO;
@@ -17,6 +18,7 @@
 			import biz.fulltime.model.Comprobante;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.Usuario;
 			import biz.fulltime.model.deudores.DocPendientesCliente;
 			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
 			import biz.fulltime.ui.forms.FrmFacturasGrabadas;
@@ -370,6 +372,16 @@
 				}
 			}
 			
+			protected function hasPerm():Boolean {
+				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR 
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+					
+					return true;
+				}
+				
+				return false;
+			}
 			
 		]]>
 	</fx:Script>
@@ -509,7 +521,7 @@
 							<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 							<s:Spacer width="100%" />
 							
-							<s:Button id="cmdNueva" click="cmdNueva_clickHandler(event)" styleName="nuevaButton" label="Nueva" focusEnabled="true"  toolTip="Crear una nueva factura"/>
+							<s:Button id="cmdNueva" click="cmdNueva_clickHandler(event)" styleName="nuevaButton" label="Nueva" focusEnabled="true"  toolTip="Crear una nueva factura" visible="{hasPerm()}"/>
 							<s:Button id="cmdEditar" click="cmdEditar_clickHandler(event)" styleName="editarButton" label="Editar" focusEnabled="true" toolTip="Editar factura seleccionada"/>
 						</s:HGroup>
 					</s:controlBarContent>

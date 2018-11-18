@@ -1581,7 +1581,6 @@
 				}
 			}
 
-
 			private function capture_keyDownHandlerProveedor(event:KeyboardEvent):void {
 				if (event.keyCode == Keyboard.F1) {
 					cmbProveedor_helpFTHandler();
@@ -3887,6 +3886,48 @@
 				facPendWindow.closeButton.visible = false;
 				
 			}
+						
+			protected function cmdReparar_clickHandler(event:MouseEvent):void {
+				var remObjEFactura:RemoteObject = new RemoteObject();
+				remObjEFactura.destination = "CreatingRpc";
+				remObjEFactura.channelSet = ServerConfig.getInstance().channelSet;
+				remObjEFactura.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+					var eFactura:Documento = event.result as Documento;
+					
+					if (eFactura != null) { // no tiene e-factura (comprobantes *)
+						factura = eFactura;
+						
+					} else {						
+						var helpWindow:TitleWindow = new TitleWindow();
+						helpWindow.title = "E-Factura: Error al actualizar documento";
+						helpWindow.width = 600;
+						
+						var errorPnl:ErrorPanel = new ErrorPanel();
+						errorPnl.type = 2;
+						errorPnl.backgroundAlpha = .08;
+						errorPnl.textColor = 0x000000;
+						errorPnl.errorText = "No se encontraron los datos de EFactura. Contactese con el administrador del sistema.";
+						errorPnl.showButtons = true;
+						
+						helpWindow.addElement(errorPnl);
+						
+						PopUpManager.addPopUp(helpWindow, Sprite(FlexGlobals.topLevelApplication));
+						PopUpManager.centerPopUp(helpWindow);
+						
+						helpWindow.addEventListener(CloseEvent.CLOSE, function():void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						});					
+						errorPnl.addEventListener(CloseEvent.CLOSE, function():void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						});						
+					}
+					
+				});
+				remObjEFactura.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjEFactura.showBusyCursor = true;
+				remObjEFactura.updateDocumento(_documento);
+				
+			}
 			
 		]]>
 
@@ -4213,7 +4254,7 @@
 					</s:HGroup>
 				</s:VGroup>
 
-				<s:VGroup width="316" height="100%" gap="0">
+				<s:VGroup width="400" height="100%" gap="0">
 					<facturacion:SummaryPnl id="summary" width="100%" height="100%" factura="{_documento}" modoSolicitud="{modoSolicitud}" />
 				</s:VGroup>
 			</s:HGroup>
@@ -4298,11 +4339,17 @@
 					  includeInLayout="{showGuardar &amp;&amp; !_modoVisualizacion}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
 			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" enabled="{!_documento.nuevo}" includeInLayout="{showEMail}"
 					  visible="{showEMail}" focusEnabled="false" />
+
+			<s:Button id="cmdReparar" click="cmdReparar_clickHandler(event)" styleName="emitirButton" label="Reparar" toolTip="Reparar con datos de EFactura"
+					  visible="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra &amp;&amp; _documento.docCFEstatus == 2 }"
+					  includeInLayout="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra  &amp;&amp; _documento.docCFEstatus == 2}"
+					  focusEnabled="false" enabled="{!_documento.emitido &amp;&amp; (_documento.cliente || _documento.proveedor) }" />
 			
 			<s:Button id="cmdEmitir" click="cmdEmitir_clickHandler(event)" styleName="emitirButton" label="Emitir" toolTip="Emitir"
-					  visible="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra}"
-					  includeInLayout="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra}"
+					  visible="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra &amp;&amp; _documento.docCFEstatus != 2}"
+					  includeInLayout="{showEmitir &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.esCotizacionDeVenta &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esSolicitudCompra &amp;&amp; _documento.docCFEstatus != 2}"
 					  focusEnabled="false" enabled="{!_documento.emitido &amp;&amp; (_documento.cliente || _documento.proveedor) }" />
+
 			<s:Spacer width="5" />
 			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />
 		</s:HGroup>

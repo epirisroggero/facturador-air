@@ -67,7 +67,6 @@
     <classEntry path="biz.fulltime.ui.forms.FrmHistoricoCompras"/>
     <classEntry path="biz.fulltime.ui.components.ArticuloLabel"/>
     <classEntry path="biz.fulltime.ui.facturacion.LstCotizacionesPnl"/>
-    <classEntry path="biz.fulltime.ui.articulos.EditarArticulo"/>
     <classEntry path="biz.fulltime.ui.forms.FrmNotaLinea"/>
     <classEntry path="biz.fulltime.ui.crud.usuarios.FormUsuario"/>
     <classEntry path="biz.fulltime.ui.facturacion.FrmClaveSupervisora"/>
@@ -102,6 +101,9 @@
     <classEntry path="biz.fulltime.ui.facturacion.FrmDatosRequeridos"/>
     <classEntry path="biz.fulltime.ui.documentosValores.FrmDocumentoRecibidoVer"/>
     <classEntry path="biz.fulltime.ui.documentosValores.FrmVincularfp"/>
+    <classEntry path="biz.fulltime.ui.gastos.FiltroGastosPnl"/>
+    <classEntry path="biz.fulltime.ui.gastos.LstGastosPnl"/>
+    <classEntry path="biz.fulltime.ui.gastos.GastosPnl"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

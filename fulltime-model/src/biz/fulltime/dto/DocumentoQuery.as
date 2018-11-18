@@ -31,6 +31,7 @@ public class DocumentoQuery {
 	public var esSolicitud:Boolean = false;
 	public var esRecibo:Boolean = false;
 	public var esCheque:Boolean = false;
+	public var esGasto:Boolean = false;
 	
 	public var comprobantes:String;
 	public var compsExcluidos:String;

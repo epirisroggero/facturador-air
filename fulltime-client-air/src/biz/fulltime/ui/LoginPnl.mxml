@@ -313,9 +313,6 @@
 
 			}
 
-			protected function tiUsr_changeHandler(event:Event):void {
-
-			}
 
 			public function codigoNombreLabelFunction(item:Object):String {
 				var label:String;
@@ -374,8 +371,8 @@
 			<s:Spacer height="15"/>
 			<s:HGroup width="100%" horizontalAlign="left" gap="2" verticalAlign="middle">
 				<s:Label text="Usuario:" width="80" fontSize="14"/>
-				<components:MyAutoComplete id="tiUsr" width="100%" textAlign="left" change="tiUsr_changeHandler(event)" dataProvider="{ GeneralOptions.getInstance().usuarios }"
-										   labelField="nombre" matchType="anyPart" prompt="Ingrese Usuario" allowNewValues="false"
+				<components:MyAutoComplete id="tiUsr" width="100%" textAlign="left" dataProvider="{ GeneralOptions.getInstance().usuarios }"
+										   matchType="anyPart" labelField="nombre" prompt="Ingrese Usuario" allowNewValues="false"
 										   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 										   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" enabled="{enabledButtons}"
 										   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownRowCount="10" next_focus="{tiPwd}" />

@@ -4,10 +4,12 @@
 
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.DocumentoFormaPago;
 			import biz.fulltime.model.FormaPago;
 			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.Usuario;
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
@@ -219,11 +221,7 @@
 				
 				window.closeButton.visible = true;
 			}
-			
-			private function hasPermEdition():Boolean {
-				return true;
-			}
-			
+						
 				
 			protected function cmdNuevo_clickHandler(event:MouseEvent):void {
 				var docFormaPago:DocumentoFormaPago = new DocumentoFormaPago(_recibo, false);
@@ -280,6 +278,18 @@
 				
 				return arrColl;
 			}
+			
+			protected function hasPerm():Boolean {
+				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR 
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+					
+					return true;
+				}
+				
+				return false;
+			}
+
 			
 			
 						
@@ -521,12 +531,12 @@
 				</s:HGroup>
 
 				<s:DataGrid id="dgDocumentosValores" width="100%" height="100%" doubleClick="dgDocumentosValores_doubleClickHandler(event)" keyDown="dgDocumentosValores_keyDownHandler(event)"
-							sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" dataProvider="{_documentosValoresAux}" editable="{hasPermEdition()}">
+							sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" dataProvider="{_documentosValoresAux}" editable="{hasPerm()}">
 				</s:DataGrid>
 				<s:HGroup paddingLeft="10" paddingRight="10" paddingTop="5" paddingBottom="0"  width="100%">
-					<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="120" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
+					<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="120" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" visible="{hasPerm()}"/>
 					<s:Spacer width="100%" />
-					<s:Button id="cmdNuevo" width="120" styleName="nuevoButton" label="Agregar" click="cmdNuevo_clickHandler(event)" toolTip="Agregar filas"/>
+					<s:Button id="cmdNuevo" width="120" styleName="nuevoButton" label="Agregar" click="cmdNuevo_clickHandler(event)" toolTip="Agregar filas" visible="{hasPerm()}"/>
 				</s:HGroup>
 
 				<s:Line width="100%" height="2" left="0">

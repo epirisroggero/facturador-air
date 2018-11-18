@@ -184,7 +184,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn width="150" dataField="cliente.nombre" headerText="Contato" sortable="true" visible="{showCliente}" />
+						<s:GridColumn width="150" dataField="cliente.nombre" headerText="Contacto" sortable="true" visible="{showCliente}" />
 						<s:GridColumn dataField="cantidad" headerText="Cant." sortable="true">
 							<s:itemRenderer>
 								<fx:Component>

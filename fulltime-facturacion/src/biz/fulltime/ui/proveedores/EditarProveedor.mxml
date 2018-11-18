@@ -529,7 +529,10 @@
 			 maxDisplayedLines="1" />
 
 	<mx:VBox width="100%" height="100%" verticalGap="0">
-		<s:Label fontSize="16" fontWeight="normal" text="Datos Generales" />
+		<s:HGroup width="100%" paddingTop="5" paddingLeft="5" paddingBottom="5" paddingRight="5">
+			<s:Label fontSize="16" fontWeight="normal" text="Datos Generales" />
+		</s:HGroup>
+		<mx:HRule width="100%" />
 		<mx:HBox width="100%" height="100%" horizontalAlign="left" verticalAlign="top">
 			<s:Group width="100%" height="100%">
 				<mx:Canvas width="100%" height="100%" label="Generales">
@@ -537,7 +540,7 @@
 						<s:layout>
 							<s:FormLayout gap="-12" />
 						</s:layout>
-						<mx:HRule width="100%" />
+						
 						<s:Spacer height="10" />
 						<s:FormItem width="100%" label="Código" styleName="ItemStyle">
 							<s:VGroup width="100%">
@@ -545,7 +548,7 @@
 									<s:TextInput id="txtCodigo" width="60" textAlign="right" text="{proveedor.codigo}" change="txtCodigo_changeHandler(event)" restrict="0-9" maxChars="16" enter="fname.setFocus()"
 												 editable="{proveedor.esNuevo}" />
 									<s:Label text="Nombre" />
-									<s:TextInput id="fname" width="100%" text="{proveedor.contacto.nombre}" change="fname_changeHandler(event)"  maxChars="256" enter="txtTelefono.setFocus()" />
+									<s:TextInput id="fname" width="100%" text="{proveedor.contacto.nombre}" change="fname_changeHandler(event)"  maxChars="50" enter="txtTelefono.setFocus()" />
 								</s:HGroup>
 								<s:HGroup width="100%" verticalAlign="middle" visible="{proveedor.esNuevo}">
 									<s:Label fontSize="13" text="Primero disponible después del último utilizado:" />
@@ -555,22 +558,22 @@
 						</s:FormItem>
 
 						<s:FormItem width="100%" label="Notas" styleName="ItemStyle">
-							<s:TextArea id="txtNotas" width="100%" height="48" text="@{proveedor.contacto.ctoNotas}" />
+							<s:TextArea id="txtNotas" width="100%" height="48" text="@{proveedor.contacto.ctoNotas}" maxChars="1024"/>
 						</s:FormItem>
 
 						<s:FormItem width="100%" label="Teléfono" styleName="ItemStyle">
 							<s:HGroup width="100%" verticalAlign="middle">
 								<s:TextInput id="txtTelefono" width="100%" change="txtTelefono_changeHandler(event)" text="@{proveedor.contacto.ctoTelefono}"
-											 enter="txtFax.setFocus()" maxChars="30" />
+											 enter="txtFax.setFocus()" maxChars="50" />
 								<s:Label text="Fax" />
-								<s:TextInput id="txtFax" width="100%" text="@{proveedor.contacto.ctoFax}" enter="txtRazonSocial.setFocus()" />
+								<s:TextInput id="txtFax" width="100%" text="@{proveedor.contacto.ctoFax}" enter="txtRazonSocial.setFocus()" maxChars="50"/>
 							</s:HGroup>
 						</s:FormItem>
 						<s:FormItem width="100%" label="EFactura" styleName="ItemStyle">
 							<s:DropDownList id="ddlEFactura" width="360" dataProvider="{lstEFactura}" textAlign="left" labelField="label" selectedItem="{_prvEFactura}" change="ddlEfactura_changeHandler(event)"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Razón social" styleName="ItemStyle">
-							<s:TextInput id="txtRazonSocial" width="100%" text="@{proveedor.contacto.ctoRSocial}" enter="txtRUT.setFocus()" />
+							<s:TextInput id="txtRazonSocial" width="100%" text="@{proveedor.contacto.ctoRSocial}" enter="txtRUT.setFocus()" maxChars="100"/>
 						</s:FormItem>
 
 						<s:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
@@ -584,29 +587,29 @@
 						</s:FormItem>
 
 						<s:FormItem width="100%" label="Dirección" styleName="ItemStyle">
-							<s:TextInput id="txtDireccion" width="100%" text="@{proveedor.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" />
+							<s:TextInput id="txtDireccion" width="100%" text="@{proveedor.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" maxChars="100"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Localidad" styleName="ItemStyle">
-							<s:TextInput id="txtLocalidad" width="100%" text="@{proveedor.contacto.ctoLocalidad}" enter="txtCelular.setFocus()" />
+							<s:TextInput id="txtLocalidad" width="100%" text="@{proveedor.contacto.ctoLocalidad}" enter="txtCelular.setFocus()" maxChars="40"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Celular" styleName="ItemStyle">
 							<s:TextInput id="txtCelular" width="46%" change="txtCelular_changeHandler(event)" text="@{proveedor.contacto.ctoCelular}" enter="txtWebpage.setFocus()"
-										 restrict="0-9.-;," maxChars="30" />
+										 restrict="0-9.-;," maxChars="50" />
 						</s:FormItem>
 						<s:FormItem width="100%" label="Página web" styleName="ItemStyle">
-							<s:TextInput id="txtWebpage" width="100%" text="@{proveedor.contacto.ctoWeb}" enter="txtWebpage.setFocus()" maxChars="256"/>
+							<s:TextInput id="txtWebpage" width="100%" text="@{proveedor.contacto.ctoWeb}" enter="txtWebpage.setFocus()" maxChars="100"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Canal youtube" styleName="ItemStyle">
-							<s:TextInput id="txtCanalYoutube" width="100%" text="@{proveedor.canalYoutube}" enter="txtGoogleMaps.setFocus()" maxChars="256"/>
+							<s:TextInput id="txtCanalYoutube" width="100%" text="@{proveedor.canalYoutube}" enter="txtGoogleMaps.setFocus()" maxChars="50"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Google maps" styleName="ItemStyle">
-							<s:TextInput id="txtGoogleMaps" width="100%" text="@{proveedor.googleMaps}" enter="txtEmail1.setFocus()" maxChars="256"/>
+							<s:TextInput id="txtGoogleMaps" width="100%" text="@{proveedor.googleMaps}" enter="txtEmail1.setFocus()" maxChars="50"/>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Correo 1" styleName="ItemStyle">
 							<s:HGroup width="100%" verticalAlign="middle">
-								<s:TextInput id="txtEmail1" width="100%" text="@{proveedor.contacto.ctoEmail1}" enter="txtEmail2.setFocus()" />
+								<s:TextInput id="txtEmail1" width="100%" text="@{proveedor.contacto.ctoEmail1}" enter="txtEmail2.setFocus()" maxChars="50"/>
 								<s:Label paddingLeft="25" text="Correo 2:" />
-								<s:TextInput id="txtEmail2" width="100%" text="@{proveedor.contacto.ctoEmail2}" enter="txtDtoRecibo.setFocus()" />
+								<s:TextInput id="txtEmail2" width="100%" text="@{proveedor.contacto.ctoEmail2}" enter="txtDtoRecibo.setFocus()" maxChars="50"/>
 							</s:HGroup>
 						</s:FormItem>
 						<s:FormItem width="100%" label="Dto. recibo" styleName="ItemStyle">

@@ -7,6 +7,8 @@
 			import biz.fulltime.model.Comprobante;
 			import biz.fulltime.ui.components.HelpPnl;
 			
+			import com.adobe.utils.StringUtil;
+			
 			import mx.collections.ArrayCollection;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
@@ -32,6 +34,8 @@
 			private var _modoSolicitud:Boolean = false;
 			
 			private var _modoRecibo:Boolean = false;
+			
+			private var _modoGasto:Boolean = false;
 
 			public function get modoRecibo():Boolean {
 				return _modoRecibo;
@@ -62,6 +66,10 @@
 							if (comprobante.codigo == "100" || comprobante.codigo == "110" || comprobante.codigo == "120") {
 								myDP.addItem(comprobante);
 							}
+						}
+					} else if (modoGasto) {
+						if (comprobante.codigo == "110" || comprobante.codigo == "112" || comprobante.codigo == "113" || comprobante.codigo == "116") {
+							myDP.addItem(comprobante);
 						}
 					} else if (modoRecibo) {
 						if (comprobante.codigo == "30" || comprobante.codigo == "31" || comprobante.codigo == "32") {
@@ -162,7 +170,7 @@
 
 				var posX:int = cellPos.columnIndex;
 
-				dgTipoFactura.filter(colName, filter);
+				dgTipoFactura.filter(colName, filter, true);
 
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
@@ -197,7 +205,11 @@
 			}
 
 			private function tipo_labelFunction(item:Object, column:GridColumn):String {
-				return item.tipo + " - " + item.cmptiponom;
+				return item.tipo + " - " + StringUtil.trim(item.cmptiponom ? String(item.cmptiponom).toUpperCase() : "");
+			}
+
+			private function tipo_description(item:Object, column:GridColumn):String {
+				return StringUtil.trim(item.nombre ? String(item.nombre).toUpperCase() : "");
 			}
 
 			private function aster_labelFunction(item:Object, column:GridColumn):String {
@@ -219,19 +231,29 @@
 				}
 			}
 
+			[Bindable]
+			public function get modoGasto():Boolean {
+				return _modoGasto;
+			}
+
+			public function set modoGasto(value:Boolean):void {
+				_modoGasto = value;
+			}
+
+
 		]]>
 	</fx:Script>
 
 
 	<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="5" paddingTop="5" show="vgroup1_showHandler(event)">
-		<util:FilteredDataGrid id="dgTipoFactura" width="700" height="100%" doubleClick="dgTipoFactura_doubleClickHandler(event)" keyDown="dgTipoFactura_keyDownHandler(event)"
+		<util:FilteredDataGrid id="dgTipoFactura" width="890" height="100%" doubleClick="dgTipoFactura_doubleClickHandler(event)" keyDown="dgTipoFactura_keyDownHandler(event)"
 							   doubleClickEnabled="true" selectionChange="dgTipoFactura_selectionChangeHandler(event)" dataProvider="{myDP}" editable="false"
 							   selectionMode="singleCell">
 			<util:columns>
 				<s:ArrayList>
 					<s:GridColumn width="65" dataField="codigo" headerText="Código" sortable="true" />
-					<s:GridColumn dataField="nombre" headerText="Descripción" sortable="true" />
-					<s:GridColumn width="220" dataField="tipo" headerText="Tipo comprobante" sortable="true" labelFunction="tipo_labelFunction" />
+					<s:GridColumn dataField="nombre" headerText="Descripción" sortable="true" labelFunction="tipo_description"  />
+					<s:GridColumn width="320" dataField="tipo" headerText="Tipo comprobante" sortable="true" labelFunction="tipo_labelFunction" />
 					<s:GridColumn width="80" dataField="tipo" headerText="Caja" sortable="false" labelFunction="caja_labelFunction" />
 					<s:GridColumn width="32" dataField="aster" headerText="" sortable="false" labelFunction="aster_labelFunction" />
 				</s:ArrayList>

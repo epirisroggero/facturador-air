@@ -29,6 +29,9 @@
 			private var dirty:Boolean = true;
 			
 			private var _articulos:ArrayCollection;
+			
+			private var map:Dictionary = new Dictionary();
+			private var keys:ArrayCollection = new ArrayCollection();
 
 			[Bindable]
 			public function get articulos():ArrayCollection {
@@ -86,18 +89,37 @@
 				}
 			}
 
-
 			//
 			// Grid Filter. Tratar de sacar para un componente Genérico
 			// 
 			private function closePnlHandler(event:CloseEvent):void {
 				var helpPnl:HelpPnl = HelpPnl(event.target);
 				var filter:String = helpPnl.getValue();
+				
 				var colName:String = dgArticulos.columns.getItemAt(cellPos.columnIndex).dataField;
 
+				if (filter != null && filter.length > 0) {
+					map[colName] = filter;
+					if (!keys.contains(colName)) {
+						keys.addItem(colName);
+					}					
+				} else {
+					map[colName] = "";
+					if (keys.contains(colName)) {
+						var index:int = keys.getItemIndex(colName);
+						keys.removeItemAt(index);
+					}
+				}
+				
+				var text:String = "Filtros aplicados: " + (keys.length == 0 ? "Ninguno." : "");
+				for each (var i:String in keys)  {
+					text += i + ": " + map[i] + ",  ";
+				}
+				lblFilters.text = text;
+				
 				var posX:int = cellPos.columnIndex;
 
-				dgArticulos.filter(colName, filter);
+				dgArticulos.filterM(map, keys);
 
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
@@ -135,24 +157,40 @@
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 
 			}
+
+			private function codigoNombreLabelFunction(item:Object, column:GridColumn):String {
+				var label:String;
+				if (item[column.dataField]) {
+					return item[column.dataField].nombre;
+				} 
+				return "";
+			}
+
+
 		]]>
 	</fx:Script>
 
 	<fx:Declarations>
 		<s:ArrayList id="cols">
 			<s:GridColumn width="140" dataField="codigo" headerText="Código" />
-			<s:GridColumn width="140" dataField="codigoOrigen" headerText="Cód. Origen" />
+			<s:GridColumn width="130" dataField="codigoOrigen" headerText="Cod. Origen" />
+			<s:GridColumn width="200" dataField="familia" headerText="Familia" labelFunction="codigoNombreLabelFunction" />
+			<s:GridColumn width="100" dataField="marca" headerText="Marca" labelFunction="codigoNombreLabelFunction" />
+			
 			<s:GridColumn dataField="nombre" headerText="Descripción" />
 		</s:ArrayList>
 	</fx:Declarations>
 
 	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
-		<s:HGroup width="100%" height="100%" gap="0">
+		<s:VGroup width="100%" height="100%" gap="0">
+			<s:HGroup width="100%" paddingBottom="5" paddingTop="5" paddingLeft="5">
+				<s:Label id="lblFilters" text="Filtros aplicados: Ninguno." />
+			</s:HGroup>
 			<util:FilteredDataGrid id="dgArticulos" width="100%" height="100%" doubleClick="dgArticulos_doubleClickHandler(event)" keyDown="dgArticulos_keyDownHandler(event)"
 								   doubleClickEnabled="true" dataProvider="{articulos}" editable="false" selectionMode="singleCell"
 								   columns="{cols}">
 			</util:FilteredDataGrid>
-		</s:HGroup>
+		</s:VGroup>
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingTop="5">
 				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />

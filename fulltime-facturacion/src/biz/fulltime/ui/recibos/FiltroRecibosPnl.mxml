@@ -338,7 +338,7 @@
 				</mx:FormItem>
 			</mx:Form> 
 			<s:VGroup paddingTop="20" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
-				<s:CheckBox id="chbPendientes" label="Pendientes y/o NO Emitidos" selected="true" fontSize="13" fontWeight="normal"/>
+				<s:CheckBox id="chbPendientes" label="Pendientes y/o NO emitidos" selected="true" fontSize="13" fontWeight="normal"/>
 				<s:HGroup width="100%" verticalAlign="middle" paddingTop="10">
 					<s:Label text="Concepto" />
 					<s:TextInput id="txtConcepto" width="200" />

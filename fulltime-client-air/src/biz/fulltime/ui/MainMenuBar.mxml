@@ -24,6 +24,7 @@
 			[Bindable]
 			public var menuProvider:XML = <menuProvider/>;
 			
+			
 			public var menues:XML = 
 				<menues>
 					<menu label="Ventas" data="top">
@@ -34,7 +35,7 @@
 					</menu>
 					<menu label="Compras" data="top">
 						<menuitem label="Solicitudes  " data="solicitudes" accelerator="Ctrl+S"/>
-						<menuitem type="separator" />
+						<menuitem type="separator" />						
 						<menuitem label="Proveedores  " data="proveedores" accelerator="Ctrl+P"/>
 					</menu>
 					<menu label="Gestión" data="top">
@@ -71,6 +72,9 @@
 					</menu>
 					<menu label="Recibos" data="top">
 						<menuitem label="Listado de recibos      " data="recibos" accelerator="F6" enabled="true"/>
+					</menu>
+					<menu label="Gastos" data="top">
+						<menuitem label="Listado de gastos" data="gastos" enabled="false"/>
 					</menu>
 				</menues>
 				;
@@ -253,6 +257,8 @@
 						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_LIQUIDACION_VENDEDORES));
 				} else if (value == 'solicitudes') {
 						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.SOLICITUDES_EVENT));
+				} else if (value == 'gastos') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.GASTOS_EVENT));
 				} else if (value == 'cotizaciones') {
 						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.COTIZACIONES));
 				} else if (value == 'compraMercaderiaPlaza') {

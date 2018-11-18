@@ -20,7 +20,7 @@
 			import util.CatalogoFactory;
 
 			[Bindable]
-			private var _clientes:ArrayCollection = CatalogoFactory.getInstance().getClientesNoClering();
+			private var _clientes:ArrayCollection = CatalogoFactory.getInstance().getClientesVendedor(false);
 
 			private var cellPos:CellPosition;
 
@@ -77,7 +77,7 @@
 				
 				var posX:int = cellPos.columnIndex;
 				
-				dgClients.filter(colName, filter);
+				dgClients.filter(colName, filter, true);
 				
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);

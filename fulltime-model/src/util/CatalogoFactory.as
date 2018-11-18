@@ -130,6 +130,8 @@ public class CatalogoFactory extends EventDispatcher {
 	private var _bancos:ArrayCollection = new ArrayCollection();
 	
 	private var _conceptos:ArrayCollection = new ArrayCollection();
+	
+	private var _marcas:ArrayCollection = new ArrayCollection();
 
 
 	private var _ivas:ArrayCollection = new ArrayCollection();
@@ -584,6 +586,7 @@ public class CatalogoFactory extends EventDispatcher {
 		paises = new ArrayCollection();
 		giros = new ArrayCollection();
 		bancos = new ArrayCollection();
+		marcas = new ArrayCollection();
 
 
 		// Para el tema expediciones
@@ -1104,11 +1107,21 @@ public class CatalogoFactory extends EventDispatcher {
 							bancos = sort(values, false);
 						}
 						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Marcas'.";
+						remObjCat.getCatalogoByName("Marca");
+						break;
+					}
+				case 27:
+					{
+						if (values) {
+							marcas = sort(values, false);
+						}
+						resetRemoteObject();
 						errorPanel.errorText = "Cargando catálogo de 'Cajas'.";
 						remObjCat.getCatalogoByName("Caja");
 						break;
 					}
-				case 27:
+				case 28:
 					{
 						if (values) {
 							cajas = sort(values, false);
@@ -1292,6 +1305,14 @@ public class CatalogoFactory extends EventDispatcher {
 
 	public function set conceptos(value:ArrayCollection):void {
 		_conceptos = value;
+	}
+
+	public function get marcas():ArrayCollection {
+		return _marcas;
+	}
+
+	public function set marcas(value:ArrayCollection):void {
+		_marcas = value;
 	}
 
 

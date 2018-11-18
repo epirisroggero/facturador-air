@@ -572,6 +572,26 @@
 				stockArticuloWindow.addElement(frmStockArticulo);
 			}
 			
+			private function showAntecedentesCompra():Boolean {
+				var result:Boolean = 
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || 
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR ||
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION;
+				
+				return result;
+			}
+			
+			private function showAntecedentesVenta():Boolean {
+				var result:Boolean = 
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || 
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR || 
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES || 
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR ||
+					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION;
+
+				return result;
+			}
+
 			
 		]]>
 	</fx:Script>
@@ -588,7 +608,6 @@
 
 	<fx:Declarations>
 		<mx:DateFormatter id="datet" formatString="DD/MM/YYYY" />
-
 		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>
 	</fx:Declarations>
 
@@ -600,7 +619,6 @@
 				<s:Button label="" height="36" visible="{articulo.web &amp;&amp; articulo.web.length > 0}" styleName="goButton16"  click="btnWeb_clickHandler(event)" toolTip="{articulo.web}"/>
 			</s:HGroup>
 
-			<!-- s:Label width="100%" fontFamily="Helvetica" fontSize="18" fontWeight="normal" text="{articulo.nombre}" maxDisplayedLines="2" / -->
 			<s:CheckBox id="chbActivo" fontSize="14" fontWeight="normal" change="chbActivo_changeHandler(event)" label="Activo" selected="{articulo.activo}" alpha="1.0"
 						enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}" />
 
@@ -896,12 +914,11 @@
 					<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" />
 				</s:layout>
 				<mx:LinkButton id="cmdAntecedentesVenta" height="32" click="cmdAntecedentesVenta_clickHandler(event)" label="Antecedentes venta" styleName="prueba1"
-							   enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR
-							  	|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES}" />
+							   enabled="{showAntecedentesVenta()}" />
 				<mx:LinkButton id="cmdAntecedentesCompra" height="32" click="cmdAntecedentesCompra_clickHandler(event)" label="Antecedentes compra" styleName="prueba1"
-							   enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR}" />
-				<mx:LinkButton id="cmdCotizacionesPendientes" height="32" click="cmdCotizacionesPendientes_clickHandler(event)" label="Cotizaciones" enabled="true" styleName="prueba1" />
-				<mx:LinkButton id="cmdStock" height="32" click="cmdStock_clickHandler(event)" label="Stock depósitos" enabled="true" styleName="prueba1" />
+							   enabled="{showAntecedentesCompra()}" />
+				<mx:LinkButton id="cmdCotizacionesPendientes" height="32" click="cmdCotizacionesPendientes_clickHandler(event)" label="Cotizaciones" styleName="prueba1" />
+				<mx:LinkButton id="cmdStock" height="32" click="cmdStock_clickHandler(event)" label="Stock depósitos" styleName="prueba1" />
 			</s:BorderContainer>
 		</s:HGroup>
 

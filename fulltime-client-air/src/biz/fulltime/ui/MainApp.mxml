@@ -36,6 +36,7 @@
 			import biz.fulltime.ui.facturacion.reportes.FrmRentaComprobantes;
 			import biz.fulltime.ui.facturacion.reportes.FrmRutinaCostos;
 			import biz.fulltime.ui.facturacion.stockprecio.FrmStockPrecio;
+			import biz.fulltime.ui.gastos.LstGastosPnl;
 			import biz.fulltime.ui.personas.ClienteEditor;
 			import biz.fulltime.ui.proveedores.ProveedoresEditor;
 			import biz.fulltime.ui.recibos.LstRecibosPnl;
@@ -160,6 +161,29 @@
 							navContext.id = "solicitudes";
 							navContext.label = "Solicitudes";
 							navContext.addElement(lstSolicitudesPnl);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});
+						}
+					});					
+					
+				} else if (event.navigate == MenuEventFT.GASTOS_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("gastos");
+						
+						if (!encontre) {
+							var lstGastosPnl:LstGastosPnl = new LstGastosPnl();
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.id = "gastos";
+							navContext.label = "Gastos";
+							navContext.addElement(lstGastosPnl);
 							
 							myViewStack.addElement(navContext);
 							

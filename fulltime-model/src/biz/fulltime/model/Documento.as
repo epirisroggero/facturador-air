@@ -205,6 +205,8 @@ public class Documento extends DocumentoBase {
 	
 	public var docMensaje:String;
 	
+	public var docCFEFileName:String; 
+	
 	
 		// FIN FACTURA ELECTRÓNICA
 
@@ -1209,6 +1211,13 @@ public class Documento extends DocumentoBase {
 			}
 		}
 	}
+	
+	public function getUtilidadFulltime():BigDecimal {
+		var utilidadTotal:BigDecimal = getUtilidad();
+		var utilidadDistr:BigDecimal = getUtilidadDistribuidor();
+
+		return utilidadTotal.subtract(utilidadDistr);
+	}
 
 
 	/**
@@ -1358,7 +1367,9 @@ public class Documento extends DocumentoBase {
 		var precioDistCSigno:BigDecimal = comprobante.isDevolucion() ? _precioDst.negate() : _precioDst;
 
 		if (!comprobante.isDevolucion() && entrega != null) { // Agregar costo de entrega
-			if (moneda.codigo == Moneda.PESOS || moneda.codigo == Moneda.PESOS_ASTER) { // El costo de entrega esta siempre en dólares por lo que tengo q  //Falta calcualr si la factura esta en euros
+			if (moneda.codigo == Moneda.PESOS || moneda.codigo == Moneda.PESOS_ASTER) { 
+				// El costo de entrega esta siempre en dólares por lo que tengo q  
+				// Falta calcualr si la factura esta en euros
 				var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
 
 				var dolar:BigDecimal;
@@ -1385,6 +1396,7 @@ public class Documento extends DocumentoBase {
 
 		return ventaNeta.subtract(precioDistCSigno);
 	}
+	
 
 
 	[Bindable(event="changeLineasVenta")]
@@ -1418,6 +1430,16 @@ public class Documento extends DocumentoBase {
 		}
 		return ventaNeta.subtract(costoCSigno);
 	}
+	
+	[Bindable(event="changeLineasVenta")]
+	public function getRentaNetaFulltime():BigDecimal {
+		var rentaNetaTotal:BigDecimal = getRentaNetaComercial();
+		var rentaNetaDistr:BigDecimal = getRentaNetaDistComercial();
+		
+		return rentaNetaTotal.subtract(rentaNetaDistr);
+		
+	}
+
 
 
 	/**

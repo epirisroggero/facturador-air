@@ -414,11 +414,10 @@
 					o["col_0"] = row[0] != null ? nf2.format(new BigDecimal(row[0]).setScale(2, MathContext.ROUND_HALF_UP).toString()) : "0";
 					o["col_1"] = CodigoNombre(row[1]).codigo;
 					o["col_2"] = StringUtil.trim(CodigoNombre(row[1]).nombre);
-					o["col_3"] = row[2] != null ? new BigDecimal(row[2]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "0.00";
-					for (var k:int = 4; k < columns.length; k++) {
+					/*o["col_3"] = row[2] != null ? new BigDecimal(row[2]).setScale(2, MathContext.ROUND_HALF_UP).toString() : "0.00";*/
+					for (var k:int = 3; k < columns.length; k++) {
 						o["col_" + k] = row[k - 1] != null ? new BigDecimal(row[k - 1]).setScale(2, MathContext.ROUND_HALF_UP).toString() : " 0.00";
 					}
-
 					myDP.push(o);
 				}
 
@@ -1341,7 +1340,7 @@
 												  enabled="true" />
 									</s:VGroup>
 									<s:VGroup width="100%" height="100%">
-										<s:Label paddingTop="12" text="Familias Seleccionados" />
+										<s:Label paddingTop="12" text="Familias seleccionadas" />
 										<s:DataGrid id="familiasListSelected" width="100%" height="100%" dataProvider="{familiasSelected}" contentBackgroundColor="0xFFFFFF" contentBackgroundAlpha=".8"
 													selectionMode="multipleRows" selectionChange="familiasListSelected_selectionChangeHandler(event)">
 											<s:columns>
@@ -1427,7 +1426,7 @@
 												  enabled="true" />
 									</s:VGroup>
 									<s:VGroup width="100%" height="100%">
-										<s:Label paddingTop="12" text="Proveedores Seleccionados" />
+										<s:Label paddingTop="12" text="Proveedores seleccionados" />
 										<s:DataGrid id="proveedoresListSelected" width="100%" height="100%" dataProvider="{proveedoresSelected}" contentBackgroundColor="0xFFFFFF"
 													contentBackgroundAlpha=".8" selectionMode="multipleRows" selectionChange="proveedoresListSelected_selectionChangeHandler(event)">
 											<s:columns>
@@ -1450,13 +1449,13 @@
 			<mx:HRule width="100%" />
 			<s:HGroup width="100%" paddingBottom="5" paddingTop="5">
 				<s:VGroup paddingLeft="10" paddingRight="5">
-					<s:CheckBox id="chbOcultarCeros" click="chbOcultarCeros_clickHandler(event)" label="Ocultar Art. con Stock Cero" selected="true" />
-					<s:CheckBox id="chbOcultarNegativos" click="chbOcultarNegativos_clickHandler(event)" label="Ocultar Art. con Stock Negativo" selected="true" />
+					<s:CheckBox id="chbOcultarCeros" click="chbOcultarCeros_clickHandler(event)" label="Ocultar art. con stock cero" selected="true" />
+					<s:CheckBox id="chbOcultarNegativos" click="chbOcultarNegativos_clickHandler(event)" label="Ocultar art. con stock negativo" selected="true" />
 				</s:VGroup>
 				<mx:VRule height="50" />
 				<s:VGroup paddingLeft="10" paddingRight="5" visible="{hasPermPrecios}" includeInLayout="{hasPermPrecios}">
-					<s:CheckBox id="chbMostrarCostos" click="chbMostrarCostos_clickHandler(event)" label="Mostrar Costos" selected="true" />
-					<s:CheckBox id="chbMostrarPF" click="chbMostrarPF_clickHandler(event)" label="Mostrar Precios Fábrica" selected="true"
+					<s:CheckBox id="chbMostrarCostos" click="chbMostrarCostos_clickHandler(event)" label="Mostrar costos" selected="true" />
+					<s:CheckBox id="chbMostrarPF" click="chbMostrarPF_clickHandler(event)" label="Mostrar precio fábrica" selected="true"
 								visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}" />
 				</s:VGroup>
 				<mx:VRule height="50" visible="{hasPermPrecios}" />
@@ -1468,7 +1467,7 @@
 				<mx:VRule height="50" />
 				<s:VGroup width="100%" paddingLeft="0" paddingRight="5">
 					<s:HGroup width="100%" height="24" paddingLeft="20" verticalAlign="middle">
-						<s:Label width="80" text="Lista Precios:" />
+						<s:Label width="80" text="Lista precios:" />
 						<components:MyAutoComplete id="cmbListaPrecios" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().preciosVentaUsuario }" labelField="nombre"
 												   matchType="anyPart" prompt="Todas" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="true"
 												   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="nombreLabelFunction" backspaceAction="focus"
@@ -1500,7 +1499,7 @@
 			</s:DropDownList>
 
 			<s:Spacer width="20" />
-			<components1:IconButton id="cmdExportar" width="142" click="cmdExportar_clickHandler(event)" styleName="exportButton" label="Generar Reporte" />
+			<components1:IconButton id="cmdExportar" width="142" click="cmdExportar_clickHandler(event)" styleName="exportButton" label="Generar reporte" />
 		</s:HGroup>
 	</s:controlBarContent>
 </s:Panel>

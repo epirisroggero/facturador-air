@@ -7,8 +7,12 @@
 			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.ParticipacionVendedor;
+			import biz.fulltime.model.Usuario;
 			
+			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
+			
+			import util.CatalogoFactory;
 
 			private var _factura:Documento;
 
@@ -70,16 +74,25 @@
 			
 			public function updateVendedores():void {
 				hay_vendedor_dist = false;
+				
+				
+				var lstUsuarioDist:ArrayCollection = new ArrayCollection();
+				for each (var user:Usuario in CatalogoFactory.getInstance().usuarios) {
+					if (user.permisoId == "V2" && user.venId != null) {
+						lstUsuarioDist.addItem(user.venId);
+					}
+				}
+				
 				for each (var participacion:ParticipacionVendedor in _factura.comisiones.participaciones) {
 					if (participacion.vendedor) {
-						var numVendedor:Number = Number(participacion.vendedor.codigo);
-						if (numVendedor >= 30 && numVendedor <= 50) {
+						var codeVend:String = participacion.vendedor.codigo;
+						if (lstUsuarioDist.contains(codeVend)) {
 							hay_vendedor_dist = true;
 							break;
 						}
 					}
-				}				
-				
+				}
+								
 			}
 			
 			protected function panel1_creationCompleteHandler(event:FlexEvent):void {
@@ -99,24 +112,24 @@
 	</fx:Declarations>
 
 	<s:layout>
-		<s:VerticalLayout horizontalAlign="left" paddingLeft="10" paddingRight="10" verticalAlign="top" />
+		<s:VerticalLayout  horizontalAlign="left" paddingLeft="10" paddingRight="10" verticalAlign="top" />
 	</s:layout>
-	<s:Form>
+	<s:Form width="100%">
 		<s:layout>
-			<s:FormLayout gap="-12" />
+			<s:FormLayout gap="-12"/>
 		</s:layout>
 		<s:FormItem width="100%" label="Subtotal">
-			<s:TextInput width="160" textAlign="right" borderAlpha=".16" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.subTotal)}" />
+			<s:TextInput width="100%" height="24" textAlign="right" borderAlpha=".06" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.subTotal)}" />
 		</s:FormItem>
 		<s:FormItem width="100%" label="Descuentos" visible="false" includeInLayout="false">
-			<s:TextInput width="160" textAlign="right" borderAlpha=".16" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.descuentos)}" />
+			<s:TextInput width="100%" textAlign="right" borderAlpha=".06" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.descuentos)}" />
 		</s:FormItem>
 		<s:FormItem width="100%" label="IVA" visible="{!(factura.comprobante.aster || factura.comprobante.exento) &amp;&amp; (factura.comprobante.codigo != '122') &amp;&amp; (factura.comprobante.codigo != '124')}" 
 					 includeInLayout="{!(factura.comprobante.aster || factura.comprobante.exento) &amp;&amp; (factura.comprobante.codigo != '122') &amp;&amp; (factura.comprobante.codigo != '124')}">
-			<s:TextInput width="160" textAlign="right" borderAlpha=".16" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.iva)}" />
+			<s:TextInput width="100%" height="24" textAlign="right" borderAlpha=".06" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.iva)}" />
 		</s:FormItem>
 		<s:FormItem width="100%" label="Redondeo">
-			<s:TextInput width="160" textAlign="right" borderAlpha=".16" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.redondeo)}" />
+			<s:TextInput width="100%" height="24" textAlign="right" borderAlpha=".06" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.redondeo)}" />
 		</s:FormItem>
 		
 		<s:FormItem width="100%" label="" fontSize="16">
@@ -128,7 +141,7 @@
 		</s:FormItem>
 					
 		<s:FormItem width="100%" label="TOTAL" fontSize="16">
-			<s:TextInput width="160" textAlign="right" borderAlpha=".16" fontSize="16" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.total)}" />
+			<s:TextInput width="100%" height="36" textAlign="right" borderAlpha=".16" fontSize="16" editable="false" focusEnabled="false" text="{factura.moneda.simbolo + ' ' + nf_Espanol_Espanol.format(factura.total)}" />
 		</s:FormItem>
 	</s:Form>
 	
@@ -138,6 +151,8 @@
 				<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="middle" />
 			</s:layout>
 			<s:Label fontSize="14" fontStyle="italic" text="Utilidad = { (factura.moneda != null ? factura.moneda.nombre : '') + ' ' + nf_Espanol_Espanol.format(factura.getRentaNetaComercial()) + ' (' + nf_Espanol_Espanol.format(factura.getUtilidad()) + '%)'}" />
+			<s:Label fontSize="14" fontWeight="bold" visible="{hay_vendedor_dist}" includeInLayout="{hay_vendedor_dist}"
+					 text="Utilidad Fulltime = { (factura.moneda != null ? factura.moneda.nombre : '') + ' ' + nf_Espanol_Espanol.format(factura.getRentaNetaFulltime()) + ' (' + nf_Espanol_Espanol.format(factura.getUtilidadFulltime()) + '%)'}" />
 			<s:Label fontSize="14" fontWeight="bold" visible="{hay_vendedor_dist}" includeInLayout="{hay_vendedor_dist}"
 					 text="Utilidad Distribuidor = { (factura.moneda != null ? factura.moneda.nombre : '') + ' ' + nf_Espanol_Espanol.format(factura.getRentaNetaDistComercial()) + ' (' + nf_Espanol_Espanol.format(factura.getUtilidadDistribuidor()) + '%)'}" />
 		</s:BorderContainer>

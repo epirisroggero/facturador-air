@@ -75,6 +75,8 @@
 
 				for each (var contacto:Contacto in CatalogoFactory.getInstance().contactos) {
 					if (contacto.ctoProveedor == "S" && contacto.ctoActivo == "S") {
+						trace(contacto.nombre + " : " + contacto.ctoProveedor )
+						
 						var proveedor:Object = new Object();
 						proveedor.codigo = Number(contacto.codigo);
 						proveedor.nombre = contacto.nombre;

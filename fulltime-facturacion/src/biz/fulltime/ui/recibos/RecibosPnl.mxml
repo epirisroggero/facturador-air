@@ -25,6 +25,7 @@
 			import biz.fulltime.model.LineasDocumento;
 			import biz.fulltime.model.Moneda;
 			import biz.fulltime.model.SerieNumero;
+			import biz.fulltime.model.Usuario;
 			import biz.fulltime.model.VinculoDocumentos;
 			import biz.fulltime.ui.components.HelpClientPnl;
 			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
@@ -354,14 +355,18 @@
 					// Los vendedores (junior, distribuidor, senior) solo pueden editar documentos que ellos crearon (Documento.usuarioId). 
 					// Si no son creadores, entonces el documento aparece para solo lectura. 
 					// Administradores y Supervisores pueden editar cualquier cosa.
-					if (_recibo.nuevo) {
-						_modoVisualizacion = false;
-					} else {
-						if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado && (DateUtil.compareDates(_recibo.fechaDoc, CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) == -1)) {
-							_modoVisualizacion = true;
+					if (hasPerm()) {
+						if (_recibo.nuevo) {
+							_modoVisualizacion = false;
 						} else {
-							_modoVisualizacion = !_recibo.permisosDocumentoUsuario.edicion;
+							if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado && (DateUtil.compareDates(_recibo.fechaDoc, CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) == -1)) {
+								_modoVisualizacion = true;
+							} else {
+								_modoVisualizacion = !_recibo.permisosDocumentoUsuario.edicion;
+							}
 						}
+					} else {
+						_modoVisualizacion = true;
 					}
 
 					if (_recibo && _recibo.cliente) {
@@ -1980,6 +1985,17 @@
 				cmdGuardar.setFocus();	
 			}
 			
+			protected function hasPerm():Boolean {
+				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR 
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+					
+					return true;
+				}
+				
+				return false;
+			}
+			
 		]]>
 
 	</fx:Script>
@@ -2053,7 +2069,7 @@
 				<s:HGroup width="100%" height="100%">
 					<s:VGroup width="30%" height="100%">
 						<s:VGroup width="100%" height="100%" horizontalAlign="right" gap="5">
-							<s:HGroup width="100%" horizontalAlign="right" paddingTop="5" gap="0">
+							<s:HGroup width="100%" horizontalAlign="right" paddingTop="5" gap="0" enabled="{hasPerm()}">
 								<s:Panel width="120" title="T.C.COMERCIAL" styleName="pnlInterno" minHeight="0" >
 									<s:HGroup width="100%" horizontalAlign="center">
 										<components1:MyTextInput id="txtTipoCambio" width="100%" height="36" fontSize="16" textAlign="right" permitirNegativos="false" text="@{recibo.docTCC}" 
@@ -2089,7 +2105,7 @@
 	
 							<s:Panel width="100%" height="100%" title="DATOS CLIENTE" styleName="pnlInterno" minHeight="0" >
 								<s:HGroup width="100%" horizontalAlign="center">
-									<s:Form width="100%" textAlign="right">
+									<s:Form width="100%" textAlign="right" enabled="{hasPerm()}">
 										<s:layout>
 											<s:FormLayout gap="-12" />
 										</s:layout>
@@ -2134,25 +2150,25 @@
 											<components:MyAutoComplete id="cmbMonedaVinculos" width="100%" height="36" fontSize="14" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart"
 																	   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 																	   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" 
-																	   backspaceAction="focus" dropDownRowCount="{monedas.length}" selectedItem="@{recibo.moneda}" enabled="{!tieneVinculos}"
+																	   backspaceAction="focus" dropDownRowCount="{monedas.length}" selectedItem="@{recibo.moneda}" enabled="{!tieneVinculos &amp;&amp; hasPerm()}"
 																	   change="cmbMonedaVinculos_changeHandler(event)"/>
 										</s:HGroup>
 									</s:Panel>
 									<s:Panel width="180" title="{isAster ? 'NETO' : 'TOTAL' }" styleName="pnlInterno" minHeight="0">
 										<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10">
 											<components1:MyTextInput id="txtTotalVinculado" width="100%" height="36" fontSize="16" textAlign="right" permitirNegativos="false" text="{recibo.total}" 
-																	 change="txtTotalVinculado_changeHandler(event)" enabled="{!tieneVinculos &amp;&amp; monedasDistintas}"/>
+																	 change="txtTotalVinculado_changeHandler(event)" enabled="{!tieneVinculos &amp;&amp; monedasDistintas &amp;&amp; hasPerm()}"/>
 										</s:HGroup>
 									</s:Panel>
 								</s:HGroup>
 	
 								<s:DataGrid id="dgVinculos" width="100%" height="100%" fontSize="10" creationComplete="dgVinculos_creationCompleteHandler(event)"
 											keyDown="dgVinculos_keyDownHandler(event)" gridItemEditorSessionSave="dgVinculos_gridItemEditorSessionSaveHandler(event)"
-											dataProvider="{recibo.facturasVinculadas}" selectionMode="singleCell" sortableColumns="false" editable="true">
+											dataProvider="{recibo.facturasVinculadas}" selectionMode="singleCell" sortableColumns="false" editable="{hasPerm()}">
 									
 									<s:columns>
 										<s:ArrayList>
-											<s:GridColumn  width="80" sortable="false" headerText="S/N" editable="{!recibo.emitido}" resizable="false">
+											<s:GridColumn  width="80" sortable="false" headerText="S/N" editable="{!recibo.emitido &amp;&amp; hasPerm()}" resizable="false">
 												<s:itemEditor>
 													<fx:Component>
 														<s:GridItemEditor>
@@ -2322,7 +2338,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="60" dataField="descuentoPorc" headerText="DESCUENTO" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
+											<s:GridColumn width="60" dataField="descuentoPorc" headerText="DESCUENTO" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2348,7 +2364,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="70" dataField="descuentoMonto" headerText="M.DESCUENTO" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
+											<s:GridColumn width="70" dataField="descuentoMonto" headerText="M.DESCUENTO" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2376,7 +2392,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="90" dataField="neto" headerText="{isAster ? 'M.NETO' : 'M.VINCULADO'}" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+											<s:GridColumn width="90" dataField="neto" headerText="{isAster ? 'M.NETO' : 'M.VINCULADO'}" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2401,7 +2417,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 											
-											<s:GridColumn width="70" dataField="monto"  headerText="M.CANCELA" editable="{!recibo.emitido}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+											<s:GridColumn width="70" dataField="monto"  headerText="M.CANCELA" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2448,7 +2464,7 @@
 											</s:GridColumn>
 
 	
-											<s:GridColumn width="34" headerText="" rendererIsEditable="true" visible="{!recibo.emitido}">
+											<s:GridColumn width="34" headerText="" rendererIsEditable="true" visible="{!recibo.emitido &amp;&amp; hasPerm()}">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:GridItemRenderer>
@@ -2505,7 +2521,7 @@
 								<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
 									<s:Spacer width="100%" />
 									<s:Button id="cmdAgregar" width="140" click="cmdAgregar_clickHandler(event)" styleName="textButton" label="Agregar vinculo" toolTip="Agregar factura"
-											  focusEnabled="true" enabled="{saldoPendiente.numberValue() > 0}" visible="{!recibo.emitido}"/>
+											  focusEnabled="true" enabled="{saldoPendiente.numberValue() > 0}" visible="{!recibo.emitido &amp;&amp; hasPerm()}"/>
 								</s:HGroup>
 							</s:controlBarContent>
 	
@@ -2551,7 +2567,7 @@
 			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Eliminar" toolTip="Borrar documento"
 					  focusEnabled="false" enabled="{!tieneVinculos &amp;&amp; !recibo.nuevo &amp;&amp; !recibo.emitido}"  visible="false" includeInLayout="false"/>
 			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" focusEnabled="false" 
-					  enabled="{!recibo.emitido &amp;&amp; tieneCambios}" />
+					  enabled="{!recibo.emitido &amp;&amp; tieneCambios}" visible="{hasPerm()}"/>
 			
 			<s:Button id="cmdEmitir" click="cmdEmitir_clickHandler(event)" styleName="emitirButton" label="Emitir" toolTip="Emitir" 
 					  visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" 

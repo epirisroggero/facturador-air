@@ -1,0 +1,24 @@
+
+
+# eclipse
+*.pydevproject
+.project
+.metadata
+.idea
+bin/**
+tmp/**
+tmp/**/*
+fulltime-client-air/output/**
+fulltime-facturacion/bin/**
+fulltime-model/bin/**
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+.externalToolBuilders/
+*.launch
+.buildpath

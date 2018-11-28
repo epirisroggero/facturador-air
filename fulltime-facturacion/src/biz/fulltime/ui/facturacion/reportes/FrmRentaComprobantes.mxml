@@ -105,7 +105,7 @@
 				resetRemoteObject();
 
 				var user:Usuario = GeneralOptions.getInstance().loggedUser;
-				hasPermSupervisor = user.permisoId == Usuario.USUARIO_SUPERVISOR;
+				hasPermSupervisor = user.esSupervisor();
 
 				for each (var c:Comprobante in CatalogoFactory.getInstance().comprobantes) {
 					var comprobante:Object = new Object();

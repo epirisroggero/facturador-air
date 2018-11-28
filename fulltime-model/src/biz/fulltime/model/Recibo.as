@@ -125,9 +125,6 @@ public class Recibo extends DocumentoBase {
 		recibo.registroFecha = new Date();
 		recibo.registroHora = new Date();
 		
-//		if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
-//			doc.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
-//		}
 		return recibo;
 	}
 

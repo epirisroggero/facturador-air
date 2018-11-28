@@ -48,24 +48,20 @@ public class Usuario extends CodigoNombreEntity {
 	
 	public var venId:String;
 	
+	public function Usuario(codigo:String = "", nombre:String = "") {
+		super(codigo, nombre);
+	}
+
 	public function esVendedorJunior():Boolean {
-		if (permisoId == USUARIO_VENDEDOR_JUNIOR) {
-			return true;	
-		}
-		return false;
+		return permisoId == USUARIO_VENDEDOR_JUNIOR;	
 	}
 	
 	public function esUsuarioTito():Boolean {
-		if (permisoId == USUARIO_TITO) {
-			return true;	
-		}
-		return false;
+		return permisoId == USUARIO_TITO;	
 	}
-
-
 	
-	public function Usuario(codigo:String = "", nombre:String = "") {
-		super(codigo, nombre);
+	public function esSupervisor():Boolean {
+		return usuTipo == "S";
 	}
 
 }

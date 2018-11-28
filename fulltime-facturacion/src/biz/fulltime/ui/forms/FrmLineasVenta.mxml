@@ -214,7 +214,7 @@
 			protected function dg_keyDownHandler(event:KeyboardEvent):void {
 				cellPos = dgLineasVenta.selectedCell;
 				
-				var superuser:Boolean = GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR;
+				var superuser:Boolean = GeneralOptions.getInstance().loggedUser.esSupervisor();
 				
 				var permitirNegativos:Boolean = false; 
 				var codigoComprobante:String = _documento.comprobante.codigo;
@@ -692,7 +692,7 @@
 				} else if (!documento.permisosDocumentoUsuario.edicion) {
 					return false;
 				} else if (documento.emitido) {
-					return (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR);
+					return (GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR);
 				}
 				return true;
 			}
@@ -1095,7 +1095,7 @@
 							</s:GridColumn>
 							<s:GridColumn width="80" dataField="precioDistribuidor" headerText="Base Dist."
 										  visible="{hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
-										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
+										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor()) &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
 									<fx:Component>
@@ -1118,7 +1118,7 @@
 							</s:GridColumn>
 							<s:GridColumn width="75" dataField="costo" headerText="Costo"
 										  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
-										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) 
+										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor()) 
 										  	&amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoMostrador}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
@@ -1266,7 +1266,7 @@
 							</s:GridColumn>
 
 							<s:GridColumn width="34" headerText="" rendererIsEditable="true"
-										  visible="{!documento.emitido || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
+										  visible="{!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor() }">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:GridItemRenderer>
@@ -1297,7 +1297,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 							<s:GridColumn width="34" headerText="" rendererIsEditable="true"
-										  visible="{!documento.emitido || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
+										  visible="{!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor() }">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:GridItemRenderer>

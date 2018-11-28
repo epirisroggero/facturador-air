@@ -279,7 +279,7 @@
 					
 					articulo.mergeArticulo();
 					
-					if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {						
+					if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {						
 						var pFabrica:ArticuloPrecio;
 						var pDistribuidor:ArticuloPrecio;
 						var pReventa:ArticuloPrecio;
@@ -410,7 +410,7 @@
 			[Bindable(event = "_changeArticulo")]
 			public function hasPerm():Boolean {
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
-				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+				if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
 					return true;
 				}
 				return articulo.esNuevo;

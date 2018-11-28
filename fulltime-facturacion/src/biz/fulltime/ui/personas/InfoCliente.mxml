@@ -717,7 +717,7 @@
 					</s:HGroup>
 					<s:HGroup height="100%" verticalAlign="middle">
 						<s:CheckBox id="chbActivo" label="Activo" selected="{cliente.contacto.ctoActivo == 'S'}" alpha="1.0" change="chbActivo_changeHandler(event)" fontWeight="normal"
-									enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}" fontSize="14"/>
+									enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor()}" fontSize="14"/>
 						
 					</s:HGroup>
 					<s:Spacer width="20"/>

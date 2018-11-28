@@ -828,7 +828,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn dataField="costo" headerText="Costo" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
+							<s:GridColumn dataField="costo" headerText="Costo" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -856,7 +856,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn dataField="renta" headerText="Renta" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR }">
+							<s:GridColumn dataField="renta" headerText="Renta" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">

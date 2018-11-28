@@ -399,8 +399,8 @@
 
 			<mx:VBox width="100%" height="100%" verticalGap="0" creationComplete="usuarioData_creationCompleteHandler(event)" label="Datos del usuario">
 				<s:Panel width="100%" title="Clave Supervisora" styleName="pnlForm" dropShadowVisible="false"
-						 visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}"
-						 includeInLayout="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}">
+						 visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}"
+						 includeInLayout="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
 					<s:BorderContainer width="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
 						<s:layout>
 							<s:VerticalLayout paddingBottom="20" paddingLeft="5" paddingRight="5" paddingTop="5" />
@@ -491,7 +491,7 @@
 			</mx:VBox>
 
 			<mx:VBox width="100%" height="100%" label="Tipo cambio"
-					 enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}">
+					 enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}">
 				<s:Panel width="100%" height="100%" creationComplete="cotizaciones_creationCompleteHandler(event)" title="Cotizaciones" styleName="pnlForm" dropShadowVisible="false">
 					<s:BorderContainer width="100%" height="100%" backgroundAlpha=".06" backgroundColor="#6E87B5" borderAlpha="0">
 						<s:layout>

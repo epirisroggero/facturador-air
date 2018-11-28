@@ -369,7 +369,7 @@
 			[Bindable(event="_changeContacto")]
 			public function hasPerm():Boolean {
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
-				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+				if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 					return true;
 				}
 				return contacto.esNuevo;

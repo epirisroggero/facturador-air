@@ -400,7 +400,7 @@ public class LineaDocumento extends EventDispatcher {
 				}
 			} else {			
 				if (documento.comprobante.esImportacion()) {
-					if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+					if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 						remObjPSFab.getArticuloPrecio(_articulo.codigo, "7", monedaFacturacion);
 					} else {
 						this.precio = "0";

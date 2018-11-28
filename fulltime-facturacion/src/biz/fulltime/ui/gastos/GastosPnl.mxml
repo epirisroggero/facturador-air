@@ -447,7 +447,7 @@
 			protected function cmdGuardar_clickHandler(event:MouseEvent, close:Boolean = false):void {
 				emitiendo_documento = false;
 				
-				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 					_documento.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
 					grabarFacturaOk(false);
 					return;

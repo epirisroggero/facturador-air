@@ -116,7 +116,7 @@
 				cotizacionesXML = CotizacionesModel.getInstance().cotizaciones;
 
 				var user:Usuario = GeneralOptions.getInstance().loggedUser;
-				hasPermPrecios = user.permisoId == Usuario.USUARIO_SUPERVISOR || user.permisoId == Usuario.USUARIO_ADMINISTRADOR;
+				hasPermPrecios = user.esSupervisor() || user.permisoId == Usuario.USUARIO_ADMINISTRADOR;
 
 				for each (var contacto:Contacto in CatalogoFactory.getInstance().getContactosActivos()) {
 					if (contacto.ctoProveedor == "S") {
@@ -286,7 +286,7 @@
 				params.filtrarCeros = chbOcultarCeros.selected;
 
 				params.mostrarCosto = chbMostrarCostos.selected;
-				params.mostrarPrecioFabrica = chbMostrarPF.selected && GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR;
+				params.mostrarPrecioFabrica = chbMostrarPF.selected && GeneralOptions.getInstance().loggedUser.esSupervisor();
 
 				var listasPrecio:String = "";
 				if (cmbListaPrecios.selectedItems != null && cmbListaPrecios.selectedItems.length > 0) {
@@ -1456,7 +1456,7 @@
 				<s:VGroup paddingLeft="10" paddingRight="5" visible="{hasPermPrecios}" includeInLayout="{hasPermPrecios}">
 					<s:CheckBox id="chbMostrarCostos" click="chbMostrarCostos_clickHandler(event)" label="Mostrar costos" selected="true" />
 					<s:CheckBox id="chbMostrarPF" click="chbMostrarPF_clickHandler(event)" label="Mostrar precio fábrica" selected="true"
-								visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}" />
+								visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}" />
 				</s:VGroup>
 				<mx:VRule height="50" visible="{hasPermPrecios}" />
 

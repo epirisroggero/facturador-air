@@ -207,7 +207,6 @@ public class Documento extends DocumentoBase {
 	
 	public var docCFEFileName:String; 
 	
-	
 		// FIN FACTURA ELECTRÓNICA
 
 	public function get numCFEIdDoc():String {
@@ -470,11 +469,8 @@ public class Documento extends DocumentoBase {
 					moneda = CatalogoFactory.getInstance().monedas[1]; // Dolares oficiales.
 				}
 			}
-
 		}
-
 	}
-
 
 	private function resultCliente(event:ResultEvent):void {
 		var result:* = event.result;
@@ -485,7 +481,7 @@ public class Documento extends DocumentoBase {
 
 		if (result is Cliente) {
 			cliente = result as Cliente;
-
+			
 			if (!emitido) {
 				// Obtener facturas Grabadas del cliente.
 				// En el caso de este tener facturas Grabadas, 
@@ -505,87 +501,87 @@ public class Documento extends DocumentoBase {
 					}
 				}
 
-			}
-			if (cliente.vendedor) {
-				vendedor = cliente.vendedor;
-			} else {
-				for each (var v:Vendedor in CatalogoFactory.getInstance().vendedores) {
-					if (v.codigo == "099") {
-						vendedor = v;
-						break;
-					}
-				}
-			}
-
-			if (vendedor) {
-				if (comisiones.participaciones.length == 0) {
-					var _nueva:ParticipacionVendedor = new ParticipacionVendedor();
-					_nueva.vendedor = vendedor;
-
-					var encargadoDeCuenta:Vendedor;
-					if (cliente.encargadoCuenta) {
-						for each (var v:Vendedor in CatalogoFactory.getInstance().vendedores) {
-							if (cliente.encargadoCuenta == v.codigo) {
-								encargadoDeCuenta = v;
-								break;
-							}
-						}
-					}
-
-					if (encargadoDeCuenta && (encargadoDeCuenta.codigo != vendedor.codigo)) {
-						var _nueva2:ParticipacionVendedor = new ParticipacionVendedor();
-						_nueva2.vendedor = encargadoDeCuenta;
-
-						_nueva.porcentaje = 50;
-						_nueva2.porcentaje = 50;
-
-						comisiones.participaciones.addItem(_nueva);
-						comisiones.participaciones.addItem(_nueva2);
-					} else {
-						_nueva.porcentaje = 100;
-						comisiones.participaciones.addItem(_nueva);
-					}
-
-
-					dispatchEvent(new Event("_changeComisiones"));
-
-				} else if (comisiones.participaciones.length == 1) {
-					ParticipacionVendedor(comisiones.participaciones[0]).vendedor = vendedor;
-					dispatchEvent(new Event("_changeComisiones"));
-
-				}
-			}
-
-			if (cliente.preciosVenta && !emitido) {
-				preciosVenta = null;
-
-				for each (var pvu:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
-					if (pvu.codigo == cliente.preciosVenta.codigo) {
-						preciosVenta = cliente.preciosVenta;
-						break;
-					}
-				}
-
-				if (!preciosVenta) {
-					var precioVentaId:String = String(CatalogoFactory.getInstance().parametrosAdministracion.precioVentaIdParAdm);
-					for each (var pvu2:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
-						if (pvu2.codigo == precioVentaId) {
-							preciosVenta = pvu2;
+				vendedor = null;
+				
+				if (cliente.vendedor) {
+					vendedor = cliente.vendedor;
+				} else {
+					for each (var v:Vendedor in CatalogoFactory.getInstance().vendedores) {
+						if (v.codigo == "099") {
+							vendedor = v;
 							break;
 						}
 					}
 				}
-			}
-
-			var hayLineasVenta:Boolean = !esRecibo() && (lineas.lineas && (lineas.lineas.length > 1 || Number(LineaDocumento(lineas.lineas[0]).cantidad) > 0));
-			if (!emitido && (moneda == null || !hayLineasVenta)) {
-				var mdaCliente:Moneda = (comprobante.esProceso90()) ? CatalogoFactory.getInstance().monedas[1] : ((comprobante.esProceso14()) ? CatalogoFactory.getInstance().monedas[4] : (comprobante.esProceso80() ? CatalogoFactory.getInstance().monedas[0] : (cliente.moneda ? cliente.moneda : CatalogoFactory.getInstance().monedas[1])));
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
-
-				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+				
+				if (vendedor) {
+					if (comisiones.participaciones.length == 0) {
+						var _nueva:ParticipacionVendedor = new ParticipacionVendedor();
+						_nueva.vendedor = vendedor;
+						
+						var encargadoDeCuenta:Vendedor;
+						if (cliente.encargadoCuenta) {
+							for each (var v:Vendedor in CatalogoFactory.getInstance().vendedores) {
+								if (cliente.encargadoCuenta == v.codigo) {
+									encargadoDeCuenta = v;
+									break;
+								}
+							}
+						}
+						
+						if (encargadoDeCuenta && (encargadoDeCuenta.codigo != vendedor.codigo)) {
+							var _nueva2:ParticipacionVendedor = new ParticipacionVendedor();
+							_nueva2.vendedor = encargadoDeCuenta;
+							
+							_nueva.porcentaje = 50;
+							_nueva2.porcentaje = 50;
+							
+							comisiones.participaciones.addItem(_nueva);
+							comisiones.participaciones.addItem(_nueva2);
+						} else {
+							_nueva.porcentaje = 100;
+							comisiones.participaciones.addItem(_nueva);
+						}
+						
+						
+						dispatchEvent(new Event("_changeComisiones"));
+						
+					} else if (comisiones.participaciones.length == 1) {
+						ParticipacionVendedor(comisiones.participaciones[0]).vendedor = vendedor;
+						dispatchEvent(new Event("_changeComisiones"));
+						
+					}
+				}
+				
+				if (cliente.preciosVenta) {
+					preciosVenta = null;
+					
+					for each (var pvu:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
+						if (pvu.codigo == cliente.preciosVenta.codigo) {
+							preciosVenta = cliente.preciosVenta;
+							break;
+						}
+					}
+					if (!preciosVenta) {
+						var precioVentaId:String = String(CatalogoFactory.getInstance().parametrosAdministracion.precioVentaIdParAdm);
+						for each (var pvu2:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
+							if (pvu2.codigo == precioVentaId) {
+								preciosVenta = pvu2;
+								break;
+							}
+						}
+					}
+				}
+				
+				var hayLineasVenta:Boolean = !esRecibo() && (lineas.lineas && (lineas.lineas.length > 1 || Number(LineaDocumento(lineas.lineas[0]).cantidad) > 0));
+				if (moneda == null || !hayLineasVenta) {
+					var mdaCliente:Moneda = (comprobante.esProceso90()) ? CatalogoFactory.getInstance().monedas[1] : ((comprobante.esProceso14()) ? CatalogoFactory.getInstance().monedas[4] : (comprobante.esProceso80() ? CatalogoFactory.getInstance().monedas[0] : (cliente.moneda ? cliente.moneda : CatalogoFactory.getInstance().monedas[1])));
+					var remObj:RemoteObject = new RemoteObject();
+					remObj.destination = "CreatingRpc";
+					remObj.channelSet = ServerConfig.getInstance().channelSet;
+					remObj.addEventListener(FaultEvent.FAULT, handleFault);
+					
+					remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 						var esCotizacionDeVenta:Boolean = evt.result as Boolean;
 						if (esCotizacionDeVenta) {
 							moneda = mdaCliente;
@@ -616,9 +612,10 @@ public class Documento extends DocumentoBase {
 							}
 						}
 					});
-
-				remObj.showBusyCursor = false;
-				remObj.esCotizacionDeVenta(comprobante.codigo);
+					
+					remObj.showBusyCursor = false;
+					remObj.esCotizacionDeVenta(comprobante.codigo);
+				}
 			}
 			
 			if (cliente.contacto.ctoRUT && cliente.contacto.ctoRUT.length == 12) {
@@ -693,7 +690,6 @@ public class Documento extends DocumentoBase {
 		}
 
 		update();
-
 	}
 
 	public function updateMoneda(moneda1:String, moneda2:String, value:BigDecimal):BigDecimal {
@@ -890,7 +886,6 @@ public class Documento extends DocumentoBase {
 		}
 	}
 
-
 	public function getTotalExacto():BigDecimal {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
@@ -981,7 +976,6 @@ public class Documento extends DocumentoBase {
 			}
 		}
 		return sum;
-
 	}
 
 
@@ -1491,7 +1485,7 @@ public class Documento extends DocumentoBase {
 		doc.registroFecha = new Date();
 		doc.registroHora = new Date();
 
-		if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+		if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 			doc.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
 		}
 		if (CatalogoFactory.getInstance().entrega.length > 0) {

@@ -103,7 +103,7 @@
 				var permiso:String = "";
 				
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
-				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+				if (loggedUser.esSupervisor()) {
 					permiso = "Supervisor";
 				} else if (loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 					permiso = "Facturación";

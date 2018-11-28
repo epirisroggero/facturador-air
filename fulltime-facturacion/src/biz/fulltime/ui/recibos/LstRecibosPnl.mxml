@@ -373,7 +373,7 @@
 			}
 			
 			protected function hasPerm():Boolean {
-				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR 
+				if (GeneralOptions.getInstance().loggedUser.esSupervisor()
 					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR
 					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 					

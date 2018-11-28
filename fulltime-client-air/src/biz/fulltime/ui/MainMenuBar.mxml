@@ -97,7 +97,7 @@
 					menuProvider.appendChild(m.copy());
 				}
 				
-				if (user.permisoId != Usuario.USUARIO_SUPERVISOR) {
+				if (!user.esSupervisor()) {
 					delete menuProvider.menu[2].menuitem[7];
 					delete menuProvider.menu[2].menuitem[6];
 				}
@@ -156,8 +156,6 @@
 				} else if (user.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR) {
 					delete menuProvider.menu[3];
 				}
-				
-
 
 				parseAccelerators(menuProvider.menu);				
 				

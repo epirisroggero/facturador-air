@@ -574,7 +574,7 @@
 			
 			private function showAntecedentesCompra():Boolean {
 				var result:Boolean = 
-					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || 
+					GeneralOptions.getInstance().loggedUser.esSupervisor() || 
 					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR ||
 					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION;
 				
@@ -583,7 +583,7 @@
 			
 			private function showAntecedentesVenta():Boolean {
 				var result:Boolean = 
-					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || 
+					GeneralOptions.getInstance().loggedUser.esSupervisor() || 
 					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR || 
 					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES || 
 					GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR ||
@@ -620,13 +620,13 @@
 			</s:HGroup>
 
 			<s:CheckBox id="chbActivo" fontSize="14" fontWeight="normal" change="chbActivo_changeHandler(event)" label="Activo" selected="{articulo.activo}" alpha="1.0"
-						enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}" />
+						enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}" />
 
 			<s:Spacer width="20" />
 			<s:Button id="cmdRefrescar" height="36" click="cmdRefrescar_clickHandler(event)" label="Refrescar" styleName="refrescarButton16" />
 			<s:Button id="cmdEditar" click="cmdEditar_clickHandler(event)" label="Editar" styleName="editarArticulo"
-					  includeInLayout="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}"
-					  visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}" />
+					  includeInLayout="{GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}"
+					  visible="{GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR}" />
 		</s:HGroup>
 
 		<mx:HRule width="100%" />

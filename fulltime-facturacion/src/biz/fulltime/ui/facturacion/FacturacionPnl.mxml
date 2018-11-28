@@ -730,7 +730,7 @@
 			protected function cmdGuardar_clickHandler(event:MouseEvent, close:Boolean = false):void {
 				emitiendo_documento = false;
 				
-				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 					//if (!_documento.usuIdAut) {
 					_documento.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
 					//}
@@ -1800,7 +1800,7 @@
 
 				}
 				
-				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 					emitirFacturaOk();
 				} else if (!_documento.usuIdAut || (_documento.cliente && _documento.cliente.categCliId == 'G')) {
 					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
@@ -1856,7 +1856,7 @@
 									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 									helpWindow = null;
 								
-									if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+									if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 										emitirFacturaOk();
 										
 									} else if (!_documento.usuIdAut || (_documento.cliente && _documento.cliente.categCliId == 'G')) {
@@ -1917,7 +1917,7 @@
 				running = true;
 				
 				if (_documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.COMPRA_CREDITO) {
-					if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR && 
+					if (GeneralOptions.getInstance().loggedUser.esSupervisor() && 
 						(_documento.comprobante.codigo == '102' || _documento.comprobante.codigo == '103' || _documento.comprobante.codigo == '202' || _documento.comprobante.codigo == '203')) {
 						
 						var remObj:RemoteObject = new RemoteObject();
@@ -2519,7 +2519,7 @@
 			}
 
 			protected function cmdConvertirCotizacion_clickHandler(event:MouseEvent):void {
-				if (GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 					convertirCotizacion();
 				} else if ((_documento.cliente && _documento.cliente.categCliId == 'G')) {
 					if (helpWindow == null) {
@@ -2696,9 +2696,10 @@
 
 			protected function cmdMovimientoStock_clickHandler(event:MouseEvent):void {
 				var permisoId:String = GeneralOptions.getInstance().loggedUser.permisoId;
+				
 				var codigo:String = _documento.comprobante.codigo;
 
-				if (permisoId == Usuario.USUARIO_SUPERVISOR || codigo == "70" || codigo == "80" || codigo == "90" || codigo == "130") {
+				if (GeneralOptions.getInstance().loggedUser.esSupervisor() || codigo == "70" || codigo == "80" || codigo == "90" || codigo == "130") {
 					convertirMovimientoStockOk();
 				} else if ((codigo == "71" || codigo == "72" || codigo == "73" || codigo == "81" || codigo == "82" || codigo == "83" || codigo == "84" || codigo == "91" || codigo == "92" || codigo == "93" || codigo == "131" || codigo == "132" || codigo == "133") && (permisoId == Usuario.USUARIO_TITO || permisoId == Usuario.USUARIO_ADMINISTRADOR || permisoId == Usuario.USUARIO_FACTURACION)) {
 					convertirMovimientoStockOk();
@@ -3065,13 +3066,13 @@
 						} else {
 							return true;
 						}
-					} else if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+					} else if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 						return true;
 					} 
 					return false;
 
 				} else if (_documento.esSolicitudCompra) {
-					if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+					if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
 						if (_documento.comprobante.codigo == "100" || _documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "110" || _documento.comprobante.codigo == "120") {
 							return true;
 						}
@@ -3296,7 +3297,7 @@
 			}
 
 			protected function cmdConvertirSol_clickHandler(event:MouseEvent):void {
-				if ((GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION)) {
+				if ((GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION)) {
 
 					convertirSolicitudAut();
 				} else if (_documento.usuIdAut) {
@@ -4007,7 +4008,7 @@
 													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 													   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
 													   next_focus="{txtRazonSocial}" previous_focus="{txtNumber}" selectedItem="{_documento.cliente}" dropDownWidth="480" dropDownRowCount="10"
-													   enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
+													   enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor() || (!_modoVisualizacion &amp;&amp; !_documento.emitido)}" />
 							<s:Label id="lblCorreoCliente" fontSize="10" fontWeight="normal" text="Correo: {_documento.cliente.contacto.ctoEmail1}"
 									 visible="{_documento.cliente &amp;&amp; _documento.cliente.contacto.ctoEmail1}" />
 						</s:VGroup>
@@ -4019,7 +4020,7 @@
 													   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 													   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus" next_focus="{txtRazonSocial}"
 													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" dropDownWidth="320" dropDownRowCount="10" 
-													   enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
+													   enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor() || (!_modoVisualizacion &amp;&amp; !_documento.emitido)}" />
 							<s:Label id="lblCorreoProveedor" fontSize="10" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
 									 visible="{_documento.proveedor &amp;&amp; _documento.proveedor.contacto.ctoEmail1}" />
 						</s:VGroup>
@@ -4303,9 +4304,9 @@
 						visible="{!modoVentana &amp;&amp; _documento.isEmitible() &amp;&amp; !_modoVisualizacion &amp;&amp; !_documento.emitido &amp;&amp; !_documento.esCotizacionDeVenta}" />
 			<s:Spacer width="100%" />
 			<s:Button id="cmdVerificarVentas" click="cmdVerificarVentas_clickHandler(event)" styleName="costosButton" label="Costos" toolTip="Verificar costos"
-					  includeInLayout="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR &amp;&amp;
+					  includeInLayout="{GeneralOptions.getInstance().loggedUser.esSupervisor() &amp;&amp;
 					  				  	(_documento.comprobante.codigo == '102' || _documento.comprobante.codigo == '103' || _documento.comprobante.codigo == '202' || _documento.comprobante.codigo == '203')}"
-					  visible="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR &amp;&amp; 
+					  visible="{GeneralOptions.getInstance().loggedUser.esSupervisor() &amp;&amp; 
 					  					(_documento.comprobante.codigo == '102' || _documento.comprobante.codigo == '103' || _documento.comprobante.codigo == '202' || _documento.comprobante.codigo == '203')}"/>
 
 			<s:Button id="cmdConvertir" click="cmdConvertirCotizacion_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir documento"
@@ -4336,7 +4337,7 @@
 			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Borrar" toolTip="Borrar documento"
 					  enabled="{!_documento.emitido &amp;&amp; !_documento.nuevo}" visible="{!_modoVisualizacion &amp;&amp; !modoVentana}" includeInLayout="{!_modoVisualizacion &amp;&amp; !modoVentana}" focusEnabled="false" />
 			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" visible="{showGuardar &amp;&amp; !_modoVisualizacion}"
-					  includeInLayout="{showGuardar &amp;&amp; !_modoVisualizacion}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
+					  includeInLayout="{GeneralOptions.getInstance().loggedUser.esSupervisor() || (showGuardar &amp;&amp; !_modoVisualizacion)}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
 			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" enabled="{!_documento.nuevo}" includeInLayout="{showEMail}"
 					  visible="{showEMail}" focusEnabled="false" />
 

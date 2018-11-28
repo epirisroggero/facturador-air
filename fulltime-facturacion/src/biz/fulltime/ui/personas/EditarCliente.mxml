@@ -650,7 +650,7 @@
 			[Bindable(event = "_changeCliente")]
 			public function hasPerm():Boolean {
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
-				if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+				if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
 					return true;
 				}
 				if (esVendedorJunior()) {

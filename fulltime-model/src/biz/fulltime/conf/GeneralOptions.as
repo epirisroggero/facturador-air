@@ -179,6 +179,7 @@ public class GeneralOptions extends EventDispatcher {
 	public function set articulosServicio(value:ArrayCollection):void {
 		_articulosServicio = value;
 	}
+	
 
 	/**
 	 * Cargar articulos de servicio.

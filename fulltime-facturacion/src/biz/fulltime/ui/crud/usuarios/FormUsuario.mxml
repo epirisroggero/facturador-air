@@ -54,6 +54,7 @@
 				if (_changeUsuario) {
 					_changeUsuario = false;
 					
+					_permisoActual = null;
 					for each(var p:Object in lstPermisos) {
 						if (usuarioActual.permisoId == p.value) {
 							_permisoActual = p;	
@@ -143,16 +144,20 @@
 				
 				remObj.showBusyCursor = true;
 			
-				_usuarioActual.usuEmail = txtEmail.text;
 				_usuarioActual.nombre = txtNombre.text;
-				_usuarioActual.usuNotas = txtNotas.text;
-				_usuarioActual.permisoId = ddlPermiso.selectedItem.value;
-				if (_usuarioActual.permisoId == "V2" || _usuarioActual.permisoId == "V" || _usuarioActual.permisoId == "V3" || _usuarioActual.permisoId == "AC") {
-					_usuarioActual.venId = cmbVendedor.selectedItem.codigo;
-				} else {
-					_usuarioActual.venId = null;
-				}
-			
+				_usuarioActual.usuEmail = txtEmail.text;
+				_usuarioActual.usuNotas = txtNotas.text;				
+				_usuarioActual.usuTipo = chbSupervisor.selected ? "S" : "N";
+				_usuarioActual.permisoId = chbSupervisor.selected ? "S" : ddlPermiso.selectedItem.value;
+				
+				if (_permisoActual && (_permisoActual.value == 'AC' || _permisoActual.value == 'V' || _permisoActual.value == 'V2' || _permisoActual.value == 'V3')) {
+					if (!cmbVendedor.selectedItem) {
+						Alert.show("Para los usuarios vendedores es necesario ingresar un vendedor");
+						return;
+					}
+				}				
+				_usuarioActual.venId = cmbVendedor.selectedItem ? cmbVendedor.selectedItem.codigo : null;
+
 				remObj.updateUsuario(_usuarioActual);
 			}
 			
@@ -182,10 +187,6 @@
 			
 			protected function lstTUsuario_selectionChangeHandler(event:GridSelectionEvent):void {
 				usuarioActual = lstTUsuario.selectedItem as Usuario;
-				/*callLater(function():void {
-					txtNombre.setFocus();
-				})*/;
-				
 			}
 			
 			public function codigoNombreLabelFunction(item:Object):String {
@@ -201,6 +202,12 @@
 			
 			protected function ddlPermiso_changeHandler(event:IndexChangeEvent):void {
 				_permisoActual = ddlPermiso.selectedItem;
+			}
+						
+			protected function chbSupervisor_changeHandler(event:Event):void {
+				if (chbSupervisor.selected) {
+					_permisoActual = lstPermisos.getItemAt(3); 	
+				}
 			}
 			
 		]]>
@@ -256,13 +263,13 @@
 						<s:FormItem label="Activo">
 							<s:CheckBox width="100" selected="{usuarioActual.usuActivo == 'S'}" enabled="false"/>
 						</s:FormItem>
-						<s:FormItem label="Tipo">
-							<s:TextInput id="txtTipo" width="60" text="{usuarioActual.usuTipo}" enabled="false" />
+						<s:FormItem label="Supervisor">
+							<s:CheckBox id="chbSupervisor" width="100" selected="{usuarioActual.usuTipo == 'S'}" change="chbSupervisor_changeHandler(event)"/>
 						</s:FormItem>
-						<s:FormItem label="Permiso">
+						<s:FormItem label="Permiso" visible="{!chbSupervisor.selected}">
 							<s:DropDownList id="ddlPermiso" width="100%" textAlign="left" labelField="label" dataProvider="{lstPermisos}" selectedItem="{_permisoActual}" change="ddlPermiso_changeHandler(event)" />
 						</s:FormItem>
-						<s:FormItem label="Vendedor" visible="{_permisoActual &amp;&amp;(_permisoActual.value == 'AC' || _permisoActual.value == 'V' || _permisoActual.value == 'V2' || _permisoActual.value == 'V3')}">
+						<s:FormItem label="Vendedor">
 							<components1:MyAutoComplete id="cmbVendedor" width="100%" textAlign="left"
 													   dataProvider="{ CatalogoFactory.getInstance().vendedores }" labelField="nombre" matchType="anyPart" prompt="Seleccionar Vendedor"
 													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
@@ -270,10 +277,9 @@
 													   backspaceAction="focus" next_focus="{txtNotas}" previous_focus="{ddlPermiso}" dropShadowVisible="true"
 													   dropDownItemRenderer="{ dropDownItemRenderer }" selectedItem="{_vendedor}"/>
 						</s:FormItem>
-
 						
-						<s:FormItem width="100%" height="100%" label="Notas">
-							<s:TextArea id="txtNotas" width="100%" height="60" text="{usuarioActual.usuNotas}" />
+						<s:FormItem label="Notas">
+							<s:TextArea id="txtNotas" width="100%" height="120" text="{usuarioActual.usuNotas}" />
 						</s:FormItem>
 					</s:Form>
 					<s:Spacer height="100%" />

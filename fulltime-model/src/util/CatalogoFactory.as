@@ -1248,7 +1248,7 @@ public class CatalogoFactory extends EventDispatcher {
 	public function get usuariosClaveSupervisora():ArrayCollection {
 		var aux:ArrayCollection = new ArrayCollection();
 		for each (var user:Usuario in _usuarios) {
-			if (user.claveSup && user.claveSup.length > 0 && user.permisoId == Usuario.USUARIO_SUPERVISOR) {
+			if (user.claveSup && user.claveSup.length > 0 && user..esSupervisor()) {
 				aux.addItem(user);
 			}
 		}

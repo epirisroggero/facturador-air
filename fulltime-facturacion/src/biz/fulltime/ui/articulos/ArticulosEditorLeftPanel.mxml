@@ -55,7 +55,7 @@
 
 			protected function creationCompleteHandler(event:FlexEvent):void {
 				var user:Usuario = GeneralOptions.getInstance().loggedUser;
-				hasPermSupervisor = user.permisoId == Usuario.USUARIO_SUPERVISOR;
+				hasPermSupervisor = user.esSupervisor();
 
 				for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
 					var familia:Object = new Object();

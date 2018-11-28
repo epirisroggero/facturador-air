@@ -345,7 +345,7 @@
 					<s:Label width="100%" fontSize="16" fontWeight="bold" text="{contacto.nombre}" maxDisplayedLines="1"/>
 					<s:HGroup height="100%" verticalAlign="middle">
 						<s:CheckBox id="chbActivo" label="Activo" selected="{contacto.ctoActivo == 'S'}" alpha="1.0" change="chbActivo_changeHandler(event)" fontWeight="bold"
-									enabled="{GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR}" fontSize="14"/>
+									enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor()}" fontSize="14"/>
 						
 					</s:HGroup>
 					<s:Spacer width="20"/>

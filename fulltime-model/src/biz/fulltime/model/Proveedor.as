@@ -14,6 +14,7 @@ import mx.managers.PopUpManager;
 import mx.rpc.events.FaultEvent;
 import mx.rpc.events.ResultEvent;
 import mx.rpc.remoting.RemoteObject;
+import mx.styles.StyleManager;
 
 import spark.components.TitleWindow;
 
@@ -222,7 +223,11 @@ public class Proveedor extends CodigoNombreEntity {
 
 
 	private function handleFault(event:FaultEvent):void {
-		Alert.show(event.fault.faultString, "Error");
+		var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+		if (!message) {
+			message = event.message.toString();
+		}				
+		Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
 	}
 
 

@@ -574,7 +574,7 @@
 			}
 
 			private function handleFault(event:FaultEvent):void {
-				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
 				if (!message) {
 					message = event.message.toString();
 				}				
@@ -1629,8 +1629,8 @@
 				docVin.tomarCamposDelCliente(recibo.cliente.codigo);
 				docVin.docTCC = recibo.docTCC;
 				
-				// Seteo el recibo que lo genera como el prevDocId
-				docVin.prevDocId = recibo.docId;
+				// Seteo el recibo que lo genera como el processId
+				docVin.processId = recibo.docId;
 				
 				var razonCFERef:String = "";
 				
@@ -1829,7 +1829,7 @@
 			}
 			
 			protected function cmdAbrirNotaCredito_clickHandler(event:MouseEvent):void {
-				dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, recibo.prevDocId));
+				dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, recibo.processId));
 			}
 			
 			protected function cmdDocumentos_clickHandler(event:MouseEvent):void {
@@ -2558,10 +2558,10 @@
 						  visible="{!_modoVisualizacion }" includeInLayout="{!_modoVisualizacion}" />
 
 			<s:Button id="cmdAbrirNotaCredito" click="cmdAbrirNotaCredito_clickHandler(event)" styleName="verButton" label="Visualizar NCF" toolTip="Visualizar N/C 36 Financiera" 
-					  focusEnabled="false" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.prevDocId &amp;&amp; recibo.serie != 'A'}" 
+					  focusEnabled="false" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.processId &amp;&amp; recibo.serie != 'A'}" 
 					  enabled="{tieneDescuentos}"/>
 			<s:Button id="cmdCrearNotaCredito" click="cmdCrearNotaCredito_clickHandler(event)" styleName="nuevoButton" label="Nota Crédito" toolTip="Generar N/C 36 Financiera" 
-					  focusEnabled="false" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.prevDocId &amp;&amp; recibo.serie != 'A'}" 
+					  focusEnabled="false" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.processId &amp;&amp; recibo.serie != 'A'}" 
 					  enabled="{tieneDescuentos}"/>
 			
 			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Eliminar" toolTip="Borrar documento"

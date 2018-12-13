@@ -1407,7 +1407,7 @@
 				});
 				remTrazabilidad.addEventListener(FaultEvent.FAULT, handleFault);
 				
-				remTrazabilidad.getTrazabilidad((_documento.prevDocId && _documento.prevDocId.length > 0 && _documento.prevDocId != "NaN" && _documento.prevDocId != "0") ? _documento.prevDocId : _documento.docId);
+				remTrazabilidad.getTrazabilidad((_documento.processId && _documento.processId.length > 0 && _documento.processId != "NaN" && _documento.processId != "0") ? _documento.processId : _documento.docId);
 			}
 			
 			protected function cmdAuditoria_clickHandler(event:MouseEvent):void {

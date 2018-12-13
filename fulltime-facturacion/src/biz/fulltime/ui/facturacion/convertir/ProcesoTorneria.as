@@ -117,10 +117,10 @@ public class ProcesoTorneria extends EventDispatcher {
 			documento.notas = doc.notas;
 			documento.cuotasDocumento = doc.cuotasDocumento;
 			
-			if (doc.prevDocId && doc.prevDocId.length > 0) {
-				documento.prevDocId = doc.prevDocId;
+			if (doc.processId && doc.processId.length > 0) {
+				documento.processId = doc.processId;
 			} else {
-				documento.prevDocId = String(doc .docId);
+				documento.processId = String(doc.docId);
 			}
 			documento.usuIdAut = doc.usuIdAut;
 			
@@ -185,7 +185,7 @@ public class ProcesoTorneria extends EventDispatcher {
 
 	
 	public function handleFault(event:FaultEvent):void {
-		var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+		var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
 		if (!message) {
 			message = event.message.toString();
 		}				

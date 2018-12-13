@@ -6,6 +6,7 @@ import mx.collections.ArrayCollection;
 import mx.controls.Alert;
 import mx.rpc.events.FaultEvent;
 import mx.rpc.remoting.RemoteObject;
+import mx.styles.StyleManager;
 
 [Bindable]
 [RemoteClass(alias="uy.com.tmwc.facturator.entity.LineasDocumento")]
@@ -64,7 +65,12 @@ public class LineasDocumento extends EventDispatcher {
 	}
 
 	private function handleFault(event:FaultEvent):void {
-		Alert.show(event.message.toString(), "Error");
+		var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+		if (!message) {
+			message = event.message.toString();
+		}				
+		Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+
 	}
 
 }

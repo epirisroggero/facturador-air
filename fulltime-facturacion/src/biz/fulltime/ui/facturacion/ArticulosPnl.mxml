@@ -9,12 +9,15 @@
 			import biz.fulltime.ui.components.HelpPnl;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
 			
+			import spark.components.Button;
 			import spark.components.gridClasses.CellPosition;
+			import spark.layouts.HorizontalLayout;
 
 			private var _articulo:Articulo;
 
@@ -111,15 +114,34 @@
 					}
 				}
 				
+				dgArticulos.filterM(map, keys);
+				
+				if (dgArticulos.dataProviderLength < 1) {
+					map[colName] = "";
+					if (keys.contains(colName)) {
+						var index:int = keys.getItemIndex(colName);
+						keys.removeItemAt(index);
+					}
+					
+					dgArticulos.filterM(map, keys);
+				}
+
+				hlFilters.removeAllElements();
+				hlFilters.setVisible(keys.length > 0);
+
 				var text:String = "Filtros aplicados: " + (keys.length == 0 ? "Ninguno." : "");
-				for each (var i:String in keys)  {
-					text += i + ": " + map[i] + ",  ";
+				for each (var i:String in keys) {
+					var cmdRemove:Button = new Button();
+					cmdRemove.label = "" + getName(i) + ": " + map[i];
+					cmdRemove.id = i;
+					cmdRemove.addEventListener(MouseEvent.CLICK, cmdButton_clickHandler);
+					cmdRemove.styleName = "cerrarButton";
+					
+					hlFilters.addElement(cmdRemove);
 				}
 				lblFilters.text = text;
 				
 				var posX:int = cellPos.columnIndex;
-
-				dgArticulos.filterM(map, keys);
 
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
@@ -131,6 +153,61 @@
 					}
 				});
 
+			}
+			
+			protected function cmdButton_clickHandler(event:MouseEvent):void {
+				var colName:String = event.target.id;
+
+				var index:int = keys.getItemIndex(colName);
+				keys.removeItemAt(index);
+
+				dgArticulos.filterM(map, keys);
+								
+				hlFilters.removeAllElements();
+				hlFilters.setVisible(keys.length > 0);
+				
+				var text:String = "Filtros aplicados: " + (keys.length == 0 ? "Ninguno" : "");
+				for each (var i:String in keys) {
+					var cmdRemove:Button = new Button();
+					cmdRemove.label = getName(i) + ": " + map[i];
+					cmdRemove.id = i;
+					cmdRemove.addEventListener(MouseEvent.CLICK, cmdButton_clickHandler);
+					cmdRemove.styleName = "cerrarButton";
+					
+					hlFilters.addElement(cmdRemove);
+				}
+				lblFilters.text = text;
+				
+				var posX:int = cellPos.columnIndex;
+				
+				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
+				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
+				
+				callLater(function():void {
+					dgArticulos.setFocus();
+					if (dgArticulos.dataProviderLength > 0) {
+						dgArticulos.selectedCell = new CellPosition(0, posX);
+					}
+				});
+				
+			}
+
+			private function getName(field:String):String {
+				switch(field) {
+					case "codigo":
+						return "Código";
+					case "codigoOrigen":
+						return "Cod. origen";
+					case "familia":
+						return "Familia";
+					case "marca":
+						return "Marca";
+					case "nombre":
+						return "Descripción"
+						
+					default:
+						return "";
+				}
 			}
 
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
@@ -173,18 +250,18 @@
 	<fx:Declarations>
 		<s:ArrayList id="cols">
 			<s:GridColumn width="140" dataField="codigo" headerText="Código" />
-			<s:GridColumn width="130" dataField="codigoOrigen" headerText="Cod. Origen" />
+			<s:GridColumn width="130" dataField="codigoOrigen" headerText="Cod. origen" />
 			<s:GridColumn width="200" dataField="familia" headerText="Familia" labelFunction="codigoNombreLabelFunction" />
 			<s:GridColumn width="100" dataField="marca" headerText="Marca" labelFunction="codigoNombreLabelFunction" />
-			
-			<s:GridColumn dataField="nombre" headerText="Descripción" />
+			<s:GridColumn dataField="nombre" headerText="Nombre" />
 		</s:ArrayList>
 	</fx:Declarations>
 
 	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
 		<s:VGroup width="100%" height="100%" gap="0">
-			<s:HGroup width="100%" paddingBottom="5" paddingTop="5" paddingLeft="5">
+			<s:HGroup width="100%" height="42" paddingBottom="5" paddingTop="5" paddingLeft="5" verticalAlign="middle">
 				<s:Label id="lblFilters" text="Filtros aplicados: Ninguno." />
+				<s:HGroup id="hlFilters" />
 			</s:HGroup>
 			<util:FilteredDataGrid id="dgArticulos" width="100%" height="100%" doubleClick="dgArticulos_doubleClickHandler(event)" keyDown="dgArticulos_keyDownHandler(event)"
 								   doubleClickEnabled="true" dataProvider="{articulos}" editable="false" selectionMode="singleCell"

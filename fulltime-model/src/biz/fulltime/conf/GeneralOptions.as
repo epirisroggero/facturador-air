@@ -20,6 +20,7 @@ import mx.controls.Alert;
 import mx.rpc.events.FaultEvent;
 import mx.rpc.events.ResultEvent;
 import mx.rpc.remoting.RemoteObject;
+import mx.styles.StyleManager;
 
 import spark.collections.Sort;
 import spark.collections.SortField;
@@ -293,7 +294,11 @@ public class GeneralOptions extends EventDispatcher {
 	}
 
 	public function handleFault(event:FaultEvent):void {
-		Alert.show(event.fault.faultString, "Error: " + event.fault.faultCode);
+		var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+		if (!message) {
+			message = event.message.toString();
+		}				
+		Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
 	}
 
 	[Bindable]

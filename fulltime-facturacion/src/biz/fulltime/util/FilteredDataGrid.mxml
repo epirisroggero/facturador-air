@@ -19,10 +19,6 @@
 				_keys = keys;
 				
 				filtermap();
-				
-				if (this.dataProviderLength < 1) {
-					filterReset();
-				}
 			}
 
 			public function filtermap():void {

@@ -479,9 +479,9 @@
 							});
 					} else {
 						callLater(function():void {
-								// Setear el foco en el campo proveedor.-
-								cmbProveedor.setFocus();
-							});
+							// Setear el foco en el campo proveedor.-
+							cmbProveedor.setFocus();
+						});
 
 					}
 					_changeFactura = false;
@@ -1208,7 +1208,7 @@
 			}
 
 			public function handleFault(event:FaultEvent):void {
-				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
 				if (!message) {
 					message = event.message.toString();
 				}				
@@ -2451,10 +2451,10 @@
 						doc.condicion = _documento.condicion;
 						doc.notas = _documento.notas;
 						
-						if (_documento.prevDocId && _documento.prevDocId.length > 0) {
-							doc.prevDocId = _documento.prevDocId;
+						if (_documento.processId && _documento.processId.length > 0) {
+							doc.processId = _documento.processId;
 						} else {
-							doc.prevDocId = String(_documento.docId);
+							doc.processId = String(_documento.docId);
 						}
 						doc.usuIdAut = _documento.usuIdAut;
 
@@ -2796,10 +2796,10 @@
 						documento.notas = doc.notas;
 						documento.cuotasDocumento = doc.cuotasDocumento;
 
-						if (doc.prevDocId && doc.prevDocId.length > 0) {
-							documento.prevDocId = doc.prevDocId;
+						if (doc.processId && doc.processId.length > 0) {
+							documento.processId = doc.processId;
 						} else {
-							documento.prevDocId = String(doc.docId);
+							documento.processId = String(doc.docId);
 						}
 						documento.usuIdAut = doc.usuIdAut;
 
@@ -2983,10 +2983,10 @@
 						doc.fechaEmision = new Date();
 						doc.localidad = _documento.localidad;
 						doc.notas = _documento.notas;
-						if (_documento.prevDocId && _documento.prevDocId.length > 0) {
-							doc.prevDocId = _documento.prevDocId;
+						if (_documento.processId && _documento.processId.length > 0) {
+							doc.processId = _documento.processId;
 						} else {
-							doc.prevDocId = String(_documento.docId);
+							doc.processId = String(_documento.docId);
 						}
 						doc.usuIdAut = _documento.usuIdAut;
 
@@ -3159,7 +3159,7 @@
 						documento.localidad = _documento.localidad;
 						documento.notas = _documento.notas;
 						documento.cuotasDocumento = _documento.cuotasDocumento;
-						documento.prevDocId = null;
+						documento.processId = null;
 						documento.usuIdAut = _documento.usuIdAut;
 
 						documento.updateCaja();
@@ -3298,7 +3298,6 @@
 
 			protected function cmdConvertirSol_clickHandler(event:MouseEvent):void {
 				if ((GeneralOptions.getInstance().loggedUser.esSupervisor() || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION)) {
-
 					convertirSolicitudAut();
 				} else if (_documento.usuIdAut) {
 					convertirSolicitudAut();
@@ -3359,22 +3358,22 @@
 					PopUpManager.centerPopUp(helpWindow);
 
 				} else if (_documento.comprobante.codigo == '110') {
-					convertirSolicitud(_documento, "111");
+					convertirSolicitud(_documento, "111");					
 				} else if (_documento.comprobante.codigo == '120') { // SOLICITUD DE IMPORTACION -> ORDEN DE  IMPORTACION
 					convertirSolicitud(_documento, "121");
 				} else if (_documento.comprobante.codigo == '121') { // ORDEN DE IMPORTACION -> PROFORMA
-					if (tieneCambios) {
-						guardarSolicitudImp(_documento);
-					} else {
-						actualizarPrecios(_documento);
-					}
+//					if (tieneCambios) {
+//						guardarSolicitudImp(_documento);
+//					} else {
+//					}
+					actualizarPrecios(_documento);
 					convertirSolicitud(_documento, "122");
 				} else if (_documento.comprobante.codigo == '122') { // PROFORMA -> NACIONALIZACIÓN
-					if (tieneCambios) {
-						guardarSolicitudImp(_documento);
-					} else {
-						actualizarPrecios(_documento);
-					}
+//					if (tieneCambios) {
+//						guardarSolicitudImp(_documento);
+//					} else {
+//					}
+					actualizarPrecios(_documento);
 					var f:String = txtCoeficiente.text;
 					var factor:BigDecimal = BigDecimal.ONE;
 					if (f && f.length > 0) {
@@ -3428,7 +3427,6 @@
 					}
 					var nuevoDoc:Documento = Documento.getNuevoDocumento(comprobante);
 					nuevoDoc.proveedor = proveedor;
-
 					nuevoDoc.lineas = doc.lineas;
 					nuevoDoc.lineas.documento = nuevoDoc;
 					nuevoDoc.moneda = doc.moneda;
@@ -3450,18 +3448,13 @@
 					nuevoDoc.notas = doc.notas;
 					nuevoDoc.cuotasDocumento = doc.cuotasDocumento;
 					nuevoDoc.pendiente = true;
-
-					nuevoDoc.update(ajustarPrecio, factor);
-
-					if (doc.prevDocId && doc.prevDocId.length > 0) {
-						nuevoDoc.prevDocId = doc.prevDocId;
-					} else {
-						nuevoDoc.prevDocId = String(doc.docId);
-					}
 					nuevoDoc.usuIdAut = doc.usuIdAut;
 
+					nuevoDoc.update(ajustarPrecio, factor);
+					nuevoDoc.prevDocId = String(doc.docId);
+					nuevoDoc.processId = String(doc.processId);
 					nuevoDoc.updateCaja();
-
+					
 					if (comprobante.isCredito()) {
 						nuevoDoc.condicion = null;
 						nuevoDoc.planPagos = doc.planPagos ? doc.planPagos : (doc.condicion ? doc.condicion : planPagos);
@@ -3512,63 +3505,27 @@
 			}
 
 			private function altaSolicitud(oldDoc:Documento, newDoc:Documento):void {
-				var remObjR:RemoteObject = new RemoteObject();
-				remObjR.destination = "CreatingRpc";
-				remObjR.showBusyCursor = true;
-				remObjR.channelSet = ServerConfig.getInstance().channelSet;
-				remObjR.addEventListener(FaultEvent.FAULT, handleFault);
-				
-				remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
-						var remObjAlta:RemoteObject = new RemoteObject();
-						remObjAlta.destination = "CreatingRpc";
-						remObjAlta.channelSet = ServerConfig.getInstance().channelSet;
-						remObjAlta.showBusyCursor = true;
-						remObjAlta.addEventListener(FaultEvent.FAULT, handleFault);
-						remObjAlta.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
-								var docId:String = event.result as String;
-								
-								var remObj1:RemoteObject = new RemoteObject();
-								remObj1.destination = "CreatingRpc";
-								remObj1.showBusyCursor = true;
-								remObj1.channelSet = ServerConfig.getInstance().channelSet;
-								remObj1.addEventListener(FaultEvent.FAULT, handleFault);
-								remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-										factura = evt.result as Documento;
-										currentState = "default";
-										_convirtiendo = false;
-										
-										if (factura.comprobante.codigo == '101') {
-											Alert.buttonWidth = 60;
-											var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
-											alert.width = 340;
-											alert.height = 180
-										}										
-										if (factura.comprobante.codigo == '121') {
-											actualizarPrecios(_documento);
-										}
-									});
-								remObj1.getDocumento(docId);
-							});
-						remObjAlta.alta(newDoc);
-						
-
-					});
-				
-				
-				
-				if (oldDoc.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
-					remObjR.finalizarMovimientoStock(oldDoc);
-				} else {
-					var fanfold:String = GeneralOptions.getInstance().opciones.fanfold.remitos;
-					if (factura.comprobante.tipo == Comprobante.VENTA_CONTADO || factura.comprobante.tipo  == Comprobante.VENTA_CREDITO) {
-						fanfold = GeneralOptions.getInstance().opciones.fanfold.facturas;
-					} else if (factura.comprobante.tipo == Comprobante.NOTA_CREDITO || factura.comprobante.tipo  == Comprobante.DEVOLUCION_CONTADO) {
-						fanfold = GeneralOptions.getInstance().opciones.fanfold.remitos;
-					}
+				var remObj1:RemoteObject = new RemoteObject();
+				remObj1.destination = "CreatingRpc";
+				remObj1.showBusyCursor = true;
+				remObj1.channelSet = ServerConfig.getInstance().channelSet;
+				remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					factura = evt.result as Documento;
+					currentState = "default";
+					_convirtiendo = false;
 					
-					remObjR.emitir(oldDoc, fanfold);					
-				}
-				
+					if (factura.comprobante.codigo == '101') {
+						Alert.buttonWidth = 60;
+						var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
+						alert.width = 340;
+						alert.height = 180
+					}										
+					if (factura.comprobante.codigo == '121') {
+						actualizarPrecios(_documento);
+					}
+				});
+				remObj1.convertirMovimientoStock(oldDoc, newDoc, tieneCambios);
 
 			}
 
@@ -3593,7 +3550,6 @@
 							} else {
 								parent = Sprite(FlexGlobals.topLevelApplication);
 							}
-
 
 							var trazabilidadPanel:FrmTrazabilidadDocumento = new FrmTrazabilidadDocumento();
 							trazabilidadPanel.documentos = listDocuments;
@@ -3628,11 +3584,10 @@
 						} else {
 							Alert.show("'" + _documento.serie + _documento.numero + " | " + _documento.comprobante.nombre + "' no tiene trazabilidad.", "Información");
 						}
-
 					});
 				remTrazabilidad.addEventListener(FaultEvent.FAULT, handleFault);
 
-				remTrazabilidad.getTrazabilidad((_documento.prevDocId && _documento.prevDocId.length > 0 && _documento.prevDocId != "NaN" && _documento.prevDocId != "0") ? _documento.prevDocId : _documento.docId);
+				remTrazabilidad.getTrazabilidad((_documento.processId && _documento.processId.length > 0 && _documento.processId != "NaN" && _documento.processId != "0") ? _documento.processId : _documento.docId);
 			}
 
 			protected function cmdAuditoria_clickHandler(event:MouseEvent):void {
@@ -3928,6 +3883,26 @@
 				remObjEFactura.showBusyCursor = true;
 				remObjEFactura.updateDocumento(_documento);
 				
+			}
+			
+			protected function cmdVolver_clickHandler(event:MouseEvent):void {
+				var alert:Alert = Alert.show("Este comprobante y los posteriores del proceso serán borrados.\n¿Esta usted seguro?", "Volver al paso anterior", Alert.YES + Alert.NO, null, myCloseHandler, mediaIcon);
+				alert.height = 200;
+			}
+			
+			private function myCloseHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					var remObj1:RemoteObject = new RemoteObject();
+					remObj1.destination = "CreatingRpc";
+					remObj1.showBusyCursor = true;
+					remObj1.channelSet = ServerConfig.getInstance().channelSet;
+					remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+					remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						factura = evt.result as Documento;
+					});
+					
+					remObj1.moveToPrevDocument(_documento);
+				}
 			}
 			
 		]]>
@@ -4284,11 +4259,15 @@
 				</s:Label>
 			</s:HGroup>
 		</s:Group>
-
 	</s:Group>
 
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+			<s:Button id="cmdVolver" height="36" label="&lt;&lt;  Volver" styleName="textButton" toolTip="Volver al documento anterior" 
+					  visible="{_documento.prevDocId != null &amp;&amp; _documento.prevDocId != '0' &amp;&amp; _documento.nextDocId == null &amp;&amp; _documento.processId != null}" 
+					  includeInLayout="{_documento.prevDocId != null &amp;&amp; _documento.prevDocId != '0' &amp;&amp; _documento.nextDocId == null &amp;&amp; _documento.processId != null}"
+					  click="cmdVolver_clickHandler(event)"/>
+			<s:Spacer width="10" includeInLayout="{_documento.prevDocId != null &amp;&amp; _documento.prevDocId != '0' &amp;&amp; _documento.nextDocId == null &amp;&amp; _documento.processId != null}"/> 
 			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
 			<s:Spacer width="10" />
 			<components1:IconButton id="cmdTrazabilidad" click="cmdTrazabilidad_clickHandler(event)" styleName="trackingButton" label="Trazabilidad" toolTip="Trazabilidad"
@@ -4297,6 +4276,7 @@
 									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}"/>
 
 			<s:Spacer width="100%" />
+			
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
 			<s:CheckBox id="chbEnvioMailAut" selected="{GeneralOptions.getInstance().opciones.envioAutomaticoMail == 'true'}" label="Envío correo automático"

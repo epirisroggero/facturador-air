@@ -31,6 +31,7 @@ import mx.managers.PopUpManager;
 import mx.rpc.events.FaultEvent;
 import mx.rpc.events.ResultEvent;
 import mx.rpc.remoting.RemoteObject;
+import mx.styles.StyleManager;
 
 import spark.components.TitleWindow;
 
@@ -341,7 +342,12 @@ public class Cliente extends CodigoNombreEntity {
 			var alert:Alert = Alert.show(event.fault.rootCause.causedByException.message + "\n¿Desea guardar de todos modos?", "Advertencia", Alert.YES + Alert.NO, null, myCloseHandler);
 			alert.width = 480;
 		} else {
-			Alert.show(event.fault.message);
+			var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+			if (!message) {
+				message = event.message.toString();
+			}				
+			Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+
 		}		
 	}	
 

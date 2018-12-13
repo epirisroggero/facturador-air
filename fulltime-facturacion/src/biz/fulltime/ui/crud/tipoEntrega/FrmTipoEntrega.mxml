@@ -49,11 +49,11 @@
 			}
 
 			public function handleFault(event:FaultEvent):void {
-				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
 				if (!message) {
 					message = event.message.toString();
 				}				
-				Alert.show(message, "Error");
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
 			}
 
 			protected function cmdNueva_clickHandler(event:MouseEvent):void {

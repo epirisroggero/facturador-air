@@ -129,7 +129,11 @@ public class Documento extends DocumentoBase {
 
 	private var _cajaId:Number;
 
+	public var processId:String;
+	
 	public var prevDocId:String;
+	
+	public var nextDocId:String;
 
 	public var prevDocSerieNro:String;
 

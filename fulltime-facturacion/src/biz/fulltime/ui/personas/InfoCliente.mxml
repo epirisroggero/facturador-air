@@ -517,9 +517,9 @@
 				}
 			}
 
-			////////////////////////////////
+			////////////////////////////////////
 			///// COTIZACIONES PENDIENTES //////
-			////////////////////////////////
+			////////////////////////////////////
 
 			protected function cmdCotizacionesPendientes_clickHandler(event:MouseEvent):void {
 				var facPendWindow:TitleWindow = new TitleWindow();
@@ -549,8 +549,7 @@
 				facPendWindow.addElement(frmCotizaciones);
 
 				facPendWindow.closeButton.visible = true;
-			}
-			
+			}			
 			
 			private function reloadPersonas():void {
 				var personaRemObj:RemoteObject = new RemoteObject();
@@ -592,9 +591,7 @@
 				});
 				facPendWindow.addElement(frmCotizaciones);
 				
-				facPendWindow.closeButton.visible = true;
-
-				
+				facPendWindow.closeButton.visible = true;				
 			}
 			
 			private function editarPersonas(evt:Event):void {
@@ -692,7 +689,7 @@
 				if (cliente.googleMaps.indexOf("https://") >= 0) {
 					urlRequest = new URLRequest(cliente.googleMaps);
 				} else {
-					urlRequest = new URLRequest("https://www.google.com.uy/maps/" + cliente.googleMaps);
+					urlRequest = new URLRequest("https://goo.gl/maps/" + cliente.googleMaps);
 				}				
 				navigateToURL(urlRequest, "_blank");
 				

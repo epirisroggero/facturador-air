@@ -688,6 +688,8 @@
 				
 				if (cliente.googleMaps.indexOf("https://") >= 0) {
 					urlRequest = new URLRequest(cliente.googleMaps);
+				} else if (cliente.googleMaps.indexOf("@") == 0) {
+					urlRequest = new URLRequest("https://www.google.com/maps/" + cliente.googleMaps);
 				} else {
 					urlRequest = new URLRequest("https://goo.gl/maps/" + cliente.googleMaps);
 				}				

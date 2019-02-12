@@ -22,6 +22,7 @@ import mx.formatters.DateFormatter;
 import mx.rpc.events.FaultEvent;
 import mx.rpc.events.ResultEvent;
 import mx.rpc.remoting.RemoteObject;
+import mx.utils.StringUtil;
 
 import util.CatalogoFactory;
 
@@ -228,10 +229,11 @@ public class DocumentoBase extends EventDispatcher {
 		var articulo:Articulo = item as Articulo;
 		var codigo:String = articulo.codigo;
 		var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
-
+		
 		var filtrar:Boolean = false;
 		if (codigo) {
-			filtrar = codigo.toLowerCase().match(new RegExp("^" + cliente.codigo.toLowerCase() + ".", 'i'));
+			// Tengo que reemplazar el . por la Z por el tema de que el punto es un pattern en Flex 
+			filtrar = codigo.replace(".", "Z").toLowerCase().match(new RegExp("^" + cliente.codigo.toLowerCase() + "Z", 'i'));
 			if (filtrar) {
 				for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
 					if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {
@@ -242,6 +244,7 @@ public class DocumentoBase extends EventDispatcher {
 
 			}
 		}
+		
 		return filtrar;
 	}
 

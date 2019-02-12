@@ -73,6 +73,18 @@ public class Proveedor extends CodigoNombreEntity {
 	public var descuentoRecibo:String;
 	
 	public var facturaElectronica:String = "N";
+	
+	public var destinatarioCB:String;
+	
+	public var nroCuentaCB:String;
+	
+	public var bancoCB:String;
+	
+	public var sucursalCB:String;
+	
+	public var direccionCB:String;
+	
+	public var observacionesCB:String;
 
 
 	/// Persistence

@@ -352,7 +352,7 @@
 						<s:VerticalLayout gap="0" verticalAlign="middle"/>
 					</s:layout>
 					<s:HGroup width="100%" verticalAlign="middle" paddingLeft="10" paddingTop="10" paddingBottom="10">
-						<s:DropDownList id="ddlCategoriaCliente" textAlign="left" labelFunction="fixLabel" dataProvider="{CatalogoFactory.getInstance().categoriasClientes}" selectedIndex="0" width="200" change="ddlCategoriaCliente_changeHandler(event)"/>
+						<s:DropDownList id="ddlCategoriaCliente" textAlign="left" labelFunction="fixLabel" dataProvider="{CatalogoFactory.getInstance().categoriasClientes}" selectedIndex="0" width="300" change="ddlCategoriaCliente_changeHandler(event)"/>
 					</s:HGroup>
 					<s:HGroup width="100%" verticalAlign="middle" paddingLeft="16" paddingTop="5">
 						<s:Label text="Descuentos definidos" fontSize="14"/>

@@ -93,6 +93,7 @@
     <classEntry path="biz.fulltime.model.VinculosFP"/>
     <classEntry path="biz.fulltime.model.Concepto"/>
     <classEntry path="biz.fulltime.model.Marca"/>
+    <classEntry path="util.CalcularPrecioAfiladoUtils"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

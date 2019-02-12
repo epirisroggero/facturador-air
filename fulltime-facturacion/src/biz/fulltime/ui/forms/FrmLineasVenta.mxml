@@ -15,6 +15,7 @@
 			import biz.fulltime.model.ParticipacionVendedor;
 			import biz.fulltime.model.PreciosVenta;
 			import biz.fulltime.model.Usuario;
+			import biz.fulltime.ui.components.HelpPnl;
 			import biz.fulltime.ui.facturacion.AntecedentesPnl;
 			import biz.fulltime.ui.facturacion.ArticulosPnl;
 			import biz.fulltime.ui.facturacion.stockprecio.StockArticuloPnl;
@@ -99,7 +100,6 @@
 				for each (var user:Usuario in CatalogoFactory.getInstance().usuarios) {
 					if (user.permisoId == "V2" && user.venId != null) {
 						lstUsuarioDist.addItem(user.venId);
-						// trace("Usuario: " + user.codigo + " -> Vendedor: " + user.venId);
 					}
 				}
 				
@@ -154,7 +154,11 @@
 				callLater(function():void {
 						dgLineasVenta.setFocus();
 						if (dgLineasVenta.dataProvider.length > 0) {
-							dgLineasVenta.setSelectedCell(0, 1);
+							if (esAfilado()) {
+								dgLineasVenta.setSelectedCell(0, 0);
+							} else {
+								dgLineasVenta.setSelectedCell(0, 2);
+							}
 
 							currentLine = lineasVenta.lineas[0];
 							if (_deposito) {
@@ -225,7 +229,55 @@
 				var maxRow:int = 0;
 
 				if (event.keyCode == Keyboard.F1) {
-					if (cellPos.columnIndex == 2 || cellPos.columnIndex == 3) {
+					if (cellPos.columnIndex == 0) {
+						if (esAfilado()) {
+							var hlpPanel:HelpPnl = new HelpPnl();
+							hlpPanel.label0 = "Obtener ";
+							hlpPanel.label = "orden";
+							hlpPanel.addEventListener(CloseEvent.CLOSE, function (event:CloseEvent):void {
+								var helpPnl:HelpPnl = HelpPnl(event.target);
+								var ordenTrabajo:String = helpPnl.getValue();
+								
+								PopUpManager.removePopUp(event.target as IFlexDisplayObject);
+								
+								var remObj:RemoteObject = new RemoteObject();
+								remObj.destination = "CreatingRpc";
+								remObj.channelSet = ServerConfig.getInstance().channelSet;
+								remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+									var ld:LineaDocumento = evt.result as LineaDocumento;
+									if (ld) {
+										dgLineasVenta.setSelectedCell(cellPos.rowIndex, cellPos.columnIndex);
+										callLater(function():void {
+											dgLineasVenta.setFocus();
+										});
+										
+										// Obtengo la línea y le seteo los nuevos valores
+										var ld2:LineaDocumento = lineasVenta.lineas.getItemAt(cellPos.rowIndex) as LineaDocumento;
+										ld2.cantidad = ld.cantidad;
+										ld2.precio = ld.precio;
+										ld2.articulo = ld.articulo;
+										ld2.concepto = ld.concepto;
+										ld2.diametro = ld.diametro;
+										ld2.cascados = ld.cascados;
+										ld2.afilador = ld.afilador;
+										ld2.notas = ld.notas;
+										
+										ld2.marca = ld.marca;
+										ld2.rotos = ld.rotos;
+										
+										ld2.ordenTrabajo = ordenTrabajo;
+									}
+								});
+								remObj.addEventListener(FaultEvent.FAULT, handleFault);
+								remObj.showBusyCursor = false;
+								remObj.getLineaDocumento(ordenTrabajo);
+								
+							});						
+							PopUpManager.addPopUp(hlpPanel, this, true);
+							PopUpManager.centerPopUp(hlpPanel);
+						}
+						
+					} else if (cellPos.columnIndex == 3 || cellPos.columnIndex == 4) {
 						if (helpWindow) {
 							return;
 						}
@@ -247,7 +299,7 @@
 						articulosPnl.addEventListener(CloseEvent.CLOSE, articulosCloseHandler);
 
 						helpWindow.addElement(articulosPnl);
-					} else if (cellPos.columnIndex == 5) {
+					} else if (cellPos.columnIndex == 6) {
 						// Cancela el comportamiento por defecto al presionar la tecla 'F2'.						
 						event.preventDefault();
 
@@ -278,7 +330,7 @@
 						helpWindow.closeButton.visible = false;
 					}
 				} else if (event.keyCode == Keyboard.F2) { // Se presiono la tecla 'F2'
-					if (cellPos.columnIndex == 1 || cellPos.columnIndex == 2) {
+					if (cellPos.columnIndex == 3 || cellPos.columnIndex == 4) {
 						event.preventDefault();
 						mostrarAntecedentes(event);
 					}
@@ -303,6 +355,7 @@
 						}
 				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					
 				} else if (event.keyCode == Keyboard.ENTER) {
 					var count:int = 0;
 					var columns:ArrayCollection = new ArrayCollection(dgLineasVenta.columns.toArray());
@@ -324,11 +377,12 @@
 						while (!columns[cellPos.columnIndex + i].visible) {
 							i++;
 						}
+						
 						colIndex = cellPos.columnIndex + i;
 						rowIndex = cellPos.rowIndex;
 					}
 					if (colIndex > maxCol) {
-						colIndex = 1;
+						colIndex = esAfilado() ? 0 : 2;
 						if (rowIndex == maxRow) {
 							if (hasPermEdition())
 								if (maxRow + 2 > 17 && !documento.comprobante.esImportacion()) {
@@ -367,14 +421,14 @@
 				tieneCambios = true;
 
 				callLater(function():void {
-						var row:int = lineasVenta.lineas.length - 1;
-						var col:int = 1;
-						dgLineasVenta.setSelectedCell(row, col);
+					var row:int = lineasVenta.lineas.length - 1;
+					var col:int = esAfilado() ? 0 : 2;
+					dgLineasVenta.setSelectedCell(row, col);
 
-						callLater(function():void {
-								dgLineasVenta.setFocus();
-							});
-					});
+					callLater(function():void {
+							dgLineasVenta.setFocus();
+						});
+				});
 
 
 			}
@@ -464,6 +518,7 @@
 
 				remObj.activarArticulos(articulos);
 			}
+			
 
 			private function handleFault(event:FaultEvent):void {
 				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
@@ -480,30 +535,79 @@
 			protected function dgLineasVenta_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void {
 				var count:int = 0;
 				var columns:ArrayCollection = new ArrayCollection(dgLineasVenta.columns.toArray());
+				var colIndex:int = 0;
+				
+				
+				var ld2:LineaDocumento = lineasVenta.lineas.getItemAt(event.rowIndex) as LineaDocumento;
+				
+				if (event.columnIndex == 0 && esAfilado()) {
+					var remObj:RemoteObject = new RemoteObject();
+					remObj.destination = "CreatingRpc";
+					remObj.channelSet = ServerConfig.getInstance().channelSet;
+					remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						var ld:LineaDocumento = evt.result as LineaDocumento;
+						if (ld) {
+							// Obtengo la linea y le seteo los nuevos valores
+							ld2.cantidad = ld.cantidad;
+							ld2.precio = ld.precio;
+							ld2.articulo = ld.articulo;
+							ld2.concepto = ld.concepto;
+							ld2.diametro = ld.diametro;
+							ld2.cascados = ld.cascados;
+							ld2.afilador = ld.afilador;
+							ld2.notas = ld.notas;
+							
+							ld2.marca = ld.marca;
+							ld2.rotos = ld.rotos;
+
+							dgLineasVenta.setSelectedCell(cellPos.rowIndex, cellPos.columnIndex);
+							callLater(function():void {
+								dgLineasVenta.setFocus();
+							});
+
+						
+						} else {
+							Alert.show("No se encontró la orden de trabajo " + ld2.ordenTrabajo);
+						}
+					});
+										
+					remObj.addEventListener(FaultEvent.FAULT, handleFault);
+					remObj.showBusyCursor = false;
+					remObj.getLineaDocumento(ld2.ordenTrabajo);
+	
+				}
+				
 				for each (var col:GridColumn in columns) {
 					if (col.visible) {
 						count++;
 					}
 				}
+				for each (var col:GridColumn in columns) {
+					if (col.dataField == event.column.dataField) {
+						break;
+					}
+					if (col.visible) {
+						colIndex++;	
+					}
+				}
+
 				var maxColIndex:int = count - 2;
 				var maxRowIndex:int = dgLineasVenta.dataProvider.length - 1;
 
-				var colIndex:int = event.columnIndex;
 				var rowIndex:int = event.rowIndex;
 
 				if (colIndex + 1 > maxColIndex) {
-					colIndex = 1;
+					colIndex = esAfilado() ? 0 : 1;
 					if (rowIndex < maxRowIndex) {
 						rowIndex += 1;
 					}
 				}
 				if (colIndex == 1 || colIndex == 2) {
 					currentLine.obtenerStock();
-					//txtStock.text = currentLine.stockValue;
 				}
 
 				callLater(function():void {
-						dgLineasVenta.setSelectedCell(rowIndex, colIndex + 1);
+						dgLineasVenta.setSelectedCell(rowIndex, esAfilado() ? colIndex : colIndex + 1);
 					});
 
 				tieneCambios = true;
@@ -531,11 +635,11 @@
 						var maxIndex:int = dgLineasVenta.dataProvider.length - 1;
 						if (dgLineasVenta.dataProvider.length >= 0) {
 							if (rowIndex == 0) {
-								dgLineasVenta.setSelectedCell(rowIndex, 0);
+								dgLineasVenta.setSelectedCell(rowIndex, esAfilado() ? 0 : 2);
 							} else if (rowIndex > maxIndex) {
-								dgLineasVenta.setSelectedCell(maxIndex, 0);
+								dgLineasVenta.setSelectedCell(maxIndex, esAfilado() ? 0 : 2);
 							} else {
-								dgLineasVenta.setSelectedCell(rowIndex, 0);
+								dgLineasVenta.setSelectedCell(rowIndex, esAfilado() ? 0 : 2);
 							}
 						}
 					});
@@ -700,11 +804,22 @@
 				}
 				return true;
 			}
+			
+			private function esAfilado():Boolean {
+				var codigo:String = documento.comprobante.codigo;
+				if (codigo == "80" || codigo == "81" || codigo == "82" || codigo == "83" || codigo == "84") {
+					return true;
+				}
+				
+				return false;
+			}
+			
 		]]>
 	</fx:Script>
 
 	<fx:Declarations>
 		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="2" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol_2" fractionalDigits="0" locale="es_ES" />
 	</fx:Declarations>
 
 	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
@@ -715,7 +830,9 @@
 							selectionChange="dgLineasVenta_selectionChangeHandler(event)" editable="{hasPermEdition()}">
 					<s:columns>
 						<s:ArrayList>
-							<s:GridColumn id="colState" width="10" minWidth="10" sortable="false" headerText="" editable="false" dataField="state" resizable="false">
+							<s:GridColumn id="colOrdenTrabajo" dataField="ordenTrabajo" width="90" minWidth="90" sortable="false" headerText="ORDEN TRABAJO" editable="true" resizable="false" visible="{esAfilado()}" />
+								
+							<s:GridColumn id="colState" width="10" minWidth="10" sortable="false" headerText="" editable="false" dataField="state" resizable="false" visible="{!esAfilado()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:GridItemRenderer textAlign="right">
@@ -786,7 +903,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="80" dataField="cantidad" headerText="Cantidad" editable="{hasPermEdition()}" rendererIsEditable="false"
+							<s:GridColumn width="80" dataField="cantidad" headerText="CANTIDAD" editable="{hasPermEdition()}" rendererIsEditable="false"
 										  itemEditor="biz.fulltime.ui.forms.DGNumStepperEditor">
 								<s:itemRenderer>
 									<fx:Component>
@@ -808,7 +925,7 @@
 								</s:itemRenderer>
 
 							</s:GridColumn>
-							<s:GridColumn width="130" dataField="articulo" headerText="Artículo" editable="{hasPermEdition()}">
+							<s:GridColumn width="130" dataField="articulo" headerText="ARTÍCULO" editable="{hasPermEdition()}">
 								<s:itemEditor>
 									<fx:Component>
 										<s:GridItemEditor>
@@ -944,7 +1061,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn dataField="concepto" resizable="false" headerText="Concepto" editable="{hasPermEdition()}">
+							<s:GridColumn dataField="concepto" resizable="false" headerText="CONCEPTO" editable="{hasPermEdition()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="left" verticalCenter="0" percentWidth="100">
@@ -1007,7 +1124,7 @@
 									</fx:Component>
 								</s:itemEditor>
 							</s:GridColumn>
-							<s:GridColumn width="80" dataField="precio" headerText="P. Unitario" editable="{hasPermEdition()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+							<s:GridColumn width="80" dataField="precio" headerText="P. UNITARIO" editable="{hasPermEdition()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1029,7 +1146,8 @@
 							</s:GridColumn>
 
 
-							<s:GridColumn width="50" dataField="descuento" headerText="Dcto." itemEditor="biz.fulltime.ui.forms.DGNumberEditor" editable="{hasPermEdition()}">
+							<s:GridColumn width="50" dataField="descuento" headerText="DCTO." itemEditor="biz.fulltime.ui.forms.DGNumberEditor" editable="{hasPermEdition()}" 
+										  visible="{!esAfilado()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1053,7 +1171,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="80" headerText="Importe" editable="false" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+							<s:GridColumn width="80" headerText="IMPORTE" editable="false" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1076,7 +1194,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="75" dataField="valorNeto" headerText="Neto" editable="{hasPermEdition()}" visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
+							<s:GridColumn width="75" dataField="valorNeto" headerText="NETO" editable="{hasPermEdition()}" visible="{!esAfilado() &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
 									<fx:Component>
@@ -1097,8 +1215,8 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="80" dataField="precioDistribuidor" headerText="Base Dist."
-										  visible="{hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
+							<s:GridColumn width="80" dataField="precioDistribuidor" headerText="BASE DIST."
+										  visible="{!esAfilado() &amp;&amp; hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
 										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor()) &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
@@ -1120,8 +1238,8 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="75" dataField="costo" headerText="Costo"
-										  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
+							<s:GridColumn width="75" dataField="costo" headerText="COSTO"
+										  visible="{!esAfilado() &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
 										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor()) 
 										  	&amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoMostrador}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
@@ -1163,7 +1281,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="60" dataField="coeficienteImp" headerText="Coeficiente" visible="{documento.comprobante.codigo == '122'}"
+							<s:GridColumn width="60" dataField="coeficienteImp" headerText="COEFICIENTE" visible="{documento.comprobante.codigo == '122'}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
 									<fx:Component>
@@ -1198,8 +1316,8 @@
 							</s:GridColumn>
 
 
-							<s:GridColumn width="60" headerText="%U.Dist" editable="false"
-										  visible="{hay_vendedor_dist &amp;&amp; !GeneralOptions.getInstance().modoMostrador &amp;&amp; (documento.nuevo || documento.permisosDocumentoUsuario.rentaDistribuidor || documento.permisosDocumentoUsuario.rentaReal) &amp;&amp; !documento.esSolicitudCompra}">
+							<s:GridColumn width="60" headerText="%U.DIST" editable="false"
+										  visible="{!esAfilado() &amp;&amp; hay_vendedor_dist &amp;&amp; !GeneralOptions.getInstance().modoMostrador &amp;&amp; (documento.nuevo || documento.permisosDocumentoUsuario.rentaDistribuidor || documento.permisosDocumentoUsuario.rentaReal) &amp;&amp; !documento.esSolicitudCompra}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer color="0x734669" fontStyle="italic" fontWeight="bold" textAlign="right">
@@ -1234,8 +1352,8 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="70" headerText="{hay_vendedor_dist  ? '%U.Fulltime' : '%Utilidad'}" editable="false"
-										  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().modoMostrador &amp;&amp; (documento.nuevo || documento.permisosDocumentoUsuario.rentaDistribuidor || documento.permisosDocumentoUsuario.rentaReal) &amp;&amp; !documento.esSolicitudCompra}">
+							<s:GridColumn width="70" headerText="{hay_vendedor_dist  ? '%U.FULLTIME' : '%UTILIDAD'}" editable="false"
+										  visible="{!esAfilado() &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().modoMostrador &amp;&amp; (documento.nuevo || documento.permisosDocumentoUsuario.rentaDistribuidor || documento.permisosDocumentoUsuario.rentaReal) &amp;&amp; !documento.esSolicitudCompra}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer color="0x734669" fontStyle="italic" fontWeight="bold" textAlign="right" verticalCenter="0">
@@ -1261,6 +1379,105 @@
 															label = outerDocument.nf_Espanol_Espanol.format(utility) + "%";
 														}
 
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							
+
+							<s:GridColumn width="140" headerText="AFILADOR" rendererIsEditable="true" visible="{esAfilado()}">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:GridItemRenderer>
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													import mx.collections.ArrayCollection;
+													
+													import spark.events.IndexChangeEvent;
+
+													public var afiladores:ArrayCollection = new ArrayCollection([
+														"Tito", "Pola", "Adrián"				
+													]);
+
+													protected function cmbAfiladores_changeHandler(event:IndexChangeEvent):void {
+														 var afilador:String = afiladores[event.newIndex];
+														 
+														 LineaDocumento(data).afilador = afilador;
+													}
+													
+												]]>
+											</fx:Script>
+											
+											<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" paddingLeft="3">
+												<s:DropDownList id="cmbAfiladores" width="100%" height="100%" change="cmbAfiladores_changeHandler(event)" borderVisible="false" 
+																dataProvider="{afiladores}" prompt="Seleccionar afilador" selectedItem="{LineaDocumento(data).afilador}"/>
+
+											</s:VGroup>
+										</s:GridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							
+							<s:GridColumn width="110" dataField="marca" headerText="MARCA" visible="{esAfilado()}" />
+
+							<s:GridColumn width="100" dataField="diametro" headerText="DIÁMETRO" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (!data) {
+															return;
+														}
+														label = outerDocument.nf_Espanol_Espanol_2.format(LineaDocumento(data).diametro);
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="100" dataField="rotos" headerText="ROTOS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (!data) {
+															return;
+														}
+														label = outerDocument.nf_Espanol_Espanol_2.format(LineaDocumento(data).rotos);
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="100" dataField="cascados" headerText="CASCADOS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (!data) {
+															return;
+														}
+														label = outerDocument.nf_Espanol_Espanol_2.format(LineaDocumento(data).cascados);
 													}
 												]]>
 											</fx:Script>

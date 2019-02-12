@@ -25,6 +25,10 @@
 			[Bindable]
 			private var esBajadasRentas:Boolean;
 
+			[Bindable]
+			private var esAfilado:Boolean;
+
+			
 			private var changeFactura:Boolean;
 
 			[Bindable]
@@ -52,7 +56,13 @@
 					hasPerm = !GeneralOptions.getInstance().modoMostrador && !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor
 						 && (factura.permisosDocumentoUsuario.rentaReal || factura.permisosDocumentoUsuario.rentaDistribuidor);
 					
-					esBajadasRentas = factura.comprobante.codigo == '98';
+					var codigo:String = factura.comprobante.codigo;
+					
+					esBajadasRentas = codigo == '98';
+					esAfilado = codigo == '80' || codigo == '81' || codigo == '82' || codigo == '83' || codigo == '84'; 
+					
+					esBajadasRentas:Boolean;
+
 				}
 			}
 
@@ -145,7 +155,7 @@
 		</s:FormItem>
 	</s:Form>
 	
-	<s:VGroup id="vgUtilidad" width="100%" height="100%" verticalAlign="middle" visible="{hasPerm &amp;&amp; !modoSolicitud &amp;&amp; !esBajadasRentas}" includeInLayout="{hasPerm &amp;&amp; !modoSolicitud &amp;&amp; !esBajadasRentas}">		
+	<s:VGroup id="vgUtilidad" width="100%" height="100%" verticalAlign="middle" visible="{!esAfilado &amp;&amp; hasPerm &amp;&amp; !modoSolicitud &amp;&amp; !esBajadasRentas}" includeInLayout="{hasPerm &amp;&amp; !modoSolicitud &amp;&amp; !esBajadasRentas}">		
 		<s:BorderContainer width="100%" backgroundAlpha=".16" backgroundColor="#DADADA" borderColor="#DADADA" minHeight="0">
 			<s:layout>
 				<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="middle" />
@@ -157,7 +167,7 @@
 					 text="Utilidad Distribuidor = { (factura.moneda != null ? factura.moneda.nombre : '') + ' ' + nf_Espanol_Espanol.format(factura.getRentaNetaDistComercial()) + ' (' + nf_Espanol_Espanol.format(factura.getUtilidadDistribuidor()) + '%)'}" />
 		</s:BorderContainer>
 	</s:VGroup>
-	<s:VGroup id="vgUtilidad2" width="100%" height="100%" verticalAlign="middle" visible="{!GeneralOptions.getInstance().modoMostrador &amp;&amp; GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; (factura.permisosDocumentoUsuario.rentaReal || factura.permisosDocumentoUsuario.rentaDistribuidor) &amp;&amp; !modoSolicitud &amp;&amp; !esBajadasRentas}">		
+	<s:VGroup id="vgUtilidad2" width="100%" height="100%" verticalAlign="middle" visible="{!esAfilado &amp;&amp; !GeneralOptions.getInstance().modoMostrador &amp;&amp; GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; (factura.permisosDocumentoUsuario.rentaReal || factura.permisosDocumentoUsuario.rentaDistribuidor) &amp;&amp; !modoSolicitud &amp;&amp; !esBajadasRentas}">		
 		<s:BorderContainer width="100%" backgroundAlpha=".16" backgroundColor="#DADADA" borderColor="#DADADA" minHeight="0">
 			<s:layout>
 				<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="middle" />

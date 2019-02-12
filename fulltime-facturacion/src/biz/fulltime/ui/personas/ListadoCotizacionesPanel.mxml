@@ -130,8 +130,6 @@
 			}
 
 			protected function cmdRemove_clickHandler(event:MouseEvent):void {
-				Alert.buttonWidth = 60;
-
 				var alert:Alert = Alert.show("¿Esta seguro de borrar las cotizaciones seleccionadas?", "Borrar cotizaciones", Alert.YES + Alert.NO, null, myCloseHandler);
 				alert.width = 340;
 				alert.height = 180

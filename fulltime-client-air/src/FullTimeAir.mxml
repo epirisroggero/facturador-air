@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
 					   xmlns:s="library://ns.adobe.com/flex/spark" xmlns:ui="biz.fulltime.ui.*" applicationComplete="windowedapplication1_applicationCompleteHandler(event)"
-					   creationComplete="application1_creationCompleteHandler(event)" initialize="initializeThemeData()" minWidth="720"
-					   minHeight="600" width="1360" height="720" title="{version}" closing="windowedapplication1_closingHandler(event)">
+					   creationComplete="application1_creationCompleteHandler(event)" initialize="initializeThemeData()" minWidth="1024"
+					   minHeight="720" width="1360" height="780" title="{version}" closing="windowedapplication1_closingHandler(event)">
 
 	<fx:Style source="facturador.css" />
 
@@ -48,7 +48,7 @@
 			public var iconSymbol:Class; 
 			
 			[Bindable]
-			public var version:String = "FullTime - Facturador v1.6.631";
+			public var version:String = "FullTime - Facturador v1.7.003";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);
@@ -63,6 +63,9 @@
 
 			protected function application1_creationCompleteHandler(event:FlexEvent):void {
 				pnlLogin.addEventListener(LoginPnl.LOGED_OK, loggedHandler);
+				
+				Alert.buttonHeight = 25;
+				Alert.buttonWidth = 80;
 
 				loadOpciones();
 			}
@@ -175,12 +178,11 @@
 			protected function windowedapplication1_closingHandler(e:Event):void {      
 				e.preventDefault();
 				
-				Alert.buttonWidth = 80;
-				Alert.buttonHeight = 25;
 				
 				var alert:Alert = Alert.show("¿Esta seguro de cerrar el Facturador?", "Salir", Alert.YES + Alert.NO, null, myCloseHandler, iconSymbol);
 				alert.width = 400;
 				alert.height = 200;
+				
 				
 			}
 						

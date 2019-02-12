@@ -15,6 +15,8 @@
 			import biz.fulltime.ui.expediciones.FrmNuevaTarea;
 			import biz.fulltime.ui.personas.NuevaPersonaEditor;
 			
+			import flash.utils.getTimer;
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
@@ -65,6 +67,9 @@
 			
 			[Bindable]
 			private var _prvIvaInc:String;
+			
+			[Bindable]
+			public var resumeInfo:String;
 
 			[Bindable]
 			public var lstFacturasIVA:ArrayCollection = new ArrayCollection([
@@ -145,6 +150,9 @@
 					movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
 					movieClipLoader.loadBytes(_proveedor.contacto.ctoBlob);
 				} */
+				
+				resumeInfo = getResumeText();				
+				
 			}
 
 			private function cancelValues(evt:MouseEvent):void {
@@ -159,6 +167,7 @@
 					dispatchEvent(new Event("_editarProveedor"));
 				}
 			}
+			
 
 			// This function below is specific to this example.
 			// It does the processing required to display the swf/png/jpeg file that we have just loaded.
@@ -491,6 +500,31 @@
 				
 			}
 			
+			public function getResumeText():String {
+				var data:String = "";
+				
+				if (proveedor.destinatarioCB) {
+					data +=  "Destinatario: " + proveedor.destinatarioCB;
+				} 
+				if (proveedor.nroCuentaCB) {
+					data += "\nCuenta: " + proveedor.nroCuentaCB; 
+				} 
+				if (proveedor.bancoCB) {
+					data += "\nBanco: " + proveedor.bancoCB;
+				} 
+				if (proveedor.sucursalCB) {
+					data += "\nSucursal: " + proveedor.sucursalCB;
+				} 
+				if (proveedor.direccionCB) {
+					data += "\nDirección: " + proveedor.direccionCB;
+				} 
+				if (proveedor.observacionesCB) {
+					data += "\n\nObservaciones: " + proveedor.observacionesCB;
+				} 
+				
+				return data;
+			}
+			
 		]]>
 	</mx:Script>
 
@@ -526,6 +560,91 @@
 							</s:Panel>
 						</s:PopUpAnchor>
 					</s:HGroup>
+					<s:Spacer width="10"/>
+					<s:HGroup height="100%" verticalAlign="middle">
+						<s:Button click="ppCuentaBancaria.displayPopUp = true" label="Cuenta Bancaria" styleName="textButton" width="120" height="32"/>
+						<s:PopUpAnchor id="ppCuentaBancaria" popUpPosition="left" bottom="0">
+							<s:Panel width="580" height="500" title="Cuenta bancaria de {proveedor.nombre}" borderAlpha="1" borderColor="0x000000" borderVisible="true" >
+								<s:layout>
+									<s:VerticalLayout horizontalAlign="center" paddingTop="10" paddingLeft="10" paddingBottom="10" paddingRight="10" gap="10" />
+								</s:layout>
+																
+								<s:HGroup width="100%" verticalAlign="middle" paddingTop="10" styleName="ItemStyle">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Destinatario" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:Label width="100%" text="{proveedor.destinatarioCB}" maxDisplayedLines="3" showTruncationTip="true" />
+									</s:BorderContainer>
+								</s:HGroup>						
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Nro. cuenta" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:Label width="100%" text="{proveedor.nroCuentaCB}" maxDisplayedLines="1" showTruncationTip="true" />
+									</s:BorderContainer>
+								</s:HGroup>
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Banco" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:Label width="100%" text="{proveedor.bancoCB}" maxDisplayedLines="2" showTruncationTip="true" />
+									</s:BorderContainer>
+								</s:HGroup>
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Sucursal" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:Label width="100%" text="{proveedor.sucursalCB}" maxDisplayedLines="2" showTruncationTip="true" />
+									</s:BorderContainer>
+								</s:HGroup>
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Dirección" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:Label width="100%" text="{proveedor.direccionCB}" maxDisplayedLines="2" showTruncationTip="true" />
+									</s:BorderContainer>
+								</s:HGroup>
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Observaciones" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:Label width="100%" text="{proveedor.observacionesCB}" maxDisplayedLines="2" showTruncationTip="true" />
+									</s:BorderContainer>
+								</s:HGroup>
+								
+								<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle" paddingTop="25">
+									<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Resumen" />
+									<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha="0">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+										</s:layout>
+										<s:TextArea width="100%" heightInLines="7" editable="false" text="{resumeInfo}" />
+									</s:BorderContainer>
+								</s:HGroup>						
+
+								
+								<s:controlBarContent>
+									<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
+										<s:Button click="{ppCuentaBancaria.displayPopUp = false}" label="Cerrar" styleName="textButton" width="80" />
+									</s:HGroup>
+								</s:controlBarContent>
+								
+							</s:Panel>
+						</s:PopUpAnchor>
+					</s:HGroup>
+
 					<s:Button id="cmdEditar" click="cmdEditar_clickHandler(event)" label="Editar" styleName="editarCliente" 
 							  visible="{!esUsuarioTito() &amp;&amp; !esVendedorJunior()}" />
 				</s:HGroup>
@@ -574,7 +693,7 @@
 					</s:VGroup>
 				</s:HGroup>
 				<s:HGroup width="100%">
-					<s:HGroup width="67%" verticalAlign="middle" styleName="ItemStyle">
+					<s:HGroup width="41%" verticalAlign="middle" styleName="ItemStyle">
 						<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Razón social" />
 						<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
 							<s:layout>
@@ -583,7 +702,7 @@
 							<s:Label id="lblRazonSocial" width="100%" text="{proveedor.contacto.ctoRSocial ? proveedor.contacto.ctoRSocial : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 						</s:BorderContainer>
 					</s:HGroup>
-					<s:HGroup width="34%" verticalAlign="middle" styleName="ItemStyle">
+					<s:HGroup width="26%" verticalAlign="middle" styleName="ItemStyle">
 						<s:Label width="40" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" 
 								 text="{proveedor.contacto.ctoDocumentoSigla ? proveedor.contacto.ctoDocumentoSigla : ''}" />
 						<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
@@ -684,9 +803,41 @@
 								</s:layout>
 								<s:Label id="lblIVA" width="100%" text="{_prvIvaInc}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:BorderContainer>
-						</s:HGroup>
+						</s:HGroup>				
 						
+						<s:Spacer height="5" />
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Correo 1" />
+							<s:TextInput id="lblEmailContacto1" width="100%" text="{proveedor.contacto.ctoEmail1 ? proveedor.contacto.ctoEmail1 : '-'}" editable="false" />
+							<s:Button click="button1_clickHandler(event)" label="Crear email" enabled="{proveedor.contacto.ctoEmail1 != null}" styleName="textButton" height="24" fontSize="10"/>
+						</s:HGroup>
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Correo 2" />
+							<s:TextInput id="lblEmailContacto2" width="100%" text="{proveedor.contacto.ctoEmail2 ? proveedor.contacto.ctoEmail2 : '-'}" editable="false" />
+							<s:Button click="button2_clickHandler(event)" label="Crear Email" enabled="{proveedor.contacto.ctoEmail2 != null}" styleName="textButton" height="24" fontSize="10"/>
+						</s:HGroup>				
+						<s:Spacer height="5" />
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Zona" />
+							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+								<s:layout>
+									<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+								</s:layout>
+								<s:Label id="lblZona" width="100%" text="{zona ? zona : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
+							</s:BorderContainer>
+						</s:HGroup>
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Giro" />
+							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+								<s:layout>
+									<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+								</s:layout>
+								<s:Label id="lblGiro" width="100%" text="{giro ? giro : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
+							</s:BorderContainer>
+						</s:HGroup>
+
 					</s:VGroup>
+					
 					<s:VGroup width="33%">
 						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
 							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="País" />
@@ -714,46 +865,13 @@
 								</s:layout>
 								<s:Label id="lblLocalidad" width="100%" text="{proveedor.contacto.ctoLocalidad ? proveedor.contacto.ctoLocalidad : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:BorderContainer>
-						</s:HGroup>
-
+						</s:HGroup>						
+						<s:Spacer height="5" />
+						
+						
 					</s:VGroup>
 				</s:HGroup>
 
-				<s:Spacer height="5" />
-				<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
-					<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Correo 1" />
-					<s:TextInput id="lblEmailContacto1" width="100%" text="{proveedor.contacto.ctoEmail1 ? proveedor.contacto.ctoEmail1 : '-'}" editable="false" />
-					<s:Button click="button1_clickHandler(event)" label="Crear email" enabled="{proveedor.contacto.ctoEmail1 != null}" styleName="textButton" height="24" fontSize="10"/>
-				</s:HGroup>
-				<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
-					<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Correo 2" />
-					<s:TextInput id="lblEmailContacto2" width="100%" text="{proveedor.contacto.ctoEmail2 ? proveedor.contacto.ctoEmail2 : '-'}" editable="false" />
-					<s:Button click="button2_clickHandler(event)" label="Crear Email" enabled="{proveedor.contacto.ctoEmail2 != null}" styleName="textButton" height="24" fontSize="10"/>
-				</s:HGroup>
-				
-				<s:Spacer height="5" />
-				<s:HGroup width="100%">
-					<s:HGroup width="66%" verticalAlign="middle" styleName="ItemStyle">
-						<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Zona" />
-						<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
-							<s:layout>
-								<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
-							</s:layout>
-							<s:Label id="lblZona" width="100%" text="{zona ? zona : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
-						</s:BorderContainer>
-					</s:HGroup>
-				</s:HGroup>
-				<s:HGroup width="100%">
-					<s:HGroup width="66%" verticalAlign="middle" styleName="ItemStyle">
-						<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Giro" />
-						<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
-							<s:layout>
-								<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
-							</s:layout>
-							<s:Label id="lblGiro" width="100%" text="{giro ? giro : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
-						</s:BorderContainer>
-					</s:HGroup>
-				</s:HGroup>
 				
 				<s:HGroup width="100%" height="100%" paddingTop="0">
 					<s:VGroup width="100%" height="100%">

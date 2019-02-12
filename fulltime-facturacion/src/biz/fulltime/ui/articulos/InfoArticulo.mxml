@@ -174,6 +174,10 @@
 
 			public function set articulo(value:Articulo):void {
 				_articulo = value;
+				
+				if (_articulo.fechaCosto && _articulo.fechaCosto.fullYear < 1900) {
+					_articulo.fechaCosto = null;
+				}
 
 				_changeArticulo = true;
 
@@ -702,7 +706,7 @@
 					
 					<s:HGroup width="100%" paddingLeft="115" >
 						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" enabled="{articulo.videoYoutube &amp;&amp; articulo.videoYoutube.length > 0}">
-							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video youtube 1" color="0x666666"/>
+							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video YouTube 1" color="0x666666"/>
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minHeight="0" borderAlpha=".6">
 								<s:layout>
 									<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" verticalAlign="middle" />
@@ -712,7 +716,7 @@
 							</s:BorderContainer>
 						</s:VGroup>
 						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" enabled="{articulo.videoYoutube2 &amp;&amp; articulo.videoYoutube2.length > 0}">
-							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video youtube 2" color="0x666666"/>
+							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video YouTube 2" color="0x666666"/>
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minHeight="0" borderAlpha=".6">
 								<s:layout>
 									<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" verticalAlign="middle" />
@@ -722,7 +726,7 @@
 							</s:BorderContainer>
 						</s:VGroup>
 						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" enabled="{articulo.videoYoutube3 &amp;&amp; articulo.videoYoutube3.length > 0}">
-							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video youtube 3" color="0x666666" />
+							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video YouTube 3" color="0x666666" />
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minHeight="0" borderAlpha=".6">
 								<s:layout>
 									<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" verticalAlign="middle" />
@@ -758,7 +762,7 @@
 										<s:layout>
 											<s:HorizontalLayout horizontalAlign="left" verticalAlign="middle" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" />
 										</s:layout>
-										<s:Label width="120" text="{datet.format(articulo.fechaCosto)}" maxDisplayedLines="1" />
+										<s:Label width="120" text="{articulo.fechaCosto ? datet.format(articulo.fechaCosto) : ''}" maxDisplayedLines="1" />
 									</s:BorderContainer>
 								</s:FormItem>
 								<s:FormItem label="Moneda costo">
@@ -894,8 +898,8 @@
 							</s:Panel>
 							<s:Panel width="100%" height="100%" title="Otros datos" styleName="pnlInternoArticulo" fontWeight="normal">
 								<s:VGroup paddingLeft="10" paddingRight="25" paddingTop="10">
-									<s:CheckBox id="chbContabilizarStock" label="Contablizar stock" selected="{articulo.inventario}" enabled="false"/>
-									<s:CheckBox id="chbListaPrecios" label="Incluir en lista de precios" selected="{articulo.listaPrecios}" enabled="false" />
+									<s:CheckBox id="chbContabilizarStock" label="Contabilizar stock" selected="{articulo.inventario}" enabled="false"/>
+									<s:CheckBox id="chbListaPrecios" label="Incluir en lista de precios" selected="{articulo.listaPrecios}" enabled="false"/>
 									<s:CheckBox id="chbWeb" label="Incluir en catálogo web" selected="{articulo.artGXPortal}" enabled="false"/>
 								</s:VGroup>
 							</s:Panel>

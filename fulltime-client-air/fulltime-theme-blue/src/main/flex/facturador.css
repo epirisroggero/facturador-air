@@ -142,6 +142,10 @@ s|FormItem s|Label#labelDisplay {
 	color:black;
 }
 
+mx|Button {
+	background-color: red;
+}
+
 s|Button.emphasized {
 	font-family: 'RobotoCondensed';
 	skinClass: ClassReference("skin.components.ButtonSkin");
@@ -158,6 +162,8 @@ s|RadioButton {
 
 s|CheckBox {
 	font-family: 'RobotoCondensed';
+	skin-class: ClassReference("skin.components.MyCheckBoxSkin"); 
+
 }
 
 /*s|ButtonBar s|ButtonBarButton:upAndSelected,
@@ -200,6 +206,9 @@ mx|FormItem {
 
 mx|VRule {
 	color: #ffffff;
+}
+
+s|Button {
 }
 
 
@@ -887,13 +896,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.IconButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon32/go-jump.png");
-	iconOver: 		Embed("/assets/general/icon32/go-jump.png");
-	iconDown:		Embed("/assets/general/icon32/go-jump.png");
-	iconDisabled:	Embed("/assets/general/icon32/go-jump.png");
+	iconUp: 		Embed("/assets/general/icon32/external-link.png");
+	iconOver: 		Embed("/assets/general/icon32/external-link.png");
+	iconDown:		Embed("/assets/general/icon32/external-link.png");
+	iconDisabled:	Embed("/assets/general/icon32/external-link.png");
 	
-	iconWidth: 32;
-	iconHeight: 32;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;

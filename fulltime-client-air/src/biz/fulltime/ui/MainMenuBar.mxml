@@ -55,6 +55,8 @@
 						<menuitem label="Rentas por Comprobante" data="reporteRentas" enabled="true" />
 						<menuitem label="Liquidación Vendedores" data="liquidacionVendedores" enabled="true" />
 						<menuitem label="Liquidación por Vendedor/Cobranza" data="liquidacionVendedorCobranza" enabled="false" />
+						<menuitem type="separator" />
+						<menuitem label="Reporte de Afilados" data="reporteAfilados" enabled="true" />
 					</menu>
 					<menu label="Herramientas " data="top">
 						<menuitem label="Configuración" data="conf-1" enabled="true" />
@@ -273,6 +275,8 @@
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXIT));
 				} else if (value == 'eFactura') {
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EFACTURA_EVENT));
+				} else if (value == 'reporteAfilados') {
+					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_AFILADOS_EVENT));
 				} 
 
 			}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml" textAlign="right" change="validateChange(event)" focusIn="textinput1_focusInHandler(event)" fontFamily="Helvetica">
+<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml" textAlign="right" change="validateChange(event)" focusIn="textinput1_focusInHandler(event)" fontFamily="Helvetica" paddingTop="5">
 
 	<mx:Script>
 		<![CDATA[

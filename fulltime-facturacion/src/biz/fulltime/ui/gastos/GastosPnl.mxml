@@ -1100,7 +1100,6 @@
 			
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				if (tieneCambios && _documento.permisosDocumentoUsuario.edicion && !_modoVisualizacion && _documento.cliente) {
-					Alert.buttonWidth = 80;
 					var alert:Alert = Alert.show("El Gasto ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
 					alert.width = 400;
 					alert.height = 200;

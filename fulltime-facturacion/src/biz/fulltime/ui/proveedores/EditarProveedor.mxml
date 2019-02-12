@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas xmlns:components="biz.fulltime.ui.components.*" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:renderers="biz.fulltime.ui.renderers.*"
 		   xmlns:s="library://ns.adobe.com/flex/spark"
-		   width="100%" height="100%" creationComplete="init()" show="showPanel()" label="Editor de proveedor" xmlns:util="biz.fulltime.util.*">
+		   width="100%" height="100%" creationComplete="init()" show="showPanel()" label="Editor de proveedor" xmlns:util="biz.fulltime.util.*" xmlns:tabBar="skin.components.tabBar.*">
 
 	<mx:Script>
 		<![CDATA[
@@ -27,6 +27,7 @@
 			import mx.controls.Alert;
 			import mx.controls.ProgressBarMode;
 			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
 			import mx.events.ValidationResultEvent;
 			import mx.managers.PopUpManager;
 			import mx.rpc.events.FaultEvent;
@@ -497,6 +498,12 @@
 				
 			}
 			
+			protected function myTabBar_creationCompleteHandler(event:FlexEvent):void {
+				myTabBar.setCloseableTab(0, false);
+				myTabBar.setCloseableTab(1, false);
+				myTabBar.setCloseableTab(2, false);
+			}
+			
 		]]>
 	</mx:Script>
 
@@ -529,145 +536,188 @@
 			 maxDisplayedLines="1" />
 
 	<mx:VBox width="100%" height="100%" verticalGap="0">
-		<s:HGroup width="100%" paddingTop="5" paddingLeft="5" paddingBottom="5" paddingRight="5">
-			<s:Label fontSize="16" fontWeight="normal" text="Datos Generales" />
-		</s:HGroup>
-		<mx:HRule width="100%" />
 		<mx:HBox width="100%" height="100%" horizontalAlign="left" verticalAlign="top">
-			<s:Group width="100%" height="100%">
-				<mx:Canvas width="100%" height="100%" label="Generales">
-					<s:Form width="100%" height="100%" creationComplete="{txtCodigo.setFocus()}" maxWidth="890">
-						<s:layout>
-							<s:FormLayout gap="-12" />
-						</s:layout>
-						
-						<s:Spacer height="10" />
-						<s:FormItem width="100%" label="Código" styleName="ItemStyle">
-							<s:VGroup width="100%">
-								<s:HGroup width="100%" verticalAlign="middle">
-									<s:TextInput id="txtCodigo" width="60" textAlign="right" text="{proveedor.codigo}" change="txtCodigo_changeHandler(event)" restrict="0-9" maxChars="16" enter="fname.setFocus()"
-												 editable="{proveedor.esNuevo}" />
-									<s:Label text="Nombre" />
-									<s:TextInput id="fname" width="100%" text="{proveedor.contacto.nombre}" change="fname_changeHandler(event)"  maxChars="50" enter="txtTelefono.setFocus()" />
-								</s:HGroup>
-								<s:HGroup width="100%" verticalAlign="middle" visible="{proveedor.esNuevo}">
-									<s:Label fontSize="13" text="Primero disponible después del último utilizado:" />
-									<s:Label fontSize="13" text="{ultimoDisponible}" />
-								</s:HGroup>
-							</s:VGroup>
-						</s:FormItem>
+			<s:VGroup width="100%" height="100%">
+				<tabBar:MyTabBar2 id="myTabBar" dataProvider="{myViewStack}" requireSelection="true" creationComplete="myTabBar_creationCompleteHandler(event)"/>	
 
-						<s:FormItem width="100%" label="Notas" styleName="ItemStyle">
-							<s:TextArea id="txtNotas" width="100%" height="48" text="@{proveedor.contacto.ctoNotas}" maxChars="1024"/>
-						</s:FormItem>
+				<mx:ViewStack id="myViewStack" width="100%" height="100%">
+					<s:NavigatorContent label="Datos Generales" id="generales" width="100%" height="100%">
+						<s:VGroup width="100%" height="100%">
+							<s:Scroller width="100%" height="100%">
+								<s:VGroup width="100%" height="100%">
+									<s:Form width="100%" height="100%" creationComplete="{txtCodigo.setFocus()}" maxWidth="890">
+										<s:layout>
+											<s:FormLayout gap="-14" />
+										</s:layout>
+										
+										<s:Spacer height="5" />
+										<s:FormItem width="100%" label="Código" styleName="ItemStyle">
+											<s:VGroup width="100%">
+												<s:HGroup width="100%" verticalAlign="middle">
+													<s:TextInput id="txtCodigo" width="60" textAlign="right" text="{proveedor.codigo}" change="txtCodigo_changeHandler(event)" restrict="0-9" maxChars="16" enter="fname.setFocus()"
+																 editable="{proveedor.esNuevo}" />
+													<s:Label text="Nombre" />
+													<s:TextInput id="fname" width="100%" text="{proveedor.contacto.nombre}" change="fname_changeHandler(event)"  maxChars="50" enter="txtTelefono.setFocus()" />
+												</s:HGroup>
+												<s:HGroup width="100%" verticalAlign="middle" visible="{proveedor.esNuevo}">
+													<s:Label fontSize="13" text="Primero disponible después del último utilizado:" />
+													<s:Label fontSize="13" text="{ultimoDisponible}" />
+												</s:HGroup>
+											</s:VGroup>
+										</s:FormItem>
+										
+										<s:FormItem width="100%" label="Teléfono" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:TextInput id="txtTelefono" width="100%" change="txtTelefono_changeHandler(event)" text="@{proveedor.contacto.ctoTelefono}"
+															 enter="txtFax.setFocus()" maxChars="50" />
+												<s:Label text="Fax" />
+												<s:TextInput id="txtFax" width="100%" text="@{proveedor.contacto.ctoFax}" enter="txtRazonSocial.setFocus()" maxChars="50"/>
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem width="100%" label="EFactura" styleName="ItemStyle">
+											<s:DropDownList id="ddlEFactura" width="360" dataProvider="{lstEFactura}" textAlign="left" labelField="label" selectedItem="{_prvEFactura}" change="ddlEfactura_changeHandler(event)"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Razón social" styleName="ItemStyle">
+											<s:TextInput id="txtRazonSocial" width="100%" text="@{proveedor.contacto.ctoRSocial}" enter="txtRUT.setFocus()" maxChars="100"/>
+										</s:FormItem>
+										
+										<s:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
+											<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="RUT" styleName="ItemStyle">
+											<s:TextInput id="txtRUT" width="46%" text="@{proveedor.contacto.ctoRUT}" enter="txtDireccion.setFocus()" restrict="0-9" maxChars="12" />
+										</s:FormItem>
+										<s:FormItem width="100%" label="{proveedor.contacto.ctoDocumentoSigla}" styleName="ItemStyle">
+											<s:TextInput id="txtDocument" width="46%" text="@{proveedor.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+										</s:FormItem>
+										
+										<s:FormItem width="100%" label="Dirección" styleName="ItemStyle">
+											<s:TextInput id="txtDireccion" width="100%" text="@{proveedor.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" maxChars="100"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Localidad" styleName="ItemStyle">
+											<s:TextInput id="txtLocalidad" width="100%" text="@{proveedor.contacto.ctoLocalidad}" enter="txtCelular.setFocus()" maxChars="40"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Celular" styleName="ItemStyle">
+											<s:TextInput id="txtCelular" width="46%" change="txtCelular_changeHandler(event)" text="@{proveedor.contacto.ctoCelular}" enter="txtWebpage.setFocus()"
+														 restrict="0-9.-;," maxChars="50" />
+										</s:FormItem>
+										<s:FormItem width="100%" label="Página web" styleName="ItemStyle">
+											<s:TextInput id="txtWebpage" width="100%" text="@{proveedor.contacto.ctoWeb}" enter="txtWebpage.setFocus()" maxChars="100"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Canal YouTube" styleName="ItemStyle">
+											<s:TextInput id="txtCanalYoutube" width="100%" text="@{proveedor.canalYoutube}" enter="txtGoogleMaps.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Google maps" styleName="ItemStyle">
+											<s:TextInput id="txtGoogleMaps" width="100%" text="@{proveedor.googleMaps}" enter="txtEmail1.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Correo 1" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:TextInput id="txtEmail1" width="100%" text="@{proveedor.contacto.ctoEmail1}" enter="txtEmail2.setFocus()" maxChars="50"/>
+												<s:Label paddingLeft="25" text="Correo 2:" />
+												<s:TextInput id="txtEmail2" width="100%" text="@{proveedor.contacto.ctoEmail2}" enter="txtDtoRecibo.setFocus()" maxChars="50"/>
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Dto. recibo" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:TextInput id="txtDtoRecibo" widthInChars="3" text="@{proveedor.descuentoRecibo}" enter="txtDto1.setFocus()" />
+												<s:Label text="%" />
+												<s:Label text="Dtos." paddingLeft="20" />
+												<s:TextInput id="txtDto1" widthInChars="3" text="@{proveedor.prvDto1}" enter="txtDto2.setFocus()" />
+												<s:Label text="%" />
+												<s:Spacer width="10" />
+												<s:TextInput id="txtDto2" widthInChars="3" text="@{proveedor.prvDto2}" enter="txtDto3.setFocus()" />
+												<s:Label text="%" />
+												<s:Spacer width="10" />
+												<s:TextInput id="txtDto3" widthInChars="3" text="@{proveedor.prvDto3}" enter="cmbPais.setFocus()" />
+												<s:Label text="%" />
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem width="100%" label="IVA" styleName="ItemStyle">
+											<s:DropDownList id="ddlIVA" width="360" dataProvider="{lstFacturasIVA}" textAlign="left" labelField="label" selectedItem="{_prvIvaInc}" change="ddlIVA_changeHandler(event)"/>
+										</s:FormItem>
+										
+										<s:FormItem width="100%" label="País" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<components:MyAutoComplete id="cmbPais" width="200" textAlign="left" change="cmbPais_changeHandler(event)"
+																		   dataProvider="{ CatalogoFactory.getInstance().paises }" labelField="nombre" matchType="anyPart"
+																		   prompt="Pais" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+																		   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+																		   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbDepartamento}" selectedItem="{_pais}"
+																		   previous_focus="{txtEmail2}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+												<s:Spacer width="10" />
+												<s:Label text="Departamento" />
+												<components:MyAutoComplete id="cmbDepartamento" width="180" textAlign="left" change="cmbDepartamento_changeHandler(event)"
+																		   dataProvider="{ CatalogoFactory.getInstance().departamentos }" labelField="nombre" matchType="anyPart"
+																		   prompt="Departamento" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+																		   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+																		   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbZona}" selectedItem="{_departamento}"
+																		   previous_focus="{cmbPais}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+												<s:Spacer width="10" />
+												<s:Label text="Zona" />
+												<components:MyAutoComplete id="cmbZona" width="200" textAlign="left" change="cmbZona_changeHandler(event)"
+																		   dataProvider="{ CatalogoFactory.getInstance().zonas }" labelField="nombre" matchType="anyPart" prompt="Zona"
+																		   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+																		   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
+																		   backspaceAction="focus" next_focus="{cmbGiro}" selectedItem="{_zona}" previous_focus="{txtEmail2}"
+																		   dropDownItemRenderer="{ dropDownItemRenderer }" />
+											</s:HGroup>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Giro" styleName="ItemStyle">
+											<components:MyAutoComplete id="cmbGiro" width="200" textAlign="left" change="cmbGiro_changeHandler(event)"
+																	   dataProvider="{ CatalogoFactory.getInstance().giros }" labelField="nombre" matchType="anyPart" prompt="Giro"
+																	   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
+																	   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
+																	   backspaceAction="focus" next_focus="{apply}" selectedItem="{_giro}" previous_focus="{cmbDepartamento}"
+																	   dropDownItemRenderer="{ dropDownItemRenderer }" />
+										</s:FormItem>
+									</s:Form>
+								</s:VGroup>
+							</s:Scroller>
+						</s:VGroup>
+					</s:NavigatorContent>
+					<s:NavigatorContent label="Notas" id="ncNotas" width="100%" height="100%">
+						<s:VGroup width="100%" height="100%">
+							<s:Scroller width="100%" height="100%">
+								<s:VGroup width="100%" height="100%">
+									<s:TextArea id="txtNotas" width="100%" height="100%" text="@{proveedor.contacto.ctoNotas}" maxChars="1024"/>
+								</s:VGroup>
+							</s:Scroller>
+						</s:VGroup>
+					</s:NavigatorContent>
+					<s:NavigatorContent label="Cuenta Bancaria" id="cuentaBancaria" width="100%" height="100%">
+						<s:VGroup width="100%" height="100%">
+							<s:Scroller width="100%" height="100%">
+								<s:VGroup width="100%" height="100%">
+									<s:Form width="100%" height="100%" creationComplete="{txtCodigo.setFocus()}">
+										<s:layout>
+											<s:FormLayout gap="-12" />
+										</s:layout>
+										<s:FormItem width="100%" label="Destinatario" styleName="ItemStyle">
+											<s:TextInput id="txtDestinatario" widthInChars="50" text="@{proveedor.destinatarioCB}" enter="txtCuenta.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Nro. Cuenta" styleName="ItemStyle">
+											<s:TextInput id="txtCuenta" widthInChars="50" text="@{proveedor.nroCuentaCB}" enter="txtBanco.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Banco" styleName="ItemStyle">
+											<s:TextInput id="txtBanco" widthInChars="50" text="@{proveedor.bancoCB}" enter="txtSucursal.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Sucursal" styleName="ItemStyle">
+											<s:TextInput id="txtSucursal" widthInChars="50" text="@{proveedor.sucursalCB}" enter="txtDireccionCB.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Dirección" styleName="ItemStyle">
+											<s:TextInput id="txtDireccionCB" widthInChars="50" text="@{proveedor.direccionCB}" enter="txtObservacionesCB.setFocus()" maxChars="50"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="Observaciones" styleName="ItemStyle">
+											<s:TextInput id="txtObservacionesCB" widthInChars="50" text="@{proveedor.observacionesCB}" enter="txtDestinatario.setFocus()" maxChars="50"/>
+										</s:FormItem>
+									</s:Form>
+								</s:VGroup>
+							</s:Scroller>
+						</s:VGroup>
+					</s:NavigatorContent>
+				</mx:ViewStack>
 
-						<s:FormItem width="100%" label="Teléfono" styleName="ItemStyle">
-							<s:HGroup width="100%" verticalAlign="middle">
-								<s:TextInput id="txtTelefono" width="100%" change="txtTelefono_changeHandler(event)" text="@{proveedor.contacto.ctoTelefono}"
-											 enter="txtFax.setFocus()" maxChars="50" />
-								<s:Label text="Fax" />
-								<s:TextInput id="txtFax" width="100%" text="@{proveedor.contacto.ctoFax}" enter="txtRazonSocial.setFocus()" maxChars="50"/>
-							</s:HGroup>
-						</s:FormItem>
-						<s:FormItem width="100%" label="EFactura" styleName="ItemStyle">
-							<s:DropDownList id="ddlEFactura" width="360" dataProvider="{lstEFactura}" textAlign="left" labelField="label" selectedItem="{_prvEFactura}" change="ddlEfactura_changeHandler(event)"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Razón social" styleName="ItemStyle">
-							<s:TextInput id="txtRazonSocial" width="100%" text="@{proveedor.contacto.ctoRSocial}" enter="txtRUT.setFocus()" maxChars="100"/>
-						</s:FormItem>
-
-						<s:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
-							<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="RUT" styleName="ItemStyle">
-							<s:TextInput id="txtRUT" width="46%" text="@{proveedor.contacto.ctoRUT}" enter="txtDireccion.setFocus()" restrict="0-9" maxChars="12" />
-						</s:FormItem>
-						<s:FormItem width="100%" label="{proveedor.contacto.ctoDocumentoSigla}" styleName="ItemStyle">
-							<s:TextInput id="txtDocument" width="46%" text="@{proveedor.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
-						</s:FormItem>
-
-						<s:FormItem width="100%" label="Dirección" styleName="ItemStyle">
-							<s:TextInput id="txtDireccion" width="100%" text="@{proveedor.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" maxChars="100"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Localidad" styleName="ItemStyle">
-							<s:TextInput id="txtLocalidad" width="100%" text="@{proveedor.contacto.ctoLocalidad}" enter="txtCelular.setFocus()" maxChars="40"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Celular" styleName="ItemStyle">
-							<s:TextInput id="txtCelular" width="46%" change="txtCelular_changeHandler(event)" text="@{proveedor.contacto.ctoCelular}" enter="txtWebpage.setFocus()"
-										 restrict="0-9.-;," maxChars="50" />
-						</s:FormItem>
-						<s:FormItem width="100%" label="Página web" styleName="ItemStyle">
-							<s:TextInput id="txtWebpage" width="100%" text="@{proveedor.contacto.ctoWeb}" enter="txtWebpage.setFocus()" maxChars="100"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Canal youtube" styleName="ItemStyle">
-							<s:TextInput id="txtCanalYoutube" width="100%" text="@{proveedor.canalYoutube}" enter="txtGoogleMaps.setFocus()" maxChars="50"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Google maps" styleName="ItemStyle">
-							<s:TextInput id="txtGoogleMaps" width="100%" text="@{proveedor.googleMaps}" enter="txtEmail1.setFocus()" maxChars="50"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Correo 1" styleName="ItemStyle">
-							<s:HGroup width="100%" verticalAlign="middle">
-								<s:TextInput id="txtEmail1" width="100%" text="@{proveedor.contacto.ctoEmail1}" enter="txtEmail2.setFocus()" maxChars="50"/>
-								<s:Label paddingLeft="25" text="Correo 2:" />
-								<s:TextInput id="txtEmail2" width="100%" text="@{proveedor.contacto.ctoEmail2}" enter="txtDtoRecibo.setFocus()" maxChars="50"/>
-							</s:HGroup>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Dto. recibo" styleName="ItemStyle">
-							<s:HGroup width="100%" verticalAlign="middle">
-								<s:TextInput id="txtDtoRecibo" widthInChars="3" text="@{proveedor.descuentoRecibo}" enter="txtDto1.setFocus()" />
-								<s:Label text="%" />
-								<s:Label text="Dtos." paddingLeft="20" />
-								<s:TextInput id="txtDto1" widthInChars="3" text="@{proveedor.prvDto1}" enter="txtDto2.setFocus()" />
-								<s:Label text="%" />
-								<s:Spacer width="10" />
-								<s:TextInput id="txtDto2" widthInChars="3" text="@{proveedor.prvDto2}" enter="txtDto3.setFocus()" />
-								<s:Label text="%" />
-								<s:Spacer width="10" />
-								<s:TextInput id="txtDto3" widthInChars="3" text="@{proveedor.prvDto3}" enter="cmbPais.setFocus()" />
-								<s:Label text="%" />
-							</s:HGroup>
-						</s:FormItem>
-						<s:FormItem width="100%" label="IVA" styleName="ItemStyle">
-							<s:DropDownList id="ddlIVA" width="360" dataProvider="{lstFacturasIVA}" textAlign="left" labelField="label" selectedItem="{_prvIvaInc}" change="ddlIVA_changeHandler(event)"/>
-						</s:FormItem>
-
-						<s:FormItem width="100%" label="País" styleName="ItemStyle">
-							<s:HGroup width="100%" verticalAlign="middle">
-								<components:MyAutoComplete id="cmbPais" width="200" textAlign="left" change="cmbPais_changeHandler(event)"
-														   dataProvider="{ CatalogoFactory.getInstance().paises }" labelField="nombre" matchType="anyPart"
-														   prompt="Pais" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbDepartamento}" selectedItem="{_pais}"
-														   previous_focus="{txtEmail2}" dropDownItemRenderer="{ dropDownItemRenderer }" />
-								<s:Spacer width="10" />
-								<s:Label text="Departamento" />
-								<components:MyAutoComplete id="cmbDepartamento" width="180" textAlign="left" change="cmbDepartamento_changeHandler(event)"
-														   dataProvider="{ CatalogoFactory.getInstance().departamentos }" labelField="nombre" matchType="anyPart"
-														   prompt="Departamento" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-														   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbZona}" selectedItem="{_departamento}"
-														   previous_focus="{cmbPais}" dropDownItemRenderer="{ dropDownItemRenderer }" />
-								<s:Spacer width="10" />
-								<s:Label text="Zona" />
-								<components:MyAutoComplete id="cmbZona" width="200" textAlign="left" change="cmbZona_changeHandler(event)"
-														   dataProvider="{ CatalogoFactory.getInstance().zonas }" labelField="nombre" matchType="anyPart" prompt="Zona"
-														   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
-														   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
-														   backspaceAction="focus" next_focus="{cmbGiro}" selectedItem="{_zona}" previous_focus="{txtEmail2}"
-														   dropDownItemRenderer="{ dropDownItemRenderer }" />
-							</s:HGroup>
-						</s:FormItem>
-						<s:FormItem width="100%" label="Giro" styleName="ItemStyle">
-							<components:MyAutoComplete id="cmbGiro" width="200" textAlign="left" change="cmbGiro_changeHandler(event)"
-													   dataProvider="{ CatalogoFactory.getInstance().giros }" labelField="nombre" matchType="anyPart" prompt="Giro"
-													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
-													   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
-													   backspaceAction="focus" next_focus="{apply}" selectedItem="{_giro}" previous_focus="{cmbDepartamento}"
-													   dropDownItemRenderer="{ dropDownItemRenderer }" />
-						</s:FormItem>
-					</s:Form>
-				</mx:Canvas>
-			</s:Group>
+			</s:VGroup>
 		</mx:HBox>
 		<mx:ControlBar id="buttons" width="100%" height="54" horizontalAlign="center" verticalAlign="bottom" backgroundAlpha="1" contentBackgroundColor="0xF0F0F0"> 
 			<s:Button id="apply" click="validateForm(event)" label="Guardar" styleName="aceptarButton" />

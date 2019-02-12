@@ -155,7 +155,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="deposito" headerText="Depósito" sortable="true">
+						<s:GridColumn dataField="deposito" headerText="DEPÓSITO" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="left">
@@ -182,7 +182,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="SAcantidad" headerText="Cantidad" sortable="true">
+						<s:GridColumn dataField="SAcantidad" headerText="CANTIDAD" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="right">

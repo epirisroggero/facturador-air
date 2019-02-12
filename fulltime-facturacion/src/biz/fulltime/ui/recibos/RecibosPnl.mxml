@@ -765,7 +765,6 @@
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				if (tieneCambios && _recibo.permisosDocumentoUsuario.edicion && !_modoVisualizacion) {
-					Alert.buttonWidth = 80;
 					var alert:Alert = Alert.show("El recibo ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
 					alert.width = 400;
 					alert.height = 200;

@@ -9,6 +9,9 @@
 
 			private var _key:String;
 
+			[Bindable]
+			public var label0:String = 'Filtrar por';
+			
 			private var _label:String = 'Buscar';
 
 			[Bindable]
@@ -36,9 +39,9 @@
 			protected function textinput1_keyDownHandler(event:KeyboardEvent):void {
 				if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
 					_key = null;
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false));
+					lblLabel.setFocus();
 				} else if (event.keyCode == Keyboard.ENTER) {
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false));
+					lblLabel.setFocus();
 				}
 			}
 
@@ -56,7 +59,7 @@
 		<s:layout>
 			<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalAlign="middle" gap="5" />
 		</s:layout>
-		<s:Label width="100%" text="Filtrar por '{label}'" />
+		<s:Label width="100%" id="lblLabel" text="{label0} {label}" />
 		<s:TextInput id="txtKey" width="100%" focusOut="label1_focusOutHandler(event)" keyDown="textinput1_keyDownHandler(event)" text="@{key}" />
 	</s:BorderContainer>
 

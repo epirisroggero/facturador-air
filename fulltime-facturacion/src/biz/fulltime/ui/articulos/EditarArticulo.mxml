@@ -29,6 +29,7 @@
 			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.remoting.RemoteObject;
+			import mx.utils.StringUtil;
 			import mx.validators.Validator;
 			
 			import util.CatalogoFactory;
@@ -189,6 +190,15 @@
 			
 			public function set articulo(value:Articulo):void {
 				this._articulo = value;
+				
+				_articulo.nombre = StringUtil.trim(value.nombre);
+				_articulo.abrevia = StringUtil.trim(value.abrevia);
+				_articulo.web  = StringUtil.trim(value.web);
+				_articulo.videoYoutube  = StringUtil.trim(value.videoYoutube);
+				_articulo.videoYoutube2  = StringUtil.trim(value.videoYoutube2);
+				_articulo.videoYoutube3  = StringUtil.trim(value.videoYoutube3);
+				_articulo.notas = StringUtil.trim(value.notas);
+				_articulo.artNotasInt = StringUtil.trim(value.artNotasInt);
 				
 				_articulo.addEventListener("_savedArticuloOk", function():void {
 					lblMsg.visible = true;
@@ -693,10 +703,7 @@
 						<s:VGroup width="100%" height="100%">
 							<s:HGroup width="100%">
 								<s:Panel width="100%" title="Generales" styleName="pnlInternoArticulo" dropShadowVisible="false">
-									<mx:Form width="100%" height="100%" fontWeight="bold" creationComplete="{fname.setFocus()}" maxWidth="800">
-										<s:Label fontSize="16" fontWeight="normal" text="Datos Generales" />
-										<mx:HRule width="100%" />
-										<s:Spacer height="10" />
+									<mx:Form width="100%" height="100%" fontWeight="bold" creationComplete="{fname.setFocus()}" maxWidth="800" paddingTop="5">
 										<mx:FormItem width="100%" label="Nombre" styleName="ItemStyle">
 											<s:TextInput id="fname" width="100%" text="@{articulo.nombre}" enter="fnameAbr.setFocus()" maxChars="100"/>
 										</mx:FormItem>
@@ -706,17 +713,18 @@
 										<mx:FormItem width="100%" label="Página Web" styleName="ItemStyle">
 											<s:TextInput id="txtWebpage" width="100%" text="@{articulo.web}" enter="txtVideoYoutube.setFocus()" maxChars="100"/>
 										</mx:FormItem>
-										<mx:FormItem width="100%" label="Video Youtube 1" styleName="ItemStyle">
+										<mx:FormItem width="100%" label="YouTube 1" styleName="ItemStyle">
 											<s:TextInput id="txtVideoYoutube" width="100%" text="@{articulo.videoYoutube}" enter="txtVideoYoutube2.setFocus()" maxChars="50"/>
 										</mx:FormItem>
-										<mx:FormItem width="100%" label="Video Youtube 2" styleName="ItemStyle">
-											<s:TextInput id="txtVideoYoutube2" width="100%" text="@{articulo.videoYoutube2}" enter="txtVideoYoutube3.setFocus()" maxChars="50"/>
-										</mx:FormItem>
-										<mx:FormItem width="100%" label="Video Youtube 3" styleName="ItemStyle">
-											<s:TextInput id="txtVideoYoutube3" width="100%" text="@{articulo.videoYoutube3}" enter="txtProveedor.setFocus()" maxChars="50"/>
+										<mx:FormItem width="100%" label="YouTube 2" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:TextInput id="txtVideoYoutube2" width="100%" text="@{articulo.videoYoutube2}" enter="txtVideoYoutube3.setFocus()" maxChars="50"/>
+												<s:Label text="(3)"/>
+												<s:TextInput id="txtVideoYoutube3" width="100%" text="@{articulo.videoYoutube3}" enter="txtProveedor.setFocus()" maxChars="50"/>
+											</s:HGroup>
 										</mx:FormItem>
 										<mx:FormItem width="100%" label="Proveedor" styleName="ItemStyle">
-											<components:MyAutoComplete id="txtProveedor" width="70%" backgroundAlpha="1" dataProvider="{ proveedores }" matchType="anyPart" prompt=""
+											<components:MyAutoComplete id="txtProveedor" width="100%" backgroundAlpha="1" dataProvider="{ proveedores }" matchType="anyPart" prompt=""
 																	   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction"
 																	   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" selectedItem="@{articulo.proveedor}" next_focus="{txtNotas}"/>
 										</mx:FormItem>
@@ -894,7 +902,7 @@
 								<s:Panel title="Otros datos" height="100%" styleName="pnlInternoArticulo" fontWeight="normal" width="300">
 									<s:VGroup paddingLeft="10" paddingRight="25" paddingTop="10">
 										<s:CheckBox id="chbActivo" label="El artículo esta activo" selected="@{articulo.activo}" />
-										<s:CheckBox id="chbContabilizarStock" label="Contablizar stock" selected="@{articulo.inventario}" />
+										<s:CheckBox id="chbContabilizarStock" label="Contabilizar stock" selected="@{articulo.inventario}" />
 										<s:CheckBox id="chbListaPrecios" label="Incluir en lista de precios" selected="@{articulo.listaPrecios}" />
 										<s:CheckBox id="chbWeb" label="Incluir en catálogo web" selected="@{articulo.artGXPortal}" />
 									</s:VGroup>

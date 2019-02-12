@@ -20,6 +20,7 @@ import mx.rpc.events.FaultEvent;
 import mx.rpc.events.ResultEvent;
 import mx.rpc.remoting.RemoteObject;
 
+import util.CalcularPrecioAfiladoUtils;
 import util.CatalogoFactory;
 
 
@@ -70,6 +71,9 @@ public class LineaDocumento extends EventDispatcher {
 	private var remObjPSFab:RemoteObject;
 	
 	private var remObjStock:RemoteObject;
+	
+	private var remObjPM:RemoteObject;
+	
 
 	private var _valorNeto:String;
 
@@ -82,6 +86,21 @@ public class LineaDocumento extends EventDispatcher {
 	public var ivaArticulo:Iva;
 	
 	public var rubIdlin:String;
+	
+	public var afilador:String;
+	
+	private var _diametro:String = "0";
+	
+	public var rotos:String = "0";
+	
+	public var cascados:String = "0";
+	
+	public var marca:String;
+	
+	public var ordenTrabajo:String;
+	
+	private var articuloPrecio:ArticuloPrecio;
+
 	
 	public function LineaDocumento() {
 		remObjPS = new RemoteObject();
@@ -116,6 +135,13 @@ public class LineaDocumento extends EventDispatcher {
 		remObjPSFab.addEventListener(ResultEvent.RESULT, resultPrecioFabrica);
 		remObjPSFab.addEventListener(FaultEvent.FAULT, handleFault);
 		remObjPSFab.showBusyCursor = false;
+		
+		remObjPM = new RemoteObject();
+		remObjPM.destination = "CreatingRpc";
+		remObjPM.channelSet = ServerConfig.getInstance().channelSet;
+		remObjPM.addEventListener(ResultEvent.RESULT, resultPrecioMinorista);
+		remObjPM.addEventListener(FaultEvent.FAULT, handleFault);
+		remObjPM.showBusyCursor = false;
 
 	}
 
@@ -388,7 +414,12 @@ public class LineaDocumento extends EventDispatcher {
 			var monedaFacturacion:String = documento.moneda.codigo;
 			var oCotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
 			
-			if (!documento.esSolicitudCompra) {
+			if (documento.comprobante.codigo == "80" || documento.comprobante.codigo == "81" 
+				|| documento.comprobante.codigo == "82" ||documento.comprobante.codigo == "84") {
+				
+				remObjPM.getArticuloPrecio(articulo.codigo, "3");
+				
+			} else if (!documento.esSolicitudCompra) {
 				obtenerPrecioSuguerido(articulo.codigo);			
 				obtenerPrecioBaseDistribuidor(articulo.codigo);			
 				
@@ -398,7 +429,7 @@ public class LineaDocumento extends EventDispatcher {
 				} else if (_articulo.monedaCosto != null) {
 					remObj.getMontoMayorCotizacion(_articulo.codigo, _articulo.fechaCosto, _articulo.monedaCosto.codigo, _articulo.costo, monedaFacturacion, documento.esRemito(), oCotizaciones);
 				}
-			} else {			
+			} else {	
 				if (documento.comprobante.esImportacion()) {
 					if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 						remObjPSFab.getArticuloPrecio(_articulo.codigo, "7", monedaFacturacion);
@@ -428,6 +459,17 @@ public class LineaDocumento extends EventDispatcher {
 		
 		precioFabrica = this.precio;
 	}	
+	
+	private function resultPrecioMinorista(event:ResultEvent):void {
+		articuloPrecio = event.result as ArticuloPrecio;
+		
+		if (articuloPrecio) {
+			var largo:BigDecimal = diametro != null ? new BigDecimal(diametro) : BigDecimal.ZERO; 
+			this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo).toString();
+		} else {
+			this.precio = "0";
+		}
+	}
 
 	private function resultCostoMayorCotizacion(event:ResultEvent):void {
 		remObj.removeEventListener(ResultEvent.RESULT, resultCostoMayorCotizacion);
@@ -536,6 +578,31 @@ public class LineaDocumento extends EventDispatcher {
 			return new BigDecimal(cantidad);	
 		}
 	}
+	
+	public function getDiametro():BigDecimal {
+		if (!diametro) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(diametro);	
+		}
+	}
+	
+	public function getRotos():BigDecimal {
+		if (!rotos) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(rotos);	
+		}
+	}
+	
+	public function getCascados():BigDecimal {
+		if (!rotos) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(cascados);	
+		}
+	}
+
 
 	public function getArticulo():Articulo {
 		return articulo;
@@ -716,6 +783,22 @@ public class LineaDocumento extends EventDispatcher {
 
 	private function handleFault(event:FaultEvent):void {
 		Alert.show(event.message.toString(), "Error al obtener el precio");
+	}
+
+	public function get diametro():String {
+		return _diametro;
+	}
+
+	public function set diametro(value:String):void {
+		_diametro = value;
+		
+		if (articuloPrecio) {
+			var largo:BigDecimal = _diametro != null ? new BigDecimal(_diametro) : BigDecimal.ZERO; 
+			this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo).toString();
+		} else {
+			this.precio = "0";
+		}
+		
 	}
 	
 

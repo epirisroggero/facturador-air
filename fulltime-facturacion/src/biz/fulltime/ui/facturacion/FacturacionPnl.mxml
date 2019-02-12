@@ -562,11 +562,12 @@
 				if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' 
 					|| _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
 					
-					Alert.buttonWidth = 60;
+					//Alert.buttonWidth = 60;
 					
 					var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
 					alert.width = 340;
 					alert.height = 180
+						
 				}
 				
 				currentState = "default";
@@ -1154,7 +1155,7 @@
 
 						if (saving) {
 							if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' || _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
-								Alert.buttonWidth = 60;
+								//Alert.buttonWidth = 60;
 
 								var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
 								alert.width = 340;
@@ -1460,7 +1461,7 @@
 					}
 					helpWindow = new TitleWindow();
 					helpWindow.title = _documento.esSolicitudCompra ? "Líneas de compra" : "Líneas de venta";
-					helpWindow.width = 1120;
+					helpWindow.width = 1320;
 					helpWindow.height = 600;
 
 					frmLineasVenta = new FrmLineasVenta();
@@ -1834,7 +1835,7 @@
 							
 							maxUI = maxUI.divide(euro);
 						}
-						
+						/*
 						if (total.compareTo(maxUI.multiply(new BigDecimal(4))) > 0) { // para ventas superiores a los 40.000 UI
 							if (!_documento.titular || !_documento.titularDocumento || !_documento.mediosDePago) {
 								var helpWindow:TitleWindow = new TitleWindow();
@@ -1883,7 +1884,7 @@
 								
 								return;
 							}							
-						}
+						}*/
 					}
 					
 				}
@@ -2082,7 +2083,7 @@
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				if (tieneCambios && _documento.permisosDocumentoUsuario.edicion && !_modoVisualizacion && _documento.cliente) {
-					Alert.buttonWidth = 80;
+					//Alert.buttonWidth = 80;
 					var alert:Alert = Alert.show("El Documento ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
 					alert.width = 400;
 					alert.height = 200;
@@ -2498,7 +2499,7 @@
 														factura = evt.result as Documento;
 														currentState = "default";
 														if (_documento.comprobante.codigo == '10') {
-															Alert.buttonWidth = 60;
+															//Alert.buttonWidth = 60;
 
 															var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
 															alert.width = 340;
@@ -3516,7 +3517,7 @@
 					_convirtiendo = false;
 					
 					if (factura.comprobante.codigo == '101') {
-						Alert.buttonWidth = 60;
+						//Alert.buttonWidth = 60;
 						var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
 						alert.width = 340;
 						alert.height = 180
@@ -3904,7 +3905,7 @@
 					remObj1.moveToPrevDocument(_documento);
 				}
 			}
-			
+						
 		]]>
 
 	</fx:Script>
@@ -3916,7 +3917,7 @@
 
 		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" maxLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" 
 							tooShortError="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 'Número de RUT inválido.' : 'Número de documento inválido.'}" checkRut="{tipoDoc &amp;&amp; tipoDoc.value == 'R'}" />
-		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" decimalSeparator="." />
 		<s:NumberFormatter id="nf_Cotizaciones" fractionalDigits="3" locale="es_ES" />
 	</fx:Declarations>
 
@@ -4146,7 +4147,7 @@
 									<s:Button id="cmdVencimiento" height="28" click="cmdEditVencimientos_clickHandler(event)" keyDown="cmdVencimiento_keyDownHandler(event)" label="Vencimientos..."
 											  toolTip="Editar vencimientos" styleName="textButton" enabled="{_documento.planPagos != null}" focusEnabled="false" />
 								</s:HGroup>
-								<s:HGroup width="100%" paddingTop="12" verticalAlign="middle"
+								<s:VGroup width="100%" paddingTop="12" verticalAlign="middle"
 										  includeInLayout="{										       
 										  	  _documento.esCotizacionDeVenta ||
 											  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || 
@@ -4158,13 +4159,13 @@
 										  	  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || 
 											  _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR || 
 										  	  _documento.comprobante.isNotaCredito())}">
-									<s:Label fontSize="13" fontWeight="normal" text="Condición" />
-									<components:MyAutoComplete id="cmbCondicion" width="300" textAlign="left" change="cmbCondicion_changeHandler(event)"
+									<s:Label fontWeight="normal" text="Condición" />
+									<components:MyAutoComplete id="cmbCondicion" width="280" textAlign="left" change="cmbCondicion_changeHandler(event)"
 															   dataProvider="{ CatalogoFactory.getInstance().planPagos }" labelField="nombre" matchType="anyPart" prompt="Ninguna"
 															   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 															   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
 															   backspaceAction="focus" next_focus="{cmdVencimiento}" previous_focus="{cmdEditSL}" selectedItem="{_documento.condicion}" />
-								</s:HGroup>
+								</s:VGroup>
 							</s:VGroup>
 						</s:Panel>
 						<s:Panel width="300" height="100%" title="Cuponeras" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80')}"
@@ -4178,7 +4179,7 @@
 										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
 									</s:layout>
 									<s:Label fontSize="14" text="Saldo" />
-									<s:Label color="{(_documento.stock.intValueExact() &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="24" fontWeight="normal"
+									<s:Label color="{(_documento.stock.compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="24" fontWeight="normal"
 											 text="{nf_Espanol_Espanol.format(_documento.stock.toString())}" />
 									<s:Label fontSize="14" text="{_documento.comprobante.codigo == '80' ? 'afilados.' : 'servicios.'}" />
 								</s:Group>

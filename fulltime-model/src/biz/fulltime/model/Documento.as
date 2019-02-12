@@ -121,7 +121,7 @@ public class Documento extends DocumentoBase {
 
 	private var _esSolicitudCompra:Boolean;
 
-	public var stock:BigDecimal = BigDecimal.ZERO;
+	private var _stock:BigDecimal = BigDecimal.ZERO;
 
 	private var _rentaNetaComercial:BigDecimal;
 
@@ -1802,6 +1802,17 @@ public class Documento extends DocumentoBase {
 		
 		return result.setScale(4, MathContext.ROUND_HALF_EVEN);
 	}	
+
+	public function get stock():BigDecimal {
+		if (!_stock) {
+			_stock = BigDecimal.ZERO;
+		}
+		return _stock;
+	}
+
+	public function set stock(value:BigDecimal):void {
+		_stock = value;
+	}
 
 }
 

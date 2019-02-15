@@ -248,7 +248,7 @@ public class CatalogoFactory extends EventDispatcher {
 							articulosNC.addItem(elem);
 						}
 						if (elem.familiaId) {
-							if (elem.familiaId.toString().match(new RegExp("^980", 'i'))) {
+							if (elem.familiaId.toString().match(new RegExp("^980", 'i')) || elem.familiaId.toString().match(new RegExp("^890", 'i'))) {
 								articulosAfilados.addItem(elem);
 							} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
 								articulosMNeumaticas.addItem(elem);
@@ -884,7 +884,7 @@ public class CatalogoFactory extends EventDispatcher {
 										articulosNC.addItem(elem);
 									}
 									if (elem.familiaId) {
-										if (elem.familiaId.toString().match(new RegExp("^980", 'i'))) {
+										if (elem.familiaId.toString().match(new RegExp("^980", 'i')) || elem.familiaId.toString().match(new RegExp("^890", 'i'))) {
 											articulosAfilados.addItem(elem);
 										} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i'))) {
 											articulosMNeumaticas.addItem(elem);

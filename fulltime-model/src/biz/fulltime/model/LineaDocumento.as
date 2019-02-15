@@ -417,7 +417,7 @@ public class LineaDocumento extends EventDispatcher {
 			if (documento.comprobante.codigo == "80" || documento.comprobante.codigo == "81" 
 				|| documento.comprobante.codigo == "82" ||documento.comprobante.codigo == "84") {
 				
-				remObjPM.getArticuloPrecio(articulo.codigo, "3");
+				remObjPM.getArticuloPrecio(articulo.codigo, "7");
 				
 			} else if (!documento.esSolicitudCompra) {
 				obtenerPrecioSuguerido(articulo.codigo);			

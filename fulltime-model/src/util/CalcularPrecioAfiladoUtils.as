@@ -8,29 +8,20 @@ public class CalcularPrecioAfiladoUtils {
 		var familia:String = articuloPrecio.articulo.familiaId;
 
 		switch (familia) {
-			case "9800101": // Sierra Circular
-				return new BigDecimal(articuloPrecio.precio);
-			//obtenerPrecioMinorista(articulo.codigo);
-
 			case "9900201": // Cuchilla HSS
-				return new BigDecimal(articuloPrecio.precio);
-			//obtenerPrecioMinorista(articulo.codigo);
-
 			case "9800201": // Cuchilla HS
-				return new BigDecimal(articuloPrecio.precio);
-			//obtenerPrecioMinorista(articulo.codigo);
-
+				var costo:BigDecimal = articuloPrecio.articulo.costo ? new BigDecimal(articuloPrecio.articulo.costo) : BigDecimal.ZERO;
+				return new BigDecimal(articuloPrecio.precio).add(largo.multiply(costo));
+			
+			case "9800101": // Sierra Circular
 			case "9800301": // Cuchillas Perfiladas
-				return new BigDecimal(articuloPrecio.precio);
-			//obtenerPrecioMinorista(articulo.codigo);
-
 			case "9800401": // Fresas
 				return new BigDecimal(articuloPrecio.precio);
-			//obtenerPrecioMinorista(articulo.codigo);
+				
+			default:
+				return new BigDecimal(articuloPrecio.precio);
 
 		}
-
-		return BigDecimal.ZERO;
 
 	}
 

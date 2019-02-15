@@ -47,6 +47,7 @@ public class Articulo extends CodigoNombreEntity {
 	
 	public var lotes:Boolean;
 
+	public var artDobleCantidad:Boolean;
 
 	public var familiaId:String;
 
@@ -81,6 +82,11 @@ public class Articulo extends CodigoNombreEntity {
 	public var textoIdArt:String;
 
 	public var unidadId:String;
+	
+	public var unidadId2:String;
+	
+	public var conceptoIdArt:String;
+
 	
 	//////
 	

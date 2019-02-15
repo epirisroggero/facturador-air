@@ -1388,7 +1388,7 @@
 							</s:GridColumn>
 							
 
-							<s:GridColumn width="140" headerText="AFILADOR" rendererIsEditable="true" visible="{esAfilado()}">
+							<s:GridColumn width="110" headerText="AFILADOR" rendererIsEditable="true" visible="{esAfilado()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:GridItemRenderer>
@@ -1425,7 +1425,7 @@
 							
 							<s:GridColumn width="110" dataField="marca" headerText="MARCA" visible="{esAfilado()}" />
 
-							<s:GridColumn width="100" dataField="diametro" headerText="DIÁMETRO" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+							<s:GridColumn width="120" dataField="diametro" headerText="DIÁMETRO/CMTS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1445,7 +1445,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="100" dataField="rotos" headerText="ROTOS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+							<s:GridColumn width="75" dataField="rotos" headerText="ROTOS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1465,7 +1465,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="100" dataField="cascados" headerText="CASCADOS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
+							<s:GridColumn width="75" dataField="cascados" headerText="CASCADOS" visible="{esAfilado()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" >
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">

@@ -189,11 +189,15 @@
 			}
 			
 			public function set articulo(value:Articulo):void {
+				if (txtMarca) txtMarca.clear();
+				if (txtCategoria) txtCategoria.clear();
+				if (txtProveedor) txtProveedor.clear();
+				
 				this._articulo = value;
 				
 				_articulo.nombre = StringUtil.trim(value.nombre);
 				_articulo.abrevia = StringUtil.trim(value.abrevia);
-				_articulo.web  = StringUtil.trim(value.web);
+				_articulo.web = StringUtil.trim(value.web);
 				_articulo.videoYoutube  = StringUtil.trim(value.videoYoutube);
 				_articulo.videoYoutube2  = StringUtil.trim(value.videoYoutube2);
 				_articulo.videoYoutube3  = StringUtil.trim(value.videoYoutube3);
@@ -407,11 +411,11 @@
 			public function codigoNombreLabelFunction(item:Object):String {
 				var label:String = "";
 				
-				if (item && item.hasOwnProperty("codigo")) {
+				/*if (item && item.hasOwnProperty("codigo")) {
 					label = item.codigo;
-				}
+				}*/
 				if (item && item.hasOwnProperty("nombre")) {
-					label += "-" + item.nombre;
+					label += item.nombre;
 				}
 				return label;
 			}
@@ -781,31 +785,25 @@
 													<s:VGroup width="100%" paddingBottom="10" paddingLeft="5" paddingRight="5" paddingTop="5">
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Categoría" />
-															<components:MyAutoComplete id="txtCategoria" width="270" change="txtCategoria_changeHandler(event)" dataProvider="{ capitulos }" matchType="anyPart" contentBackgroundAlpha="1"
-																					   prompt="Ninguna" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+															<components:MyAutoComplete id="txtCategoria" width="270" change="txtCategoria_changeHandler(event)" dataProvider="{ CatalogoFactory.getInstance().categoriasArticulo}" matchType="anyPart" contentBackgroundAlpha="1"
+																					   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
-																					   selectedItem="@{_capitulo}" />
+																					   selectedItem="@{articulo.categArt}" next_focus="{txtProveedor}"/>
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Proveedor" />
 															<components:MyAutoComplete id="txtProveedor" width="100%" backgroundAlpha="1" dataProvider="{ proveedores }" matchType="anyPart" prompt=""
 																					   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction"
-																					   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" selectedItem="@{articulo.proveedor}" next_focus="{txtNotas}"/>
+																					   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
+																					   selectedItem="@{articulo.proveedor}" next_focus="{txtMarca}"/>
 
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Marca" />
-															<components:MyAutoComplete id="txtMarca" width="270" change="txtMarca_changeHandler(event)" dataProvider="{ subtitulos }" matchType="anyPart" contentBackgroundAlpha="1"
+															<components:MyAutoComplete id="txtMarca" width="270" change="txtMarca_changeHandler(event)" dataProvider="{ CatalogoFactory.getInstance().marcas }" matchType="anyPart" contentBackgroundAlpha="1"
 																					   prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"  
-																					   selectedItem="@{_subtitulo}"/>
-														</s:HGroup>
-														<s:HGroup width="100%" verticalAlign="middle">
-															<s:Label width="70" text="Concepto" />
-															<components:MyAutoComplete id="txtConcepto" width="270" change="txtConcepto_changeHandler(event)" dataProvider="{ subtitulos }" matchType="anyPart" contentBackgroundAlpha="1"
-																					   prompt="Ninguno" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
-																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"  
-																					   selectedItem="@{_subtitulo}"/>
+																					   selectedItem="@{articulo.marca}" next_focus="{txtCapitulos}"/>
 														</s:HGroup>
 													</s:VGroup>
 												</s:Panel>

@@ -688,7 +688,25 @@
 									<s:layout>
 										<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" verticalAlign="top" />
 									</s:layout>
-									<s:Label id="lblIVA" width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.iva ? (articulo.iva.nombre) : '[Exento]'}" showTruncationTip="true" />
+									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.iva ? (articulo.iva.nombre) : '[Exento]'}" showTruncationTip="true" />
+								</s:BorderContainer>
+							</s:HGroup>
+							<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle" gap="5">
+								<s:Label width="110" fontSize="13" textAlign="right" maxDisplayedLines="1" text="Marca" />
+								<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" maxWidth="360" minHeight="0" borderAlpha=".6">
+									<s:layout>
+										<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" verticalAlign="top" />
+									</s:layout>
+									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.marca ? (articulo.marca.nombre) : ''}" showTruncationTip="true" />
+								</s:BorderContainer>
+							</s:HGroup>
+							<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle" gap="5">
+								<s:Label width="110" fontSize="13" textAlign="right" maxDisplayedLines="1" text="Categoría" />
+								<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" maxWidth="360" minHeight="0" borderAlpha=".6">
+									<s:layout>
+										<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" verticalAlign="top" />
+									</s:layout>
+									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.categArt ? (articulo.categArt.nombre) : ''}" showTruncationTip="true" />
 								</s:BorderContainer>
 							</s:HGroup>
 						</s:VGroup>
@@ -715,7 +733,7 @@
 								<mx:LinkButton id="btnVideo1" width="40" click="btnVideo_clickHandler(event)" label="Ir " toolTip="{articulo.videoYoutube}" />
 							</s:BorderContainer>
 						</s:VGroup>
-						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" enabled="{articulo.videoYoutube2 &amp;&amp; articulo.videoYoutube2.length > 0}">
+						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" visible="{articulo.videoYoutube2 &amp;&amp; articulo.videoYoutube2.length > 0}">
 							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video YouTube 2" color="0x666666"/>
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minHeight="0" borderAlpha=".6">
 								<s:layout>
@@ -725,7 +743,7 @@
 								<mx:LinkButton id="btnVideo2" width="40" click="btnVideo2_clickHandler(event)" label="Ir " toolTip="{articulo.videoYoutube2}" />
 							</s:BorderContainer>
 						</s:VGroup>
-						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" enabled="{articulo.videoYoutube3 &amp;&amp; articulo.videoYoutube3.length > 0}">
+						<s:VGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" visible="{articulo.videoYoutube3 &amp;&amp; articulo.videoYoutube3.length > 0}">
 							<s:Label width="110" fontSize="13"  textAlign="left" maxDisplayedLines="1" text="Video YouTube 3" color="0x666666" />
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minHeight="0" borderAlpha=".6">
 								<s:layout>

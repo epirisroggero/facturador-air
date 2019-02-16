@@ -94,6 +94,7 @@
     <classEntry path="biz.fulltime.model.Concepto"/>
     <classEntry path="biz.fulltime.model.Marca"/>
     <classEntry path="util.CalcularPrecioAfiladoUtils"/>
+    <classEntry path="biz.fulltime.model.CategoriasArticulo"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

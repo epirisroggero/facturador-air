@@ -1,66 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/bin/fulltime-facturacion.swc" afterPath="$PROJECT_DIR$/fulltime-facturacion/bin/fulltime-facturacion.swc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-model/bin/fulltime-model.swc" afterPath="$PROJECT_DIR$/fulltime-model/bin/fulltime-model.swc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/LoginPnl.mxml" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/LoginPnl.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainApp.mxml" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainApp.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainMenuBar.mxml" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainMenuBar.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" afterPath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/event/MenuEventFT.as" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/event/MenuEventFT.as" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticuloEditor.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticuloEditor.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorLeftPanel.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorLeftPanel.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/components/HelpClientPnl.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/components/HelpClientPnl.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FiltrosPnl.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FiltrosPnl.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/TipoFacturaPnl.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/TipoFacturaPnl.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/stockprecio/FrmStockPrecio.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/stockprecio/FrmStockPrecio.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/EditarProveedor.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/EditarProveedor.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/FiltroRecibosPnl.mxml" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/FiltroRecibosPnl.mxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/dto/DocumentoQuery.as" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/dto/DocumentoQuery.as" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Articulo.as" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Articulo.as" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" />
-    </list>
+    <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="ArticuloEditor.mxml" pinned="false" current-in-tab="false">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticuloEditor.mxml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
-              <caret line="50" column="67" lean-forward="false" selection-start-line="50" selection-start-column="67" selection-end-line="50" selection-end-column="67" />
-              <folding />
+            <state relative-caret-position="850">
+              <caret line="50" column="67" selection-start-line="50" selection-start-column="67" selection-end-line="50" selection-end-column="67" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ArticulosEditorRightPanel.mxml" pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorRightPanel.mxml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2014">
-              <caret line="19" column="12" lean-forward="false" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
-              <folding />
+            <state relative-caret-position="323">
+              <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EditarArticulo.mxml" pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="10" column="52" lean-forward="true" selection-start-line="10" selection-start-column="52" selection-end-line="10" selection-end-column="52" />
-              <folding />
+            <state relative-caret-position="156">
+              <caret line="16" column="45" lean-forward="true" selection-start-line="16" selection-start-column="45" selection-end-line="16" selection-end-column="45" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-4709">
+              <caret line="22" column="39" lean-forward="true" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -69,11 +50,6 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="GradleLocalSettings">
-    <option name="externalProjectsViewState">
-      <projects_view />
-    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -90,21 +66,11 @@
     <option name="height" value="990" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <flattenPackages />
-      <showMembers />
-      <showModules />
-      <showLibraryContents />
-      <hideEmptyPackages />
-      <abbreviatePackageNames />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
-      <manualOrder />
+    <navigator proportions="" version="1">
+      <autoscrollFromSource ProjectPane="true" />
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -115,6 +81,11 @@
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-client-air" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
               <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -141,27 +112,42 @@
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="biz" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="biz" type="462c0819:PsiDirectoryNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="ui" type="462c0819:PsiDirectoryNode" />
-              <item name="articulos" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="AndroidView" />
       <pane id="Scope" />
       <pane id="PackagesPane" />
     </panes>
@@ -223,6 +209,9 @@
       <projects_view />
     </option>
   </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="" />
@@ -234,73 +223,89 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
-    <editor active="true" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="7" />
     <layout>
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="combo" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Tool" order="0" />
+      <window_info id="Designer" order="1" />
+      <window_info id="UI Designer" order="2" />
+      <window_info id="Favorites" order="3" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.18120806" />
+      <window_info id="Structure" order="5" weight="0.25" />
+      <window_info id="Image Layers" order="6" />
+      <window_info anchor="bottom" id="Event Log" order="0" side_tool="true" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.7209632" />
+      <window_info anchor="bottom" id="Terminal" order="2" />
+      <window_info anchor="bottom" id="Message" order="3" />
+      <window_info anchor="bottom" id="Find" order="4" />
+      <window_info anchor="bottom" id="Run" order="5" />
+      <window_info anchor="bottom" id="Debug" order="6" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="7" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="9" />
+      <window_info anchor="right" id="Maven" order="0" />
+      <window_info anchor="right" id="Palette&#9;" order="1" />
+      <window_info anchor="right" id="Maven Projects" order="2" />
+      <window_info anchor="right" id="Capture Analysis" order="3" />
+      <window_info anchor="right" id="Theme Preview" order="4" />
+      <window_info anchor="right" id="Palette" order="5" />
+      <window_info anchor="right" id="Commander" order="6" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="7" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="8" weight="0.25" />
     </layout>
   </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager />
-    <watches-manager />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo2.mxml" />
     <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticuloEditor.mxml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="50" column="67" lean-forward="false" selection-start-line="50" selection-start-column="67" selection-end-line="50" selection-end-column="67" />
-          <folding />
+        <state relative-caret-position="850">
+          <caret line="50" column="67" selection-start-line="50" selection-start-column="67" selection-end-line="50" selection-end-column="67" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorRightPanel.mxml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2014">
-          <caret line="19" column="12" lean-forward="false" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo2.mxml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="763" column="51" lean-forward="true" selection-start-line="763" selection-start-column="51" selection-end-line="763" selection-end-column="51" />
-          <folding />
+        <state relative-caret-position="323">
+          <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="10" column="52" lean-forward="true" selection-start-line="10" selection-start-column="52" selection-end-line="10" selection-end-column="52" />
-          <folding />
+        <state relative-caret-position="156">
+          <caret line="16" column="45" lean-forward="true" selection-start-line="16" selection-start-column="45" selection-end-line="16" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4709">
+          <caret line="22" column="39" lean-forward="true" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
         </state>
       </provider>
     </entry>

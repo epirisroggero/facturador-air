@@ -211,18 +211,23 @@ public class DocumentoBase extends EventDispatcher {
 		if (this.cliente != null && (this.comprobante.codigo == "80" || this.comprobante.codigo == "90")) {
 			cargarCuponeras();
 		}
-
 	}
 
 	private function cargarCuponeras():void {
 		cuponeras.removeAll();
 
-		for each (var elem:Articulo in CatalogoFactory.getInstance().articulos) {
-			cuponeras.addItem(elem);
+		for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
+			if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
+				var codigo:String = articulo.codigo;
+				var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
+				for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
+					if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {
+						if (!cuponeras.contains(articulo)) 
+							cuponeras.addItem(articulo);
+					}
+				}
+			}			
 		}
-		cuponeras.filterFunction = filtrarArticulos;
-		cuponeras.refresh();
-
 	}
 
 	private function filtrarArticulos(item:Object):Boolean {

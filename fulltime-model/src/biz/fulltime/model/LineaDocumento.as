@@ -792,11 +792,13 @@ public class LineaDocumento extends EventDispatcher {
 	public function set diametro(value:String):void {
 		_diametro = value;
 		
-		if (articuloPrecio) {
-			var largo:BigDecimal = _diametro != null ? new BigDecimal(_diametro) : BigDecimal.ZERO; 
-			this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo).toString();
-		} else {
-			this.precio = "0";
+		if (documento.comprobante.codigo == "80" || documento.comprobante.codigo == "81" || documento.comprobante.codigo == "82" ||documento.comprobante.codigo == "84") {
+			if (articuloPrecio) {
+				var largo:BigDecimal = _diametro != null ? new BigDecimal(_diametro) : BigDecimal.ZERO; 
+				this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo).toString();
+			} else {
+				this.precio = "0";
+			}
 		}
 		
 	}

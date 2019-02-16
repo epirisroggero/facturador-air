@@ -87,6 +87,7 @@ public class Articulo extends CodigoNombreEntity {
 	
 	public var conceptoIdArt:String;
 
+	public var categArt:CategoriasArticulo;
 	
 	//////
 	
@@ -140,7 +141,9 @@ public class Articulo extends CodigoNombreEntity {
 		articulo.familia = new FamiliaArticulos();
 		articulo.monedaCosto = new Moneda();
 		articulo.proveedor = new Proveedor();
-
+		articulo.marca = new Marca();
+		articulo.categArt = new CategoriasArticulo();
+		
 		return articulo;
 	}
 	
@@ -154,6 +157,8 @@ public class Articulo extends CodigoNombreEntity {
 		}
 		prvIdArt = this.proveedor ? this.proveedor.codigo : "";
 		familiaId = this.familia ? this.familia.codigo : "";
+		marcaId = this.marca ? this.marca.codigo : "";
+		categArtId = this.categArt ? this.categArt.codigo : "";
 		
 		remMerge.modificarArticulo(this);
 	}

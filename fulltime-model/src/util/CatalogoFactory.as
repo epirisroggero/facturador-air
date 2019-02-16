@@ -12,6 +12,7 @@ import biz.fulltime.conf.GeneralOptions;
 import biz.fulltime.conf.ServerConfig;
 import biz.fulltime.model.Articulo;
 import biz.fulltime.model.Capitulo;
+import biz.fulltime.model.CategoriasArticulo;
 import biz.fulltime.model.CategoriasClientes;
 import biz.fulltime.model.Cliente;
 import biz.fulltime.model.Comprobante;
@@ -132,6 +133,8 @@ public class CatalogoFactory extends EventDispatcher {
 	private var _conceptos:ArrayCollection = new ArrayCollection();
 	
 	private var _marcas:ArrayCollection = new ArrayCollection();
+	
+	private var _categoriasArticulo:ArrayCollection = new ArrayCollection();
 
 
 	private var _ivas:ArrayCollection = new ArrayCollection();
@@ -724,7 +727,11 @@ public class CatalogoFactory extends EventDispatcher {
 	}
 
 	public function get articulos():ArrayCollection {
-		return _articulos;
+		var aux:ArrayCollection = new ArrayCollection();
+		for each (var elem:Articulo in _articulos) {
+			aux.addItem(elem);
+		}
+		return aux;
 	}
 
 	public function getArticulos(cmpId:String = null):ArrayCollection {
@@ -1126,17 +1133,16 @@ public class CatalogoFactory extends EventDispatcher {
 						if (values) {
 							cajas = sort(values, false);
 						}
-//						resetRemoteObject();
-//						errorPanel.errorText = "Cargando catálogo de 'Conceptos'.";
-//						remObjCat.getCatalogoByName("Concepto");
-//						break;
-//					}
-//				case 28:
-//					{
-//						var concept:Concepto = new Concepto(); 
-//						if (values) {
-//							conceptos = sort(values, false);
-//						}
+						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Categorías de Artículos'.";
+						remObjCat.getCatalogoByName("CategoriasArticulos");
+						break;
+					}
+				case 29:
+					{
+						if (values) {
+							categoriasArticulo = sort(values, false);
+						}
 						resetRemoteObject();
 						errorPanel.errorText = "Catálogos cargados.";
 						myTimer.start();
@@ -1313,6 +1319,14 @@ public class CatalogoFactory extends EventDispatcher {
 
 	public function set marcas(value:ArrayCollection):void {
 		_marcas = value;
+	}
+
+	public function get categoriasArticulo():ArrayCollection {
+		return _categoriasArticulo;
+	}
+
+	public function set categoriasArticulo(value:ArrayCollection):void {
+		_categoriasArticulo = value;
 	}
 
 

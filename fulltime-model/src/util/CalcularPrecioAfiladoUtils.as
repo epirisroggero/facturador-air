@@ -10,6 +10,7 @@ public class CalcularPrecioAfiladoUtils {
 		switch (familia) {
 			case "9900201": // Cuchilla HSS
 			case "9800201": // Cuchilla HS
+			case "8900201": // Cuchillas Rectas
 				var costo:BigDecimal = articuloPrecio.articulo.costo ? new BigDecimal(articuloPrecio.articulo.costo) : BigDecimal.ZERO;
 				return new BigDecimal(articuloPrecio.precio).add(largo.multiply(costo));
 			

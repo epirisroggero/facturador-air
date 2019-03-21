@@ -26,8 +26,8 @@
 			<s:controlBarContent>
 				<s:HGroup width="100%" paddingBottom="10" paddingTop="10">
 					<s:Spacer width="100%" />
-					<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" />
-					<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" />
+					<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton"/>
+					<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" styleName="cancelarButton"/>
 				</s:HGroup>
 			</s:controlBarContent>
 		</s:Panel>

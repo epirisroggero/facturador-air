@@ -8,6 +8,7 @@
 		<![CDATA[
 			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.ArticuloDTO;
 			import biz.fulltime.dto.CreditoInfo;
 			import biz.fulltime.dto.EFacturaResult;
 			import biz.fulltime.event.ClaveSupervisoraEvent;
@@ -44,6 +45,7 @@
 			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
 			import biz.fulltime.ui.expediciones.FrmNuevaTarea;
 			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
+			import biz.fulltime.ui.forms.FrmLineasCuponera;
 			import biz.fulltime.ui.forms.FrmLineasVenta;
 			import biz.fulltime.ui.forms.FrmNotasEnvio;
 			import biz.fulltime.ui.forms.FrmTrazabilidadDocumento;
@@ -54,6 +56,7 @@
 			import flash.utils.setTimeout;
 			
 			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
 			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.core.IFlexDisplayObject;
@@ -3363,17 +3366,9 @@
 				} else if (_documento.comprobante.codigo == '120') { // SOLICITUD DE IMPORTACION -> ORDEN DE  IMPORTACION
 					convertirSolicitud(_documento, "121");
 				} else if (_documento.comprobante.codigo == '121') { // ORDEN DE IMPORTACION -> PROFORMA
-//					if (tieneCambios) {
-//						guardarSolicitudImp(_documento);
-//					} else {
-//					}
 					actualizarPrecios(_documento);
 					convertirSolicitud(_documento, "122");
 				} else if (_documento.comprobante.codigo == '122') { // PROFORMA -> NACIONALIZACIÓN
-//					if (tieneCambios) {
-//						guardarSolicitudImp(_documento);
-//					} else {
-//					}
 					actualizarPrecios(_documento);
 					var f:String = txtCoeficiente.text;
 					var factor:BigDecimal = BigDecimal.ONE;
@@ -3517,7 +3512,6 @@
 					_convirtiendo = false;
 					
 					if (factura.comprobante.codigo == '101') {
-						//Alert.buttonWidth = 60;
 						var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Nueva expedición", Alert.YES + Alert.NO, null, generarExpedicion);
 						alert.width = 340;
 						alert.height = 180
@@ -3906,6 +3900,56 @@
 				}
 			}
 						
+			protected function cmdMovimientosCuponera_clickHandler(event:MouseEvent):void {
+				var remObj1:RemoteObject = new RemoteObject();
+				remObj1.destination = "CreatingRpc";
+				remObj1.showBusyCursor = true;
+				remObj1.channelSet = ServerConfig.getInstance().channelSet;
+				remObj1.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					var lineasCuponera:ArrayCollection = evt.result as ArrayCollection;
+
+					var cuponera:Articulo = cmbCuponera.selectedItem;
+
+					if (lineasCuponera && lineasCuponera.length > 0) {
+						var helpWindow:TitleWindow = new TitleWindow();
+						helpWindow.width = 840;
+						helpWindow.height = 460;
+						helpWindow.title = "Movimientos cuponera  '" + cuponera.codigo + "'";
+						
+						var parent:Sprite;
+						var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
+						// no types so no dependencies
+						var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
+						if (mp && mp.useSWFBridge()) {
+							parent = Sprite(sm.getSandboxRoot());
+						} else {
+							parent = Sprite(FlexGlobals.topLevelApplication);
+						}
+						
+						var lineasCupPanel:FrmLineasCuponera = new FrmLineasCuponera();
+						lineasCupPanel.lineas = lineasCuponera;
+						var closeHandler:Function = function closeHandler(event:CloseEvent):void {
+							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						}
+						
+						lineasCupPanel.addEventListener(CloseEvent.CLOSE, closeHandler);
+						helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
+						
+						helpWindow.addElement(lineasCupPanel);
+						PopUpManager.addPopUp(helpWindow, parent, true);
+						PopUpManager.centerPopUp(helpWindow);
+					} else {
+						Alert.show("Cuponera '" + cuponera.codigo + "' no tiene movimientos.", "Información");
+					}
+
+				});
+				
+				var cuponera:Articulo = cmbCuponera.selectedItem;
+				remObj1.getMovimientosCuponera(cuponera.codigo);
+				
+			}
+			
 		]]>
 
 	</fx:Script>
@@ -4183,6 +4227,12 @@
 											 text="{nf_Espanol_Espanol.format(_documento.stock.toString())}" />
 									<s:Label fontSize="14" text="{_documento.comprobante.codigo == '80' ? 'afilados.' : 'servicios.'}" />
 								</s:Group>
+								<s:Group width="100%" visible="{cmbCuponera.selectedIndex >= 0}">
+									<s:layout>
+										<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle" />
+									</s:layout>
+									<s:Button id="cmdMovimientosCuponera" click="cmdMovimientosCuponera_clickHandler(event)" styleName="textButton" label="Ver detalle cuponera" toolTip="Ver detalles de la cuponera" />
+								</s:Group>
 							</s:VGroup>
 							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length &lt; 1)}"
 									  includeInLayout="{(_documento.cuponeras.length &lt; 1)}">
@@ -4308,8 +4358,8 @@
 
 			<s:Button id="cmdConvertirSol" click="cmdConvertirSol_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir solicitud"
 					  enabled="{!_convirtiendo &amp;&amp; !_documento.nuevo &amp;&amp; _documento.proveedor &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"
-					  visible="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; !_documento.emitido)}"
-					  includeInLayout="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; !_documento.emitido)}" />
+					  visible="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; _documento.pendiente)}"
+					  includeInLayout="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; _documento.pendiente)}" />
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false"

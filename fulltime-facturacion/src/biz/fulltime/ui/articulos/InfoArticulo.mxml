@@ -246,9 +246,6 @@
 				loadedContent.scaleX = Math.min(scaleX, scaleY);
 				loadedContent.scaleY = Math.min(scaleX, scaleY);
 
-//				container.width = loadedContent.width;
-//				container.height = loadedContent.height;
-//				container.addChild(loader);
 			}
 
 			public function obtenerStock():void {
@@ -697,7 +694,7 @@
 									<s:layout>
 										<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" verticalAlign="top" />
 									</s:layout>
-									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.marca ? (articulo.marca.nombre) : ''}" showTruncationTip="true" />
+									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.marca ? (articulo.marca.nombre) : '[No tiene]'}" showTruncationTip="true" />
 								</s:BorderContainer>
 							</s:HGroup>
 							<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle" gap="5">
@@ -706,7 +703,7 @@
 									<s:layout>
 										<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" verticalAlign="top" />
 									</s:layout>
-									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.categArt ? (articulo.categArt.nombre) : ''}" showTruncationTip="true" />
+									<s:Label width="100%" fontSize="13" maxDisplayedLines="1" text="{articulo.categArt ? (articulo.categArt.nombre) : '[No tiene]'}" showTruncationTip="true" />
 								</s:BorderContainer>
 							</s:HGroup>
 						</s:VGroup>
@@ -915,10 +912,11 @@
 								</s:HGroup>
 							</s:Panel>
 							<s:Panel width="100%" height="100%" title="Otros datos" styleName="pnlInternoArticulo" fontWeight="normal">
-								<s:VGroup paddingLeft="10" paddingRight="25" paddingTop="10">
+								<s:VGroup paddingLeft="10" paddingRight="25" paddingTop="10" paddingBottom="10">
 									<s:CheckBox id="chbContabilizarStock" label="Contabilizar stock" selected="{articulo.inventario}" enabled="false"/>
 									<s:CheckBox id="chbListaPrecios" label="Incluir en lista de precios" selected="{articulo.listaPrecios}" enabled="false"/>
 									<s:CheckBox id="chbWeb" label="Incluir en catálogo web" selected="{articulo.artGXPortal}" enabled="false"/>
+									<s:CheckBox id="chbEsCuponera" label="Es cuponera" selected="{articulo.artEsCuponera}" enabled="false"/>
 								</s:VGroup>
 							</s:Panel>
 						</s:VGroup>

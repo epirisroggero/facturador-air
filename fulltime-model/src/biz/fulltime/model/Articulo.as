@@ -43,6 +43,8 @@ public class Articulo extends CodigoNombreEntity {
 
 	public var activo:Boolean;
 	
+	public var artEsCuponera:Boolean;
+	
 	public var listaPrecios:Boolean;
 	
 	public var lotes:Boolean;

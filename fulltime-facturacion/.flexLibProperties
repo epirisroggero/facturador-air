@@ -106,6 +106,7 @@
     <classEntry path="biz.fulltime.ui.gastos.GastosPnl"/>
     <classEntry path="biz.fulltime.ui.facturacion.reportes.FrmLiquidacionAfilados"/>
     <classEntry path="biz.fulltime.ui.facturacion.PrintJobAfilado"/>
+    <classEntry path="biz.fulltime.ui.forms.FrmLineasCuponera"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

@@ -772,6 +772,7 @@
 																	<s:CheckBox id="chbContabilizarStock" label="Contabilizar stock" selected="@{articulo.inventario}" />
 																	<s:CheckBox id="chbListaPrecios" label="Incluir en lista de precios" selected="@{articulo.listaPrecios}" />
 																	<s:CheckBox id="chbWeb" label="Incluir en catálogo web" selected="@{articulo.artGXPortal}" />
+																	<s:CheckBox id="chbEsCuponera" label="Es cuponera" selected="@{articulo.artEsCuponera}" />
 																</s:VGroup>
 															</mx:FormItem>
 														</mx:Form>

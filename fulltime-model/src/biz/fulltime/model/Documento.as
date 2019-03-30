@@ -100,6 +100,8 @@ public class Documento extends DocumentoBase {
 	private var _nuevo:Boolean = false;
 
 	private var remObjStock:RemoteObject;
+	
+	private var remObjCuponera:RemoteObject;
 
 	private var clienteRemObj:RemoteObject;
 
@@ -122,6 +124,8 @@ public class Documento extends DocumentoBase {
 	private var _esSolicitudCompra:Boolean;
 
 	private var _stock:BigDecimal = BigDecimal.ZERO;
+	
+	public var cuponera:Cuponera;
 
 	private var _rentaNetaComercial:BigDecimal;
 
@@ -340,7 +344,6 @@ public class Documento extends DocumentoBase {
 		remObjStock.addEventListener(ResultEvent.RESULT, resultStock);
 		remObjStock.addEventListener(FaultEvent.FAULT, handleFault);
 		remObjStock.showBusyCursor = true;
-
 	}
 
 	public function get entrega():Entrega {
@@ -1516,10 +1519,22 @@ public class Documento extends DocumentoBase {
 		remObjStock.getStock(cuponera, deposito);
 
 	}
+	
+	public function obtenerCuponera(cuponera:String):void {
+		if (!cuponera) {
+			return;
+		}
+		remObjCuponera.getDatosCuponera(cuponera);
+	}
+
 
 	private function resultStock(event:ResultEvent):void {
 		var value:* = event.result;
 		stock = value is String ? new BigDecimal(value) : BigDecimal.ZERO;
+	}
+	
+	private function resultCuponera(event:ResultEvent):void {
+		cuponera = event.result as Cuponera;
 	}
 	
 	public function esRecibo():Boolean {

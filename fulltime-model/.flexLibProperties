@@ -96,6 +96,7 @@
     <classEntry path="util.CalcularPrecioAfiladoUtils"/>
     <classEntry path="biz.fulltime.model.CategoriasArticulo"/>
     <classEntry path="biz.fulltime.model.LineaCuponera"/>
+    <classEntry path="biz.fulltime.model.Cuponera"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

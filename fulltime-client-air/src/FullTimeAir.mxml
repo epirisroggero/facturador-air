@@ -106,27 +106,31 @@
 				var permiso:String = "";
 				
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
-				if (loggedUser.esSupervisor()) {
-					permiso = "Supervisor";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
-					permiso = "Facturación";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
-					permiso = "Administrador";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
-					permiso = "Taller y mantenimiento";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR) {
-					permiso = "Vendedor Senior";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
-					permiso = "Vendedor Distribuidor";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR) {
-					permiso = "Vendedor Junior";
-				} else if (loggedUser.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES) {
-					permiso = "Aliado Comercial";
-				}
+				if (loggedUser.usuTipo == "S") {
+					this.title = version + " [Tipo de Usuario: Supervisor][Nombre: " + GeneralOptions.getInstance().loggedUser.nombre + "]";
 				
-				this.title = version + " [Usuario: " + GeneralOptions.getInstance().loggedUser.nombre + "]" + 
-					" [Permiso: " + permiso + "]";
-				
+				} else {
+					if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
+						permiso = "Supervisor";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
+						permiso = "Facturación";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR) {
+						permiso = "Administrador";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
+						permiso = "Taller y Mantenimiento";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_SENIOR) {
+						permiso = "Vendedor Senior";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
+						permiso = "Vendedor Distribuidor";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_VENDEDOR_JUNIOR) {
+						permiso = "Vendedor Junior";
+					} else if (loggedUser.permisoId == Usuario.USUARIO_ALIADOS_COMERCIALES) {
+						permiso = "Aliado Comercial";
+					}	
+
+					this.title = version + " [Tipo de Usuario: General]" + "[Permiso: " + permiso + "] [Nombre: " + GeneralOptions.getInstance().loggedUser.nombre + "]";
+					
+				}				
 				
 				helpWindow = new TitleWindow();
 				helpWindow.styleName = "cotizacionSkin";

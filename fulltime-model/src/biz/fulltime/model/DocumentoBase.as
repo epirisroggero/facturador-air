@@ -16,6 +16,7 @@ import flash.events.Event;
 import flash.events.EventDispatcher;
 
 import mx.collections.ArrayCollection;
+import mx.collections.ArrayList;
 import mx.controls.Alert;
 import mx.events.PropertyChangeEvent;
 import mx.formatters.DateFormatter;
@@ -70,7 +71,7 @@ public class DocumentoBase extends EventDispatcher {
 
 	public var registroHora:Date;
 
-	public var cuponeras:ArrayCollection = new ArrayCollection();
+	
 
 	private var _cliente:Cliente;
 
@@ -87,6 +88,12 @@ public class DocumentoBase extends EventDispatcher {
 	public var estado:String;
 
 	private var clienteRemObj:RemoteObject;
+	
+	private var remObjCuponera:RemoteObject;
+	
+	public var cuponeras:ArrayCollection = new ArrayCollection();
+	
+	private var cuponerasList:ArrayCollection = new ArrayCollection();
 
 	
 	public function DocumentoBase() {
@@ -97,6 +104,13 @@ public class DocumentoBase extends EventDispatcher {
 		clienteRemObj.addEventListener(ResultEvent.RESULT, resultCliente);
 		clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
 		clienteRemObj.showBusyCursor = true;
+
+		remObjCuponera = new RemoteObject();
+		remObjCuponera.destination = "CreatingRpc";
+		remObjCuponera.channelSet = ServerConfig.getInstance().channelSet;
+		remObjCuponera.addEventListener(ResultEvent.RESULT, resultCuponera);
+		remObjCuponera.addEventListener(FaultEvent.FAULT, handleFault);
+		remObjCuponera.showBusyCursor = true;
 
 	}
 
@@ -214,7 +228,7 @@ public class DocumentoBase extends EventDispatcher {
 	}
 
 	private function cargarCuponeras():void {
-		cuponeras.removeAll();
+		cuponeras.removeAll();			
 
 		for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
 			if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
@@ -226,9 +240,16 @@ public class DocumentoBase extends EventDispatcher {
 							cuponeras.addItem(articulo);
 					}
 				}
-			}			
+			}
 		}
+		
+		remObjCuponera.getCuponeras(cuponeras);
 	}
+	
+	private function resultCuponera(event:ResultEvent):void {
+		cuponerasList = event.result as ArrayCollection;
+	}
+
 
 	private function filtrarArticulos(item:Object):Boolean {
 		var articulo:Articulo = item as Articulo;

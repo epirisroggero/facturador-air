@@ -24,6 +24,7 @@
 			import biz.fulltime.model.Contacto;
 			import biz.fulltime.model.CotizacionesModel;
 			import biz.fulltime.model.CotizacionesMonedas;
+			import biz.fulltime.model.Cuponera;
 			import biz.fulltime.model.Deposito;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.LineaDocumento;
@@ -2145,7 +2146,7 @@
 				if (helpWindow == null) {
 					helpWindow = new TitleWindow();
 					helpWindow.width = 400;
-					helpWindow.height = 420;
+					helpWindow.height = 440;
 					helpWindow.title = "Nota de envío";
 					helpWindow.visible = true;
 
@@ -3098,7 +3099,7 @@
 
 			protected function combobox1_changeHandler(event:IndexChangeEvent):void {
 				var cuponera:Articulo = cmbCuponera.selectedItem as Articulo;
-				_documento.obtenerStock("1", cuponera.codigo);
+				_documento.obtenerCuponera(cuponera.codigo);
 			}
 			
 			protected function cmdDuplicar_clickHandler(event:MouseEvent):void {
@@ -3907,15 +3908,17 @@
 				remObj1.channelSet = ServerConfig.getInstance().channelSet;
 				remObj1.addEventListener(FaultEvent.FAULT, handleFault);
 				remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					var lineasCuponera:ArrayCollection = evt.result as ArrayCollection;
+					var cuponera:Cuponera = evt.result as Cuponera;
+					
+					var lineasCuponera:ArrayCollection = cuponera.lineasCuponera;
 
-					var cuponera:Articulo = cmbCuponera.selectedItem;
+					var cuponeraArt:Articulo = cmbCuponera.selectedItem;
 
 					if (lineasCuponera && lineasCuponera.length > 0) {
 						var helpWindow:TitleWindow = new TitleWindow();
 						helpWindow.width = 840;
 						helpWindow.height = 460;
-						helpWindow.title = "Movimientos cuponera  '" + cuponera.codigo + "'";
+						helpWindow.title = "Movimientos cuponera  '" + cuponeraArt.codigo + "'";
 						
 						var parent:Sprite;
 						var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
@@ -3940,13 +3943,13 @@
 						PopUpManager.addPopUp(helpWindow, parent, true);
 						PopUpManager.centerPopUp(helpWindow);
 					} else {
-						Alert.show("Cuponera '" + cuponera.codigo + "' no tiene movimientos.", "Información");
+						Alert.show("Cuponera '" + cuponeraArt.codigo + "' no tiene movimientos.", "Información");
 					}
 
 				});
 				
 				var cuponera:Articulo = cmbCuponera.selectedItem;
-				remObj1.getMovimientosCuponera(cuponera.codigo);
+				remObj1.getDatosCuponera(cuponera.codigo);
 				
 			}
 			
@@ -3962,7 +3965,9 @@
 		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" maxLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" 
 							tooShortError="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 'Número de RUT inválido.' : 'Número de documento inválido.'}" checkRut="{tipoDoc &amp;&amp; tipoDoc.value == 'R'}" />
 		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" decimalSeparator="." />
+		<s:NumberFormatter id="nf_Espanol_Espanol_2" fractionalDigits="2" locale="es_ES" decimalSeparator="." />
 		<s:NumberFormatter id="nf_Cotizaciones" fractionalDigits="3" locale="es_ES" />
+		<s:DateTimeFormatter id="date_formatter" dateTimePattern="dd-MM-yyyy" />
 	</fx:Declarations>
 
 	<s:states>
@@ -4212,26 +4217,38 @@
 								</s:VGroup>
 							</s:VGroup>
 						</s:Panel>
-						<s:Panel width="300" height="100%" title="Cuponeras" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80')}"
+						<s:Panel width="480" height="100%" title="Cuponeras (Solo para ver información)" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80')}"
 								 includeInLayout="{(_documento.comprobante.codigo == '80')}">
 							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length > 0)}"
 									  includeInLayout="{(_documento.cuponeras.length > 0)}">
-								<s:DropDownList id="cmbCuponera" width="100%" textAlign="left" change="combobox1_changeHandler(event)" dataProvider="{_documento.cuponeras}" labelField="nombre"
+								<s:DropDownList id="cmbCuponera" width="100%" textAlign="left" change="combobox1_changeHandler(event)" dataProvider="{_documento.cuponeras}" labelFunction="codigoNombreLabelFunction" 
 												prompt="Seleccionar cuponera" />
 								<s:Group width="100%" height="100%" visible="{cmbCuponera.selectedIndex >= 0}">
 									<s:layout>
-										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+										<s:VerticalLayout horizontalAlign="left" verticalAlign="middle" paddingLeft="10" paddingRight="10"/>
 									</s:layout>
-									<s:Label fontSize="14" text="Saldo" />
-									<s:Label color="{(_documento.stock.compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="24" fontWeight="normal"
-											 text="{nf_Espanol_Espanol.format(_documento.stock.toString())}" />
-									<s:Label fontSize="14" text="{_documento.comprobante.codigo == '80' ? 'afilados.' : 'servicios.'}" />
+									<s:VGroup width="100%" height="100%"  visible="{_documento.cuponera.fecha}" includeInLayout="{_documento.cuponera.fecha}"
+											  verticalAlign="middle" horizontalAlign="center">
+										<s:Label fontSize="14" color="black" text="Fecha: {date_formatter.format(_documento.cuponera.fecha)}" />
+										<s:Label fontSize="14" color="black" text="Cantidad: {nf_Espanol_Espanol.format(_documento.cuponera.cantidadTotal)}" />
+										<s:Label fontSize="14" color="black" text="Precio: {nf_Espanol_Espanol_2.format(_documento.cuponera.precioTotal)}" />
+										<s:Spacer height="30" />
+										<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="16" fontWeight="bold"
+												 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />
+									</s:VGroup>
+									<s:VGroup width="100%" height="100%"  visible="{!_documento.cuponera.fecha}" includeInLayout="{!_documento.cuponera.fecha}"
+											  verticalAlign="middle" horizontalAlign="center">
+										<s:Label fontSize="12" color="black" text="NO SE ENCONTRÓ COMPROBANTE PAGO CUPONERA" />
+										<s:Spacer height="30" />
+										<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="16" fontWeight="bold"
+												 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />
+									</s:VGroup>
 								</s:Group>
 								<s:Group width="100%" visible="{cmbCuponera.selectedIndex >= 0}">
 									<s:layout>
 										<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle" />
 									</s:layout>
-									<s:Button id="cmdMovimientosCuponera" click="cmdMovimientosCuponera_clickHandler(event)" styleName="textButton" label="Ver detalle cuponera" toolTip="Ver detalles de la cuponera" />
+									<s:Button id="cmdMovimientosCuponera" click="cmdMovimientosCuponera_clickHandler(event)" styleName="textButton" label="Movimientos cuponera" toolTip="Ver detalles de la cuponera" />
 								</s:Group>
 							</s:VGroup>
 							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length &lt; 1)}"
@@ -4240,7 +4257,7 @@
 									<s:layout>
 										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
 									</s:layout>
-									<s:Label fontSize="14" text="No tiene cuponera" />
+									<s:Label fontSize="14" text="NO TIENE CUPONERA" />
 								</s:Group>
 							</s:VGroup>
 						</s:Panel>
@@ -4271,7 +4288,7 @@
 							</s:VGroup>
 						</s:Panel>
 					</s:HGroup>
-					<s:HGroup width="100%" height="100%" gap="0">
+					<s:HGroup width="100%" height="124" gap="0">
 						<s:Panel width="100%" height="100%" title="{modoSolicitud ? 'Notas' : 'Observaciones'}" styleName="pnlInterno">
 							<s:VGroup width="100%" height="100%" gap="0">
 								<s:TextArea id="txtComments" width="100%" height="100%" keyDown="txtComments_keyDownHandler(event)" borderAlpha="0" contentBackgroundAlpha=".78" text="@{_documento.notas}"

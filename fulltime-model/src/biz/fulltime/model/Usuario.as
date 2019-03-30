@@ -61,7 +61,7 @@ public class Usuario extends CodigoNombreEntity {
 	}
 	
 	public function esSupervisor():Boolean {
-		return usuTipo == "S";
+		return usuTipo == "S" || permisoId == USUARIO_SUPERVISOR;
 	}
 
 }

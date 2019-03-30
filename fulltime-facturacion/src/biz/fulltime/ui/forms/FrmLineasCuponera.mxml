@@ -5,16 +5,19 @@
 	<fx:Script>
 		<![CDATA[
 			import biz.fulltime.model.Auditoria;
-
+			import biz.fulltime.model.Cuponera;
+			
 			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.formatters.DateFormatter;
-
+			
 			import spark.events.GridSelectionEvent;
 			import spark.events.IndexChangeEvent;
 
 			private var _lineas:ArrayCollection;
+			
+			private var _cuponera:Cuponera;
 
 			[Bindable]
 			private var lastIndex:int = -1;
@@ -64,6 +67,15 @@
 			protected function cmdCerrar_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
+
+			public function get cuponera():Cuponera {
+				return _cuponera;
+			}
+
+			public function set cuponera(value:Cuponera):void {
+				_cuponera = value;
+			}
+
 		]]>
 	</fx:Script>
 

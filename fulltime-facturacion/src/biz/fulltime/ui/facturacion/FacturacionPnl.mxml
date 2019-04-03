@@ -1213,7 +1213,7 @@
 			}
 
 			public function handleFault(event:FaultEvent):void {
-				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+				var message:String = (event.fault && event.fault.rootCause) ? event.fault.rootCause.toString() : null;
 				if (!message) {
 					message = event.message.toString();
 				}				
@@ -3098,8 +3098,8 @@
 			}
 
 			protected function combobox1_changeHandler(event:IndexChangeEvent):void {
-				var cuponera:Articulo = cmbCuponera.selectedItem as Articulo;
-				_documento.obtenerCuponera(cuponera.codigo);
+				var articulo:Articulo = cmbCuponera.selectedItem as Articulo;
+				_documento.updateCuponera(articulo.codigo);
 			}
 			
 			protected function cmdDuplicar_clickHandler(event:MouseEvent):void {
@@ -3918,7 +3918,7 @@
 						var helpWindow:TitleWindow = new TitleWindow();
 						helpWindow.width = 840;
 						helpWindow.height = 460;
-						helpWindow.title = "Movimientos cuponera  '" + cuponeraArt.codigo + "'";
+						helpWindow.title = "Movimientos cuponera  '" + cuponeraArt.codigo + " - " + cuponeraArt.nombre + "'";
 						
 						var parent:Sprite;
 						var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
@@ -3948,8 +3948,8 @@
 
 				});
 				
-				var cuponera:Articulo = cmbCuponera.selectedItem;
-				remObj1.getDatosCuponera(cuponera.codigo);
+				var artCuponera:Articulo = cmbCuponera.selectedItem;
+				remObj1.getDatosCuponera(artCuponera);
 				
 			}
 			
@@ -3964,8 +3964,8 @@
 
 		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" maxLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" 
 							tooShortError="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 'Número de RUT inválido.' : 'Número de documento inválido.'}" checkRut="{tipoDoc &amp;&amp; tipoDoc.value == 'R'}" />
-		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" decimalSeparator="." />
-		<s:NumberFormatter id="nf_Espanol_Espanol_2" fractionalDigits="2" locale="es_ES" decimalSeparator="." />
+		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" decimalSeparator="," groupingSeparator="."/>
+		<s:NumberFormatter id="nf_Espanol_Espanol_2" fractionalDigits="2" locale="es_ES" decimalSeparator="," groupingSeparator="." />
 		<s:NumberFormatter id="nf_Cotizaciones" fractionalDigits="3" locale="es_ES" />
 		<s:DateTimeFormatter id="date_formatter" dateTimePattern="dd-MM-yyyy" />
 	</fx:Declarations>
@@ -4217,7 +4217,7 @@
 								</s:VGroup>
 							</s:VGroup>
 						</s:Panel>
-						<s:Panel width="480" height="100%" title="Cuponeras (Solo para ver información)" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80')}"
+						<s:Panel width="480" height="100%" title="Cuponeras (solo para ver información)" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80')}"
 								 includeInLayout="{(_documento.comprobante.codigo == '80')}">
 							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length > 0)}"
 									  includeInLayout="{(_documento.cuponeras.length > 0)}">
@@ -4231,7 +4231,8 @@
 											  verticalAlign="middle" horizontalAlign="center">
 										<s:Label fontSize="14" color="black" text="Fecha: {date_formatter.format(_documento.cuponera.fecha)}" />
 										<s:Label fontSize="14" color="black" text="Cantidad: {nf_Espanol_Espanol.format(_documento.cuponera.cantidadTotal)}" />
-										<s:Label fontSize="14" color="black" text="Precio: {nf_Espanol_Espanol_2.format(_documento.cuponera.precioTotal)}" />
+										<s:Label fontSize="14" color="black" text="Precio unitario: {nf_Espanol_Espanol_2.format(_documento.cuponera.precioUnitario)}" />
+										<s:Label fontSize="14" color="black" text="Precio total: {nf_Espanol_Espanol_2.format(_documento.cuponera.precioTotal)}" />
 										<s:Spacer height="30" />
 										<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="16" fontWeight="bold"
 												 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />

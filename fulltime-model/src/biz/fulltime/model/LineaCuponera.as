@@ -18,6 +18,8 @@ public class LineaCuponera {
 	private var _cantidad:Number;
 
 	private var _saldo:Number;
+	
+	private var _comprobante;
 
 	
 	
@@ -67,6 +69,14 @@ public class LineaCuponera {
 
 	public function set saldo(value:Number):void {
 		_saldo = value;
+	}
+
+	public function get comprobante() {
+		return _comprobante;
+	}
+
+	public function set comprobante(value):void {
+		_comprobante = value;
 	}
 
 

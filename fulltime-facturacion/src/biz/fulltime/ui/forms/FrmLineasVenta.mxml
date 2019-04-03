@@ -68,11 +68,10 @@
 
 			public var tieneCambios:Boolean = false;
 
-			[Bindable]
-			public var _articulos:ArrayCollection;
+			private var _articulos:ArrayCollection;
 
 			[Bindable]
-			private var currentLine:LineaDocumento
+			private var currentLine:LineaDocumento;
 
 			[Bindable]
 			public var hay_vendedor_dist:Boolean;
@@ -112,8 +111,17 @@
 						}
 					}
 				}
-
-				_articulos = CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo);
+				if (_articulos == null) {
+					_articulos = new ArrayCollection();
+				} else {
+					_articulos.removeAll();
+				}
+								
+				_articulos.addAll(CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo));
+				if (_documento.cuponeras && _documento.cuponeras.length > 0) {
+					_articulos.addAll(_documento.cuponeras);
+				}
+				
 
 			}
 
@@ -291,7 +299,8 @@
 
 						articulosPnl = new ArticulosPnl();
 						articulosPnl.articulos = _articulos
-
+						articulosPnl.articulosCuponera = documento.cuponeras;
+							
 						PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
 						PopUpManager.centerPopUp(helpWindow);
 
@@ -354,7 +363,9 @@
 							agregarLineaVenta();
 						}
 				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					if (validateLines()) {
+						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					}
 					
 				} else if (event.keyCode == Keyboard.ENTER) {
 					var count:int = 0;
@@ -475,6 +486,8 @@
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
 				if (validateLines()) {
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				} else {
+					Alert.show("Los valores no son válidos");
 				}
 			}
 
@@ -494,6 +507,16 @@
 					}
 					if (linea.articulo && !linea.articulo.activo) {
 						articulosInactivos.addItem(linea.articulo);
+					}
+					if (linea.articulo && documento.comprobante.codigo == "80") {
+						if (linea.precio && linea.precio.length > 0) {
+							var p:BigDecimal = new BigDecimal(linea.precio);
+							if (p.compareTo(BigDecimal.ZERO) <= 0) {
+								return false;
+							} 
+						} else {
+							return false;
+						}
 					}
 				}
 				for each (var item:LineaDocumento in borrarLineas) {
@@ -539,6 +562,10 @@
 				
 				
 				var ld2:LineaDocumento = lineasVenta.lineas.getItemAt(event.rowIndex) as LineaDocumento;
+				
+				if (esAfilado() && event.columnIndex == 2) {
+					updateArticulos();
+				}
 				
 				if (event.columnIndex == 0 && esAfilado()) {
 					var remObj:RemoteObject = new RemoteObject();
@@ -805,14 +832,56 @@
 				return true;
 			}
 			
-			private function esAfilado():Boolean {
-				var codigo:String = documento.comprobante.codigo;
-				if (codigo == "80" || codigo == "81" || codigo == "82" || codigo == "83" || codigo == "84") {
-					return true;
-				}
-				
-				return false;
+			public function esAfilado():Boolean {
+				return documento.esAfilado();
 			}
+
+			[Bindable]
+			public function get articulos():ArrayCollection {
+				return _articulos;
+			}
+
+			public function set articulos(value:ArrayCollection):void {
+				_articulos = value;
+			}
+			
+			public function updateArticulos() {
+				var arts:ArrayCollection = new ArrayCollection();
+				if (esAfilado()) {
+					if (documento.cuponeras && documento.cuponeras.length < 1) {
+						arts.addAll(CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo));
+					} else {
+						if (lineasVenta.lineas.length == 1) {
+							for each(var i:Articulo in documento.cuponeras) {
+								arts.addItem(i);	
+							}
+							var artsAfilado:ArrayCollection = CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo);
+							for each(var k:Articulo in artsAfilado) {
+								arts.addItem(k);	
+							}
+						} else {
+							var art:Articulo = (lineasVenta.lineas.getItemAt(0) as LineaDocumento).articulo;
+							var modoCuponera:Boolean = false;
+							for each(var c:Articulo in documento.cuponeras) {
+								if (c.codigo == art.codigo) {
+									modoCuponera = true;
+									break;
+								}
+							}
+							if (modoCuponera) {							
+								arts.addAll(documento.cuponeras);
+							} else {
+								arts.addAll(CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo));
+							}						
+						}
+					}
+					this._articulos.removeAll();
+					this._articulos.addAll(arts);
+				}	
+				
+			
+			}
+
 			
 		]]>
 	</fx:Script>
@@ -933,11 +1002,12 @@
 												<![CDATA[
 													import biz.fulltime.model.Articulo;
 													import biz.fulltime.model.LineaDocumento;
-
+													
 													import mx.events.FlexEvent;
-
+													import mx.utils.StringUtil;
+													
 													import spark.components.DataGrid;
-
+													
 													import util.CatalogoFactory;
 
 													protected function acArticulo_creationCompleteHandler(event:FlexEvent):void {
@@ -962,8 +1032,8 @@
 														if (item && item.hasOwnProperty("codigo")) {
 															label = item.codigo;
 														}
-														if (item && item.hasOwnProperty("nombre")) {
-															label += " - " + item.nombre;
+														if (item && item.hasOwnProperty("nombre")) { 
+															label += " - " + (outerDocument.esAfilado() ? item.nombre.toUpperCase() : item.nombre);
 														}
 														if (item && item.hasOwnProperty("codigoOrigen")) {
 															label += (item.codigoOrigen && item.codigoOrigen.length > 0) ? (" [" + item.codigoOrigen + "]") : "";
@@ -999,7 +1069,7 @@
 											</fx:Script>
 											<components1:MyAutoComplete id="acArticulo" width="100%" height="100%" change="acArticulo_changeHandler(event)"
 																		creationComplete="acArticulo_creationCompleteHandler(event)" keyDown="acArticulo_keyDownHandler(event)"
-																		dataProvider="{ outerDocument._articulos }" matchType="anyPart" selectedItemStyleName="underline" allowMultipleSelection="false"
+																		dataProvider="{ outerDocument.articulos }" matchType="anyPart" selectedItemStyleName="underline" allowMultipleSelection="false"
 																		labelField="nombre" labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false"
 																		dropDownWidth="460" dropDownRowCount="10" toolTip="{acArticulo.text}" />
 										</s:GridItemEditor>
@@ -1148,6 +1218,7 @@
 
 							<s:GridColumn width="50" dataField="descuento" headerText="DCTO." itemEditor="biz.fulltime.ui.forms.DGNumberEditor" editable="{hasPermEdition()}" 
 										  visible="{!esAfilado()}">
+								
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1219,6 +1290,7 @@
 										  visible="{!esAfilado() &amp;&amp; hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"
 										  editable="{(!documento.emitido || GeneralOptions.getInstance().loggedUser.esSupervisor()) &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+								
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1283,6 +1355,7 @@
 
 							<s:GridColumn width="60" dataField="coeficienteImp" headerText="COEFICIENTE" visible="{documento.comprobante.codigo == '122'}"
 										  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+								
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">

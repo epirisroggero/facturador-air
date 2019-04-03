@@ -17,6 +17,7 @@
 			
 			import spark.components.Button;
 			import spark.components.gridClasses.CellPosition;
+			import spark.events.GridSelectionEvent;
 			import spark.layouts.HorizontalLayout;
 
 			private var _articulo:Articulo;
@@ -33,7 +34,10 @@
 			
 			private var _articulos:ArrayCollection;
 			
+			private var _articulosCuponera:ArrayCollection;
+			
 			private var map:Dictionary = new Dictionary();
+			
 			private var keys:ArrayCollection = new ArrayCollection();
 
 			[Bindable]
@@ -211,8 +215,13 @@
 			}
 
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
-				var rowIndex:int = dgArticulos.selectedCell.rowIndex;
-				_articulo = dgArticulos.dataProvider.getItemAt(rowIndex) as Articulo;
+				if (dgArticulos.selectedCell != null) {
+					var rowIndex:int = dgArticulos.selectedCell.rowIndex;
+					_articulo = dgArticulos.dataProvider.getItemAt(rowIndex) as Articulo;
+				} else {
+					var rowIndex:int = dgCuponeras.selectedIndex;
+					_articulo = dgCuponeras.dataProvider.getItemAt(rowIndex) as Articulo;
+				}
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 
@@ -235,6 +244,13 @@
 
 			}
 
+			protected function dgCuponeras_doubleClickHandler(event:MouseEvent):void {
+				var rowIndex:int = dgCuponeras.selectedIndex;
+				_articulo = dgCuponeras.dataProvider.getItemAt(rowIndex) as Articulo;
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				
+			}
+			
 			private function codigoNombreLabelFunction(item:Object, column:GridColumn):String {
 				var label:String;
 				if (item[column.dataField]) {
@@ -243,28 +259,64 @@
 				return "";
 			}
 
+			public function get articulosCuponera():ArrayCollection {
+				return _articulosCuponera;
+			}
 
+			public function set articulosCuponera(values:ArrayCollection):void {
+				_articulosCuponera = new ArrayCollection();
+				
+				for each (var artId:Articulo in values) {
+					for each (var art:Articulo in articulos) {
+						if (art.codigo == artId.codigo) {
+							_articulosCuponera.addItem(art);
+						}
+					}
+				}				
+			}
+
+
+			protected function dgCuponeras_selectionChangeHandler(event:GridSelectionEvent):void {
+				dgArticulos.clearSelection();
+			}
+			
+			protected function dgArticulos_selectionChangeHandler(event:GridSelectionEvent):void {
+				dgCuponeras.clearSelection();
+			}
+			
 		]]>
 	</fx:Script>
 
 	<fx:Declarations>
+		<s:ArrayList id="colsCuponeras">
+			<s:GridColumn width="140" dataField="codigo" headerText="CÓDIGO" />
+			<s:GridColumn width="200" dataField="familia" headerText="FAMILIA" labelFunction="codigoNombreLabelFunction" />
+			<s:GridColumn dataField="nombre" headerText="NOMBRE" />
+		</s:ArrayList>
+
 		<s:ArrayList id="cols">
-			<s:GridColumn width="140" dataField="codigo" headerText="Código" />
-			<s:GridColumn width="130" dataField="codigoOrigen" headerText="Cod. origen" />
-			<s:GridColumn width="200" dataField="familia" headerText="Familia" labelFunction="codigoNombreLabelFunction" />
-			<s:GridColumn width="100" dataField="marca" headerText="Marca" labelFunction="codigoNombreLabelFunction" />
-			<s:GridColumn dataField="nombre" headerText="Nombre" />
+			<s:GridColumn width="140" dataField="codigo" headerText="CÓDIGO" />
+			<s:GridColumn width="130" dataField="codigoOrigen" headerText="COD. ORIGEN" />
+			<s:GridColumn width="200" dataField="familia" headerText="FAMILIA" labelFunction="codigoNombreLabelFunction" />
+			<s:GridColumn width="100" dataField="marca" headerText="MARCA" labelFunction="codigoNombreLabelFunction" />
+			<s:GridColumn dataField="nombre" headerText="NOMBRE" />
 		</s:ArrayList>
 	</fx:Declarations>
 
 	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
-		<s:VGroup width="100%" height="100%" gap="0">
-			<s:HGroup width="100%" height="42" paddingBottom="5" paddingTop="5" paddingLeft="5" verticalAlign="middle">
-				<s:Label id="lblFilters" text="Filtros aplicados: Ninguno." />
+		<s:VGroup width="100%" height="100%" gap="10" paddingTop="10">
+			<s:Label text="Cuponeras" includeInLayout="{articulosCuponera != null &amp;&amp; articulosCuponera.length > 0}" paddingLeft="10" />
+			<util:FilteredDataGrid id="dgCuponeras" width="100%" height="100%" doubleClick="dgCuponeras_doubleClickHandler(event)" selectionChange="dgCuponeras_selectionChangeHandler(event)"
+								   doubleClickEnabled="true" dataProvider="{articulosCuponera}" editable="false" selectionMode="singleRow"
+								   columns="{colsCuponeras}" visible="{articulosCuponera != null &amp;&amp; articulosCuponera.length > 0}" includeInLayout="{articulosCuponera != null &amp;&amp; articulosCuponera.length > 0}">
+			</util:FilteredDataGrid>
+			
+			<s:HGroup width="100%" height="42" paddingBottom="5" paddingTop="10" paddingLeft="5" verticalAlign="middle">
+				<s:Label id="lblFilters" fontSize="14" text="Filtros aplicados: Ninguno." />
 				<s:HGroup id="hlFilters" />
 			</s:HGroup>
 			<util:FilteredDataGrid id="dgArticulos" width="100%" height="100%" doubleClick="dgArticulos_doubleClickHandler(event)" keyDown="dgArticulos_keyDownHandler(event)"
-								   doubleClickEnabled="true" dataProvider="{articulos}" editable="false" selectionMode="singleCell"
+								   doubleClickEnabled="true" dataProvider="{articulos}" editable="false" selectionMode="singleCell" selectionChange="dgArticulos_selectionChangeHandler(event)"
 								   columns="{cols}">
 			</util:FilteredDataGrid>
 		</s:VGroup>

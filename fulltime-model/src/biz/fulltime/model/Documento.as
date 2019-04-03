@@ -344,6 +344,14 @@ public class Documento extends DocumentoBase {
 		remObjStock.addEventListener(ResultEvent.RESULT, resultStock);
 		remObjStock.addEventListener(FaultEvent.FAULT, handleFault);
 		remObjStock.showBusyCursor = true;
+		
+		remObjCuponera = new RemoteObject();
+		remObjCuponera.destination = "CreatingRpc";
+		remObjCuponera.channelSet = ServerConfig.getInstance().channelSet;
+		remObjCuponera.addEventListener(ResultEvent.RESULT, resultCuponera);
+		remObjCuponera.addEventListener(FaultEvent.FAULT, handleFault);
+		remObjCuponera.showBusyCursor = true;
+
 	}
 
 	public function get entrega():Entrega {
@@ -1520,13 +1528,18 @@ public class Documento extends DocumentoBase {
 
 	}
 	
-	public function obtenerCuponera(cuponera:String):void {
-		if (!cuponera) {
+	public function updateCuponera(artId:String):void {
+		if (!artId) {
 			return;
 		}
-		remObjCuponera.getDatosCuponera(cuponera);
+		this.cuponera = null;
+		
+		for each (var c:Cuponera in cuponerasList) {
+			if (c && c.articulo && c.articulo.codigo == artId) {
+				this.cuponera = c;
+			}
+		}
 	}
-
 
 	private function resultStock(event:ResultEvent):void {
 		var value:* = event.result;
@@ -1534,7 +1547,8 @@ public class Documento extends DocumentoBase {
 	}
 	
 	private function resultCuponera(event:ResultEvent):void {
-		cuponera = event.result as Cuponera;
+		var value:* = event.result;
+		cuponera = value is Cuponera ? event.result as Cuponera : null;
 	}
 	
 	public function esRecibo():Boolean {
@@ -1828,6 +1842,16 @@ public class Documento extends DocumentoBase {
 	public function set stock(value:BigDecimal):void {
 		_stock = value;
 	}
+	
+	public function esAfilado():Boolean {
+		var codigo:String = comprobante.codigo;
+		if (codigo == "80" || codigo == "81" || codigo == "82" || codigo == "83" || codigo == "84") {
+			return true;
+		}
+		
+		return false;
+	}
+
 
 }
 

@@ -726,7 +726,7 @@
 		<s:ArrayList id="cols">
 			<s:GridColumn width="200" dataField="comprobante" headerText="TIPO" labelFunction="comprobante_cod_labelFunction" />
 			<s:GridColumn width="160" dataField="comprobante" headerText="TIPO CFE" labelFunction="cae_labelFunction" visible="{!modoSolicitud &amp;&amp; !pnlFilters.soloPendientes}"/>
-			<s:GridColumn width="90" dataField="numero" headerText="COMOROBANTE">
+			<s:GridColumn width="95" dataField="numero" headerText="COMPROBANTE">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -809,6 +809,11 @@
 			<s:GridColumn width="85" dataField="fecha" headerText="FECHA" />
 			<s:GridColumn width="60" dataField="moneda" headerText="MONEDA" labelFunction="moneda_labelFunction" />
 			<s:GridColumn width="100" dataField="total" headerText="TOTAL">
+				<s:headerRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="right" fontSize="12" fontFamily="RobotoCondensed" background="false"/>
+					</fx:Component>
+				</s:headerRenderer>
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -836,6 +841,11 @@
 				</s:itemRenderer>
 			</s:GridColumn>
 			<s:GridColumn width="100" dataField="saldo" headerText="PENDIENTE">
+				<s:headerRenderer>
+					<fx:Component>
+						<s:DefaultGridItemRenderer textAlign="right" fontSize="12" fontFamily="RobotoCondensed" background="false"/>
+					</fx:Component>
+				</s:headerRenderer>
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">

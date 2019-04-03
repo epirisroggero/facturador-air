@@ -93,7 +93,7 @@ public class DocumentoBase extends EventDispatcher {
 	
 	public var cuponeras:ArrayCollection = new ArrayCollection();
 	
-	private var cuponerasList:ArrayCollection = new ArrayCollection();
+	public var cuponerasList:ArrayCollection = new ArrayCollection();
 
 	
 	public function DocumentoBase() {
@@ -108,7 +108,7 @@ public class DocumentoBase extends EventDispatcher {
 		remObjCuponera = new RemoteObject();
 		remObjCuponera.destination = "CreatingRpc";
 		remObjCuponera.channelSet = ServerConfig.getInstance().channelSet;
-		remObjCuponera.addEventListener(ResultEvent.RESULT, resultCuponera);
+		remObjCuponera.addEventListener(ResultEvent.RESULT, resultCuponeras);
 		remObjCuponera.addEventListener(FaultEvent.FAULT, handleFault);
 		remObjCuponera.showBusyCursor = true;
 
@@ -246,7 +246,7 @@ public class DocumentoBase extends EventDispatcher {
 		remObjCuponera.getCuponeras(cuponeras);
 	}
 	
-	private function resultCuponera(event:ResultEvent):void {
+	private function resultCuponeras(event:ResultEvent):void {
 		cuponerasList = event.result as ArrayCollection;
 	}
 

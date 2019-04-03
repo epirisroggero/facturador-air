@@ -252,7 +252,17 @@ public class CatalogoFactory extends EventDispatcher {
 						}
 						if (elem.familiaId) {
 							if (elem.familiaId.toString().match(new RegExp("^980", 'i')) || elem.familiaId.toString().match(new RegExp("^890", 'i'))) {
-								articulosAfilados.addItem(elem);
+								switch (elem.codigo) {
+									case "99.1.1": 
+									case "99.1.2": 
+									case "99.1.3": 
+									case "99.1.4": 
+									case "99.1.5": 
+									case "99.1.6": 
+										articulosAfilados.addItem(elem);
+										break;
+								}
+								
 							} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
 								articulosMNeumaticas.addItem(elem);
 							} else if (elem.familiaId.toString().match(new RegExp("^970", 'i')) || (elem.codigo == "ARTICULOS VARIOS" || elem.codigo == "ARTICULOS VARIOS EX")) {
@@ -734,7 +744,7 @@ public class CatalogoFactory extends EventDispatcher {
 		return aux;
 	}
 
-	public function getArticulos(cmpId:String = null):ArrayCollection {
+	public function getArticulos(cmpId:String = null, articulosCuponera:ArrayCollection = null):ArrayCollection {
 		var aux:ArrayCollection = new ArrayCollection();
 
 		if (cmpId == "110" || cmpId == "111" || cmpId == "112" || cmpId == "113") {
@@ -892,7 +902,17 @@ public class CatalogoFactory extends EventDispatcher {
 									}
 									if (elem.familiaId) {
 										if (elem.familiaId.toString().match(new RegExp("^980", 'i')) || elem.familiaId.toString().match(new RegExp("^890", 'i'))) {
-											articulosAfilados.addItem(elem);
+											switch (elem.codigo) {
+												case "99.1.1": 
+												case "99.1.2": 
+												case "99.1.3": 
+												case "99.1.4": 
+												case "99.1.5": 
+												case "99.1.6": 
+													articulosAfilados.addItem(elem);
+													break;
+											}
+
 										} else if (elem.familiaId.toString().match(new RegExp("^902", 'i')) || elem.familiaId.toString().match(new RegExp("^903", 'i'))) {
 											articulosMNeumaticas.addItem(elem);
 										} else if (elem.familiaId.toString().match(new RegExp("^970", 'i'))) {

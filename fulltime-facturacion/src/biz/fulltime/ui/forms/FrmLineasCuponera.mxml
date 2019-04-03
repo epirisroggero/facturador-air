@@ -14,6 +14,7 @@
 			
 			import spark.events.GridSelectionEvent;
 			import spark.events.IndexChangeEvent;
+			import spark.formatters.NumberFormatter;
 
 			private var _lineas:ArrayCollection;
 			
@@ -55,10 +56,23 @@
 			}
 
 			private function fixComprobante(item:Object, column:GridColumn):String {
-				return item.serie + item.numero;
+				return item.serie + "/" + item.numero + " - " + item.comprobante;
 			}
 
-
+			private function fixNumber(item:Object, column:GridColumn):String {
+				var numberFormatter:NumberFormatter = new NumberFormatter();
+				numberFormatter.fractionalDigits = 0;
+				numberFormatter.groupingSeparator = ".";
+				
+				if (column.dataField == "cantidad") {
+					return numberFormatter.format(item.cantidad);	
+				} else if (column.dataField == "saldo") {
+					return numberFormatter.format(item.saldo);
+				}
+				return "";
+				
+			}
+			
 
 			protected function cmdClose_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
@@ -89,9 +103,31 @@
 				<s:columns>
 					<s:ArrayList>
 						<s:GridColumn headerText="COMPROBANTE" dataField="numero" labelFunction="fixComprobante" />
-						<s:GridColumn headerText="FECHA" dataField="fecha" labelFunction="fixLabel" />
-						<s:GridColumn headerText="CANTIDAD" dataField="cantidad" />
-						<s:GridColumn headerText="SALDO" dataField="saldo" />
+						<s:GridColumn headerText="FECHA" width="90" dataField="fecha" labelFunction="fixLabel" />
+						<s:GridColumn headerText="CANTIDAD"  width="90" dataField="cantidad" labelFunction="fixNumber" >
+							<s:headerRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right" fontSize="12" fontFamily="RobotoCondensed" />
+								</fx:Component>
+							</s:headerRenderer>
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right" />
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="SALDO" width="90" dataField="saldo" labelFunction="fixNumber" >
+							<s:headerRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right" fontSize="12" fontFamily="RobotoCondensed" />
+								</fx:Component>
+							</s:headerRenderer>
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right"/>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
 					</s:ArrayList>
 				</s:columns>
 			</s:DataGrid>

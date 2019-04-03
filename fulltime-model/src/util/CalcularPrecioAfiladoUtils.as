@@ -1,10 +1,12 @@
 package util {
 import biz.fulltime.model.Articulo;
 import biz.fulltime.model.ArticuloPrecio;
+import biz.fulltime.model.Cuponera;
+import biz.fulltime.model.Documento;
 
 public class CalcularPrecioAfiladoUtils {
 
-	public static function calcularPrecio(articuloPrecio:ArticuloPrecio, largo:BigDecimal):BigDecimal {
+	public static function calcularPrecio(articuloPrecio:ArticuloPrecio, largo:BigDecimal, documento:Documento):BigDecimal {
 		var familia:String = articuloPrecio.articulo.familiaId;
 
 		switch (familia) {

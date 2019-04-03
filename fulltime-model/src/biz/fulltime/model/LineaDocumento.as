@@ -414,9 +414,7 @@ public class LineaDocumento extends EventDispatcher {
 			var monedaFacturacion:String = documento.moneda.codigo;
 			var oCotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
 			
-			if (documento.comprobante.codigo == "80" || documento.comprobante.codigo == "81" 
-				|| documento.comprobante.codigo == "82" ||documento.comprobante.codigo == "84") {
-				
+			if (documento.esAfilado()) {
 				remObjPM.getArticuloPrecio(articulo.codigo, "7");
 				
 			} else if (!documento.esSolicitudCompra) {
@@ -462,10 +460,21 @@ public class LineaDocumento extends EventDispatcher {
 	
 	private function resultPrecioMinorista(event:ResultEvent):void {
 		articuloPrecio = event.result as ArticuloPrecio;
-		
+
+		// si es afilado y es una cuponera saco el precio de ahí.
+        if (documento.esAfilado()) {
+            for each(var cuponera:Cuponera in documento.cuponerasList) {
+                if (articulo.codigo && cuponera.articulo && cuponera.articulo.codigo == articulo.codigo) {
+                    this.precio = cuponera.precioUnitario;
+                    return;
+                }
+            }
+        }
+
+		// 
 		if (articuloPrecio) {
 			var largo:BigDecimal = diametro != null ? new BigDecimal(diametro) : BigDecimal.ZERO; 
-			this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo).toString();
+			this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo, documento).toString();
 		} else {
 			this.precio = "0";
 		}
@@ -501,9 +510,8 @@ public class LineaDocumento extends EventDispatcher {
 	private function obtenerPrecioSuguerido(codigoArt:String):void {
 		var precioVentaCod:String = documento.preciosVenta.codigo;
 		var monedaVentaCod:String = documento.moneda.codigo;
-		//var cotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
 
-		remObjPS.getPrecioSugerido(codigoArt, precioVentaCod, monedaVentaCod/*, cotizaciones*/);
+		remObjPS.getPrecioSugerido(codigoArt, precioVentaCod, monedaVentaCod);
 	}
 
 	private function resultPrecioSugerido(event:ResultEvent):void {
@@ -524,9 +532,8 @@ public class LineaDocumento extends EventDispatcher {
 	private function obtenerPrecioBaseDistribuidor(codigoArt:String):void {
 		var precioVentaCod:String = "1";
 		var monedaVentaCod:String = documento.moneda.codigo;
-		//var cotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
 		
-		remObjPBD.getPrecioSugerido(codigoArt, precioVentaCod, monedaVentaCod/*, cotizaciones*/);
+		remObjPBD.getPrecioSugerido(codigoArt, precioVentaCod, monedaVentaCod);
 	}
 	
 	private function resultPrecioBaseDistribuidor(event:ResultEvent):void {
@@ -620,7 +627,6 @@ public class LineaDocumento extends EventDispatcher {
 		} else {
 			return BigDecimal.ZERO;
 		}
-		
 	}
 	
 	[Bindable(event = "changePrecioSugerido")]
@@ -792,10 +798,16 @@ public class LineaDocumento extends EventDispatcher {
 	public function set diametro(value:String):void {
 		_diametro = value;
 		
-		if (documento.comprobante.codigo == "80" || documento.comprobante.codigo == "81" || documento.comprobante.codigo == "82" ||documento.comprobante.codigo == "84") {
+		if (documento.esAfilado()) {
+			for each(var cuponera:Articulo in documento.cuponeras) {
+				if (articulo && cuponera && cuponera.codigo == articulo.codigo) {
+					return; // es cuponera por tanto no hago nada
+				}
+			}
+			
 			if (articuloPrecio) {
 				var largo:BigDecimal = _diametro != null ? new BigDecimal(_diametro) : BigDecimal.ZERO; 
-				this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo).toString();
+				this.precio = CalcularPrecioAfiladoUtils.calcularPrecio(articuloPrecio, largo, documento).toString();
 			} else {
 				this.precio = "0";
 			}

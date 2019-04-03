@@ -6,7 +6,7 @@ import mx.collections.ArrayCollection;
 [RemoteClass(alias="uy.com.tmwc.facturator.deudores.Cuponera")]
 public class Cuponera {
 
-	public var artId:String;
+	public var articulo:Articulo;
 	
 	public var fecha:Date;
 

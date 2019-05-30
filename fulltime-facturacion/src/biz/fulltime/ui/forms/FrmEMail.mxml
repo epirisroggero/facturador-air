@@ -7,6 +7,7 @@
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.model.Cliente;
 			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.Proveedor;
 			
 			import com.adobe.images.JPGEncoder;
@@ -27,6 +28,8 @@
 			import util.CatalogoFactory;
 			import util.ErrorPanel;
 
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
 
 			[Bindable]
 			private var _emails:ArrayCollection;
@@ -34,15 +37,11 @@
 			[Bindable]
 			private var _contactos:ArrayCollection;
 
-			[Bindable]
-			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
-
 			private var _cliente:Cliente;
 
 			private var _proveedor:Proveedor;
 
-			[Bindable]
-			private var byteArray:ByteArray;
+			private var _documento:Documento;
 
 			private var _clienteSel:Boolean = false;
 			
@@ -61,6 +60,11 @@
 
 			private var addresses:Array;
 
+			[Bindable]
+			private var byteArray:ByteArray;
+			
+			[Bindable]
+			private var byteArray2:ByteArray;
 
 			[Bindable]
 			public function get asunto():String {
@@ -172,9 +176,7 @@
 
 			public function set cliente(value:Cliente):void {
 				_cliente = value;
-
 				_clienteSel = true;
-
 				invalidateProperties();
 			}
 			
@@ -235,13 +237,18 @@
 				byteArray = image.data;
 			}
 
+			public function takeSnapshot2(source:IBitmapDrawable):void {
+				var image:ImageSnapshot = ImageSnapshot.captureImage(source, 0, null, false);
+				byteArray2 = image.data;
+			}
+
 			protected function cmdEnviar_clickHandler(event:MouseEvent):void {
 				enviarEMail();
 			}
 
 			public function enviarEMail():void {
 				byteArray.position = 0;
-				remObj.sendEmail(addresses, txtSubject.text, txtBody.text, byteArray);
+				remObj.sendEmail(addresses, txtSubject.text, txtBody.text, byteArray, documento, cliente);
 
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
@@ -312,6 +319,16 @@
 
 
 			}
+
+			[Bindable]
+			public function get documento():Documento {
+				return _documento;
+			}
+
+			public function set documento(value:Documento):void {
+				_documento = value;
+			}
+
 		]]>
 	</fx:Script>
 
@@ -341,13 +358,19 @@
 			<s:VerticalLayout paddingBottom="0" paddingLeft="10" paddingRight="0" paddingTop="0" />
 		</s:layout>
 		<s:Scroller width="100%" height="100%" minHeight="0">
-			<s:Group width="100%" height="100%">
+			<s:VGroup width="100%" height="100%">
 				<s:SWFLoader id="swfLoader" source="{byteArray}">
 					<s:filters>
 						<s:DropShadowFilter />
 					</s:filters>
 				</s:SWFLoader>
-			</s:Group>
+				<s:SWFLoader id="swfLoader2" source="{byteArray2}">
+					<s:filters>
+						<s:DropShadowFilter />
+					</s:filters>
+				</s:SWFLoader>
+
+			</s:VGroup>
 		</s:Scroller>
 	</s:Group>
 

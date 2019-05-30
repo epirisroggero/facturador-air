@@ -78,8 +78,8 @@ public class ServerConfig {
 		}
 	}
 	
-	public function getFullPath(path:String, secure:Boolean = false):String {
+	/*public function getFullPath(path:String, secure:Boolean = false):String {
 		return getBasePath(secure) + "/facturador" + path;
-	}
+	}*/
 }
 }

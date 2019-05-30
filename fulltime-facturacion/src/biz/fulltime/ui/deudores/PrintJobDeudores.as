@@ -73,15 +73,13 @@ package biz.fulltime.ui.deudores {
 		
 		private var moneda:Moneda;
 		
-		private var url:String = "/assets/general/banner_mail.jpg";
-		//private var url:String = "http://localhost:8180/facturador/assets/general/banner_mail.jpg";
+		private var url:String = "assets/general/banner_mail.jpg";
 
 		private var loader:Loader = new Loader();
 		
 		private var _documetosPendientes:ArrayCollection = new ArrayCollection();
 		
 		private var isEMail:Boolean = false;
-		
 		
 		private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
 		
@@ -111,7 +109,7 @@ package biz.fulltime.ui.deudores {
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandlerMail);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 			
-			var request:URLRequest = new URLRequest(ServerConfig.getInstance().getFullPath(url));
+			var request:URLRequest = new URLRequest(url);
 			loader.load(request);
 		}
 
@@ -164,11 +162,10 @@ package biz.fulltime.ui.deudores {
 
 
 		public function print():void {
-			//completeHandler(null);
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandler);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 			
-			var request:URLRequest = new URLRequest(ServerConfig.getInstance().getFullPath(url));
+			var request:URLRequest = new URLRequest(url);
 			loader.load(request);
 
 		}
@@ -176,11 +173,6 @@ package biz.fulltime.ui.deudores {
 		private function completeHandler(event:Event):void {
 			isEMail = false;
 
-//			if (GeneralOptions.getInstance().opciones.impresoras.otros == null && GeneralOptions.getInstance().opciones.impresoras.otros == "") {
-//				throw new Error("No hay impresora por defecto definida. Ir a Configuración > Preferencias > Impresoras");
-//			}
-			
-			
 			if (catalogs._interface ==  CatalogoFactory.INTERFACE_WEB_EVENT) {
 				var pj:PrintJob = new PrintJob();
 				

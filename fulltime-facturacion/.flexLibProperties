@@ -107,6 +107,8 @@
     <classEntry path="biz.fulltime.ui.facturacion.reportes.FrmLiquidacionAfilados"/>
     <classEntry path="biz.fulltime.ui.facturacion.PrintJobAfilado"/>
     <classEntry path="biz.fulltime.ui.forms.FrmLineasCuponera"/>
+    <classEntry path="biz.fulltime.ui.forms.DGNumberEditorInt"/>
+    <classEntry path="biz.fulltime.ui.facturacion.CapturarImagen"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

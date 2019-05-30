@@ -469,7 +469,7 @@
 					remObj.addEventListener(FaultEvent.FAULT, onFault);
 					remObj.showBusyCursor = false;
 					
-					remObj.sendEmail(addresses, "FULLTIME: NUEVA TAREA ASIGNADA (" + agenda.tarea.nombre.toUpperCase() + ") PARA EL DÍA " + dateFormatter.format(agenda.fechaHora) + (agenda.prioridad == "A" ? "(ALTA PRIORIDAD)" : ""), msg, null);
+					remObj.sendEmailExpediciones(addresses, "FULLTIME: NUEVA TAREA ASIGNADA (" + agenda.tarea.nombre.toUpperCase() + ") PARA EL DÍA " + dateFormatter.format(agenda.fechaHora) + (agenda.prioridad == "A" ? "(ALTA PRIORIDAD)" : ""), msg, agenda, true);
 				} else {
 					Alert.show("El Usuario asignado no tiene dirección de correo. Ingrese dirección de correo para el usuario '" + tarea.usuarioAsignado.nombre + "'.", "Información"); 
 				}

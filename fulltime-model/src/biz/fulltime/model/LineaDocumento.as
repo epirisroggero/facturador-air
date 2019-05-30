@@ -50,8 +50,6 @@ public class LineaDocumento extends EventDispatcher {
 	
 	public var costo:String = "0";
 	
-	public var descuento:String = "0";
-	
 	public var notas:String="";
 	
 	public var conceptoIdLin:String="";
@@ -96,6 +94,16 @@ public class LineaDocumento extends EventDispatcher {
 	public var cascados:String = "0";
 	
 	public var marca:String;
+	
+	public var descuento:String = "0";
+	
+	public var linDto1:String = "0"; // Máximo 10
+	
+	public var linDto2:String = "0"; // Máximo 10
+	
+	public var linDto3:String = "0"; // Máximo 33
+	
+	public var linDto4:String = "0"; // Máximo 25
 	
 	public var ordenTrabajo:String;
 	
@@ -814,7 +822,38 @@ public class LineaDocumento extends EventDispatcher {
 		}
 		
 	}
-	
+
+	public function getDcto1():BigDecimal {
+		if (!linDto1 || linDto1.length < 1) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(linDto1);	
+		}
+	}
+
+	public function getDcto2():BigDecimal {
+		if (!linDto2 || linDto2.length < 1) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(linDto2);	
+		}
+	}
+
+	public function getDcto3():BigDecimal {
+		if (!linDto3 || linDto3.length < 1) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(linDto3);	
+		}
+	}
+
+	public function getDcto4():BigDecimal {
+		if (!linDto4 || linDto4.length < 1) {
+			return BigDecimal.ZERO;
+		} else {
+			return new BigDecimal(linDto4);	
+		}
+	}
 
 
 }

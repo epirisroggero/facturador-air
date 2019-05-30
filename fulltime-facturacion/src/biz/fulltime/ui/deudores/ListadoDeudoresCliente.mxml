@@ -78,7 +78,8 @@
 				invalidateProperties();
 				
 			}
-	
+			
+			var contClient:BorderContainer;
 
 			override protected function commitProperties():void {
 				super.commitProperties();
@@ -108,7 +109,7 @@
 							var vertLayout0:VerticalLayout = new VerticalLayout();
 							vertLayout0.gap = -1;
 
-							var contClient:BorderContainer = new BorderContainer();
+							contClient = new BorderContainer();
 							contClient.layout = vertLayout0;
 							contClient.minHeight = 60;
 							contClient.percentWidth = 100;
@@ -671,17 +672,22 @@
 			
 			protected function cmdEmail_clickHandler(event:MouseEvent):void	{
 				var mailWindow:TitleWindow = new TitleWindow();
-				mailWindow.width = 820;
+				mailWindow.width = 920;
 				mailWindow.height = 740;
 				mailWindow.title = "Enviar factura por correo";
 				mailWindow.visible = true;
+				
+				contClient.visible = false;
+				contClient.includeInLayout = false;
+				invalidateProperties();
+				
 				
 				var emailPnl:FrmEMail = new FrmEMail();
 				
 				var docPendCliente:DocPendientesCliente = _dataProvider.getItemAt(0) as DocPendientesCliente;
 				
 				emailPnl.cliente = docPendCliente.cliente; 
-				emailPnl.asunto = "Fulltime - Facturas pendientes de pago de '" + docPendCliente.cliente.nombre + "'.";
+				emailPnl.asunto = "FULLTIME - Facturas pendientes de pago de '" + docPendCliente.cliente.nombre + "'.";
 				emailPnl.takeSnapshot(mainGroup);
 				emailPnl.addEventListener(CloseEvent.CLOSE, function():void {
 					PopUpManager.removePopUp(mailWindow);
@@ -704,6 +710,11 @@
 				
 				mailWindow.addElement(emailPnl);
 				mailWindow.addEventListener(CloseEvent.CLOSE, closeHandlerEmail);
+				
+				contClient.visible = true;
+				contClient.includeInLayout = true;
+				invalidateProperties();
+
 			}				
 			
 			private function closeHandlerEmail(event:Event):void {

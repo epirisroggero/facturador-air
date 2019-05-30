@@ -65,8 +65,9 @@ public class CuotasDocumento {
 			redondeoMinValue = new BigDecimal("0.01");
 		}
 
-		var vencimiento:Date = new Date();//DateUtil.clone(/*documento.fecha*/).date;
-
+		//var vencimiento:Date = new Date();//DateUtil.clone(/*documento.fecha*/).date;
+		var vencimiento:Date = DateUtil.clone(documento.fechaDoc).date;
+		
 		if (plan.cuotasIguales) {
 			vencimiento = addMonthsToDate(vencimiento, plan.primerMes);
 			vencimiento = addDaysToDate(vencimiento, plan.primerDia);

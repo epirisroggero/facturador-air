@@ -13,7 +13,7 @@
 			import biz.fulltime.model.ParametrosAdministracion;
 			import biz.fulltime.model.PreciosVenta;
 			import biz.fulltime.model.Usuario;
-
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CalendarLayoutChangeEvent;
@@ -23,7 +23,7 @@
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.remoting.RemoteObject;
 			import mx.validators.Validator;
-
+			
 			import util.CatalogoFactory;
 			import util.EncryptUtils;
 
@@ -231,7 +231,9 @@
 
 			protected function usuarioData_creationCompleteHandler(event:FlexEvent):void {
 				var clave:String = GeneralOptions.getInstance().loggedUser.claveSup;
+				
 				if (clave) {
+					//Alert.show(EncryptUtils.decryptString(clave));
 					claveSupervisora = clave;
 				} else {
 					claveSupervisora = null;

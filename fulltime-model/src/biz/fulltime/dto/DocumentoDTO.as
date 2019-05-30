@@ -68,6 +68,8 @@ public class DocumentoDTO {
 	public var concepto:String;
 	
 	public var emision:String;
+	
+	public var tieneNCF:Boolean;
 
 
 	public function DocumentoDTO() {

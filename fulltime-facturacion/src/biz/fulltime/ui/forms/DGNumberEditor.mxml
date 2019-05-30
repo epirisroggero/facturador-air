@@ -39,6 +39,12 @@
 						ns.displayAsPassword = GeneralOptions.getInstance().modoMostrador;
 						_color = artServicio ? 0x0000ff : 0x000000;
 					}
+					if (this.column.dataField == "dcto1" || this.column.dataField == "dcto2" || this.column.dataField == "dcto3" || this.column.dataField == "dcto4"
+						|| this.column.dataField == "diametro" || this.column.dataField == "rotos"  || this.column.dataField == "cascados" ) {
+						
+						nf_Espanol_Espanol.fractionalDigits = 0;
+					}
+
 				}
 
 			}

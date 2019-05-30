@@ -32,6 +32,7 @@
 			import biz.fulltime.ui.documentosValores.FrmDocumentosValores;
 			import biz.fulltime.ui.facturacion.FacturacionPnl;
 			import biz.fulltime.ui.facturacion.FrmClaveSupervisora;
+			import biz.fulltime.ui.facturacion.PrintJobFactura;
 			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
 			import biz.fulltime.ui.personas.ListadoFacturasPanel;
 			
@@ -410,8 +411,7 @@
 									serieSelected = o;
 								}
 							}
-						}
-						
+						}						
 					});
 					
 				}
@@ -1416,20 +1416,6 @@
 				var montoDto:BigDecimal = vinculo.calcularMontoDescuento(null, descuentoPorc, montoNeto, isAster);
 				var montoCancela:BigDecimal = vinculo.calcularMontoCancelado(null, montoDto, montoNeto, isAster);
 
-/* 				if (isAster) {
-					saldoFactura = saldoFactura.subtract(descuento);
-
-					montoNeto = new BigDecimal(Math.min(saldoFactura.numberValue(), saldoPendienteMdaVinculos.numberValue()).toString());
-					montoDto = vinculo.calcularMontoDescuento(null, descuentoPorc, montoNeto, isAster);
-					montoCancela = vinculo.calcularMontoCancelado(null, montoDto, montoNeto, isAster);
-				} else {
-					saldoFactura = saldoFactura.subtract(descuento);
-					
-					montoNeto = new BigDecimal(Math.min(saldoFactura.numberValue(), saldoPendienteMdaVinculos.numberValue()).toString());
-					montoDto = vinculo.calcularMontoDescuento(null, descuentoPorc, montoNeto, isAster);
-					montoCancela = vinculo.calcularMontoCancelado(null, montoDto, montoNeto, isAster);
-				}
- */				
 				vinculo.descuentoPorc = descuentoPorc.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 				vinculo.descuentoMonto = montoDto.toString();
 				vinculo.neto = montoNeto.toString();
@@ -1710,7 +1696,7 @@
 				frmFactura.addEventListener("_cancel_", function():void {
 					facWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerNCF);
 					PopUpManager.removePopUp(facWindow as IFlexDisplayObject);
-
+					
 					//TODO: Volver a cargar el documento
 					reloadDocumento(_recibo.docId);
 				});
@@ -1993,6 +1979,29 @@
 				}
 				
 				return false;
+			}
+			
+			protected function cmdEMail_clickHandler(event:MouseEvent):void {
+				var pfactura:PrintJobFactura = new PrintJobFactura(false);
+				pfactura.documento = this._recibo;
+				pfactura.createSMSImage();
+			}
+
+			
+			protected function cmdActualizar_clickHandler(event:MouseEvent):void {
+				// Emitir Documento
+				
+				var remObjActualizar:RemoteObject = new RemoteObject();
+				remObjActualizar.destination = "CreatingRpc";
+				remObjActualizar.channelSet = ServerConfig.getInstance().channelSet;
+				remObjActualizar.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+					Alert.show("Actualización finalizada");
+				});
+				remObjActualizar.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjActualizar.showBusyCursor = true;
+				
+				remObjActualizar.actualizarRecibosWithNCF();
+				
 			}
 			
 		]]>
@@ -2571,6 +2580,11 @@
 			<s:Button id="cmdEmitir" click="cmdEmitir_clickHandler(event)" styleName="emitirButton" label="Emitir" toolTip="Emitir" 
 					  visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" 
 					  focusEnabled="false" enabled="{(!recibo.emitido &amp;&amp; tieneVinculos) || (recibo.serie == 'P')}" />
+
+			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" 
+					  focusEnabled="false" />
+			
+			<s:Spacer width="5" />
 
 			<s:Spacer width="10" />
 			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />

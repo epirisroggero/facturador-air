@@ -166,7 +166,7 @@ public class AgendaTarea extends EventDispatcher {
 
 							addresses[0] = user.usuEmail;
 
-							remObj.sendEmail(addresses, "Finalización de Tarea", msg, null);
+							remObj.sendEmailExpediciones(addresses, "FINALIZACIÓN DE TAREA", msg, this, false);
 
 							break;
 						}

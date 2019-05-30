@@ -425,9 +425,9 @@ public class Documento extends DocumentoBase {
 			cuotasDocumento = new CuotasDocumento();
 			cuotasDocumento.documento = this;
 		}
-
+		cuotasDocumento.documento = this;
+		
 		if (!emitido) {
-			cuotasDocumento.documento = this;
 			cuotasDocumento.inicializarCuotas();
 		}
 	}
@@ -780,10 +780,12 @@ public class Documento extends DocumentoBase {
 
 		if (cuotasDocumento == null) {
 			cuotasDocumento = new CuotasDocumento();
-		}
+		}		
 		cuotasDocumento.documento = this;
-		cuotasDocumento.inicializarCuotas();
-
+		if (!emitido) {
+			cuotasDocumento.inicializarCuotas();
+		}
+		
 		if (cliente) {
 			cargarDepartamento(cliente.contacto);
 		} else if (proveedor) {
@@ -1851,7 +1853,41 @@ public class Documento extends DocumentoBase {
 		
 		return false;
 	}
+	
+	public function esCuponera():Boolean {
+		if (esAfilado()) {
+			cuponeras.removeAll();
 
+			for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
+				if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
+					var codigo:String = articulo.codigo;
+					var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
+					for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
+						if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {
+							if (!cuponeras.contains(articulo)) 
+								cuponeras.addItem(articulo);
+						}
+					}
+				}
+			}
+			
+			if (!cuponeras || cuponeras.length < 1) {
+				return false;
+				
+			} else {
+				var linea:LineaDocumento = lineas.lineas.getItemAt(0) as LineaDocumento;
+				var art_1:Articulo = linea.articulo;
+				
+				for each (var cuponera:Articulo in cuponeras) {
+					if (cuponera.codigo == art_1.codigo) {
+						return true;
+					}
+				}				
+			}
+		}
+		
+		return false;
+	}
 
 }
 

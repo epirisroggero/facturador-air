@@ -222,7 +222,8 @@ public class DocumentoBase extends EventDispatcher {
 	public function set comprobante(value:Comprobante):void {
 		_comprobante = value;
 
-		if (this.cliente != null && (this.comprobante.codigo == "80" || this.comprobante.codigo == "90")) {
+		if (this.cliente != null && (this.comprobante.codigo == "80" || this.comprobante.codigo == "81" || this.comprobante.codigo == "82" || 
+			this.comprobante.codigo == "84" || this.comprobante.codigo == "90")) {
 			cargarCuponeras();
 		}
 	}

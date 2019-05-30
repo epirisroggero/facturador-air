@@ -9,6 +9,10 @@ public class Cuponera {
 	public var articulo:Articulo;
 	
 	public var fecha:Date;
+	
+	public var tipoComprobante:String;
+	
+	public var numero:String;
 
 	public var precioTotal:String;
 

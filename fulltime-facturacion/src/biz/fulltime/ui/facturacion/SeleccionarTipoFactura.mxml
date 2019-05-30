@@ -220,9 +220,9 @@
 							   selectionMode="singleCell">
 			<util:columns>
 				<s:ArrayList>
-					<s:GridColumn width="70" dataField="codigo" headerText="Código" sortable="true" />
-					<s:GridColumn dataField="nombre" headerText="Descripción" sortable="true" />
-					<s:GridColumn width="200" dataField="tipo" headerText="Tipo Comprobante" sortable="true" labelFunction="tipo_labelFunction" />
+					<s:GridColumn width="70" dataField="codigo" headerText="CÓDIGO" sortable="true" />
+					<s:GridColumn dataField="nombre" headerText="DESCRIPCIÓN" sortable="true" />
+					<s:GridColumn width="200" dataField="tipo" headerText="TIPO COMPROBANTE" sortable="true" labelFunction="tipo_labelFunction" />
 					<s:GridColumn width="32" dataField="aster" headerText="" sortable="false" labelFunction="aster_labelFunction" />
 				</s:ArrayList>
 			</util:columns>

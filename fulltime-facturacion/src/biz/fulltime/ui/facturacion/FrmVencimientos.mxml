@@ -8,26 +8,31 @@
 			import biz.fulltime.model.CuotaDocumento;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.ParticipacionVendedor;
-			import util.CatalogoFactory;
-
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.formatters.DateFormatter;
-
+			
 			import spark.components.TitleWindow;
 			import spark.components.gridClasses.CellPosition;
 			import spark.events.GridItemEditorEvent;
+			
+			import util.CatalogoFactory;
 
 			private var helpWindow:TitleWindow;
 
 			private var _documento:Documento;
+			
+			public var tieneCambios:Boolean = false;
 
 			[Bindable]
 			public var _cuotasDocumento:ArrayCollection = new ArrayCollection();
 
 			public function set cuotasDocumento(values:ArrayCollection):void {
+				_cuotasDocumento.removeAll();
+				
 				for each (var cuota:CuotaDocumento in values) {
 					// Clonar las cuotas del documento
 					var c:CuotaDocumento = new CuotaDocumento();
@@ -70,6 +75,7 @@
 					} else {
 						Alert.show("Debe tener por lo menos una linea en vencimientos.", "Advertencia");
 					}
+					
 
 				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
 					cmdAceptar_clickHandler(null);
@@ -183,6 +189,8 @@
 				cuota.numero = dgVencimientos.dataProvider.length + 1;
 
 				_cuotasDocumento.addItem(cuota);
+				
+				tieneCambios = true;
 
 			}
 
@@ -208,6 +216,8 @@
 					}
 					dgVencimientos.setSelectedCell(0, 0);
 				});
+				
+				tieneCambios = true;
 			}
 
 			private function monto_labelFunction(item:Object, column:GridColumn):String {
@@ -224,6 +234,15 @@
 			protected function cmdCancelar_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
+			
+			protected function cmdRecalcular_clickHandler(event:MouseEvent):void{
+				_documento.cuotasDocumento.inicializarCuotas();
+				
+				cuotasDocumento = _documento.cuotasDocumento.cuotas;
+				
+				tieneCambios = true;
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -236,7 +255,7 @@
 		<s:HGroup width="100%" height="100%" gap="0">
 
 			<s:DataGrid id="dgVencimientos" width="100%" height="100%" keyDown="dg_keyDownHandler(event)" 
-						dataProvider="{_cuotasDocumento}" editable="true" gridItemEditorSessionSave="dgVencimientos_gridItemEditorSessionSaveHandler(event)"
+						dataProvider="{_cuotasDocumento}" editable="{documento.emitido}" gridItemEditorSessionSave="dgVencimientos_gridItemEditorSessionSaveHandler(event)"
 						selectionMode="singleCell">
 				<s:columns>
 					<s:ArrayList>
@@ -244,7 +263,7 @@
 							<s:itemRenderer>
 								<fx:Component>
 									<s:GridItemRenderer>
-										<mx:DateField width="90%" horizontalCenter="0" verticalCenter="0" selectedDate="@{data.fecha}" formatString="DD/MM/YYYY" locale="es" />
+										<mx:DateField width="90%" horizontalCenter="0" verticalCenter="0" selectedDate="@{data.fecha}" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"/>
 									</s:GridItemRenderer>
 								</fx:Component>
 							</s:itemRenderer>
@@ -258,7 +277,7 @@
 												import biz.fulltime.model.CuotaDocumento;
 												
 												override public function prepare(hasBeenRecycled:Boolean):void {
-													label = outerDocument.nf_Espanol_Espanol.format(CuotaDocumento(data).importe);
+													label = CuotaDocumento(data).documento.moneda.simbolo + " " +  outerDocument.nf_Espanol_Espanol.format(CuotaDocumento(data).importe);
 												}
 											]]>
 										</fx:Script>
@@ -304,8 +323,10 @@
 
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
-				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
-				<components:IconButton id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" styleName="cerrarButton" />
+				<components:IconButton id="cmdRecalcular" click="cmdRecalcular_clickHandler(event)" label="Recalcular" styleName="textButton" />
+				<s:Spacer width="100%"/>
+				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="100" label="Cerrar" styleName="textButton" />
+				<!-- components:IconButton id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" styleName="textButton" /-->
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

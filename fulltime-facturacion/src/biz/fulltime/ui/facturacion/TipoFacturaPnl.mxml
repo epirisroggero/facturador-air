@@ -251,10 +251,10 @@
 							   selectionMode="singleCell">
 			<util:columns>
 				<s:ArrayList>
-					<s:GridColumn width="65" dataField="codigo" headerText="Código" sortable="true" />
-					<s:GridColumn dataField="nombre" headerText="Descripción" sortable="true" labelFunction="tipo_description"  />
-					<s:GridColumn width="320" dataField="tipo" headerText="Tipo comprobante" sortable="true" labelFunction="tipo_labelFunction" />
-					<s:GridColumn width="80" dataField="tipo" headerText="Caja" sortable="false" labelFunction="caja_labelFunction" />
+					<s:GridColumn width="65" dataField="codigo" headerText="CÓDIGO" sortable="true" />
+					<s:GridColumn dataField="nombre" headerText="DESCRIPCIÓN" sortable="true" labelFunction="tipo_description"  />
+					<s:GridColumn width="320" dataField="tipo" headerText="TIPO COMPROBANTE" sortable="true" labelFunction="tipo_labelFunction" />
+					<s:GridColumn width="80" dataField="tipo" headerText="CAJA" sortable="false" labelFunction="caja_labelFunction" />
 					<s:GridColumn width="32" dataField="aster" headerText="" sortable="false" labelFunction="aster_labelFunction" />
 				</s:ArrayList>
 			</util:columns>

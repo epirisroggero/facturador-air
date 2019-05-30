@@ -115,25 +115,28 @@
 			}
 
 			protected function dgAntecedentes_keyDownHandler(event:KeyboardEvent):void {
-				var cellPos:CellPosition = dgAntecedentes.selectedCell;
-				
-				if (!cellPos) return; 
-
-				/* Se presiono la tecla 'F1' o A-Z o 1-9 */
-				if (event.keyCode == Keyboard.F1 || (event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) 
-					|| (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) 
-					|| (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) { 
+				if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				} else {
+					var cellPos:CellPosition = dgAntecedentes.selectedCell;
 					
-					var hlpPanel:HelpPnl = new HelpPnl();
-					hlpPanel.addEventListener(CloseEvent.CLOSE, closePnlHandler);
-					hlpPanel.label = GridColumn(dgAntecedentes.columns.getItemAt(cellPos.columnIndex)).headerText;
-
-					PopUpManager.addPopUp(hlpPanel, this, true);
-					PopUpManager.centerPopUp(hlpPanel);
-				} else if (event.keyCode == Keyboard.ESCAPE) { // Se presiono la tecla 'ESC'
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-				} else if (event.keyCode == Keyboard.ENTER) { // Se presiono la tecla 'ENTER'
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					if (!cellPos) return; 
+					
+					/* Se presiono la tecla 'F1' o A-Z o 1-9 */
+					if (event.keyCode == Keyboard.F1 || (event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) 
+						|| (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) 
+						|| (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9)) { 
+						
+						var hlpPanel:HelpPnl = new HelpPnl();
+						hlpPanel.addEventListener(CloseEvent.CLOSE, closePnlHandler);
+						hlpPanel.label = GridColumn(dgAntecedentes.columns.getItemAt(cellPos.columnIndex)).headerText;
+						
+						PopUpManager.addPopUp(hlpPanel, this, true);
+						PopUpManager.centerPopUp(hlpPanel);
+					} else if (event.keyCode == Keyboard.ENTER) { // Se presiono la tecla 'ENTER'
+						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					}
+					
 				}
 			}
 

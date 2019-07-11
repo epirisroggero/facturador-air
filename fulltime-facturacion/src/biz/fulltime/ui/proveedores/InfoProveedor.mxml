@@ -553,7 +553,7 @@
 								<s:TextArea width="100%" height="100%" borderAlpha="0" contentBackgroundAlpha="0" text="{proveedor.contacto.ctoNotas}" editable="false" />
 								<s:controlBarContent>
 									<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
-										<s:Button click="{ppNotas.displayPopUp = false}" label="Cerrar" styleName="textButton" width="80" />
+										<s:Button click="{ppNotas.displayPopUp = false}" label="Cerrar" styleName="textButton" width="100" />
 									</s:HGroup>
 								</s:controlBarContent>
 
@@ -637,7 +637,7 @@
 								
 								<s:controlBarContent>
 									<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
-										<s:Button click="{ppCuentaBancaria.displayPopUp = false}" label="Cerrar" styleName="textButton" width="80" />
+										<s:Button click="{ppCuentaBancaria.displayPopUp = false}" label="Cerrar" styleName="textButton" width="100" />
 									</s:HGroup>
 								</s:controlBarContent>
 								
@@ -755,7 +755,7 @@
 							</s:BorderContainer>
 						</s:HGroup>
 						<s:HGroup width="100%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5" enabled="{proveedor.googleMaps &amp;&amp; proveedor.googleMaps.length > 0}">
-							<s:Label width="{DEFAULT_WITH}" fontSize="13"  textAlign="right" maxDisplayedLines="1" text="Google maps" />
+							<s:Label width="{DEFAULT_WITH}" fontSize="13"  textAlign="right" maxDisplayedLines="1" text="Google Maps" />
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minHeight="0" borderAlpha=".6">
 								<s:layout>
 									<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" verticalAlign="middle" />

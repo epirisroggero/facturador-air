@@ -83,7 +83,7 @@
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
 				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" />
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cancelar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>
 		

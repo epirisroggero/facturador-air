@@ -734,7 +734,7 @@
 								<s:TextArea width="100%" height="100%" borderAlpha="0" contentBackgroundAlpha="0" text="{cliente.contacto.ctoNotas}" editable="false" />
 								<s:controlBarContent>
 									<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
-										<s:Button click="{ppNotas.displayPopUp = false}" label="Cerrar" styleName="textButton" width="80" />
+										<s:Button click="{ppNotas.displayPopUp = false}" label="Cerrar" styleName="textButton" width="100" />
 									</s:HGroup>
 								</s:controlBarContent>
 								
@@ -845,7 +845,7 @@
 				</s:HGroup>
 				<s:HGroup width="100%">
 					<s:HGroup width="66%" verticalAlign="middle" styleName="ItemStyle">
-						<s:Label width="{DEFAULT_WITH}" fontSize="13"  textAlign="right" maxDisplayedLines="1" text="Google maps" />
+						<s:Label width="{DEFAULT_WITH}" fontSize="13"  textAlign="right" maxDisplayedLines="1" text="Google Maps" />
 						<s:BorderContainer width="100%" backgroundColor="0xFAFAFA" minHeight="0" borderAlpha=".6">
 							<s:layout>
 								<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" verticalAlign="middle" />
@@ -1037,7 +1037,7 @@
 						</s:HGroup>
 					</s:VGroup>
 
-					<s:VGroup width="100%" visible="{encargadoCuenta}">
+					<s:VGroup width="100%" visible="{encargadoCuenta != null}">
 						<s:Label color="0x222222" fontSize="13" fontWeight="normal" paddingLeft="5" text="Encargado de cuenta" />
 						<mx:HRule width="100%" />
 						<s:HGroup width="100%" paddingLeft="10">
@@ -1049,12 +1049,12 @@
 					<s:VGroup width="100%" visible="{especialista1 || especialista2}">
 						<s:Label color="0x222222" fontSize="13" fontWeight="normal" paddingLeft="5" text="Especialistas" />
 						<mx:HRule width="100%" />
-						<s:HGroup width="100%" visible="{cliente.especialista1}" includeInLayout="{especialista1}">
+						<s:HGroup width="100%" visible="{cliente.especialista1 != null}" includeInLayout="{especialista1 != null}">
 							<s:HGroup width="100%" paddingLeft="10" styleName="ItemStyle">
 								<s:Label id="lblNombreEspecialista1" width="100%" text="{especialista1}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:HGroup>
 						</s:HGroup>
-						<s:HGroup width="100%" visible="{cliente.especialista2}" includeInLayout="{especialista2}">
+						<s:HGroup width="100%" visible="{cliente.especialista2 != null}" includeInLayout="{especialista2 != null}">
 							<s:HGroup width="100%" paddingLeft="10" styleName="ItemStyle">
 								<s:Label id="lblNombreEspecialista2" width="100%" text="{especialista2}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:HGroup>

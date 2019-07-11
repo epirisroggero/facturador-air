@@ -575,7 +575,7 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="closeButton16" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

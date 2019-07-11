@@ -7,6 +7,7 @@
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.model.Articulo;
 			import biz.fulltime.model.Cotizaciones;
+			import biz.fulltime.model.Cuponera;
 			import biz.fulltime.model.Deposito;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.LineaDocumento;
@@ -76,6 +77,9 @@
 			public var modoCuponera:Boolean = false;
 
 			[Bindable]
+			public var cuponera:Cuponera;
+
+			[Bindable]
 			public var hideDescAfilado:Boolean = false;
 
 			
@@ -126,9 +130,7 @@
 					_articulos.removeAll();
 				}
 				
-				if (esAfilado()) {
-					updateArticulosAfilado();
-				} else {
+				if (!esAfilado()) {
 					_articulos.addAll(CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo));
 				}
 			}
@@ -213,6 +215,11 @@
 						if (_deposito) {
 							nueva.deposito = _deposito.codigo;
 						}
+						if (esAfilado() && modoCuponera) {
+							nueva.setArticulo(cuponera.articulo);
+							nueva.setConcepto(cuponera.articulo.nombre);
+							nueva.precio = cuponera.precioUnitario;
+						}
 						lineasVenta.lineas.addItem(nueva);
 					}
 					for each (var l:LineaDocumento in lineasVenta.lineas) {
@@ -220,8 +227,6 @@
 						l.obtenerStock();
 					}
 					dgLineasVenta.dataProvider = lineasVenta.lineas;
-
-					updateArticulosAfilado();
 				}
 			}
 
@@ -309,7 +314,7 @@
 
 						articulosPnl = new ArticulosPnl();
 						articulosPnl.articulos = _articulos
-						articulosPnl.articulosCuponera = documento.cuponeras;
+						articulosPnl.articulosCuponera = documento.artCuponera;
 
 						PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
 						PopUpManager.centerPopUp(helpWindow);
@@ -438,6 +443,11 @@
 				if (_deposito) {
 					nueva.deposito = _deposito.codigo;
 				}
+				if (esAfilado() && modoCuponera) {
+					nueva.setArticulo(cuponera.articulo);
+					nueva.setConcepto(cuponera.articulo.nombre);
+					nueva.precio = cuponera.precioUnitario;
+				}
 				lineasVenta.lineas.addItem(nueva);
 
 				currentLine = nueva;
@@ -453,8 +463,6 @@
 								dgLineasVenta.setFocus();
 							});
 					});
-
-				updateArticulosAfilado();
 
 			}
 
@@ -504,7 +512,7 @@
 				if (validateLines()) {
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				} else {
-					Alert.show("Los valores no son válidos");
+					Alert.show("Los valores no son válidos", "Error");
 				}
 			}
 
@@ -587,21 +595,25 @@
 				var field:String = event.column.dataField;
 				
 				if (esAfilado()) {
-					if (field == "articulo") {
-						updateArticulosAfilado();
-
-					} else if (field == "ordenTrabajo") {
+					if (field == "ordenTrabajo") {
 						var remObj:RemoteObject = new RemoteObject();
 						remObj.destination = "CreatingRpc";
 						remObj.channelSet = ServerConfig.getInstance().channelSet;
 						remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 							var ld:LineaDocumento = evt.result as LineaDocumento;
 							if (ld) {
+								if (modoCuponera) {
+									ld2.articulo = cuponera.articulo;
+									ld2.concepto = cuponera.articulo.nombre;
+									ld2.precio = cuponera.precioUnitario
+								} else {
+									ld2.articulo = ld.articulo;
+									ld2.concepto = ld.concepto;
+									ld2.precio = ld.precio;
+								}
 								// Obtengo la linea y le seteo los nuevos valores
 								ld2.cantidad = ld.cantidad;
-								ld2.precio = ld.precio;
-								ld2.articulo = ld.articulo;
-								ld2.concepto = ld.concepto;
+								
 								ld2.diametro = ld.diametro;
 								ld2.cascados = ld.cascados;
 								ld2.afilador = ld.afilador;
@@ -668,7 +680,7 @@
 				tieneCambios = true;
 			}
 			
-			public function updateDescuentoTotal(row:int) {
+			public function updateDescuentoTotal(row:int):void {
 				var ld:LineaDocumento = lineasVenta.lineas.getItemAt(row) as LineaDocumento;
 								
 				var dcto1:BigDecimal = ld.getDcto1();
@@ -894,77 +906,22 @@
 				_articulos = value;
 			}
 
-			public function updateArticulosAfilado() {
+			public function updateArticulosAfilado():void {
 				if (esAfilado()) {
 					_articulos.removeAll();
+
 					var _art:ArrayCollection = new ArrayCollection();
-										
-					if (!_documento.cuponeras || _documento.cuponeras.length < 1) {
-						modoCuponera = false;
+					if (!modoCuponera) {
 						hideDescAfilado = false;
 						
 						var artsAfilado:ArrayCollection = CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo);
 						for each (var k:Articulo in artsAfilado) {
 							_art.addItem(k);
 						}
-						
+
 					} else {
-						if (lineasVenta == null || lineasVenta.lineas == null || lineasVenta.lineas.length <= 1) {
-							modoCuponera = false;
-
-							for each (var art:Articulo in documento.cuponeras) {
-								_art.addItem(art);
-							}
-							var artsAfilado:ArrayCollection = CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo);
-							for each (var afl:Articulo in artsAfilado) {
-								_art.addItem(afl);
-							}
-							
-							if (lineasVenta  && lineasVenta.lineas && lineasVenta.lineas.length == 1) {
-								var linea:LineaDocumento = (lineasVenta.lineas.getItemAt(0) as LineaDocumento) ? lineasVenta.lineas.getItemAt(0) as LineaDocumento : null;
-								hideDescAfilado = false;
-								
-								if (linea && linea.articulo && linea.articulo.codigo) {
-									for each (var c:Articulo in documento.cuponeras) {
-										if (c.codigo == linea.articulo.codigo) {
-											hideDescAfilado = true;
-											break;
-										}
-									}
-								}
-							} 
-
-						} else {
-							modoCuponera = false;
-							hideDescAfilado = false;
-							var linea:LineaDocumento = lineasVenta.lineas.getItemAt(0) as LineaDocumento;
-						
-							var art:Articulo = linea.articulo;
-							
-							for each (var c:Articulo in documento.cuponeras) {
-								if (art && c.codigo == art.codigo) {
-									modoCuponera = true;
-									hideDescAfilado = true;
-									break;
-								}
-							}
-							if (modoCuponera) {
-								for each (var i:Articulo in documento.cuponeras) {
-									_art.addItem(i);
-								}
-
-								// Si es afilado o modo cuponera reseteo el descuento de la linea.
-								if (modoCuponera) {
-									linea.descuento = "0";
-								}
-								
-							} else {
-								var artsAfilado:ArrayCollection = CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo);
-								for each (var k:Articulo in artsAfilado) {
-									_art.addItem(k);
-								}
-							}
-						}
+						hideDescAfilado = true;
+						_art.addItem(cuponera);
 					}
 					articulos = _art;
 					
@@ -1084,7 +1041,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="130" dataField="articulo" headerText="ARTÍCULO" editable="{hasPermEdition()}">
+							<s:GridColumn width="130" dataField="articulo" headerText="ARTÍCULO" editable="{hasPermEdition() &amp;&amp; !modoCuponera}">
 								<s:itemEditor>
 									<fx:Component>
 										<s:GridItemEditor>
@@ -1576,6 +1533,7 @@
 
 													import spark.events.IndexChangeEvent;
 
+													[Bindable]
 													public var afiladores:ArrayCollection = new ArrayCollection(["Tito", "Pola", "Adrián"]);
 
 													protected function cmbAfiladores_changeHandler(event:IndexChangeEvent):void {

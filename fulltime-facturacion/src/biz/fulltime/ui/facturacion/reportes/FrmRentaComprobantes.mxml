@@ -189,8 +189,8 @@
 					var iva:BigDecimal = new BigDecimal(documento.iva ? documento.iva : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
 					data.col_6 =  _esDevolucion ? iva.negate() : iva;
 					
-					var total:BigDecimal = new BigDecimal(documento.total ? documento.total : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
-					data.col_7 = _esDevolucion ? total.negate() : total;
+					var total_t:BigDecimal = new BigDecimal(documento.total ? documento.total : "0").setScale(2, MathContext.ROUND_HALF_EVEN);
+					data.col_7 = _esDevolucion ? total_t.negate() : total_t;
 					
 					var monto_neto:BigDecimal = comprobante.aplicarDescuentoPrometido(new BigDecimal(documento.subtotal ? documento.subtotal : "0")).setScale(2, MathContext.ROUND_HALF_EVEN);
 					data.col_8 = _esDevolucion ?  monto_neto.negate() : monto_neto;
@@ -863,10 +863,10 @@
 											if (DocumentoDTO(data).costo && DocumentoDTO(data).subtotal) {
 												var subtotal:BigDecimal = new BigDecimal(DocumentoDTO(data).subtotal);
 												
-												for each(var comprobante:Comprobante in CatalogoFactory.getInstance().comprobantes) {
-													if (comprobante.codigo == DocumentoDTO(data).comprobante.codigo) {														
-														var ventaNeta:BigDecimal = comprobante.aplicarDescuentoPrometido(subtotal); //llamemosle neta, mas por historia que otra cosa
-														ventaNeta = comprobante.isDevolucion() ? ventaNeta.negate().setScale(4, MathContext.ROUND_UP) : ventaNeta.setScale(4, MathContext.ROUND_UP);
+												for each(var c:Comprobante in CatalogoFactory.getInstance().comprobantes) {
+													if (c.codigo == DocumentoDTO(data).comprobante.codigo) {														
+														var ventaNeta:BigDecimal = c.aplicarDescuentoPrometido(subtotal); //llamemosle neta, mas por historia que otra cosa
+														ventaNeta = c.isDevolucion() ? ventaNeta.negate().setScale(4, MathContext.ROUND_UP) : ventaNeta.setScale(4, MathContext.ROUND_UP);
 														
 														label = simbolo + " " + outerDocument.nf_Espanol_Espanol.format(ventaNeta.toString());
 														break;

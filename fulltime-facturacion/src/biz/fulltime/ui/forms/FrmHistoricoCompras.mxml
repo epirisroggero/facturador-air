@@ -425,7 +425,7 @@
 
 				_changeDate = true;
 
-				callLater(function() {
+				callLater(function():void {
 						obtenerAntecedentes(fechaDesde, new Date());
 					});
 			}
@@ -570,7 +570,7 @@
 				<s:DataGrid id="dgAntecedentes" width="100%" height="100%" fontSize="10" borderAlpha="0" rowHeight="22">
 					<s:columns>
 						<s:ArrayList>
-							<s:GridColumn width="75" dataField="fecha" headerText="Fecha" sortable="true">
+							<s:GridColumn width="75" dataField="fecha" headerText="FECHA" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="left">
@@ -600,7 +600,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="90" dataField="comprobante.nombre" headerText="Tipo" sortable="true">
+							<s:GridColumn width="90" dataField="comprobante.nombre" headerText="TIPO" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
@@ -622,7 +622,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="75" headerText="Serie/Nro." sortable="true" labelFunction="serieNumeroLabelFunction">
+							<s:GridColumn width="75" headerText="S/N" sortable="true" labelFunction="serieNumeroLabelFunction">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
@@ -652,7 +652,7 @@
 								</s:itemRenderer>
 
 							</s:GridColumn>
-							<s:GridColumn width="40" dataField="cantidad" headerText="Cant." sortable="true">
+							<s:GridColumn width="60" dataField="cantidad" headerText="CANTIDAD" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="right">
@@ -679,7 +679,7 @@
 								</s:itemRenderer>
 
 							</s:GridColumn>
-							<s:GridColumn width="100" headerText="Artículo Código" sortable="true">
+							<s:GridColumn width="100" headerText="CÓDIGO ART." sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
@@ -701,7 +701,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn headerText="Concepto" sortable="true">
+							<s:GridColumn headerText="CONCEPTO" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
@@ -723,7 +723,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="70" headerText="Proveedor" sortable="true" visible="{!esVendDist()}">
+							<s:GridColumn width="70" headerText="PROVEEDOR" sortable="true" visible="{!esVendDist()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
@@ -749,7 +749,7 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
-							<s:GridColumn width="70" dataField="moneda.nombre" headerText="Moneda" sortable="true">
+							<s:GridColumn width="70" dataField="moneda.nombre" headerText="MONEDA" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
@@ -772,7 +772,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="80" dataField="precioUnitario" headerText="Precio U." sortable="true">
+							<s:GridColumn width="80" dataField="precioUnitario" headerText="P.UNITARIO" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer fontSize="10" textAlign="right">
@@ -800,7 +800,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn dataField="neto" headerText="Neto" sortable="true">
+							<s:GridColumn dataField="neto" headerText="NETO" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -828,7 +828,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn dataField="costo" headerText="Costo" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
+							<s:GridColumn dataField="costo" headerText="COSTO" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -856,7 +856,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn dataField="renta" headerText="Renta" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
+							<s:GridColumn dataField="renta" headerText="RENTA" sortable="true" visible="{GeneralOptions.getInstance().loggedUser.esSupervisor()}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">

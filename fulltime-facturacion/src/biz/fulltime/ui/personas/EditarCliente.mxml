@@ -420,7 +420,7 @@
 				dispatchEvent(new Event("_changeCliente", true, true));
 			}
 			
-			private function obtenerUltimoDisponible() {
+			private function obtenerUltimoDisponible():void {
 				var clienteObj:RemoteObject = new RemoteObject();
 				clienteObj.destination = "CreatingRpc";
 				clienteObj.channelSet = ServerConfig.getInstance().channelSet;
@@ -471,12 +471,7 @@
 				} else {
 					/////////////////////////////////////
 					// Voler a calcular los contactos. //
-					/////////////////////////////////////
-//					CatalogoFactory.getInstance().addEventListener("changeContactos", function(evt:Event):void {
-//						obtenerUltimoDisponible();	
-//					});
-//					CatalogoFactory.getInstance().loadCatalogo("Contacto");
-					
+					/////////////////////////////////////					
 					var err:ValidationResultEvent;
 					var resultXML:XML = <errors/>;
 					for each (err in validatorErrorArray) {
@@ -797,14 +792,14 @@
 										<mx:FormItem width="100%" label="Razón Social" styleName="ItemStyle">
 											<s:TextInput id="txtRazonSocial" width="100%" text="@{cliente.contacto.ctoRSocial}" enter="txtRUT.setFocus()" maxChars="100"/>
 										</mx:FormItem>
-										<mx:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
-											<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
-										</mx:FormItem>
 										<mx:FormItem width="100%" label="RUT" styleName="ItemStyle">
 											<s:TextInput id="txtRUT" width="46%" text="@{cliente.contacto.ctoRUT}" enter="txtDireccion.setFocus()" restrict="0-9" maxChars="12" />
 										</mx:FormItem>
-										<mx:FormItem width="100%" label="{cliente.contacto.ctoDocumentoSigla}" styleName="ItemStyle">
-											<s:TextInput id="txtDocument" width="46%" text="@{cliente.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+										<mx:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
+											<s:HGroup width="46%" verticalAlign="middle">
+												<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
+												<s:TextInput id="txtDocument" width="100%" text="@{cliente.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+											</s:HGroup>
 										</mx:FormItem>
 										<mx:FormItem width="100%" label="Dirección" styleName="ItemStyle">
 											<s:TextInput id="txtDireccion" width="100%" text="@{cliente.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" maxChars="50"/>
@@ -819,7 +814,7 @@
 										<mx:FormItem width="100%" label="Página Web" styleName="ItemStyle">
 											<s:TextInput id="txtWebpage" width="100%" text="@{cliente.contacto.ctoWeb}" enter="txtGoogleMaps.setFocus()" maxChars="256"/>
 										</mx:FormItem>
-										<mx:FormItem width="100%" label="Google maps" styleName="ItemStyle">
+										<mx:FormItem width="100%" label="Google Maps" styleName="ItemStyle">
 											<s:TextInput id="txtGoogleMaps" width="100%" text="@{cliente.googleMaps}" enter="txtEmail1.setFocus()" maxChars="256"/>
 										</mx:FormItem>
 										<mx:FormItem width="100%" label="Energía Electrica" styleName="ItemStyle">
@@ -979,7 +974,7 @@
 		</mx:HBox>
 		<mx:ControlBar id="buttons" width="100%" height="54" horizontalAlign="center" verticalAlign="bottom" backgroundAlpha="1" contentBackgroundColor="0xF0F0F0"> 
 			<s:Button id="apply" click="validateForm(event)" label="Guardar" styleName="aceptarButton" />
-			<s:Button id="cancel" click="cancelValues(event)" label="Cerrar" styleName="cerrarButton" />
+			<s:Button id="cancel" click="cancelValues(event)" label="Cancelar" styleName="cancelarButton" />
 		</mx:ControlBar>
 	</mx:VBox>
 </mx:Canvas>

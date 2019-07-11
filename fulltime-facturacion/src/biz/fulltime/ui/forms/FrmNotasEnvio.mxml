@@ -225,7 +225,7 @@
 				<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 					<components:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" />
 					<s:Spacer width="100%" />
-					<components:IconButton id="cmdCerrar" click="cmdAceptar_clickHandler(event)" styleName="cerrarButton" label="Cerrar" />
+					<components:IconButton id="cmdCerrar" click="cmdAceptar_clickHandler(event)" styleName="closeButton16" label="Cerrar" />
 				</s:HGroup>
 			</s:controlBarContent>
 		</s:Panel>

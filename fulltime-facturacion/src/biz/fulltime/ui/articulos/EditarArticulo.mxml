@@ -504,27 +504,27 @@
 				
 				if (_capitulo) {
 					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
-						var familia:Object = new Object();
-						familia.codigo = Number(f.codigo);
-						familia.nombre = f.nombre;
+						var familia2:Object = new Object();
+						familia2.codigo = Number(f.codigo);
+						familia2.nombre = f.nombre;
 						
 						if (Number(f.codigo) >= 100 && Number(f.codigo) < 10000) {
 							if (f.codigo.toString().match(new RegExp("^" + _capitulo.codigo, 'i'))) {
-								subtitulos.addItem(familia);
+								subtitulos.addItem(familia2);
 							} 
 						} else if (Number(f.codigo) >= 100000) {
 							if (f.codigo.toString().match(new RegExp("^" + _capitulo.codigo, 'i'))) {
-								familias.addItem(familia);
+								familias.addItem(familia2);
 							}
 						}	
 					}
 				} else {
-					for each (var f:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
+					for each (var fa:FamiliaArticulos in CatalogoFactory.getInstance().familias) {
 						var familia:Object = new Object();
-						familia.codigo = Number(f.codigo);
-						familia.nombre = f.nombre;
+						familia.codigo = Number(fa.codigo);
+						familia.nombre = fa.nombre;
 						
-						if (Number(f.codigo) >= 100000) {
+						if (Number(fa.codigo) >= 100000) {
 							familias.addItem(familia);
 						}	
 					}
@@ -991,7 +991,7 @@
 
 		<mx:ControlBar id="buttons" width="100%" height="54" horizontalAlign="center" verticalAlign="middle" backgroundAlpha="1" contentBackgroundColor="0xFF0000">
 			<s:Button id="apply" click="validateForm(event)" label="Guardar" styleName="aceptarButton" />
-			<s:Button id="cancel" click="cancelValues(event)" label="Cerrar" styleName="cerrarButton" />
+			<s:Button id="cancel" click="cancelValues(event)" label="Cancelar" styleName="cancelarButton" />
 		</mx:ControlBar>
 		
 	</s:VGroup>

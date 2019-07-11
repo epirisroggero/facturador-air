@@ -14,7 +14,7 @@
 			private var _keys:ArrayCollection;
 			
 			
-			public function filterM(map:Dictionary, keys:ArrayCollection) {
+			public function filterM(map:Dictionary, keys:ArrayCollection):void {
 				_map = map;	
 				_keys = keys;
 				

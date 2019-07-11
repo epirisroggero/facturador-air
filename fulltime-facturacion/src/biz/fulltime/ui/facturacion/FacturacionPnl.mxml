@@ -86,12 +86,20 @@
 			import util.Utils;
 
 			[Bindable]
-			[Embed("/assets/general/exclamation.png")]
-			private var mediaIcon:Class;
+			[Embed("assets/general/alert/Exclamation.png")]
+			private var exclamationIcon:Class;
 
 			[Bindable]
-			[Embed(source="assets/general/Info.png")]
-			public var iconSymbol:Class;
+			[Embed("assets/general/alert/Info.png")]
+			public var infoSymbol:Class;
+
+			[Bindable]
+			[Embed("assets/general/alert/Error.png")]
+			private var errorIcon:Class;
+
+			[Bindable]
+			[Embed("assets/general/alert/Warning.png")]
+			private var warningIcon:Class;
 
 			[Bindable]
 			private var _documento:Documento;
@@ -165,6 +173,11 @@
 			[Bindable]
 			public var lineastienenCambios:Boolean = false;
 
+			[Bindable]
+			public var modoCuponera:Boolean = false;
+
+			[Bindable]
+			public var cuponeraEsValida:Boolean = false;
 
 			[Bindable]
 			private var eMail:String;
@@ -226,6 +239,7 @@
 			private var emitirEImprimirNCF:Boolean = true; 
 			
 			private var copiando_documento:Boolean = false;
+			
 			
 
 
@@ -323,6 +337,7 @@
 					} else {
 						_proveedores = CatalogoFactory.getInstance().proveedores;
 					}
+					
 
 					if (_modoSolicitud) {
 						if (_documento.proveedor) {
@@ -458,6 +473,9 @@
 							} else {
 								_modoVisualizacion = !_documento.permisosDocumentoUsuario.edicion;
 							}
+							if (_documento.esAfilado() && !_documento.pendiente) {
+								_modoVisualizacion = true;
+							}
 						}
 					}
 
@@ -566,8 +584,6 @@
 				if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' 
 					|| _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
 					
-					//Alert.buttonWidth = 60;
-					
 					var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
 					alert.width = 340;
 					alert.height = 180
@@ -618,7 +634,7 @@
 			public function resultPrecios1(event:ResultEvent):void {
 				resultPrecios = event.result as ArrayCollection;	
 				if (resultPrecios != null && resultPrecios.length > 0) {
-					var alert:Alert = Alert.show("¿Desea actualizar los precios?", "Los precios han cambiado", Alert.YES | Alert.NO, this, actualizarClickHandler, mediaIcon);
+					var alert:Alert = Alert.show("¿Desea actualizar los precios?", "Los precios han cambiado", Alert.YES | Alert.NO, this, actualizarClickHandler, exclamationIcon);
 					alert.width = 400;
 					alert.height = 160;
 				}
@@ -1269,6 +1285,7 @@
 					_documento.removeEventListener("_changeComisiones", changeComisionesListener);
 					_documento.removeEventListener("_changeTipoDoc", changeTipoDoc);
 					_documento.removeEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
+					_documento.removeEventListener("_changeCuponeras", changeCuponeras);
 				}
 				_modoVisualizacion = false;
 
@@ -1289,11 +1306,33 @@
 				_documento.addEventListener("_changeComisiones", changeComisionesListener);
 				_documento.addEventListener("_changeTipoDoc", changeTipoDoc);
 				_documento.addEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
+				_documento.addEventListener("_changeCuponeras", changeCuponeras);
 
 				_changeFactura = true;
-
+				
 				dispatchEvent(new Event("_changeDocumento"));
 				invalidateProperties();
+			}
+			
+			private function changeCuponeras(event:Event):void {
+				modoCuponera = false;
+				cuponeraEsValida = false;
+				
+				if (_documento.lineas.lineas.length > 0) {
+					var linea:LineaDocumento =  _documento.lineas.lineas.getItemAt(0) as LineaDocumento;
+					var art:Articulo = linea.articulo;
+					for each (var c:Articulo in _documento.artCuponera) {
+						if (art && c.codigo == art.codigo) {
+							modoCuponera = true;
+							
+							_documento.updateCuponera(art.codigo);
+							cuponeraEsValida = _documento.cuponera && _documento.cuponera.fecha;
+							
+							break;
+						}
+					}
+				}
+
 			}
 			
 			private function changeTipoDoc(event:Event):void {
@@ -1424,18 +1463,6 @@
 				}
 				_documento.update();
 
-			/*
-			   tieneCambios = false;
-			   callLater(function():void {
-			   _documento.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
-			   if (evt.property != "depto" && evt.property != "cotizacion" && evt.property != "esSolicitudCompra") {
-			   tieneCambios = true;
-			   }
-
-			   });
-
-			   });
-			 */
 			}
 
 			private function resultSerieNumero(event:ResultEvent):void {
@@ -1454,28 +1481,47 @@
 			protected function cmdEditSL_clickHandler(event:MouseEvent):void {
 				if (_documento.moneda == null || (_documento.preciosVenta == null)) {
 					if (!_documento.esSolicitudCompra) {
-						Alert.show("Para poder agregar Líneas de Venta debe seleccionar una 'Moneda' y 'Lista de Precios'", "Error");
+						Alert.show("Para poder agregar líneas de venta debe seleccionar una 'Moneda' y 'Lista de Precios'", "Error", Alert.OK, null, null, errorIcon);
 						return;
 					} else if (!_documento.moneda) {
-						Alert.show("Para poder agregar Líneas de Compra debe seleccionar una 'Moneda'", "Error");
+						Alert.show("Para poder agregar líneas de compra debe seleccionar una 'Moneda'", "Error", Alert.OK, null, null, errorIcon);
 						return;
 					}
 				}
+				if (_documento.esAfilado()) {
+					if (modoCuponera) {
+						if (_documento.cuponera.fecha == null) {
+							Alert.show("La cuponera seleccionada no esta paga.", "No se pueden agregar líneas de afilado.", Alert.OK, null, null, infoSymbol);	
+							return;
+						} else if (_documento.cuponera.getStockValue().compareTo(BigDecimal.ZERO) <= 0) {
+							Alert.show("La cuponera seleccionada no tiene saldo.", "No se pueden agregar líneas de afilado.", Alert.OK, null, null, infoSymbol);	
+							return;
+						}			
+						
+					}
+				}
+				
 				if (helpWindow == null) {
 					if (_documento.proveedor) {
 						CatalogoFactory.getInstance().updateArticulosProveedor(_documento.proveedor.codigo);
 					}
 					helpWindow = new TitleWindow();
-					helpWindow.title = _documento.esSolicitudCompra ? "Líneas de compra" : "Líneas de venta";
+					helpWindow.title = _documento.esSolicitudCompra ? "Líneas de compra" : (_documento.comprobante.esProceso80() ? "Líneas de afilado" :  "Líneas de venta");
 					helpWindow.width = 1320;
 					helpWindow.height = 600;
 
 					frmLineasVenta = new FrmLineasVenta();
 					frmLineasVenta.documento = _documento;
+					if (_documento.comprobante.esProceso80()) {
+						frmLineasVenta.modoCuponera = modoCuponera;
+						frmLineasVenta.cuponera = _documento.cuponera;
+						frmLineasVenta.updateArticulosAfilado();
+					} 
+					
 					frmLineasVenta.lineasVenta = _documento.lineas;
 					frmLineasVenta.moneda = cmbMoney.selectedItem; // Pasar Moneda. 
 					frmLineasVenta.preciosVenta = cmbListaPrecios.selectedItem; // Pasar Precios Venta.
-
+					
 					if (_documento.esCotizacionDeVenta) {
 						var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
 						var depPpal:String = param.depIdParAdm.toString();
@@ -1523,7 +1569,7 @@
 					});
 			}
 			
-			var frmVencimientos:FrmVencimientos;
+			private var frmVencimientos:FrmVencimientos;
 
 			//-------------------------------------------------------------------------
 			// Seleccion de Lineas de Venta
@@ -1559,8 +1605,6 @@
 				helpWindow.removeEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
 				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 				helpWindow = null;
-				
-				
 
 				callLater(function():void {
 						cmdVencimiento.setFocus();
@@ -1726,7 +1770,7 @@
 								emitirEImprimirNCF = false;
 							}
 							verificarDocumento();
-						}, mediaIcon);
+						}, exclamationIcon);
 					alert.width = 400;
 					alert.height = 200;	
 				} else {
@@ -2098,7 +2142,8 @@
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				if (tieneCambios && _documento.permisosDocumentoUsuario.edicion && !_modoVisualizacion && _documento.cliente) {
 					//Alert.buttonWidth = 80;
-					var alert:Alert = Alert.show("El Documento ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
+					var alert:Alert = Alert.show("El Documento ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, 
+						null, confirmCloseHandler, exclamationIcon);
 					alert.width = 400;
 					alert.height = 200;
 				} else {
@@ -2111,7 +2156,12 @@
 				if (eventObj.detail == Alert.YES) {
 					if (_documento.emitido) {
 						if (_documento.iva != _documento.getIva().setScale(4, MathContext.ROUND_UP).toString()) {
-							Alert.show("Los valores de sub-total, total e iva no se puede modificar en documentos ya emitodos. \n" + "\nTotal = [Antes:" + _documento.total + "  Después:" + _documento.getTotalRedondeado().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nSubtotal = [Antes:" + _documento.subTotal + " Después:" + _documento.getSubTotal().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nIva = [Antes:" + _documento.iva + " Después:" + _documento.getIva().setScale(4, MathContext.ROUND_UP).toString() + "]" + "", "Información");
+							Alert.show("Los valores de sub-total, total e iva no se puede modificar en documentos ya emitodos. \n" 
+								+ "\nTotal = [Antes:" + _documento.total + "  Después:" + _documento.getTotalRedondeado().setScale(4, MathContext.ROUND_UP).toString() + "]" 
+								+ "\nSubtotal = [Antes:" + _documento.subTotal + " Después:" + _documento.getSubTotal().setScale(4, MathContext.ROUND_UP).toString() + "]" 
+								+ "\nIva = [Antes:" + _documento.iva 
+								+ " Después:" + _documento.getIva().setScale(4, MathContext.ROUND_UP).toString() + "]" + ""
+								, "Información");
 						} else {
 							var remObj:RemoteObject = new RemoteObject();
 							remObj.destination = "CreatingRpc";
@@ -2285,6 +2335,14 @@
 				return label;
 			}
 
+			public function cuponeraLabelFunction(item:Object):String {
+				var label:String;
+				if (item) {
+					label = item.articulo.codigo + " - " + item.articulo.nombre;
+				}
+				
+				return label;
+			}
 
 			public function clienteLabelFunction(item:Object):String {
 				var client:Cliente = item as Cliente;
@@ -2394,7 +2452,8 @@
 			}
 
 			protected function cmdBorrar_clickHandler(event:MouseEvent):void {
-				var alert:Alert = Alert.show("¿Esta seguro de BORRAR el documento?", "Borrar documento", Alert.YES | Alert.NO, this, alertBorrarClickHandler, mediaIcon);
+				var alert:Alert = Alert.show("¿Esta seguro de BORRAR el documento?", "Borrar documento", Alert.YES | Alert.NO, this, 
+					alertBorrarClickHandler, exclamationIcon);
 				alert.width = 400;
 				alert.height = 200;	
 			}
@@ -2794,7 +2853,7 @@
 						documento.cliente = cliente;
 						documento.moneda = doc.moneda;
 						documento.lineas = doc.lineas;
-						documento.cuponeras = doc.cuponeras;
+						documento.artCuponera = doc.artCuponera;
 						documento.cuponerasList = doc.cuponerasList;
 						documento.preciosVenta = doc.preciosVenta ? doc.preciosVenta : preciosVenta;
 
@@ -3117,8 +3176,9 @@
 			}
 
 			protected function combobox1_changeHandler(event:IndexChangeEvent):void {
-				var articulo:Articulo = cmbCuponera.selectedItem as Articulo;
-				_documento.updateCuponera(articulo.codigo);
+				var cuponera:Cuponera = cmbCuponera.selectedItem as Cuponera;
+				_documento.cuponera = cuponera;
+				cuponeraEsValida = _documento.cuponera && _documento.cuponera.fecha;
 			}
 			
 			protected function cmdDuplicar_clickHandler(event:MouseEvent):void {
@@ -3901,7 +3961,8 @@
 			}
 			
 			protected function cmdVolver_clickHandler(event:MouseEvent):void {
-				var alert:Alert = Alert.show("Este comprobante y los posteriores del proceso serán borrados.\n¿Esta usted seguro?", "Volver al paso anterior", Alert.YES + Alert.NO, null, myCloseHandler, mediaIcon);
+				var alert:Alert = Alert.show("Este comprobante y los posteriores del proceso serán borrados.\n¿Esta usted seguro?", 
+					"Volver al paso anterior", Alert.YES + Alert.NO, null, myCloseHandler, exclamationIcon);
 				alert.height = 200;
 			}
 			
@@ -3931,7 +3992,7 @@
 					
 					var lineasCuponera:ArrayCollection = cuponera.lineasCuponera;
 
-					var cuponeraArt:Articulo = cmbCuponera.selectedItem;
+					var cuponeraArt:Articulo = _documento.cuponera.articulo;
 
 					if (lineasCuponera && lineasCuponera.length > 0) {
 						var helpWindow:TitleWindow = new TitleWindow();
@@ -3963,15 +4024,46 @@
 						PopUpManager.addPopUp(helpWindow, parent, true);
 						PopUpManager.centerPopUp(helpWindow);
 					} else {
-						Alert.show("Cuponera '" + cuponeraArt.codigo + "' no tiene movimientos.", "Información");
+						Alert.show("Cuponera '" + cuponeraArt.codigo + "' no tiene movimientos.", "Información", Alert.OK, null, null, infoSymbol);
 					}
 
 				});
 				
-				var artCuponera:Articulo = cmbCuponera.selectedItem;
-				remObj1.getDatosCuponera(artCuponera);
+				//var artCuponera:Articulo = cmbCuponera.selectedItem;
+				remObj1.getDatosCuponera(_documento.cuponera.articulo);
 				
 			}
+						
+			
+			protected function rbgCuponera_changeHandler(event:Event):void {
+				if (_documento.lineas.lineas.length > 0) {
+					var linea:LineaDocumento = _documento.lineas.lineas.getItemAt(0) as LineaDocumento;
+					if (linea.getArticulo() != null) {
+						Alert.show("Las líneas de afilado se perderán. ¿Esta usted seguro?", "Advertencia", Alert.YES + Alert.NO, null, cuponeraCloseHandler, infoSymbol);
+					} else {
+						modoCuponera = rbgCuponera.selectedValue == "cuponera";
+					}
+				} else {
+					modoCuponera = rbgCuponera.selectedValue == "cuponera";
+				}
+				if (modoCuponera) {				
+					cmbCuponera.selectedIndex = 0;
+					combobox1_changeHandler(null);
+				}
+			}
+			
+			private function cuponeraCloseHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					modoCuponera = rbgCuponera.selectedValue == "cuponera";
+					_documento.lineas.lineas.removeAll();
+				} else {
+					if (modoCuponera)
+						rbCuponera.selected = true;
+					else
+						rbFacturar.selected = true
+				}
+			}
+
 			
 		]]>
 
@@ -3981,6 +4073,8 @@
 		<fx:Component id="dropDownItemRenderer">
 			<renderers:CodigoNombreItemRenderer />
 		</fx:Component>
+		
+		<s:RadioButtonGroup id="rbgCuponera" change="rbgCuponera_changeHandler(event)"/>
 
 		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" maxLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" 
 							tooShortError="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 'Número de RUT inválido.' : 'Número de documento inválido.'}" checkRut="{tipoDoc &amp;&amp; tipoDoc.value == 'R'}" />
@@ -4000,7 +4094,7 @@
 		<loader:LoadComponent />
 	</s:VGroup>
 	<s:Group width="100%" height="100%" excludeFrom="cargando"> 
-		<components1:IconButton  left="332" top="62" styleName="moneyButton" width="28" height="26" toolTip="Facturas Pendientes" 
+		<components1:IconButton  left="332" top="65" styleName="moneyButton" width="28" height="26" toolTip="Facturas Pendientes" 
 								 click="cmdMostrarFacturasPendientes_clickHandler(event)" 
 								 enabled="{_documento.cliente &amp;&amp; _documento.cliente.documentsPendientes}"
 								 visible="{!_documento.emitido}" />
@@ -4237,52 +4331,63 @@
 								</s:VGroup>
 							</s:VGroup>
 						</s:Panel>
-						<s:Panel width="480" height="100%" title="Cuponeras (solo para ver información)" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80' || _documento.comprobante.codigo == '81' || _documento.comprobante.codigo == '82' || _documento.comprobante.codigo == '84')}"
+						<s:Panel width="480" height="100%" title="Cuponeras" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80' || _documento.comprobante.codigo == '81' || _documento.comprobante.codigo == '82' || _documento.comprobante.codigo == '84')}"
 								 includeInLayout="{(_documento.comprobante.codigo == '80' || _documento.comprobante.codigo == '81' || _documento.comprobante.codigo == '82' || _documento.comprobante.codigo == '84')}">
-							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length > 0)}"
-									  includeInLayout="{(_documento.cuponeras.length > 0)}">
-								<s:DropDownList id="cmbCuponera" width="100%" textAlign="left" change="combobox1_changeHandler(event)" dataProvider="{_documento.cuponeras}" labelFunction="codigoNombreLabelFunction" 
-												prompt="Seleccionar cuponera" />
-								<s:Group width="100%" height="100%" visible="{cmbCuponera.selectedIndex >= 0}">
-									<s:layout>
-										<s:VerticalLayout horizontalAlign="left" verticalAlign="middle" paddingLeft="10" paddingRight="10"/>
-									</s:layout>
-									<s:VGroup width="100%" height="100%"  visible="{_documento.cuponera.fecha}" includeInLayout="{_documento.cuponera.fecha}"
-											  verticalAlign="middle" horizontalAlign="center">
-										<s:HGroup width="300">
-											<s:Label fontSize="16" width="160" color="gray" fontWeight="bold" text="Fecha: " />
-											<s:Label fontSize="16" color="black" text="{date_formatter.format(_documento.cuponera.fecha)}" />
-										</s:HGroup>
-										<s:HGroup width="300">
-											<s:Label fontSize="16" width="160" color="gray" fontWeight="bold" text="Cantidad: " />
-											<s:Label fontSize="16" color="black" text="{nf_Espanol_Espanol.format(_documento.cuponera.cantidadTotal)}" />
-										</s:HGroup>
-										<s:HGroup width="300">
-											<s:Label fontSize="16" width="160" color="gray" fontWeight="bold" text="Precio unitario: " />
-											<s:Label fontSize="16" color="black" text="{nf_Espanol_Espanol_2.format(_documento.cuponera.precioUnitario)}" />
-										</s:HGroup>
+							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.artCuponera.length > 0)}"
+									  includeInLayout="{(_documento.artCuponera.length > 0)}" enabled="{_documento.pendiente}">
+								<s:VGroup>
+									<s:RadioButton id="rbFacturar" groupName="rbgCuponera" value="factura" label="Factura de afilado" selected="{!modoCuponera}"/>
+									<s:RadioButton id="rbCuponera" groupName="rbgCuponera" value="cuponera" label="Descarga cuponera" selected="{modoCuponera}" />
+								</s:VGroup>								
+								
+								<s:VGroup width="100%" height="100%" visible="{modoCuponera}" paddingLeft="20" paddingRight="20">
+									<s:DropDownList id="cmbCuponera" width="100%" textAlign="left" change="combobox1_changeHandler(event)" dataProvider="{_documento.cuponerasList}" labelFunction="cuponeraLabelFunction" 
+													prompt="Seleccionar cuponera" selectedItem="{_documento.cuponera}"/>
+									<s:Group width="100%" height="100%" visible="{cmbCuponera.selectedIndex >= 0}">
+										<s:layout>
+											<s:VerticalLayout horizontalAlign="left" verticalAlign="middle" paddingLeft="0" paddingRight="10"/>
+										</s:layout>
+										<s:VGroup width="100%" height="100%"  visible="{cuponeraEsValida}" includeInLayout="{cuponeraEsValida}"
+												  verticalAlign="middle" horizontalAlign="left">
+											<s:HGroup width="300">
+												<s:Label fontSize="14" width="140" color="gray" fontWeight="bold" text="FECHA: " />
+												<s:Label fontSize="14" color="black" text="{date_formatter.format(_documento.cuponera.fecha)}" />
+											</s:HGroup>
+											<s:HGroup width="300">
+												<s:Label fontSize="14" width="140" color="gray" fontWeight="bold" text="CANTIDAD: " />
+												<s:Label fontSize="14" color="black" text="{nf_Espanol_Espanol.format(_documento.cuponera.cantidadTotal)}" />
+											</s:HGroup>
+											<s:HGroup width="300">
+												<s:Label fontSize="14" width="140" color="gray" fontWeight="bold" text="PRECIO UNITARIO: " />
+												<s:Label fontSize="14" color="black" text="{_documento.cuponera.moneda.simbolo + ' ' +  nf_Espanol_Espanol_2.format(_documento.cuponera.precioUnitario)}" />
+											</s:HGroup>
+										</s:VGroup>
 										
-										<s:Spacer height="20" />
-										<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="16" fontWeight="bold"
-												 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />
-									</s:VGroup>
-									<s:VGroup width="100%" height="100%"  visible="{!_documento.cuponera.fecha}" includeInLayout="{!_documento.cuponera.fecha}"
-											  verticalAlign="middle" horizontalAlign="center">
-										<s:Label fontSize="12" color="black" text="NO SE ENCONTRÓ COMPROBANTE PAGO CUPONERA" />
-										<s:Spacer height="30" />
-										<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="16" fontWeight="bold"
-												 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />
-									</s:VGroup>
-								</s:Group>
-								<s:Group width="100%" visible="{cmbCuponera.selectedIndex >= 0}">
-									<s:layout>
-										<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle" />
-									</s:layout>
-									<s:Button id="cmdMovimientosCuponera" click="cmdMovimientosCuponera_clickHandler(event)" styleName="textButton" label="Movimientos cuponera" toolTip="Ver detalles de la cuponera" />
-								</s:Group>
+										<s:VGroup width="100%" height="100%"  paddingTop="10" visible="{cuponeraEsValida}" includeInLayout="{cuponeraEsValida}"
+												  verticalAlign="middle" horizontalAlign="center">
+											<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="14" fontWeight="bold"
+													 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />
+										</s:VGroup>
+										
+										<s:VGroup width="100%" height="100%"  visible="{!cuponeraEsValida}" includeInLayout="{!cuponeraEsValida}"
+												  verticalAlign="middle" horizontalAlign="center">
+											<s:Label fontSize="14" color="black" text="NO SE ENCONTRÓ COMPROBANTE DE PAGO DE CUPONERA" />
+											<s:Spacer height="30" />
+											<s:Label color="{(_documento.cuponera.getStockValue().compareTo(BigDecimal.ONE) &lt; 1) ? 0xFF0000 : 0x000000}" fontSize="14" fontWeight="bold"
+													 text="RESTAN {nf_Espanol_Espanol.format(_documento.cuponera.stock.toString())} {_documento.comprobante.codigo == '80' ? 'AFILADOS' : 'SERVICIOS'}." />
+										</s:VGroup>
+									</s:Group>
+									<s:Group width="100%" visible="{cmbCuponera.selectedIndex >= 0 &amp;&amp; modoCuponera}">
+										<s:layout>
+											<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle" />
+										</s:layout>
+										<s:Button id="cmdMovimientosCuponera" click="cmdMovimientosCuponera_clickHandler(event)" styleName="textButton" label="Movimientos cuponera" toolTip="Ver detalles de la cuponera" />
+									</s:Group>
+								</s:VGroup>
 							</s:VGroup>
-							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.cuponeras.length &lt; 1)}"
-									  includeInLayout="{(_documento.cuponeras.length &lt; 1)}">
+
+							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.artCuponera.length &lt; 1)}"
+									  includeInLayout="{(_documento.artCuponera.length &lt; 1)}">
 								<s:Group width="100%" height="100%">
 									<s:layout>
 										<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
@@ -4430,7 +4535,7 @@
 					  focusEnabled="false" enabled="{!_documento.emitido &amp;&amp; (_documento.cliente || _documento.proveedor) }" />
 
 			<s:Spacer width="5" />
-			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />
+			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cancelar" toolTip="Cancelar" focusEnabled="false" />
 		</s:HGroup>
 	</s:controlBarContent>
 

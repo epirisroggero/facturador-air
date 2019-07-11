@@ -373,10 +373,11 @@
 					<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingRight="5" paddingTop="5" verticalAlign="middle">
 						<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".20" scaleY=".20" />
 						<s:Spacer width="100%" />
-						<s:Button id="cmdAplicar" click="cmdAplicar_clickHandler(event)" label="Aplicar" styleName="aplicarButton16" 
+						<s:Button id="cmdAplicar" click="cmdAplicar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" 
 								  enabled="{txtNombre.text.length > 0 &amp;&amp; txtCargo.text.length > 0}" visible="{persona != null}"/>
-						<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" visible="{nuevo}" includeInLayout="{nuevo}" styleName="closeButton16" />
-						<s:Button id="cmdClose" click="cmdClose_clickHandler(event)" label="Cerrar" visible="{!nuevo}" includeInLayout="{!nuevo}" styleName="closeButton16" />
+						<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" visible="{nuevo}" includeInLayout="{nuevo}" styleName="cancelarButton" />
+						<s:Button id="cmdClose" click="cmdClose_clickHandler(event)" label="Cerrar" visible="{!nuevo}" includeInLayout="{!nuevo}" styleName="cancelarButton" />
+
 					</s:HGroup>
 				</s:controlBarContent>
 			</s:Panel>

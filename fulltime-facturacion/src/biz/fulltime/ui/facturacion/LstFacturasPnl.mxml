@@ -513,9 +513,9 @@
 						}
 					}  else if (_factura.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE) {
 						var movimientoStockCliente:ArrayCollection = new ArrayCollection();
-						for each (var doc:DocumentoDTO in facturasGuardadas) {
-							if ((doc.comprobante.codigo == codigo || (codigo == '10' && doc.comprobante.codigo == '1')) && doc.pendiente) {
-								movimientoStockCliente.addItem(doc);
+						for each (var d:DocumentoDTO in facturasGuardadas) {
+							if ((d.comprobante.codigo == codigo || (codigo == '10' && d.comprobante.codigo == '1')) && d.pendiente) {
+								movimientoStockCliente.addItem(d);
 							}
 						}
 						if (movimientoStockCliente.length > 0) {

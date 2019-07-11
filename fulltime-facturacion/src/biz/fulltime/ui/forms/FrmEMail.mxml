@@ -129,14 +129,17 @@
 			override protected function commitProperties():void {
 				super.commitProperties();
 
+				var email1:String = null;
+				var email2:String = null;
+
 				if (_clienteSel && _contactosCargados) {
 					_clienteSel = false;
 					_contactosCargados = false;
 
 					_selectedContact = cliente.contacto;
 
-					var email1:String = _selectedContact.ctoEmail1;
-					var email2:String = _selectedContact.ctoEmail2;
+					email1 = _selectedContact.ctoEmail1;
+					email2 = _selectedContact.ctoEmail2;
 
 					addresses = new Array();
 					if (email1 && email1.length > 3) {
@@ -154,8 +157,8 @@
 					
 					_selectedContact = proveedor.contacto;
 					
-					var email1:String = _selectedContact.ctoEmail1;
-					var email2:String = _selectedContact.ctoEmail2;
+					email1 = _selectedContact.ctoEmail1;
+					email2 = _selectedContact.ctoEmail2;
 					
 					addresses = new Array();
 					if (email1 && email1.length > 3) {

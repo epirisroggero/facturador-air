@@ -325,7 +325,7 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<components:IconButton id="cmdRecalcular" click="cmdRecalcular_clickHandler(event)" label="Recalcular" styleName="textButton" />
 				<s:Spacer width="100%"/>
-				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="100" label="Cerrar" styleName="textButton" />
+				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" width="100" label="Cerrar" styleName="closeButton16" />
 				<!-- components:IconButton id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" styleName="textButton" /-->
 			</s:HGroup>
 		</s:controlBarContent>

@@ -204,7 +204,7 @@
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
 				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" enabled="false"/>
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

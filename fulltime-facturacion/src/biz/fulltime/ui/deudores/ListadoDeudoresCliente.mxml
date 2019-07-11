@@ -79,7 +79,7 @@
 				
 			}
 			
-			var contClient:BorderContainer;
+			protected var contClient:BorderContainer;
 
 			override protected function commitProperties():void {
 				super.commitProperties();
@@ -198,11 +198,6 @@
 							hgRow2.addElement(lblCliente1);
 							hgRow2.addElement(lblClienteZona);
 
-							var hgRow2:HGroup = new HGroup();
-							hgRow2.percentWidth = 100;
-							hgRow2.addElement(lblCliente1);
-							hgRow2.addElement(lblClienteZona);
-
 							var hgRow3:HGroup = new HGroup();
 							hgRow3.percentWidth = 100;
 							hgRow3.addElement(lblCliente2);
@@ -214,12 +209,12 @@
 							vGroup.addElement(hgRow2);
 							vGroup.addElement(hgRow3);
 
-							var spacer:Spacer = new Spacer();
-							spacer.height = 10;
+							var spacer_1:Spacer = new Spacer();
+							spacer_1.height = 10; 
 
 							contClient.addElement(vGroup);
 
-							container.addElement(spacer);
+							container.addElement(spacer_1);
 							container.addElement(contClient);
 
 							// Crear el layout
@@ -307,8 +302,8 @@
 								lbladeudadoNeto.text = adeudadoNeto;
 								lbladeudadoNeto.styleName = vencida ? "lblNumberVencida" : "numberLabel";
 
-								var spacer:Spacer = new Spacer();
-								spacer.width = 5;
+								var spacer_2:Spacer = new Spacer();
+								spacer_2.width = 5;
 
 								var hGroup:HGroup = new HGroup();
 								hGroup.verticalAlign = VerticalAlign.MIDDLE;
@@ -316,7 +311,7 @@
 								hGroup.addElement(lblfecha);
 								hGroup.addElement(lblcomprobante);
 								hGroup.addElement(lblnumero);
-								hGroup.addElement(spacer);
+								hGroup.addElement(spacer_2);
 								hGroup.addElement(lblformaPago);
 								hGroup.addElement(lblmoneda);
 								hGroup.addElement(lblfacturado);
@@ -353,10 +348,10 @@
 							contTotal.height = 35;
 							contTotal.percentWidth = 100;
 
-							var solidColor2:SolidColor = new SolidColor();
-							solidColor2.color = 0xFFFFFF;
+							var solidColor_2:SolidColor = new SolidColor();
+							solidColor_2.color = 0xFFFFFF;
 
-							contTotal.backgroundFill = solidColor2;
+							contTotal.backgroundFill = solidColor_2;
 
 							var lblSubtotales:Label = new Label();
 							lblSubtotales.width = 100;
@@ -760,10 +755,10 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdEmail" click="cmdEmail_clickHandler(event)" minWidth="80" styleName="eMailButton" label="eMail" toolTip="Enviar listado por correo"/>
-				<s:Button id="cmdImprimir" click="cmdImprimir_clickHandler(event)" minWidth="80" styleName="imprimirButton" label="Imprimir" />
+				<s:Button id="cmdEmail" click="cmdEmail_clickHandler(event)" minWidth="100" styleName="eMailButton" label="eMail" toolTip="Enviar listado por correo"/>
+				<s:Button id="cmdImprimir" click="cmdImprimir_clickHandler(event)" minWidth="100" styleName="imprimirButton" label="Imprimir" />
 				<s:Spacer width="10" />
-				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" minWidth="80" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar"/>
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" minWidth="100" styleName="aceptarButton" label="Aceptar" focusEnabled="true" toolTip="Aceptar"/>
 			</s:HGroup>
 		</s:controlBarContent>
 

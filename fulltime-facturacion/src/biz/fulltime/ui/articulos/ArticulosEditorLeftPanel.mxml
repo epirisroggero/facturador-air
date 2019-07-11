@@ -260,7 +260,7 @@
 
 			private function filtrarArticulos(item:Object):Boolean {
 				var _articuloLabel:String = item.codigo + ' ' + item.nombre + ' ' + item.codigoOrigen;
-				return sinAcentos(_articuloLabel).match(new RegExp(sinAcentos(filter.text), 'i'));
+				return sinAcentos(_articuloLabel).match(new RegExp(sinAcentos(filter.text), 'i')) != null;
 			}
 			
 			private function quitarAcentos(texto:String, letraSplit:String, letraCambio:String):String {
@@ -380,8 +380,8 @@
 				}
 
 				if (txtFamilia.selectedItem != null) {
-					var familia:Object = txtFamilia.selectedItem;
-					codigosFamilias = familia.codigo;
+					var f:Object = txtFamilia.selectedItem;
+					codigosFamilias = f.codigo;
 				}
 
 				var proveedor:String = null;

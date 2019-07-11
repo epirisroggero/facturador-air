@@ -91,7 +91,7 @@ public class DocumentoBase extends EventDispatcher {
 	
 	private var remObjCuponera:RemoteObject;
 	
-	public var cuponeras:ArrayCollection = new ArrayCollection();
+	public var artCuponera:ArrayCollection = new ArrayCollection();
 	
 	public var cuponerasList:ArrayCollection = new ArrayCollection();
 
@@ -228,27 +228,46 @@ public class DocumentoBase extends EventDispatcher {
 		}
 	}
 
-	private function cargarCuponeras():void {
-		cuponeras.removeAll();			
-
-		for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
-			if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
-				var codigo:String = articulo.codigo;
-				var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
-				for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
-					if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {
-						if (!cuponeras.contains(articulo)) 
-							cuponeras.addItem(articulo);
+	public function cargarCuponeras():void {
+		artCuponera.removeAll();			
+		cuponerasList.removeAll();
+		
+		artCuponera = getArticulosCuponera();
+		
+		if (artCuponera.length > 0) {
+			remObjCuponera.getCuponeras(artCuponera);
+		} else {
+			dispatchEvent(new Event("_changeCuponeras", true, true));
+		}
+	}
+	
+	public function getArticulosCuponera():ArrayCollection {
+		var result:ArrayCollection = new ArrayCollection(); 
+		
+		if (cliente && cliente.codigo && cliente.codigo != "99") {
+			for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
+				if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
+					var codigo:String = articulo.codigo;
+					var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
+					for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
+						if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {
+							if (!result.contains(articulo)) {
+								result.addItem(articulo);
+							}								
+						}
 					}
 				}
-			}
-		}
+			}			
+		} 
 		
-		remObjCuponera.getCuponeras(cuponeras);
+		return result;
+	
 	}
 	
 	private function resultCuponeras(event:ResultEvent):void {
 		cuponerasList = event.result as ArrayCollection;
+		
+		dispatchEvent(new Event("_changeCuponeras", true, true));
 	}
 
 
@@ -260,7 +279,7 @@ public class DocumentoBase extends EventDispatcher {
 		var filtrar:Boolean = false;
 		if (codigo) {
 			// Tengo que reemplazar el . por la Z por el tema de que el punto es un pattern en Flex 
-			filtrar = codigo.replace(".", "Z").toLowerCase().match(new RegExp("^" + cliente.codigo.toLowerCase() + "Z", 'i'));
+			filtrar = codigo.replace(".", "Z").toLowerCase().match(new RegExp("^" + cliente.codigo.toLowerCase() + "Z", 'i')) != null;
 			if (filtrar) {
 				for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
 					if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {

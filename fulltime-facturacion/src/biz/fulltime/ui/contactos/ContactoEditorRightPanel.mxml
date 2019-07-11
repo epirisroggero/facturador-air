@@ -84,8 +84,19 @@
 					});
 				});
 
-				editPanel.addEventListener("_FinalizarModoEdicion_cancel", function():void {
+				editPanel.addEventListener(ContactoEvent.CANCELAR_EDICION, function():void {
 					viewStack.selectedIndex = 0;
+
+					callLater(function():void {
+						var contactoRemObj:RemoteObject = new RemoteObject();
+						contactoRemObj.destination = "CreatingRpc";
+						contactoRemObj.channelSet = ServerConfig.getInstance().channelSet;
+						contactoRemObj.addEventListener(ResultEvent.RESULT, resultContacto);
+						contactoRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+						
+						contactoRemObj.showBusyCursor = true;
+						contactoRemObj.findCatalogEntity("Contacto", contacto.codigo);
+					});
 				});
 			}
 

@@ -215,7 +215,7 @@ public class Documento extends DocumentoBase {
 	
 	public var docCFEFileName:String; 
 	
-		// FIN FACTURA ELECTRÓNICA
+	// FIN FACTURA ELECTRÓNICA
 
 	public function get numCFEIdDoc():String {
 		return _numCFEIdDoc;
@@ -685,7 +685,7 @@ public class Documento extends DocumentoBase {
 
 		var filtrar:Boolean = false;
 		if (codigo) {
-			filtrar = codigo.toLowerCase().match(new RegExp("^" + cliente.codigo.toLowerCase(), 'i'));
+			filtrar = codigo.toLowerCase().match(new RegExp("^" + cliente.codigo.toLowerCase(), 'i')) != null;
 		}
 		return filtrar;
 	}
@@ -1149,10 +1149,10 @@ public class Documento extends DocumentoBase {
 	 */
 	[Bindable(event="changeLineasVenta")]
 	public function getUtilidadDistribuidor():BigDecimal {
-		if (entrega) {
-			var totalcuesta:BigDecimal = BigDecimal.ZERO;
-			var totalventa:BigDecimal = BigDecimal.ZERO;
+		var totalcuesta:BigDecimal = BigDecimal.ZERO;
+		var totalventa:BigDecimal = BigDecimal.ZERO;
 
+		if (entrega) {
 			for each (var linea:LineaDocumento in lineas.lineas) {
 				if (!linea.articulo) {
 					continue;
@@ -1169,8 +1169,9 @@ public class Documento extends DocumentoBase {
 			if (entrega != null) {
 				var costoEntrega:BigDecimal = entrega.costo ? new BigDecimal(entrega.costo) : BigDecimal.ZERO;
 
+				var cotizaciones:CotizacionesModel = null;
 				if (moneda.codigo == Moneda.PESOS || moneda.codigo == Moneda.PESOS_ASTER) { // El costo de entrega esta siempre en dólares por lo que tengo q  //Falta calcualr si la factura esta en euros
-					var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
+					cotizaciones = CotizacionesModel.getInstance();
 					var dolar:BigDecimal;
 					if (docTCC != null) {
 						dolar = new BigDecimal(docTCC);
@@ -1181,7 +1182,7 @@ public class Documento extends DocumentoBase {
 					costoEntrega = costoEntrega.multiply(dolar);
 
 				} else if (moneda.codigo == Moneda.EUROS || moneda.codigo == Moneda.EUROS_ASTER) { // El costo de entrega esta siempre en dólares por lo que tengo q  //Falta calcualr si la factura esta en euros
-					var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
+					cotizaciones = CotizacionesModel.getInstance();
 
 					var euroStr:String = cotizaciones.cotizaciones.euroVenta.@value;
 					var euro:BigDecimal = new BigDecimal(euroStr);
@@ -1203,9 +1204,6 @@ public class Documento extends DocumentoBase {
 				if (getCostoTotalServicios() == BigDecimal.ZERO) {
 					return getRentaNetaComercial().multiply(new BigDecimal(100)).divideScaleRound(ventaNeta, 4, MathContext.ROUND_HALF_UP);
 				} else {
-					var totalcuesta:BigDecimal = BigDecimal.ZERO;
-					var totalventa:BigDecimal = BigDecimal.ZERO;
-
 					for each (var linea:LineaDocumento in lineas.lineas) {
 						if (!linea.articulo) {
 							continue;
@@ -1489,10 +1487,13 @@ public class Documento extends DocumentoBase {
 			doc.lineas.documento = doc;
 	
 			// Agregar una linea vacia al documento
-			var lineaDoc:LineaDocumento = new LineaDocumento();
-			lineaDoc.articulo = null;
-			lineaDoc.documento = doc;
-			LineasDocumento(doc.lineas).lineas.addItem(lineaDoc);
+			if (!comprobante.esProceso80()) {
+				var lineaDoc:LineaDocumento = new LineaDocumento();
+				lineaDoc.articulo = null;
+				lineaDoc.documento = doc;
+				LineasDocumento(doc.lineas).lineas.addItem(lineaDoc);
+			} 
+
 		} else {
 			doc.planPagos = null;
 			doc.cuotasDocumento.cuotas = new ArrayCollection();
@@ -1693,7 +1694,8 @@ public class Documento extends DocumentoBase {
 			}
 		}
 		
-		var hayLineasVenta:Boolean = !esRecibo() && (lineas.lineas && (lineas.lineas.length > 1 || Number(LineaDocumento(lineas.lineas[0]).cantidad) > 0));
+		
+		var hayLineasVenta:Boolean = !esRecibo() && (lineas.lineas && lineas.lineas.length > 0 && (lineas.lineas.length > 1 || Number(LineaDocumento(lineas.lineas[0]).cantidad) > 0));
 		if (!emitido && (moneda == null || !hayLineasVenta)) {
 			var mdaCliente:Moneda = (comprobante.esProceso90()) ? CatalogoFactory.getInstance().monedas[1] : ((comprobante.esProceso14()) ? CatalogoFactory.getInstance().monedas[4] : (comprobante.esProceso80() ? CatalogoFactory.getInstance().monedas[0] : (cliente.moneda ? cliente.moneda : CatalogoFactory.getInstance().monedas[1])));
 			var remObj:RemoteObject = new RemoteObject();
@@ -1856,30 +1858,17 @@ public class Documento extends DocumentoBase {
 	
 	public function esCuponera():Boolean {
 		if (esAfilado()) {
-			cuponeras.removeAll();
-
-			for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
-				if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
-					var codigo:String = articulo.codigo;
-					var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
-					for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
-						if (familiaId.toLowerCase().match(new RegExp("^" + art, 'i'))) {
-							if (!cuponeras.contains(articulo)) 
-								cuponeras.addItem(articulo);
-						}
-					}
-				}
-			}
-			
-			if (!cuponeras || cuponeras.length < 1) {
+			var arts:ArrayCollection = getArticulosCuponera();
+						
+			if (!arts || arts.length < 1) {
 				return false;
 				
 			} else {
 				var linea:LineaDocumento = lineas.lineas.getItemAt(0) as LineaDocumento;
 				var art_1:Articulo = linea.articulo;
 				
-				for each (var cuponera:Articulo in cuponeras) {
-					if (cuponera.codigo == art_1.codigo) {
+				for each (var artCpra:Articulo in arts) {
+					if (artCpra.codigo == art_1.codigo) {
 						return true;
 					}
 				}				

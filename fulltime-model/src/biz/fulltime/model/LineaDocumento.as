@@ -807,7 +807,7 @@ public class LineaDocumento extends EventDispatcher {
 		_diametro = value;
 		
 		if (documento.esAfilado()) {
-			for each(var cuponera:Articulo in documento.cuponeras) {
+			for each(var cuponera:Articulo in documento.artCuponera) {
 				if (articulo && cuponera && cuponera.codigo == articulo.codigo) {
 					return; // es cuponera por tanto no hago nada
 				}

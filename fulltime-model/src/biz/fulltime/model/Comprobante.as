@@ -200,9 +200,9 @@ public class Comprobante extends CodigoNombreEntity {
 					}
 				}
 			} else {
-				for each (var descuentoPrometido:DescuentoPrometidoComprobante in descuentosPrometidos) {
-					if (diasRetraso <= descuentoPrometido.retraso) {
-						return new BigDecimal(descuentoPrometido.descuento);
+				for each (var desc:DescuentoPrometidoComprobante in descuentosPrometidos) {
+					if (diasRetraso <= desc.retraso) {
+						return new BigDecimal(desc.descuento);
 					}
 				}
 				

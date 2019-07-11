@@ -47,8 +47,13 @@
 			[Bindable]
 			public var iconSymbol:Class; 
 			
+			[Embed(source="assets/alerts/Exclamation.png")]
 			[Bindable]
-			public var version:String = "FullTime - Facturador v1.7.043";
+			private var exclamationIcon:Class;
+
+			
+			[Bindable]
+			public var version:String = "FullTime - Facturador v1.7.060";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);
@@ -178,16 +183,12 @@
 				this.title = version;
 			}
 			
-			
 			protected function windowedapplication1_closingHandler(e:Event):void {      
 				e.preventDefault();
-				
 				
 				var alert:Alert = Alert.show("¿Esta seguro de cerrar el Facturador?", "Salir", Alert.YES + Alert.NO, null, myCloseHandler, iconSymbol);
 				alert.width = 400;
 				alert.height = 200;
-				
-				
 			}
 						
 			private function myCloseHandler(evt:CloseEvent):void {

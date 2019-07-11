@@ -111,11 +111,11 @@
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 
-	<s:VGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="5" paddingTop="0" creationComplete="hgroup1_creationCompleteHandler(event)">
+	<s:VGroup width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" creationComplete="hgroup1_creationCompleteHandler(event)">
 		<expediciones:ExpedicionesDataGrid id="dgTareas" width="100%" height="100%" tareas="{tareas}" showDateColumn="true" />
 		<s:BorderContainer width="100%" backgroundColor="#D9E3F0" borderAlpha="0" minHeight="25">
 			<s:layout>
-				<s:HorizontalLayout horizontalAlign="right" paddingBottom="10" paddingRight="10" paddingTop="10" />
+				<s:HorizontalLayout horizontalAlign="right" paddingLeft="10" paddingBottom="10" paddingRight="10" paddingTop="10" />
 			</s:layout>
 			<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
@@ -124,7 +124,7 @@
 			<s:Button id="cmdReagendar" width="100" height="100%" click="cmdReagendar_clickHandler(event)" label="Reagendar" toolTip="Reagendar tarea"
 					  enabled="{dgTareas.grid.selectedIndex >= 0 &amp;&amp; AgendaTareaDTO(dgTareas.grid.selectedItem).estado == 'P'}" styleName="textButton" focusEnabled="false" />
 			<s:Spacer width="12" />
-			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cerrar" styleName="cerrarButton" toolTip="Cerrar" />
+			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Aceptar" styleName="aceptarButton" toolTip="Aceptar" />
 		</s:BorderContainer>
 
 	</s:VGroup>

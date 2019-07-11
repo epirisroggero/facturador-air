@@ -169,7 +169,7 @@
 				try {
 					pjTareas.imprimirTareas();
 
-				} catch (e) {
+				} catch (e:Error) {
 					Alert.show(e.toString(), "Error");
 
 				}

@@ -99,7 +99,7 @@ s|DataGrid {
 
 s|DefaultGridItemRenderer {
 	font-family: 'RobotoCondensed';
-	font-size: 14pt;
+	font-size: 13pt;
 	font-weight: normal;
 
 	color: #000000;
@@ -107,7 +107,7 @@ s|DefaultGridItemRenderer {
 
 s|DefaultGridHeaderRenderer s|Label#labelDisplay {
 	font-family: 'RobotoCondensed';
-	fontSize: 14pt;	
+	fontSize: 13pt;	
 	font-weight: normal;
 	
 	color:black;
@@ -411,10 +411,10 @@ components|AutoComplete {
 .saveButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 		
-	iconUp: 		Embed("/assets/general/icon24/Save.png");
-	iconOver: 		Embed("/assets/general/icon24/Save.png");
-	iconDown:		Embed("/assets/general/icon24/Save.png");
-	iconDisabled:	Embed("/assets/general/icon24/Save.png");
+	iconUp: 		Embed("/assets/general/nuevos/Save.png");
+	iconOver: 		Embed("/assets/general/nuevos/Save.png");
+	iconDown:		Embed("/assets/general/nuevos/Save.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Save.png");
 		
 	iconWidth: 24;
 	iconHeight: 24;
@@ -430,10 +430,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Trash.png");
-	iconOver: 		Embed("/assets/general/icon24/Trash.png");
-	iconDown:		Embed("/assets/general/icon24/Trash.png");
-	iconDisabled:	Embed("/assets/general/icon24/Trash.png");
+	iconUp: 		Embed("/assets/general/nuevos/Delete.png");
+	iconOver: 		Embed("/assets/general/nuevos/Delete.png");
+	iconDown:		Embed("/assets/general/nuevos/Delete.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Delete.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -511,10 +511,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Doc_New.png");
-	iconOver: 		Embed("/assets/general/icon24/Doc_New.png");
-	iconDown:		Embed("/assets/general/icon24/Doc_New.png");
-	iconDisabled:	Embed("/assets/general/icon24/Doc_New.png");
+	iconUp: 		Embed("/assets/general/nuevos/Doc_New.png");
+	iconOver: 		Embed("/assets/general/nuevos/Doc_New.png");
+	iconDown:		Embed("/assets/general/nuevos/Doc_New.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Doc_New.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -533,10 +533,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Email.png");
-	iconOver: 		Embed("/assets/general/icon24/Email.png");
-	iconDown:		Embed("/assets/general/icon24/Email.png");
-	iconDisabled:	Embed("/assets/general/icon24/Email.png");
+	iconUp: 		Embed("/assets/general/nuevos/Email.png");
+	iconOver: 		Embed("/assets/general/nuevos/Email.png");
+	iconDown:		Embed("/assets/general/nuevos/Email.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Email.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -588,17 +588,16 @@ components|AutoComplete {
 	focusedTextSelectionColor:true;
 }
 
-.cerrarButton
-{
+.cerrarButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
 	focusSkin:ClassReference("skin.components.ButtonSkin"); 
 
 	
-	iconUp: 		Embed("/assets/general/icon24/Close.png");
-	iconOver: 		Embed("/assets/general/icon24/Close.png");
-	iconDown:		Embed("/assets/general/icon24/Close.png");
-	iconDisabled:	Embed("/assets/general/icon24/Close.png");
+	iconUp: 		Embed("/assets/general/nuevos/Close.png");
+	iconOver: 		Embed("/assets/general/nuevos/Close.png");
+	iconDown:		Embed("/assets/general/nuevos/Close.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Close.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -612,14 +611,13 @@ components|AutoComplete {
 }
 
 
-.refrescarButton
-{
+.refrescarButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Refrescar.png");
-	iconOver: 		Embed("/assets/general/icon24/Refrescar.png");
-	iconDown:		Embed("/assets/general/icon24/Refrescar.png");
-	iconDisabled:	Embed("/assets/general/icon24/Refrescar.png");
+	iconUp: 		Embed("/assets/general/nuevos/Refrescar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Refrescar.png");
+	iconDown:		Embed("/assets/general/nuevos/Refrescar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Refrescar.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -632,14 +630,13 @@ components|AutoComplete {
 
 }
 
-.filtrarButton
-{
+.filtrarButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Filtrar.png");
-	iconOver: 		Embed("/assets/general/icon16/Filtrar.png");
-	iconDown:		Embed("/assets/general/icon16/Filtrar.png");
-	iconDisabled:	Embed("/assets/general/icon16/Filtrar.png");
+	iconUp: 		Embed("/assets/general/nuevos/Filtrar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Filtrar.png");
+	iconDown:		Embed("/assets/general/nuevos/Filtrar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Filtrar.png");
 	
 	iconWidth: 16;
 	iconHeight: 16;
@@ -649,14 +646,13 @@ components|AutoComplete {
 	
 }
 
-.editarButton
-{
+.editarButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 
-	iconUp: 		Embed("/assets/general/icon24/Modify.png");
-	iconOver: 		Embed("/assets/general/icon24/Modify.png");
-	iconDown:		Embed("/assets/general/icon24/Modify.png");
-	iconDisabled:	Embed("/assets/general/icon24/Modify.png");
+	iconUp: 		Embed("/assets/general/nuevos/Editar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Editar.png");
+	iconDown:		Embed("/assets/general/nuevos/Editar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Editar.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -670,8 +666,7 @@ components|AutoComplete {
 }
 
 
-.costosButton
-{
+.costosButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
 	iconUp: 		Embed("/assets/general/icon24/Costos.png");
@@ -691,14 +686,13 @@ components|AutoComplete {
 }
 
 
-.trackingButton
-{
+.trackingButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Calendar.png");
-	iconOver: 		Embed("/assets/general/icon24/Calendar.png");
-	iconDown:		Embed("/assets/general/icon24/Calendar.png");
-	iconDisabled:	Embed("/assets/general/icon24/Calendar.png");
+	iconUp: 		Embed("/assets/general/nuevos/Calendar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Calendar.png");
+	iconDown:		Embed("/assets/general/nuevos/Calendar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Calendar.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -711,14 +705,13 @@ components|AutoComplete {
 
 }
 
-.imprimirButton
-{
+.imprimirButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Print.png");
-	iconOver: 		Embed("/assets/general/icon24/Print.png");
-	iconDown:		Embed("/assets/general/icon24/Print.png");
-	iconDisabled:	Embed("/assets/general/icon24/Print.png");
+	iconUp: 		Embed("/assets/general/nuevos/Print.png");
+	iconOver: 		Embed("/assets/general/nuevos/Print.png");
+	iconDown:		Embed("/assets/general/nuevos/Print.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Print.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -732,16 +725,15 @@ components|AutoComplete {
 }
 
 
-.nuevaButton
-{
+.nuevaButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
 	fontFamily:myFontFamily;
 	
-	iconUp: 		Embed("/assets/general/icon24/Add.png");
-	iconOver: 		Embed("/assets/general/icon24/Add.png");
-	iconDown:		Embed("/assets/general/icon24/Add.png");
-	iconDisabled:	Embed("/assets/general/icon24/Add.png");
+	iconUp: 		Embed("/assets/general/nuevos/Add.png");
+	iconOver: 		Embed("/assets/general/nuevos/Add.png");
+	iconDown:		Embed("/assets/general/nuevos/Add.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Add.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -753,19 +745,18 @@ components|AutoComplete {
 	focusedTextSelectionColor:true;
 }
 
-.nuevaButton16
-{
+.nuevaButton16 {
 	skin-class: 	ClassReference("skin.components.ButtonSkin"); 
 	
 	fontFamily:		myFontFamily;
 	
-	iconUp: 		Embed("/assets/general/icon16/Add.png");
-	iconOver: 		Embed("/assets/general/icon16/Add.png");
-	iconDown:		Embed("/assets/general/icon16/Add.png");
-	iconDisabled:	Embed("/assets/general/icon16/Add.png");
+	iconUp: 		Embed("/assets/general/nuevos/Add.png");
+	iconOver: 		Embed("/assets/general/nuevos/Add.png");
+	iconDown:		Embed("/assets/general/nuevos/Add.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Add.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	paddingLeft: 3;
 	paddingRight: 3;
@@ -778,13 +769,13 @@ components|AutoComplete {
 	
 	fontFamily:		myFontFamily;
 	
-	iconUp: 		Embed("/assets/general/icon16/Delete.png");
-	iconOver: 		Embed("/assets/general/icon16/Delete.png");
-	iconDown:		Embed("/assets/general/icon16/Delete.png");
-	iconDisabled:	Embed("/assets/general/icon16/Delete.png");
+	iconUp: 		Embed("/assets/general/nuevos/Delete.png");
+	iconOver: 		Embed("/assets/general/nuevos/Delete.png");
+	iconDown:		Embed("/assets/general/nuevos/Delete.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Delete.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	
 }
@@ -793,13 +784,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Save.png");
-	iconOver: 		Embed("/assets/general/icon16/Save.png");
-	iconDown:		Embed("/assets/general/icon16/Save.png");
-	iconDisabled:	Embed("/assets/general/icon16/Save.png");
+	iconUp: 		Embed("/assets/general/nuevos/Save.png");
+	iconOver: 		Embed("/assets/general/nuevos/Save.png");
+	iconDown:		Embed("/assets/general/nuevos/Save.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Save.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;
@@ -809,13 +800,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Cancel.png");
-	iconOver: 		Embed("/assets/general/icon16/Cancel.png");
-	iconDown:		Embed("/assets/general/icon16/Cancel.png");
-	iconDisabled:	Embed("/assets/general/icon16/Cancel.png");
+	iconUp: 		Embed("/assets/general/nuevos/Close.png");
+	iconOver: 		Embed("/assets/general/nuevos/Close.png");
+	iconDown:		Embed("/assets/general/nuevos/Close.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Close.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;
@@ -825,13 +816,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Apply.png");
-	iconOver: 		Embed("/assets/general/icon16/Apply.png");
-	iconDown:		Embed("/assets/general/icon16/Apply.png");
-	iconDisabled:	Embed("/assets/general/icon16/Apply.png");
+	iconUp: 		Embed("/assets/general/nuevos/Apply.png");
+	iconOver: 		Embed("/assets/general/nuevos/Apply.png");
+	iconDown:		Embed("/assets/general/nuevos/Apply.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Apply.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;
@@ -841,13 +832,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Clear.png");
-	iconOver: 		Embed("/assets/general/icon16/Clear.png");
-	iconDown:		Embed("/assets/general/icon16/Clear.png");
-	iconDisabled:	Embed("/assets/general/icon16/Clear.png");
+	iconUp: 		Embed("/assets/general/nuevos/Clear.png");
+	iconOver: 		Embed("/assets/general/nuevos/Clear.png");
+	iconDown:		Embed("/assets/general/nuevos/Clear.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Clear.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 	
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;
@@ -880,13 +871,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Refrescar.png");
-	iconOver: 		Embed("/assets/general/icon16/Refrescar.png");
-	iconDown:		Embed("/assets/general/icon16/Refrescar.png");
-	iconDisabled:	Embed("/assets/general/icon16/Refrescar.png");
+	iconUp: 		Embed("/assets/general/nuevos/Refrescar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Refrescar.png");
+	iconDown:		Embed("/assets/general/nuevos/Refrescar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Refrescar.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;
@@ -913,17 +904,17 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Login.png");
-	iconOver: 		Embed("/assets/general/icon16/Login.png");
-	iconDown:		Embed("/assets/general/icon16/Login.png");
-	iconDisabled:	Embed("/assets/general/icon16/Login.png");
+	iconUp: 		Embed("/assets/general/nuevos/Ingresar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Ingresar.png");
+	iconDown:		Embed("/assets/general/nuevos/Ingresar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Ingresar.png");
 	
 	font-size: 16pt;
-	width: 120;
-	height: 45;
+	width: 180;
+	height: 60;
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 	
 	focusThickness: 5px;
 	focusedTextSelectionColor:true;
@@ -968,10 +959,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/AgregarCliente.png");
-	iconOver: 		Embed("/assets/general/icon24/AgregarCliente.png");
-	iconDown:		Embed("/assets/general/icon24/AgregarCliente.png");
-	iconDisabled:	Embed("/assets/general/icon24/AgregarCliente.png");
+	iconUp: 		Embed("/assets/general/nuevos/AgregarCliente.png");
+	iconOver: 		Embed("/assets/general/nuevos/AgregarCliente.png");
+	iconDown:		Embed("/assets/general/nuevos/AgregarCliente.png");
+	iconDisabled:	Embed("/assets/general/nuevos/AgregarCliente.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -988,10 +979,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon32/Microsoft_Excel.png");
-	iconOver: 		Embed("/assets/general/icon32/Microsoft_Excel.png");
-	iconDown:		Embed("/assets/general/icon32/Microsoft_Excel.png");
-	iconDisabled:	Embed("/assets/general/icon32/Microsoft_Excel.png");
+	iconUp: 		Embed("/assets/general/nuevos/Microsoft_Excel.png");
+	iconOver: 		Embed("/assets/general/nuevos/Microsoft_Excel.png");
+	iconDown:		Embed("/assets/general/nuevos/Microsoft_Excel.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Microsoft_Excel.png");
 	
 	iconWidth: 32;
 	iconHeight: 32;
@@ -1050,10 +1041,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Apply.png");
-	iconOver: 		Embed("/assets/general/icon24/Apply.png");
-	iconDown:		Embed("/assets/general/icon24/Apply.png");
-	iconDisabled:	Embed("/assets/general/icon24/Apply.png");
+	iconUp: 		Embed("/assets/general/nuevos/Aceptar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Aceptar.png");
+	iconDown:		Embed("/assets/general/nuevos/Aceptar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Aceptar.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -1070,10 +1061,10 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Cancelar.png");
-	iconOver: 		Embed("/assets/general/icon24/Cancelar.png");
-	iconDown:		Embed("/assets/general/icon24/Cancelar.png");
-	iconDisabled:	Embed("/assets/general/icon24/Cancelar.png");
+	iconUp: 		Embed("/assets/general/nuevos/Cancelar.png");
+	iconOver: 		Embed("/assets/general/nuevos/Cancelar.png");
+	iconDown:		Embed("/assets/general/nuevos/Cancelar.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Cancelar.png");
 	
 	iconWidth: 24;
 	iconHeight: 24;
@@ -1090,13 +1081,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/control-first.png");
-	iconOver: 		Embed("/assets/general/icon24/control-first.png");
-	iconDown:		Embed("/assets/general/icon24/control-first.png");
-	iconDisabled:	Embed("/assets/general/icon24/control-first.png");
+	iconUp: 		Embed("/assets/general/nuevos/control-first.png");
+	iconOver: 		Embed("/assets/general/nuevos/control-first.png");
+	iconDown:		Embed("/assets/general/nuevos/control-first.png");
+	iconDisabled:	Embed("/assets/general/nuevos/control-first.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 
 	paddingLeft: 6;
 	paddingRight: 6;
@@ -1110,13 +1101,13 @@ components|AutoComplete {
 {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/control-last.png");
-	iconOver: 		Embed("/assets/general/icon24/control-last.png");
-	iconDown:		Embed("/assets/general/icon24/control-last.png");
-	iconDisabled:	Embed("/assets/general/icon24/control-last.png");
+	iconUp: 		Embed("/assets/general/nuevos/control-last.png");
+	iconOver: 		Embed("/assets/general/nuevos/control-last.png");
+	iconDown:		Embed("/assets/general/nuevos/control-last.png");
+	iconDisabled:	Embed("/assets/general/nuevos/control-last.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 
 	paddingLeft: 12;
 	paddingRight: 6;
@@ -1129,13 +1120,13 @@ components|AutoComplete {
 .previousButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/control-prev.png");
-	iconOver: 		Embed("/assets/general/icon24/control-prev.png");
-	iconDown:		Embed("/assets/general/icon24/control-prev.png");
-	iconDisabled:	Embed("/assets/general/icon24/control-prev.png");
+	iconUp: 		Embed("/assets/general/nuevos/control-prev.png");
+	iconOver: 		Embed("/assets/general/nuevos/control-prev.png");
+	iconDown:		Embed("/assets/general/nuevos/control-prev.png");
+	iconDisabled:	Embed("/assets/general/nuevos/control-prev.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 	
 	paddingLeft: 12;
 	paddingRight: 6;
@@ -1148,13 +1139,13 @@ components|AutoComplete {
 .nextButton {
 	skin-class: ClassReference("skin.components.ButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/control-next.png");
-	iconOver: 		Embed("/assets/general/icon24/control-next.png");
-	iconDown:		Embed("/assets/general/icon24/control-next.png");
-	iconDisabled:	Embed("/assets/general/icon24/control-next.png");
+	iconUp: 		Embed("/assets/general/nuevos/control-next.png");
+	iconOver: 		Embed("/assets/general/nuevos/control-next.png");
+	iconDown:		Embed("/assets/general/nuevos/control-next.png");
+	iconDisabled:	Embed("/assets/general/nuevos/control-next.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 
 	paddingLeft: 12;
 	paddingRight: 6;
@@ -1167,13 +1158,13 @@ components|AutoComplete {
 .saveButtonNotas {
 	skin-class: ClassReference("skin.components.IconButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon24/Save.png");
-	iconOver: 		Embed("/assets/general/icon24/Save.png");
-	iconDown:		Embed("/assets/general/icon24/Save.png");
-	iconDisabled:	Embed("/assets/general/icon24/Save.png");
+	iconUp: 		Embed("/assets/general/nuevos/Save.png");
+	iconOver: 		Embed("/assets/general/nuevos/Save.png");
+	iconDown:		Embed("/assets/general/nuevos/Save.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Save.png");
 
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 20;
+	iconHeight: 20;
 
 }
 
@@ -1328,13 +1319,13 @@ components|AutoComplete {
 .moneyButton {
 	skin-class: ClassReference("skin.components.IconButtonSkin"); 
 	
-	iconUp: 		Embed("/assets/general/icon16/Money.png");
-	iconOver: 		Embed("/assets/general/icon16/Money.png");
-	iconDown:		Embed("/assets/general/icon16/Money.png");
-	iconDisabled:	Embed("/assets/general/icon16/Money.png");
+	iconUp: 		Embed("/assets/general/nuevos/Money.png");
+	iconOver: 		Embed("/assets/general/nuevos/Money.png");
+	iconDown:		Embed("/assets/general/nuevos/Money.png");
+	iconDisabled:	Embed("/assets/general/nuevos/Money.png");
 	
-	iconWidth: 16;
-	iconHeight: 16;
+	iconWidth: 24;
+	iconHeight: 24;
 }
 
 
@@ -1466,9 +1457,6 @@ mx|Alert {
 	titleStyleName: "alertTitle";
 	messageStyleName: "alertMessage";
 	buttonStyleName: "alertButton";
-	dropShadowEnabled: true;
-	shadowDistance: 5;
-	shadowDirection: right;
 	cornerRadius: 0;
 	embedFonts: true;
 	fontFamily: 'Helvetica';

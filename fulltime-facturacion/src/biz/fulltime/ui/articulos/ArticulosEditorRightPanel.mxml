@@ -62,6 +62,17 @@
 				
 				editPanel.addEventListener(ArticuloEvent.CANCELAR_EDICION_ART, function():void {
 					viewStack.selectedIndex = 0;
+
+					callLater(function():void {
+						var clienteRemObj:RemoteObject = new RemoteObject();
+						clienteRemObj.destination = "CreatingRpc";
+						clienteRemObj.channelSet = ServerConfig.getInstance().channelSet;
+						clienteRemObj.addEventListener(ResultEvent.RESULT, resultArticulo);
+						clienteRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+						
+						clienteRemObj.showBusyCursor = true;
+						clienteRemObj.findCatalogEntity("Articulo", articulo.codigo);
+					});
 				});
 
 			}

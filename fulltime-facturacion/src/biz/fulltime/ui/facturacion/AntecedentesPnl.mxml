@@ -157,10 +157,10 @@
 			<s:DataGrid id="dgAntecedentes" width="100%" height="100%" keyDown="dgAntecedentes_keyDownHandler(event)" borderAlpha="0" selectionMode="singleCell">
 				<s:columns>
 					<s:ArrayList>
-						<s:GridColumn width="140" dataField="comprobante.nombre" headerText="Tipo" sortable="true" />
-						<s:GridColumn dataField="documentoSerie" headerText="Serie" sortable="true" />
-						<s:GridColumn dataField="documentoNumero" headerText="Número" sortable="true"  />
-						<s:GridColumn dataField="fecha" headerText="Fecha" sortable="true">
+						<s:GridColumn width="140" dataField="comprobante.nombre" headerText="TIPO" sortable="true" />
+						<s:GridColumn dataField="documentoSerie" headerText="SERIE" sortable="true" />
+						<s:GridColumn dataField="documentoNumero" headerText="NÚMERO" sortable="true"  />
+						<s:GridColumn dataField="fecha" headerText="FECHA" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="left">
@@ -187,8 +187,8 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn width="150" dataField="cliente.nombre" headerText="Contacto" sortable="true" visible="{showCliente}" />
-						<s:GridColumn dataField="cantidad" headerText="Cant." sortable="true">
+						<s:GridColumn width="150" dataField="cliente.nombre" headerText="CONTACTO" sortable="true" visible="{showCliente}" />
+						<s:GridColumn dataField="cantidad" headerText="CANT." sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="left">
@@ -200,8 +200,8 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="moneda.nombre" headerText="Moneda" sortable="true" />
-						<s:GridColumn dataField="precioUnitario" headerText="Precio" sortable="true">
+						<s:GridColumn dataField="moneda.nombre" headerText="MONEDA" sortable="true" />
+						<s:GridColumn dataField="precioUnitario" headerText="PRECIO" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="right">
@@ -226,7 +226,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="neto" headerText="Neto" sortable="true">
+						<s:GridColumn dataField="neto" headerText="NETO" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="right">
@@ -251,7 +251,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="costo" headerText="Costo" sortable="true"
+						<s:GridColumn dataField="costo" headerText="COSTO" sortable="true"
 									  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoMostrador }">
 							<s:itemRenderer>
 								<fx:Component>
@@ -277,7 +277,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="renta" headerText="Renta" sortable="true"
+						<s:GridColumn dataField="renta" headerText="RENTA" sortable="true"
 									  visible="{!GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !GeneralOptions.getInstance().loggedUser.usuarioModoMostrador }">
 							<s:itemRenderer>
 								<fx:Component>
@@ -304,7 +304,7 @@
 								</fx:Component>
 							</s:itemRenderer>
 						</s:GridColumn>
-						<s:GridColumn dataField="tipoCambio" headerText="Tipo Cambio" sortable="true">
+						<s:GridColumn dataField="tipoCambio" headerText="T.CAMBIO" sortable="true">
 							<s:itemRenderer>
 								<fx:Component>
 									<s:DefaultGridItemRenderer textAlign="right">
@@ -339,6 +339,8 @@
 
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingTop="5" visible="{showButtons}">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
 			<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
 		</s:HGroup>
 	</s:controlBarContent>

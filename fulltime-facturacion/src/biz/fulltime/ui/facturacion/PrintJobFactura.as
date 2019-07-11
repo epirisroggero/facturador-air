@@ -272,9 +272,9 @@ public class PrintJobFactura {
 				emailPnl.proveedor = documento.proveedor;
 			}
 
-			var comprobante:String = documento.comprobante.nombre;
+			var comprobante2:String = documento.comprobante.nombre;
 
-			emailPnl.asunto = "FULLTIME - " + comprobante.toUpperCase();
+			emailPnl.asunto = "FULLTIME - " + comprobante2.toUpperCase();
 			emailPnl.takeSnapshot(sheet1);
 				
 			emailPnl.addEventListener(CloseEvent.CLOSE, function():void {
@@ -538,8 +538,12 @@ public class PrintJobFactura {
 		nf2.trailingZeros = false;
 		nf2.fractionalDigits = 2;
 		
+		var row:Number = 0;
+		var descuento:int = 0;
+		
+		var l:LineaDocumento = null;
+		
 		if (documento.esRecibo()) {
-			var row:Number = 0;
 			for each (var v:VinculoDocumentos in documento.facturasVinculadas) {
 				var factura:String = v.factura.serie + "/" + v.factura.numero;
 				sheet.addChild(createText(factura, {x:XX - 32, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'left'})); 
@@ -550,7 +554,7 @@ public class PrintJobFactura {
 		} else if (documento.esAfilado()) {		
 			var cantLineas:int = documento.lineas.lineas.length;
 			var j:int = 1;
-			for each (var l:LineaDocumento in documento.lineas.lineas) {
+			for each (l in documento.lineas.lineas) {
 				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:68, y:YY + 18 * row, width:145, height:18, fontSize:12, align:'left'}));
 				if (l.getCantidad() != BigDecimal.ZERO) {
 					sheet.addChild(createText(nf2.format(l.getCantidad().toString()), {x:223, y:YY + 18 * row, width:54, height:18, fontSize:12, align:'center'}));
@@ -562,7 +566,7 @@ public class PrintJobFactura {
 				
 				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:628, y:YY + 18 * row, width:78, height:18, fontSize:12, align:'rigth'}));
 				
-				var descuento:int = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
 				if (descuento > 0) {
 					sheet.addChild(createText(descuento + "%", {x:702, y:YY + 18 * row, width:48, height:18, fontSize:12, align:'rigth'}));
 				}
@@ -572,8 +576,7 @@ public class PrintJobFactura {
 			}
 			
 		} else {
-			var row:Number = 0;
-			for each (var l:LineaDocumento in documento.lineas.lineas) {
+			for each (l in documento.lineas.lineas) {
 				if (_via == "COBRANZA") {
 					sheet.addChild(createText(disguise(l.getPorcentajeUtilidad()), {x:XX - 32, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'left'})); // % de utilidad. Solo Vía Cobranza.
 				}
@@ -587,7 +590,7 @@ public class PrintJobFactura {
 				
 				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:416, y:YY + 12 * row, width:52, height:12, fontSize:8, align:'rigth'}));
 				
-				var descuento:int = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
 				if (descuento > 0) {
 					sheet.addChild(createText(descuento + "%", {x:472, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'rigth'}));
 				} else {
@@ -606,9 +609,7 @@ public class PrintJobFactura {
 					row++;
 				}
 			}
-
 		}
-
 
 		var byteArray:ByteArray = _documento.codigoQR;
 		if (byteArray) {
@@ -619,7 +620,7 @@ public class PrintJobFactura {
 		}
 
 		if (documento.CAEnro) {
-			var YY_CAE = 460;
+			var YY_CAE:int = 460;
 			sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:115, y:YY_CAE, width:126, height:18, fontSize:9, align:'left'}));
 			sheet.addChild(createText("Res. 2939/2016 - IVA al día", {x:115, y:YY_CAE = YY_CAE + 14, width:130, height:18, fontSize:9, align:'left'}));
 			sheet.addChild(createText("Puede verificar comprobante en", {x:115, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:8, align:'left'}));
@@ -683,8 +684,7 @@ public class PrintJobFactura {
 
 		txtFormat.size = propValue.fontSize;
 		txtFormat.font = isEMail ? FontFamily.HELVETICA : FontFamily.COURIER;
-		
-		
+				
 		// Set Format
 		txt.setTextFormat(txtFormat);
 
@@ -696,6 +696,9 @@ public class PrintJobFactura {
 
 	private function printOnePerPage():void {
 
+		var pj:PrintJob = new PrintJob();
+		var pagesToPrint:uint = 0;
+		
 		if (catalogs._interface == CatalogoFactory.INTERFACE_WEB_EVENT) {
 			sheet1 = new Sprite();
 			if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" || _documento.comprobante.esImportacion() || _documento.esRecibo()) {
@@ -705,17 +708,14 @@ public class PrintJobFactura {
 			} else {
 				createSheet(sheet1);
 			}
-
-			var pj:PrintJob = new PrintJob();
 			pj.start();
 
-			var pagesToPrint:uint = 0;
-			for each (var via:String in print_vias) {
-				_via = via;
+			
+			for each (var v:String in print_vias) {
+				_via = v;
 
 				sheet1.width = pj.pageWidth;
 				sheet1.height = pj.pageHeight;
-
 				try {
 					pj.addPage(sheet1);
 					pagesToPrint++;
@@ -741,11 +741,9 @@ public class PrintJobFactura {
 			
 			var sheet2:Sprite = null;
 			
-			var pj:PrintJob = new PrintJob();
 			pj.printer = _printer;
 			pj.orientation = _documento.comprobante.codigo == "84" ? PrintJobOrientation.PORTRAIT : PrintJobOrientation.LANDSCAPE;
 
-			var pagesToPrint:uint = 0;
 			if (pj.start2(null, false)) {
 				for each (var via:String in print_vias) {
 					_via = via;
@@ -1209,9 +1207,9 @@ public class PrintJobFactura {
 				sheet.addChild(createText(l.concepto, {x:esOrdenCompra || esImportacion ? 272 : 288, y:YY + 18 * row, width:324, height:18, fontSize:12, align:'left'}));
 				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:esOrdenCompra || esImportacion ? 600 : 628, y:YY + 18 * row, width:78, height:18, fontSize:12, align:'rigth'}));
 				
-				var descuento:int = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
-				if (descuento > 0) {
-					sheet.addChild(createText(descuento + "%", {x:esOrdenCompra ? 692 : 702, y:YY + 18 * row, width:48, height:18, fontSize:12, align:'rigth'}));
+				var desc:int = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				if (desc > 0) {
+					sheet.addChild(createText(desc + "%", {x:esOrdenCompra ? 692 : 702, y:YY + 18 * row, width:48, height:18, fontSize:12, align:'rigth'}));
 				}
 				sheet.addChild(createText(nf.format(l.getSubTotal().toString()), {x:770, y:YY + 18 * row, width:117, height:18, fontSize:12, align:'rigth'}));
 				

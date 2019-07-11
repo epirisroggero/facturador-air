@@ -874,19 +874,22 @@
 				var dates:ArrayCollection = new ArrayCollection();
 
 				txtPreview.text = "La tarea se repetirá los siguinetes días:\n";
+
+				var dd:util.DateUtil = null; 
+				var d1:util.DateUtil = null;
+				var fecha1:Date = null;
 				
 				var k:int = 0;
 				for (var i:int = 0; k < tarea.repetirCantidad; i++) {
 					if (tarea.repetirModo == 1) {
-						var dd:util.DateUtil = util.DateUtil.clone(fecha).add(util.DateUtil.DAY, i+1);
-						
+						dd = util.DateUtil.clone(fecha).add(util.DateUtil.DAY, i+1);
 						if (dd.date.day != 0 &&  dd.date.day != 6) {
 							txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date); 
 							dates.addItem(dd.date);
 							k++;
 						}
 					} else if (tarea.repetirModo == 2) {
-						var dd:util.DateUtil = util.DateUtil.clone(fecha).add(util.DateUtil.DAY, (i+1)*7);
+						dd = util.DateUtil.clone(fecha).add(util.DateUtil.DAY, (i+1)*7);
 						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
 						dates.addItem(dd.date);
 						k++;
@@ -896,27 +899,27 @@
 						if (fecha.date > lastday) {
 							fAux.date = lastday;							
 						}						
-						var dd:util.DateUtil = util.DateUtil.clone(fAux).add(util.DateUtil.MONTH, i+1);
+						dd = util.DateUtil.clone(fAux).add(util.DateUtil.MONTH, i+1);
 						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
 						dates.addItem(dd.date);
 						k++;
 					} else if (tarea.repetirModo == 4) {
-						var dd:util.DateUtil = util.DateUtil.clone(fecha).add(util.DateUtil.YEAR, i+1);
+						dd = util.DateUtil.clone(fecha).add(util.DateUtil.YEAR, i+1);
 						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
 						dates.addItem(dd.date);
 						k++;
 					} else if (tarea.repetirModo == 5) {
-						var d1:util.DateUtil = util.DateUtil.clone(fecha);
-						var fecha1:Date = d1.date;
+						d1 = util.DateUtil.clone(fecha);
+						fecha1 = d1.date;
 						fecha1.date = 1;
-						var dd:util.DateUtil = util.DateUtil.clone(fecha1).add(util.DateUtil.MONTH, i+1);
+						dd = util.DateUtil.clone(fecha1).add(util.DateUtil.MONTH, i+1);
 						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
 						dates.addItem(dd.date);
 						k++;
 					} else if (tarea.repetirModo == 6) {
-						var d1:util.DateUtil = util.DateUtil.clone(fecha);
-						var fecha1:Date = d1.date;
-						var dd:util.DateUtil = util.DateUtil.clone(fecha1).add(util.DateUtil.MONTH, i).add(util.DateUtil.DATE, getDayCount(fecha1.fullYear, fecha1.month));
+						d1 = util.DateUtil.clone(fecha);
+						fecha1 = d1.date;
+						dd = util.DateUtil.clone(fecha1).add(util.DateUtil.MONTH, i).add(util.DateUtil.DATE, getDayCount(fecha1.fullYear, fecha1.month));
 						txtPreview.text = txtPreview.text + "\n" + dateFormatter.format(dd.date);
 						dates.addItem(dd.date);
 						k++;
@@ -929,7 +932,7 @@
 				tarea.repetirFechas = dates;
 			}
 			
-			function getDayCount(year:int, month:int):int{
+			public function getDayCount(year:int, month:int):int{
 				var d:Date = new Date(year, month, 0);
 				return d.getDate();
 			}
@@ -1162,8 +1165,8 @@
 				<s:Spacer width="20" />
 				<s:CheckBox id="chbNotify" label="Notificarme por mail al finalizar tarea" color="0x000000" fontWeight="bold" selected="{tarea.notify}" change="{tarea.notify = chbNotify.selected}" enabled="{notifyEnabled}"/>
 				<s:Spacer width="100%" />
-				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" styleName="aplicarButton16" label="Aceptar" toolTip="Aceptar" />
-				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cancelar" focusEnabled="true" />
+				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Aceptar" toolTip="Aceptar" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cancelar" toolTip="Cancelar" focusEnabled="true" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

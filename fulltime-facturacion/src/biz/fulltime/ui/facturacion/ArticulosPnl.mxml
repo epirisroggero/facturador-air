@@ -123,8 +123,7 @@
 				if (dgArticulos.dataProviderLength < 1) {
 					map[colName] = "";
 					if (keys.contains(colName)) {
-						var index:int = keys.getItemIndex(colName);
-						keys.removeItemAt(index);
+						keys.removeItemAt(keys.getItemIndex(colName));
 					}
 					
 					dgArticulos.filterM(map, keys);
@@ -206,6 +205,8 @@
 						return "Familia";
 					case "marca":
 						return "Marca";
+					case "proveedor":
+						return "Proveedor";
 					case "nombre":
 						return "Descripción"
 						
@@ -272,10 +273,11 @@
 
 	<fx:Declarations>
 		<s:ArrayList id="cols">
-			<s:GridColumn width="140" dataField="codigo" headerText="CÓDIGO" />
+			<s:GridColumn width="130" dataField="codigo" headerText="CÓDIGO" />
 			<s:GridColumn width="130" dataField="codigoOrigen" headerText="COD. ORIGEN" />
-			<s:GridColumn width="200" dataField="familia" headerText="FAMILIA" labelFunction="codigoNombreLabelFunction" />
+			<s:GridColumn width="190" dataField="familia" headerText="FAMILIA" labelFunction="codigoNombreLabelFunction" />
 			<s:GridColumn width="100" dataField="marca" headerText="MARCA" labelFunction="codigoNombreLabelFunction" />
+			<s:GridColumn width="125" dataField="proveedor" headerText="PROVEEDOR" labelFunction="codigoNombreLabelFunction" />
 			<s:GridColumn dataField="nombre" headerText="NOMBRE" />
 		</s:ArrayList>
 	</fx:Declarations>

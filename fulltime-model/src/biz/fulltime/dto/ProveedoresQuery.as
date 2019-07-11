@@ -23,7 +23,7 @@ public class ProveedoresQuery {
 	
 	public var activo:Boolean;
 
-	public function ProveedorQuery() {
+	public function ProveedoresQuery() {
 	}
 }
 }

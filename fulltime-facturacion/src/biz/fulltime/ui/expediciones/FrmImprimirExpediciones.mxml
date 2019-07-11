@@ -45,13 +45,15 @@
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				
 				var pjTareas:PrintJobTareas = new PrintJobTareas();
+				var tarea:AgendaTareaDTO = null;
+				var tareasM:ArrayCollection = new ArrayCollection();
+				var tareasV:ArrayCollection = new ArrayCollection();
+
 				if (rb0.selected) {
-					var tareasM:ArrayCollection = new ArrayCollection();
-					for each (var tarea:AgendaTareaDTO in _tareasMat) {
+					for each (tarea in _tareasMat) {
 						tareasM.addItem(tarea);
 					}
-					var tareasV:ArrayCollection = new ArrayCollection();
-					for each (var tarea:AgendaTareaDTO in _tareasVes) {
+					for each (tarea in _tareasVes) {
 						tareasV.addItem(tarea);
 					}
 					if (tareasM.length <= 0 && tareasV.length <= 0) {
@@ -61,14 +63,12 @@
 					pjTareas.tareasMat = tareasM;
 					pjTareas.tareasVes = tareasV;
 				} else if (rb1.selected) {
-					var tareasM:ArrayCollection = new ArrayCollection();
-					for each (var tarea:AgendaTareaDTO in _tareasMat) {
+					for each (tarea in _tareasMat) {
 						if (tarea.selected) {
 							tareasM.addItem(tarea);
 						}
 					}					
-					var tareasV:ArrayCollection = new ArrayCollection();
-					for each (var tarea:AgendaTareaDTO in _tareasVes) {
+					for each (tarea in _tareasVes) {
 						if (tarea.selected) {
 							tareasV.addItem(tarea);
 						}
@@ -89,7 +89,7 @@
 				try {
 					pjTareas.imprimirTareas();
 					
-				} catch (e) {
+				} catch (e:Error) {
 					Alert.show(e.toString(), "Error");
 					
 				}

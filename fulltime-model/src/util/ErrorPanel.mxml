@@ -146,7 +146,7 @@
 			</s:HGroup>
 			<s:HGroup width="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" visible="{showButtons}" includeInLayout="{showButtons}">
 				<s:Spacer width="100%" />
-				<s:Button click="button1_clickHandler(event)" label="Cerrar" toolTip="Cerrar" width="80" styleName="textButton"/>
+				<s:Button click="button1_clickHandler(event)" label="Cerrar" toolTip="Cerrar" width="100" styleName="textButton"/>
 				<s:ToggleButton id="btnDetails" click="button2_clickHandler(event)" label="Detalles >>" toolTip="Mostrar detalles" selected="false" height="28" styleName="textToggleButton"/>
 			</s:HGroup>
 		</s:VGroup>

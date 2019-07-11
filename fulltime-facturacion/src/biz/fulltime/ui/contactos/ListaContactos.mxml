@@ -69,7 +69,7 @@
 			private function filtrarContactos(item:Object):Boolean {
 				var contacto:ContactoDTO = item as ContactoDTO;
 				var _contactoLabel:String = contacto.codigo + ' ' + contacto.nombre + ' ' + contacto.razonSocial;
-				return _contactoLabel.toUpperCase().match(new RegExp(filter.text.toUpperCase(), 'i'));
+				return _contactoLabel.toUpperCase().match(new RegExp(filter.text.toUpperCase(), 'i')) != null;
 			}
 
 			protected function resetSearch(event:MouseEvent):void {

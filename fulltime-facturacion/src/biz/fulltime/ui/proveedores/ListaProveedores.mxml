@@ -72,7 +72,7 @@
 			private function filtrarProveedors(item:Object):Boolean {
 				var proveedor:ProveedorDTO = item as ProveedorDTO;
 				var _proveedorLabel:String = proveedor.codigo + ' ' + proveedor.nombre + ' ' + proveedor.razonSocial;
-				return sinAcentos(_proveedorLabel).match(new RegExp(sinAcentos(filter.text), 'i'));
+				return sinAcentos(_proveedorLabel).match(new RegExp(sinAcentos(filter.text), 'i')) != null;
 			}
 			
 			private function quitarAcentos(texto:String, letraSplit:String, letraCambio:String):String {

@@ -180,8 +180,13 @@ public class CapturarImagen extends EventDispatcher {
 		nf2.trailingZeros = false;
 		nf2.fractionalDigits = 2;
 		
+		
+		var row:Number = 0;
+		var descuento:int = 0;
+		
+		var l:LineaDocumento = null;
+		
 		if (documento.esRecibo()) {
-			var row:Number = 0;
 			for each (var v:VinculoDocumentos in documento.facturasVinculadas) {
 				var factura:String = v.factura.serie + "/" + v.factura.numero;
 				sheet.addChild(createText(factura, {x:XX - 32, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'left'})); 
@@ -192,7 +197,7 @@ public class CapturarImagen extends EventDispatcher {
 		} else if (documento.esAfilado()) {		
 			var cantLineas:int = documento.lineas.lineas.length;
 			var j:int = 1;
-			for each (var l:LineaDocumento in documento.lineas.lineas) {
+			for each (l in documento.lineas.lineas) {
 				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:68, y:YY + 18 * row, width:145, height:18, fontSize:12, align:'left'}));
 				if (l.getCantidad() != BigDecimal.ZERO) {
 					sheet.addChild(createText(nf2.format(l.getCantidad().toString()), {x:223, y:YY + 18 * row, width:54, height:18, fontSize:12, align:'center'}));
@@ -204,7 +209,7 @@ public class CapturarImagen extends EventDispatcher {
 				
 				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:628, y:YY + 18 * row, width:78, height:18, fontSize:12, align:'rigth'}));
 				
-				var descuento:int = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
 				if (descuento > 0) {
 					sheet.addChild(createText(descuento + "%", {x:702, y:YY + 18 * row, width:48, height:18, fontSize:12, align:'rigth'}));
 				}
@@ -214,8 +219,7 @@ public class CapturarImagen extends EventDispatcher {
 			}
 			
 		} else {
-			var row:Number = 0;
-			for each (var l:LineaDocumento in documento.lineas.lineas) {
+			for each (l in documento.lineas.lineas) {
 				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:32, y:YY + 12 * row, width:102, height:12, fontSize:8, align:'left'}));
 				if (l.getCantidad() != BigDecimal.ZERO) {
 					sheet.addChild(createText(nf2.format(l.getCantidad().toString()), {x:136, y:YY + 12 * row, width:36, height:12, fontSize:8, align:'center'}));
@@ -226,7 +230,7 @@ public class CapturarImagen extends EventDispatcher {
 				
 				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:416, y:YY + 12 * row, width:52, height:12, fontSize:8, align:'rigth'}));
 				
-				var descuento:int = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
 				if (descuento > 0) {
 					sheet.addChild(createText(descuento + "%", {x:472, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'rigth'}));
 				} else {
@@ -247,7 +251,7 @@ public class CapturarImagen extends EventDispatcher {
 		}
 		
 		if (documento.CAEnro) {
-			var YY_CAE = 460;
+			var YY_CAE:int = 460;
 			sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:115, y:YY_CAE, width:126, height:18, fontSize:9, align:'left'}));
 			sheet.addChild(createText("Res. 2939/2016 - IVA al día", {x:115, y:YY_CAE = YY_CAE + 14, width:130, height:18, fontSize:9, align:'left'}));
 			sheet.addChild(createText("Puede verificar comprobante en", {x:115, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:8, align:'left'}));
@@ -267,7 +271,6 @@ public class CapturarImagen extends EventDispatcher {
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:338, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:425, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'})); // Sub total Neto
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.iva), {x:512, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
-		
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.total), {x:508, y:YY_TOTALES + 472, width:76, height:16, fontSize:10, align:'center'}));
 		
 		sheet.addChild(createText((documento.notas != null ? documento.notas : ""), {x:258, y:YY_TOTALES + 468, width:240, height:32, fontSize:8, align:'left'}));

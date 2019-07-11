@@ -294,8 +294,8 @@
 						listasPrecio += lista.codigo + ",";
 					}
 				} else {
-					for each (var lista:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
-						listasPrecio += lista.codigo + ",";
+					for each (var lista_:PreciosVenta in CatalogoFactory.getInstance().preciosVentaUsuario) {
+						listasPrecio += lista_.codigo + ",";
 					}
 				}
 				listasPrecio = listasPrecio.substring(0, listasPrecio.length - 1);

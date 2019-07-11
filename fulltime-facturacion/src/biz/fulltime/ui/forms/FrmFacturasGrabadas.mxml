@@ -155,46 +155,18 @@
 
 	<fx:Declarations>
 		<s:ArrayList id="cols">
-			<s:GridColumn dataField="comprobante" headerText="Comprobante" labelFunction="comprobante_cod_labelFunction" sortCompareFunction="comprobante_sortCompareFunc"/>
-			<s:GridColumn width="70" dataField="serie" headerText="Serie" />
-			<s:GridColumn width="70" dataField="numero" headerText="Número" >
-				<s:headerRenderer>
-					<fx:Component>
-						<s:DefaultGridHeaderRenderer width="70" textAlignLast="end" textAlign="right" textJustify="distribute" >
-							<fx:Script>
-								<![CDATA[
-									override public function prepare(hasBeenRecycled:Boolean):void {
-										super.labelDisplay.setStyle("textAlign", "end");
-										super.prepare(hasBeenRecycled);
-									}
-								]]>
-							</fx:Script>
-						</s:DefaultGridHeaderRenderer>
-					</fx:Component>
-				</s:headerRenderer>
+			<s:GridColumn dataField="comprobante" headerText="COMPROBANTE" labelFunction="comprobante_cod_labelFunction" sortCompareFunction="comprobante_sortCompareFunc"/>
+			<s:GridColumn width="70" dataField="serie" headerText="SERIE" />
+			<s:GridColumn width="70" dataField="numero" headerText="NÚMERO" >
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right" />
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="90" dataField="fecha" headerText="Fecha" labelFunction="date_labelFunction" />
-			<s:GridColumn width="90" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
-			<s:GridColumn width="90" dataField="total" headerText="Total">
-				<s:headerRenderer>
-					<fx:Component>
-						<s:DefaultGridHeaderRenderer width="90" textAlignLast="end" textAlign="right" textJustify="distribute" >
-							<fx:Script>
-								<![CDATA[
-									override public function prepare(hasBeenRecycled:Boolean):void {
-										super.labelDisplay.setStyle("textAlign", "end");
-										super.prepare(hasBeenRecycled);
-									}
-								]]>
-							</fx:Script>
-						</s:DefaultGridHeaderRenderer>
-					</fx:Component>
-				</s:headerRenderer>
+			<s:GridColumn width="90" dataField="fecha" headerText="FECHA" labelFunction="date_labelFunction" />
+			<s:GridColumn width="90" dataField="moneda" headerText="MONEDA" labelFunction="moneda_labelFunction" />
+			<s:GridColumn width="90" dataField="total" headerText="TOTAL">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right" />

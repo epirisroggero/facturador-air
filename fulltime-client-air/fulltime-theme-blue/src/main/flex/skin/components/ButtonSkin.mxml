@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:SparkSkin xmlns:components="skin.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
-			 useHandCursor="true" minWidth="21" >
+			 useHandCursor="true" minWidth="21" disabledAlpha=".5">
 	<fx:Metadata>
 			  [HostComponent("spark.components.Button")]		
 	</fx:Metadata>

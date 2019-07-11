@@ -217,6 +217,8 @@
 	
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingTop="5" visible="{showButtons}">
+			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<s:Spacer width="100%" />
 			<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
 		</s:HGroup>
 	</s:controlBarContent>

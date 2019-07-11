@@ -232,7 +232,7 @@
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
-				<components:IconButton id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cerrar" styleName="cancelarButton" />
+				<components:IconButton id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" styleName="cancelarButton" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

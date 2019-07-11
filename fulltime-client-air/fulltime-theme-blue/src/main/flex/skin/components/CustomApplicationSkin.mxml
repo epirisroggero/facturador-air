@@ -15,14 +15,14 @@
 	
 	<!-- fill -->
 	<!--s:BitmapImage id="img"
-				   source="@Embed('assets/background/fuzz_blue.jpg')"
+				   source="@Embed('assets/background/fuzz_blue.png')"
 				   smooth="true"
 				   alpha=".42"
 				   left="0" right="0"
 				   top="0" bottom="0"  /-->
 	<s:Rect width="100%" height="100%">
 		<s:fill>
-			<s:SolidColor id="bbcolor" color="#F0F0F0" />
+			<s:SolidColor id="bbcolor" color="#F0F0F4" />
 		</s:fill>
 	</s:Rect>
 

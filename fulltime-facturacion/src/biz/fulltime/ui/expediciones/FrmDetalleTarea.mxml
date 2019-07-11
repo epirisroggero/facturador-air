@@ -95,17 +95,15 @@
 						}
 					}
 				});
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY HH:NN";
+
 				if (_tarea.fechaInicio) {
-					var dateFormatter:DateFormatter = new DateFormatter();
-					dateFormatter.formatString = "DD-MM-YYYY HH:NN";
 					_fechaInicio = dateFormatter.format(_tarea.fechaInicio);
 				} else {
 					_fechaInicio = null;
 				}
-				
 				if (_tarea.fechaHoraFin) {
-					var dateFormatter:DateFormatter = new DateFormatter();
-					dateFormatter.formatString = "DD-MM-YYYY HH:NN";
 					_fechaFin = dateFormatter.format(_tarea.fechaHoraFin);
 				} else {
 					_fechaFin = null;
@@ -326,7 +324,7 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25"/>
 				<s:Spacer width="100%" />
-				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" focusEnabled="true" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

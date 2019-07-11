@@ -241,7 +241,7 @@
 		<s:Spacer width="100%" />
 
 		<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" toolTip="Aceptar" />
-		<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cerrar" styleName="cerrarButton" toolTip="Cerrar" />
+		<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" label="Cancelar" styleName="cancelarButton" toolTip="Cancelar" />
 	</s:BorderContainer>
 
 </s:VGroup>

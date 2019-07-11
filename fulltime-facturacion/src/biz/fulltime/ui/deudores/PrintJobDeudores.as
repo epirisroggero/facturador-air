@@ -172,18 +172,17 @@ package biz.fulltime.ui.deudores {
 				
 		private function completeHandler(event:Event):void {
 			isEMail = false;
-
+			
+			var pj:PrintJob = new PrintJob();
+			
+			var fromItem:int = 0;
+			var toItem:int = 0;
+			
+			var rows:int = 0;
+			
 			if (catalogs._interface ==  CatalogoFactory.INTERFACE_WEB_EVENT) {
-				var pj:PrintJob = new PrintJob();
-				
 				var pagesToPrint:uint = 0;
-				if (pj.start()) {
-							
-					var fromItem:int = 0;
-					var toItem:int = 0;
-					
-					
-					var rows:int = 0;
+				if (pj.start()) {					
 					for each (var data:DocPendientesCliente in _documetosPendientes) {
 						rows += 3; 
 						rows += data.documentos.length;
@@ -210,7 +209,6 @@ package biz.fulltime.ui.deudores {
 					if (fromItem != toItem) {
 						try {	
 							sheet = new Sprite();										
-									
 							
 							createSheet(sheet, fromItem, toItem);
 							sheet.width = pj.paperWidth;
@@ -230,9 +228,6 @@ package biz.fulltime.ui.deudores {
 			}
 			else {
 				//**********   AIR ***************************
-				
-				
-				var pj:PrintJob = new PrintJob();
 				pj.printer = GeneralOptions.getInstance().opciones.impresoras.otros;
 				pj.orientation = PrintJobOrientation.PORTRAIT;
 				
@@ -241,11 +236,7 @@ package biz.fulltime.ui.deudores {
 					if (pj.orientation == PrintJobOrientation.LANDSCAPE) {
 						throw new Error("La Orientación de página en la Impresora debe estar en Vertical.");
 					}			
-					var fromItem:int = 0;
-					var toItem:int = 0;
 					
-					
-					var rows:int = 0;
 					for each (var data:DocPendientesCliente in _documetosPendientes) {
 						rows += 3; 
 						rows += data.documentos.length;

@@ -279,7 +279,7 @@
 				dispatchEvent(new Event("_changeProveedor", true, true));
 			}
 			
-			private function obtenerUltimoDisponible() {
+			private function obtenerUltimoDisponible():void {
 				var proveedorObj:RemoteObject = new RemoteObject();
 				proveedorObj.destination = "CreatingRpc";
 				proveedorObj.channelSet = ServerConfig.getInstance().channelSet;

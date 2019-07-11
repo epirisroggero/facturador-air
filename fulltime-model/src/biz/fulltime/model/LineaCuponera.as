@@ -19,7 +19,7 @@ public class LineaCuponera {
 
 	private var _saldo:Number;
 	
-	private var _comprobante;
+	private var _comprobante:String;
 
 	
 	
@@ -71,11 +71,11 @@ public class LineaCuponera {
 		_saldo = value;
 	}
 
-	public function get comprobante() {
+	public function get comprobante():String {
 		return _comprobante;
 	}
 
-	public function set comprobante(value):void {
+	public function set comprobante(value:String):void {
 		_comprobante = value;
 	}
 

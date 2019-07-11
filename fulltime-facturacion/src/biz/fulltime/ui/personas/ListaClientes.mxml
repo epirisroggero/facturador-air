@@ -79,7 +79,7 @@
 			private function filtrarClientes(item:Object):Boolean {
 				var cliente:ClienteDTO = item as ClienteDTO;
 				var _clienteLabel:String = cliente.codigo + ' ' + cliente.nombre + ' ' + cliente.razonSocial;
-				return sinAcentos(_clienteLabel).match(new RegExp(sinAcentos(filter.text), 'i'));
+				return sinAcentos(_clienteLabel).match(new RegExp(sinAcentos(filter.text), 'i')) != null;
 			}
 			
 			private function quitarAcentos(texto:String, letraSplit:String, letraCambio:String):String {

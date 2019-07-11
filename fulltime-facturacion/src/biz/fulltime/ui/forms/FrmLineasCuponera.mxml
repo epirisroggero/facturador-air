@@ -95,13 +95,6 @@
 				return numberFormatter.format(new BigDecimal(cuponera.precioUnitario).multiply(new BigDecimal(item.cantidad)).toString());	
 			}
 
-			protected function cmdClose_clickHandler(event:MouseEvent):void {
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-			}
-
-			protected function cmdCerrar_clickHandler(event:MouseEvent):void {
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-			}
 
 			public function get cuponera():Cuponera {
 				return _cuponera;
@@ -111,6 +104,10 @@
 				_cuponera = value;
 			}
 
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
 		]]>
 	</fx:Script>
 
@@ -186,7 +183,7 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingRight="5" paddingTop="5" verticalAlign="middle">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".20" scaleY=".20" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdClose" click="cmdClose_clickHandler(event)" label="Cerrar" styleName="closeButton16" />
+				<s:Button id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" toolTip="Aceptar" />
 			</s:HGroup>
 		</s:controlBarContent>
 

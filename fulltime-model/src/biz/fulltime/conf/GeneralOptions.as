@@ -294,7 +294,7 @@ public class GeneralOptions extends EventDispatcher {
 	}
 
 	public function handleFault(event:FaultEvent):void {
-		var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+		var message:String = (event.fault && event.fault.rootCause && event.fault.rootCause.faultDetail) ? event.fault.rootCause.faultDetail : null;
 		if (!message) {
 			message = event.message.toString();
 		}				

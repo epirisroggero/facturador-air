@@ -207,9 +207,9 @@
 				}
 
 				// Guardar recibo
-				for each (var vinculoFP:VinculosFP in _recibo.vinculosfp) {
+				/*for each (var vinculoFP:VinculosFP in _recibo.vinculosfp) {
 					trace(vinculoFP.docIdFP1, vinculoFP.docIdFP2, vinculoFP.vinFPTipo, vinculoFP.vinIE);
-				}
+				}*/
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 
@@ -240,7 +240,6 @@
 				var frmVincularfp:FrmVincularfp = new FrmVincularfp();
 				frmVincularfp.cliente = cliente;
 				frmVincularfp.recibo = recibo;
-				
 				
 				frmVincularfp.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 					PopUpManager.removePopUp(window as IFlexDisplayObject);
@@ -473,7 +472,7 @@
 				<s:Button id="cmdVer" width="110" click="cmdVer_clickHandler(event)" styleName="textButton" label="Ver" focusEnabled="true" toolTip="Ver" />
 				<s:Spacer width="10" />
 				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Aplicar" focusEnabled="true" toolTip="Aplicar" />
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

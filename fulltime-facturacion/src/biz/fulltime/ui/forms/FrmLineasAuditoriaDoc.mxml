@@ -141,7 +141,7 @@
 					<s:HGroup width="100%" horizontalAlign="right" paddingBottom="5" paddingRight="5" paddingTop="5" verticalAlign="middle">
 						<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".20" scaleY=".20" />
 						<s:Spacer width="100%" />
-						<s:Button id="cmdClose" click="cmdClose_clickHandler(event)" label="Cerrar" styleName="closeButton16" />
+						<s:Button id="cmdClose" click="cmdClose_clickHandler(event)" label="Cerrar" styleName="cancelarButton" />
 					</s:HGroup>
 				</s:controlBarContent>
 			</s:Panel>

@@ -20,6 +20,8 @@ public class Cuponera {
 
 	public var precioUnitario:String;
 	
+	public var moneda:Moneda;
+	
 	public var stock:String;
 
 	public var lineasCuponera:ArrayCollection = new ArrayCollection();

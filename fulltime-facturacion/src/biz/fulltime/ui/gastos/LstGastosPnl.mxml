@@ -67,6 +67,7 @@
 			
 			private var _cargarGastos:Boolean = false;
 
+			private var comprobantes:ArrayCollection = new ArrayCollection(["110","111","112","113","114","115","116","212","213","214","215"]); 
 			
 			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
 				_cargarGastos = true; 				
@@ -193,20 +194,6 @@
 				for each (var comprobante:Comprobante in comprobantes) {
 					if (comprobante.codigo == "31") {
 						_gasto = Documento.getNuevoDocumento(comprobante);
-						/*
-						_gasto.addEventListener("_changeCliente", obtenerDatosCliente);
-						
-						callLater(function():void {
-							// Seleccionar la vista con la factura
-							viewStack.selectedIndex = 2;
-							
-							callLater(function():void {
-								_gasto.tomarCamposDelCliente(cliente.codigo);
-							});
-							
-							
-						});
-						*/
 						break;
 					}
 				}
@@ -414,8 +401,8 @@
 				_query.limit = DOCUMENTOS_POR_PAGINA;
 				
 				_query.esGasto = true;
-				_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				
+				//_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				
 				remObjCount.countDocumentos(_query);
 				remObjQuery.queryDocumentos(_query);
@@ -430,7 +417,7 @@
 				_query.limit = DOCUMENTOS_POR_PAGINA;
 				
 				_query.esGasto = true;
-				_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
+				//_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				
 				_current = 1;
 				

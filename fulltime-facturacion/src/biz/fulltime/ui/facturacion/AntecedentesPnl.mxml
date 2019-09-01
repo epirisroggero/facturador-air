@@ -75,7 +75,7 @@
 				_articulo = value;
 			}
 
-			public function obtenerAntecedentes(venta:Boolean = true):void {
+			public function obtenerAntecedentes(venta:Boolean):void {
 				remObjCat = new RemoteObject();
 				remObjCat.destination = "CreatingRpc";
 				remObjCat.channelSet = ServerConfig.getInstance().channelSet;

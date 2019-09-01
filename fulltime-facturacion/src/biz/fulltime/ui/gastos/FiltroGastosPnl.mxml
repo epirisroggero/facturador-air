@@ -26,6 +26,9 @@
 			
 			private var _docQuery:DocumentoQuery;
 			
+			private var comprobantes:ArrayCollection = new ArrayCollection(["110","111","112","113","114","115","116","212","213","214","215"]); 
+
+			
 			public function get docQuery():DocumentoQuery {
 				return _docQuery;
 			}
@@ -131,13 +134,13 @@
 			}
 			
 			protected function creationCompleteHandler(event:FlexEvent):void {
-				var comprobantes:ArrayCollection = new ArrayCollection();
-				for each (var i:Comprobante in CatalogoFactory.getInstance().comprobantes) {
-					if (i.tipo != Comprobante.COMPRA_CREDITO && i.tipo != Comprobante.COMPRA_CONTADO && i.tipo != Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
-						comprobantes.addItem(i);
+				var result:ArrayCollection = new ArrayCollection();
+				for each (var i:Comprobante in CatalogoFactory.getInstance().comprobantes) {					
+					if (comprobantes.contains(i.codigo)) {
+						result.addItem(i);
 					}
 				}
-				acTipoComprobante.dataProvider = comprobantes;
+				acTipoComprobante.dataProvider = result;
 			}
 			
 		]]>

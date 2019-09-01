@@ -90,6 +90,10 @@ public class AgendaTarea extends EventDispatcher {
 	public var repetirModo:int = -1;
 
 	public var repetirFechas:ArrayCollection;
+	
+	public var usuEstado:String;
+	
+	public var usuCliId:String;
 
 	public function AgendaTarea() {
 	}

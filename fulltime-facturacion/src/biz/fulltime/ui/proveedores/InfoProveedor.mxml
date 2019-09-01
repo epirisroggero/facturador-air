@@ -702,18 +702,7 @@
 							<s:Label id="lblRazonSocial" width="100%" text="{proveedor.contacto.ctoRSocial ? proveedor.contacto.ctoRSocial : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 						</s:BorderContainer>
 					</s:HGroup>
-					<s:HGroup width="26%" verticalAlign="middle" styleName="ItemStyle">
-						<s:Label width="40" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" 
-								 text="{proveedor.contacto.ctoDocumentoSigla ? proveedor.contacto.ctoDocumentoSigla : ''}" />
-						<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
-							<s:layout>
-								<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
-							</s:layout>
-							<s:Label width="100%" text="{proveedor.contacto.ctoDocumento ? proveedor.contacto.ctoDocumento : ''}" maxDisplayedLines="1" showTruncationTip="true" />
-						</s:BorderContainer>
-					</s:HGroup>
-
-					<s:HGroup width="33%" verticalAlign="middle" styleName="ItemStyle">
+					<s:HGroup width="25%" verticalAlign="middle" styleName="ItemStyle">
 						<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="RUT" />
 						<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
 							<s:layout>
@@ -722,6 +711,7 @@
 							<s:Label id="lblRUT" width="100%" text="{proveedor.contacto.ctoRUT ? proveedor.contacto.ctoRUT : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 						</s:BorderContainer>
 					</s:HGroup>
+
 				</s:HGroup>
 				<s:HGroup width="100%">
 					<s:VGroup width="67%">
@@ -839,6 +829,16 @@
 					</s:VGroup>
 					
 					<s:VGroup width="33%">
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" 
+									 text="{proveedor.contacto.ctoDocumentoSigla ? proveedor.contacto.ctoDocumentoSigla : ''}" />
+							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+								<s:layout>
+									<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+								</s:layout>
+								<s:Label width="100%" text="{proveedor.contacto.ctoDocumento ? proveedor.contacto.ctoDocumento : ''}" maxDisplayedLines="1" showTruncationTip="true" />
+							</s:BorderContainer>
+						</s:HGroup>
 						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
 							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="País" />
 							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">

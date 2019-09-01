@@ -179,8 +179,8 @@
 			protected function vgroup1_creationCompleteHandler(event:FlexEvent):void {
 				var esCompra:Boolean = linea.documento.comprobante.isCompra() || linea.documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR;
 				
-				vgAyuda.visible = esCompra;
-				vgAyuda.includeInLayout = esCompra;
+				vgAyuda.visible = esCompra && !linea.documento.comprobante.esGasto();
+				vgAyuda.includeInLayout = esCompra && !linea.documento.comprobante.esGasto();
 				
 				if (linea.contactoId != null) {
 					for each (var cliente:Cliente in CatalogoFactory.getInstance().clientes) {

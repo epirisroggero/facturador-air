@@ -215,6 +215,10 @@ public class Documento extends DocumentoBase {
 	
 	public var docCFEFileName:String; 
 	
+	public var centroCostosId:String; 
+	
+	public var docReferencia:String; 
+	
 	// FIN FACTURA ELECTRÓNICA
 
 	public function get numCFEIdDoc():String {
@@ -907,11 +911,15 @@ public class Documento extends DocumentoBase {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in items) {
-			if (!lineaDocumento.articulo) {
+			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getSubTotal().setScale(2, MathContext.ROUND_HALF_EVEN));
-			if (comprobanteComputaIva()) {
+			if (!lineaDocumento.documento.comprobante.esGasto()) {
+				if (comprobanteComputaIva()) {
+					sum = sum.add(lineaDocumento.getIva().setScale(2, MathContext.ROUND_HALF_EVEN));
+				}
+			} else {
 				sum = sum.add(lineaDocumento.getIva().setScale(2, MathContext.ROUND_HALF_EVEN));
 			}
 		}
@@ -938,11 +946,12 @@ public class Documento extends DocumentoBase {
 			var items:ArrayCollection = lineas.lineas;
 			var sum:BigDecimal = BigDecimal.ZERO;
 			for each (var lineaDocumento:LineaDocumento in items) {
-				if (!lineaDocumento.articulo) {
+				if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
 					continue;
 				}
 				sum = sum.add(lineaDocumento.getIva());
 			}
+			
 			return sum.setScale(4, MathContext.ROUND_HALF_EVEN);
 		}
 	}
@@ -951,7 +960,7 @@ public class Documento extends DocumentoBase {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in items) {
-			if (!lineaDocumento.articulo) {
+			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getSubTotal());
@@ -962,7 +971,7 @@ public class Documento extends DocumentoBase {
 	private function getCostoTotal():BigDecimal {
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in lineas.lineas) {
-			if (!lineaDocumento.articulo) {
+			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getCostoTotal());
@@ -973,7 +982,7 @@ public class Documento extends DocumentoBase {
 	private function getPrecioDistTotal():BigDecimal {
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in lineas.lineas) {
-			if (!lineaDocumento.articulo) {
+			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getPrecioBaseDistribuidorTotal());
@@ -985,7 +994,7 @@ public class Documento extends DocumentoBase {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var linea:LineaDocumento in items) {
-			if (!linea.articulo) {
+			if (!linea.articulo && !linea.documento.comprobante.esGasto()) {
 				continue;
 			}
 			if (linea.esArticuloServicio()) {
@@ -1007,7 +1016,7 @@ public class Documento extends DocumentoBase {
 			var items:ArrayCollection = lineas.lineas;
 			var sum:BigDecimal = BigDecimal.ZERO;
 			for each (var lineaDocumento:LineaDocumento in items) {
-				if (!lineaDocumento.articulo) {
+				if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
 					continue;
 				}
 				sum = sum.add(lineaDocumento.getImporteDescuentoTotal());

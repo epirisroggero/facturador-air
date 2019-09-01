@@ -17,6 +17,7 @@
 			import biz.fulltime.model.Moneda;
 			import biz.fulltime.model.PreciosVenta;
 			import biz.fulltime.model.Proveedor;
+			import biz.fulltime.model.UnidadesStock;
 			import biz.fulltime.model.Usuario;
 			
 			import com.hillelcoren.components.AutoComplete;
@@ -236,6 +237,13 @@
 				remObj.getArticuloPrecio(_articulo.codigo);
 				
 				txtIva.selectedItem = _articulo.iva;
+				
+				for each (var unidad:UnidadesStock in CatalogoFactory.getInstance().unidadesstock)  {
+					if (unidad.codigo == _articulo.unidadId) {
+						txtUnidad.selectedItem = unidad;
+						break;
+					}					
+				}
 				
 			}
 			
@@ -678,22 +686,9 @@
 				myTabBar.setCloseableTab(1, false);
 			}
 			
-			protected function txtCategoria_changeHandler(event:Event):void
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			protected function txtMarca_changeHandler(event:Event):void
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			protected function txtConcepto_changeHandler(event:Event):void
-			{
-				// TODO Auto-generated method stub
-				
+			protected function txtUnidad_changeHandler(event:Event):void {
+				var unidadesStock:UnidadesStock = txtUnidad.selectedItem;
+				articulo.unidadId = unidadesStock.codigo;
 			}
 			
 		]]>
@@ -786,7 +781,7 @@
 													<s:VGroup width="100%" paddingBottom="10" paddingLeft="5" paddingRight="5" paddingTop="5">
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Categoría" />
-															<components:MyAutoComplete id="txtCategoria" width="270" change="txtCategoria_changeHandler(event)" dataProvider="{ CatalogoFactory.getInstance().categoriasArticulo}" matchType="anyPart" contentBackgroundAlpha="1"
+															<components:MyAutoComplete id="txtCategoria" width="270" dataProvider="{ CatalogoFactory.getInstance().categoriasArticulo}" matchType="anyPart" contentBackgroundAlpha="1"
 																					   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
 																					   selectedItem="@{articulo.categArt}" next_focus="{txtProveedor}"/>
@@ -801,7 +796,7 @@
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Marca" />
-															<components:MyAutoComplete id="txtMarca" width="270" change="txtMarca_changeHandler(event)" dataProvider="{ CatalogoFactory.getInstance().marcas }" matchType="anyPart" contentBackgroundAlpha="1"
+															<components:MyAutoComplete id="txtMarca" width="270" dataProvider="{ CatalogoFactory.getInstance().marcas }" matchType="anyPart" contentBackgroundAlpha="1"
 																					   prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"  
 																					   selectedItem="@{articulo.marca}" next_focus="{txtCapitulos}"/>
@@ -817,28 +812,28 @@
 															<components:MyAutoComplete id="txtCapitulos" width="270" change="txtCapitulos_changeHandler(event)" dataProvider="{ capitulos }" matchType="anyPart" contentBackgroundAlpha="1"
 																					   prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
-																					   selectedItem="@{_capitulo}" />
+																					   selectedItem="@{_capitulo}" next_focus="{txtSubtitulo}" />
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Subtítulo" />
 															<components:MyAutoComplete id="txtSubtitulo" width="270" change="txtSubtitulo_changeHandler(event)" dataProvider="{ subtitulos }" matchType="anyPart" contentBackgroundAlpha="1"
 																					   prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" enabled="{txtCapitulos.selectedItem}" 
-																					   selectedItem="@{_subtitulo}"/>
+																					   selectedItem="@{_subtitulo}" next_focus="{txtSubfamilia}"/>
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Subfamilia" />
 															<components:MyAutoComplete id="txtSubfamilia" width="270" change="txtSubfamilia_changeHandler(event)" dataProvider="{ subfamilia }" matchType="anyPart"
 																					   contentBackgroundAlpha="1" prompt="Todos" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   labelFunction="codigoNombreLabelFunction" backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" enabled="{txtSubtitulo.selectedItem}" 
-																					   selectedItem="@{_subfamilia}"/>
+																					   selectedItem="@{_subfamilia}" next_focus="{txtFamilia}"/>
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Familia" />
 															<components:MyAutoComplete id="txtFamilia" width="270" dataProvider="{ familias }" matchType="anyPart" contentBackgroundAlpha="1" prompt="Todos"
 																					   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre" labelFunction="codigoNombreLabelFunction"
 																					   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10"
-																					   selectedItem="@{_familia}"/>
+																					   selectedItem="@{_familia}" next_focus="{txtIva}"/>
 														</s:HGroup>
 													</s:VGroup>
 												</s:Panel>
@@ -849,7 +844,14 @@
 															<components:MyAutoComplete id="txtIva" width="270" dataProvider="{ CatalogoFactory.getInstance().ivas }" matchType="anyPart" contentBackgroundAlpha="1"
 																					   prompt="[Exento]" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
-																					   change="txtIva_changeHandler(event)"/>
+																					   change="txtIva_changeHandler(event)" next_focus="{txtUnidad}"/>
+														</s:HGroup>
+														<s:HGroup width="100%" verticalAlign="middle">
+															<s:Label width="70" text="Unidades" />
+															<components:MyAutoComplete id="txtUnidad" width="270" dataProvider="{ CatalogoFactory.getInstance().unidadesstock }" matchType="anyPart" contentBackgroundAlpha="1"
+																					   selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
+																					   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
+																					   change="txtUnidad_changeHandler(event)"/>
 														</s:HGroup>
 													</s:VGroup>
 												</s:Panel>

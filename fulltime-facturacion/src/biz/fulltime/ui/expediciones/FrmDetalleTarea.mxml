@@ -279,7 +279,7 @@
 					</s:BorderContainer>					
 				</s:NavigatorContent>
 				
-				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta">
+				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta" enabled="false">
 					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">						
 						<s:Group width="100%" height="100%" mouseEnabled="true">
 							<s:BorderContainer width="100%" height="100%" backgroundColor="0xffffff" borderColor="0x666666" backgroundAlpha=".7" mouseEnabled="true" >

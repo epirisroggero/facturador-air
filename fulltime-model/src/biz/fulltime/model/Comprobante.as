@@ -282,6 +282,26 @@ public class Comprobante extends CodigoNombreEntity {
 	public function esImportacion():Boolean {
 		return codigo == '120' || codigo == '121' || codigo == '122' || codigo == '124';
 	}
+
+	public function esGasto():Boolean {
+		switch(codigo) {
+			case "110":
+			case "111":
+			case "112":
+			case "113":
+			case "114":
+			case "115":
+			case "116":
+			case "212":
+			case "213":
+			case "214":
+			case "215":
+				return true;			
+			default:
+				return false;
+		}
+	}
+
 	
 	public function getCajaId():Number {
 		if (isMueveCaja()) {

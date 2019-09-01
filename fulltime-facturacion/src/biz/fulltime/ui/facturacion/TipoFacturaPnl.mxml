@@ -68,7 +68,7 @@
 							}
 						}
 					} else if (modoGasto) {
-						if (comprobante.codigo == "110" || comprobante.codigo == "112" || comprobante.codigo == "113" || comprobante.codigo == "116") {
+						if (comprobante.codigo == "110" || comprobante.codigo == "111" || comprobante.codigo == "116") {
 							myDP.addItem(comprobante);
 						}
 					} else if (modoRecibo) {

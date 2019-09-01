@@ -86,17 +86,17 @@ public class PrintJobFactura {
 
 	private var _print_vias:Array = [VIA_CLIENTE, VIA_COBRANZA];
 
-	private var url_factura:String = "assets/general/Factura.jpg";
+	private var url_factura:String = "assets/general/preimpresos/Factura.jpg";
 	
-	private var url_recibo:String = "assets/general/Recibo.jpg";
+	private var url_recibo:String = "assets/general/preimpresos/Recibo.jpg";
 
-	private var url_ordenCompra:String = "assets/general/OrdenDeCompra.jpg";
+	private var url_ordenCompra:String = "assets/general/preimpresos/OrdenDeCompra.jpg";
 
-	private var url_cotizacion:String = "assets/general/Cotizacion.jpg";
+	private var url_cotizacion:String = "assets/general/preimpresos/Cotizacion.jpg";
 
-	private var url_importacion:String = "assets/general/ImportacionDeCompra.png";
+	private var url_importacion:String = "assets/general/preimpresos/ImportacionDeCompra.png";
 	
-	private var url_cuponera:String = "assets/general/Cuponera.jpg";
+	private var url_cuponera:String = "assets/general/preimpresos/Cuponera.jpg";
 
 	
 	private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
@@ -470,12 +470,12 @@ public class PrintJobFactura {
 		sheet.addChild(createText(dtf.format(documento.fechaDoc), {x:496, y:60, width:96, height:14, fontSize:8, align:'center'}));
 
 		if (documento.razonSocial && documento.razonSocial != "") {
-			sheet.addChild(createText(documento.razonSocial, {x:32, y:65, width:236, height:14, fontSize:8, align:'left'}));
+			sheet.addChild(createText(documento.razonSocial, {x:48, y:65, width:220, height:14, fontSize:8, align:'left'}));
 		} else {
 			if (documento.cliente) {
-				sheet.addChild(createText(documento.cliente.nombre, {x:32, y:65, width:242, height:14, fontSize:8, align:'left'}));
+				sheet.addChild(createText(documento.cliente.nombre, {x:48, y:65, width:226, height:14, fontSize:8, align:'left'}));
 			} else if (documento.proveedor) {
-				sheet.addChild(createText(documento.proveedor.nombre, {x:32, y:65, width:242, height:14, fontSize:8, align:'left'}));
+				sheet.addChild(createText(documento.proveedor.nombre, {x:48, y:65, width:226, height:14, fontSize:8, align:'left'}));
 			}
 		}
 		if (documento.cliente) {
@@ -485,7 +485,7 @@ public class PrintJobFactura {
 		}
 
 		sheet.addChild(createText(documento.getAgencia(), {x:413, y:65, width:67, height:14, fontSize:8, align:'left'}));
-		sheet.addChild(createText((documento.direccion ? documento.direccion : "No Tiene") + (documento.getLocalidad() ? " | " + documento.getLocalidad().toUpperCase() : "") + ((documento.departamento && !(documento.getLocalidad() && documento.departamento.toUpperCase() == documento.getLocalidad().toUpperCase())) ? " | " + documento.departamento : ""), {x:32, y:82, width:286, height:14, fontSize:8,
+		sheet.addChild(createText((documento.direccion ? documento.direccion : "No Tiene") + (documento.getLocalidad() ? " | " + documento.getLocalidad().toUpperCase() : "") + ((documento.departamento && !(documento.getLocalidad() && documento.departamento.toUpperCase() == documento.getLocalidad().toUpperCase())) ? " | " + documento.departamento : ""), {x:48, y:82, width:286, height:14, fontSize:8,
 				align:'left'}));
 		sheet.addChild(createText(documento.telefono, {x:338, y:82, width:142, height:14, fontSize:8, align:'left'}));
 
@@ -508,17 +508,17 @@ public class PrintJobFactura {
 		sheet.addChild(createText(_comisiones, {x:492, y:94, width:96, height:14, fontSize:8, align:'center'}));
 
 		if (documento.esConsumoFinal()) {
-			sheet.addChild(createText(documento.rut != null ? "CI " + documento.rut : "CONSUMO FINAL", {x:32, y:115, width:220, height:22, fontSize:11, align:'center'}));
+			sheet.addChild(createText(documento.rut != null ? "CI " + documento.rut : "CONSUMO FINAL", {x:48, y:115, width:204, height:22, fontSize:11, align:'center'}));
 		} else {
 			if (documento.tipoDoc == "R") {
-				sheet.addChild(createText(documento.rut != null ? documento.rut : "", {x:32, y:115, width:220, height:18, fontSize:11, align:'center'}));
+				sheet.addChild(createText(documento.rut != null ? documento.rut : "", {x:48, y:115, width:204, height:18, fontSize:11, align:'center'}));
 			} else {
-				sheet.addChild(createText(documento.rut != null ? "CI " + documento.rut : "", {x:32, y:115, width:220, height:18, fontSize:11, align:'center'}));
+				sheet.addChild(createText(documento.rut != null ? "CI " + documento.rut : "", {x:48, y:115, width:204, height:18, fontSize:11, align:'center'}));
 			}
 		}
 
-		sheet.addChild(createText(documento.ordenCompra, {x:322, y:122, width:82, height:14, fontSize:8, align:'center'}));
-		sheet.addChild(createText(documento.cantidadBultos ? documento.cantidadBultos.toString() : "", {x:408, y:122, width:36, height:14, fontSize:8, align:'center'}));
+		sheet.addChild(createText(documento.ordenCompra, {x:326, y:122, width:78, height:14, fontSize:8, align:'center'}));
+		sheet.addChild(createText(documento.cantidadBultos ? documento.cantidadBultos.toString() : "", {x:412, y:122, width:36, height:14, fontSize:8, align:'center'}));
 		sheet.addChild(createText(GeneralOptions.getInstance().loggedUser.codigo, {x:452, y:122, width:36, height:14, fontSize:8, align:'center'}));
 
 		sheet.addChild(createText(documento.entrega ? documento.entrega.codigo : "", {x:492, y:122, width:96, height:14, fontSize:8, align:'center'}));
@@ -578,23 +578,23 @@ public class PrintJobFactura {
 		} else {
 			for each (l in documento.lineas.lineas) {
 				if (_via == "COBRANZA") {
-					sheet.addChild(createText(disguise(l.getPorcentajeUtilidad()), {x:XX - 32, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'left'})); // % de utilidad. Solo Vía Cobranza.
+					sheet.addChild(createText(disguise(l.getPorcentajeUtilidad()), {x:XX - 48, y:YY + 12 * row, width:48, height:12, fontSize:8, align:'left'})); // % de utilidad. Solo Vía Cobranza.
 				}
-				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:32, y:YY + 12 * row, width:102, height:12, fontSize:8, align:'left'}));
+				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:48, y:YY + 12 * row, width:102, height:12, fontSize:8, align:'left'}));
 				if (l.getCantidad() != BigDecimal.ZERO) {
-					sheet.addChild(createText(nf2.format(l.getCantidad().toString()), {x:136, y:YY + 12 * row, width:36, height:12, fontSize:8, align:'center'}));
+					sheet.addChild(createText(nf2.format(l.getCantidad().toString()), {x:152, y:YY + 12 * row, width:36, height:12, fontSize:8, align:'center'}));
 				} else {
-					sheet.addChild(createText("", {x:136, y:YY + 12 * row, width:36, height:12, fontSize:8, align:'center'}));
+					//sheet.addChild(createText("", {x:136, y:YY + 12 * row, width:36, height:12, fontSize:8, align:'center'}));
 				}
-				sheet.addChild(createText(l.concepto, {x:178, y:YY + 12 * row, width:220, height:12, fontSize:8, align:'left'}));
+				sheet.addChild(createText(l.concepto, {x:192, y:YY + 12 * row, width:220, height:12, fontSize:8, align:'left'}));
 				
-				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:416, y:YY + 12 * row, width:52, height:12, fontSize:8, align:'rigth'}));
+				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:418, y:YY + 12 * row, width:52, height:12, fontSize:8, align:'rigth'}));
 				
 				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
 				if (descuento > 0) {
-					sheet.addChild(createText(descuento + "%", {x:472, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'rigth'}));
+					sheet.addChild(createText(descuento + "%", {x:474, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'rigth'}));
 				} else {
-					sheet.addChild(createText("", {x:472, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'rigth'}));
+					sheet.addChild(createText("", {x:474, y:YY + 12 * row, width:32, height:12, fontSize:8, align:'rigth'}));
 				}
 				sheet.addChild(createText(nf.format(l.getSubTotal().toString()), {x:510, y:YY + 12 * row, width:78, height:12, fontSize:8, align:'rigth'}));
 				
@@ -613,37 +613,37 @@ public class PrintJobFactura {
 
 		var byteArray:ByteArray = _documento.codigoQR;
 		if (byteArray) {
-			frameQR.x = 28;
-			frameQR.y = 458;
+			frameQR.x = 44;
+			frameQR.y = 452;
 
 			sheet.addChild(frameQR);
 		}
 
 		if (documento.CAEnro) {
-			var YY_CAE:int = 460;
-			sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:115, y:YY_CAE, width:126, height:18, fontSize:9, align:'left'}));
-			sheet.addChild(createText("Res. 2939/2016 - IVA al día", {x:115, y:YY_CAE = YY_CAE + 14, width:130, height:18, fontSize:9, align:'left'}));
-			sheet.addChild(createText("Puede verificar comprobante en", {x:115, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:8, align:'left'}));
+			var YY_CAE:int = 452;
+			var XX_CAE:int = 127;
+			sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:XX_CAE, y:YY_CAE, width:126, height:18, fontSize:9, align:'left'}));
+			sheet.addChild(createText("Res. 2939/2016 - IVA al día", {x:XX_CAE, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:9, align:'left'}));
+			sheet.addChild(createText("Puede verificar comprobante en", {x:XX_CAE, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:8, align:'left'}));
 			if (!documento.esConsumoFinal()) {
-				sheet.addChild(createText("www.efactura.dgi.gub.uy", {x:115, y:YY_CAE = YY_CAE + 12, width:126, height:18, fontSize:9, align:'left'}));
+				sheet.addChild(createText("www.efactura.dgi.gub.uy", {x:XX_CAE, y:YY_CAE = YY_CAE + 12, width:126, height:18, fontSize:9, align:'left'}));
 			} else {
-				sheet.addChild(createText("www.efactura.info", {x:115, y:YY_CAE = YY_CAE + 12, width:126, height:18, fontSize:9, align:'left'}));
+				sheet.addChild(createText("www.efactura.info", {x:XX_CAE, y:YY_CAE = YY_CAE + 12, width:126, height:18, fontSize:9, align:'left'}));
 			}
-			sheet.addChild(createText("Nro CAE: " + documento.CAEnro, {x:115, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:9, align:'left'}));
-			sheet.addChild(createText("Rango: " + documento.CAEdesde + " - " + documento.CAEhasta + "  Serie: " + documento.CAEserie, {x:115, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:9, align:'left'}));
+			sheet.addChild(createText("Nro CAE: " + documento.CAEnro, {x:XX_CAE, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:9, align:'left'}));
+			sheet.addChild(createText("Rango: " + documento.CAEdesde + " - " + documento.CAEhasta + "  Serie: " + documento.CAEserie, {x:XX_CAE, y:YY_CAE = YY_CAE + 14, width:126, height:18, fontSize:9, align:'left'}));
 		}
 
-		sheet.addChild(createText((documento.planPagos != null ? documento.planPagos.nombre : (documento.condicion ? documento.condicion.nombre : "")), {x:38, y:432, width:202, height:20, fontSize:10, align:'center'}));
+		sheet.addChild(createText((documento.planPagos != null ? documento.planPagos.nombre : (documento.condicion ? documento.condicion.nombre : "")), {x:48, y:428, width:202, height:20, fontSize:10, align:'center'}));
 
 		var YY_TOTALES:int = 5;
 
-		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:338, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
-		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:425, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'})); // Sub total Neto
-		sheet.addChild(createText(simbolo + " " + nf.format(documento.iva), {x:512, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
-
+		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:342, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
+		sheet.addChild(createText(simbolo + " " + nf.format(documento.subTotal), {x:426, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'})); // Sub total Neto
+		sheet.addChild(createText(simbolo + " " + nf.format(documento.iva), {x:508, y:YY_TOTALES + 428, width:76, height:14, fontSize:8, align:'center'}));
 		sheet.addChild(createText(simbolo + " " + nf.format(documento.total), {x:508, y:YY_TOTALES + 472, width:76, height:16, fontSize:10, align:'center'}));
 
-		sheet.addChild(createText((documento.notas != null ? documento.notas : ""), {x:258, y:YY_TOTALES + 468, width:240, height:32, fontSize:8, align:'left'}));
+		sheet.addChild(createText((documento.notas != null ? documento.notas : ""), {x:260, y:YY_TOTALES + 468, width:240, height:32, fontSize:8, align:'left'}));
 
 		if (_via == "COBRANZA") {
 			sheet.addChild(createText(disguise(documento.getUtilidadEstimada()), {x:12, y:YY_TOTALES + 420, width:40, height:14, fontSize:8, align:'left'}));
@@ -1016,8 +1016,8 @@ public class PrintJobFactura {
 
 		var byteArray:ByteArray = _documento.codigoQR;
 		if (byteArray) {
-			frameQR.x = 62;
-			frameQR.y = 690;
+			frameQR.x = 65;
+			frameQR.y = 686;
 
 			sheet.addChild(frameQR);
 		}
@@ -1156,7 +1156,9 @@ public class PrintJobFactura {
 				var fecha:String = dtf.format(v.factura.fechaDoc);
 				var total:String = v.factura.total;
 				var saldo:String = v.factura.saldo;				
-				var descuentoPorc:String = new BigDecimal(v.descuentoPorc).setScale(0, MathContext.ROUND_DOWN).toString();
+				var descuentoPorc:String = v.descuentoPorc 
+					? new BigDecimal(v.descuentoPorc).setScale(0, MathContext.ROUND_DOWN).toString()
+					: BigDecimal.ZERO.toString();
 				var vinculado:String = v.neto;
 				var cancelado:String = v.monto;
 				
@@ -1211,7 +1213,7 @@ public class PrintJobFactura {
 				if (desc > 0) {
 					sheet.addChild(createText(desc + "%", {x:esOrdenCompra ? 692 : 702, y:YY + 18 * row, width:48, height:18, fontSize:12, align:'rigth'}));
 				}
-				sheet.addChild(createText(nf.format(l.getSubTotal().toString()), {x:770, y:YY + 18 * row, width:117, height:18, fontSize:12, align:'rigth'}));
+				sheet.addChild(createText(nf.format(l.getSubTotal().toString()), {x:770, y:YY + 18 * row, width:112, height:18, fontSize:12, align:'rigth'}));
 				
 				row++;
 			}
@@ -1219,17 +1221,18 @@ public class PrintJobFactura {
 
 		if (!esImportacion) {
 			if (documento.CAEnro) {
-				var YY_CAE:int = 698;
-				sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:188, y:YY_CAE, width:190, height:22, fontSize:13, align:'left'}));
-				sheet.addChild(createText("Res.2939/2016 - IVA al día", {x:188, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
-				sheet.addChild(createText("Puede verificar comprobante en", {x:188, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
+				var XX_CAE:int = 192;
+				var YY_CAE:int = 692;
+				sheet.addChild(createText("Código seguridad: " + documento.codSeguridadCFE, {x:XX_CAE, y:YY_CAE, width:190, height:22, fontSize:13, align:'left'}));
+				sheet.addChild(createText("Res.2939/2016 - IVA al día", {x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
+				sheet.addChild(createText("Puede verificar comprobante en", {x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
 				if (!documento.esConsumoFinal()) {
-					sheet.addChild(createText("www.efactura.dgi.gub.uy", {x:188, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
+					sheet.addChild(createText("www.efactura.dgi.gub.uy", {x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
 				} else {
-					sheet.addChild(createText("www.efactura.info", {x:188, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
+					sheet.addChild(createText("www.efactura.info", {x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
 				}
-				sheet.addChild(createText("Nro CAE: " + documento.CAEnro, {x:188, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
-				sheet.addChild(createText("Rango: " + documento.CAEdesde + " - " + documento.CAEhasta + "  Serie: " + documento.CAEserie, {x:188, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
+				sheet.addChild(createText("Nro CAE: " + documento.CAEnro, {x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
+				sheet.addChild(createText("Rango: " + documento.CAEdesde + " - " + documento.CAEhasta + "  Serie: " + documento.CAEserie, {x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:190, height:22, fontSize:13, align:'left'}));
 			}
 			if (!documento.esRecibo()) {
 				sheet.addChild(createText((documento.planPagos != null ? documento.planPagos.nombre : (documento.condicion ? documento.condicion.nombre : "")), {x:67, y:656, width:305, height:18, fontSize:12, align:'center'}));

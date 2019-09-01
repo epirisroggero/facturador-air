@@ -10,6 +10,7 @@ package util {
 
 import biz.fulltime.conf.GeneralOptions;
 import biz.fulltime.conf.ServerConfig;
+import biz.fulltime.dto.CodigoNombre;
 import biz.fulltime.model.Articulo;
 import biz.fulltime.model.Capitulo;
 import biz.fulltime.model.CategoriasArticulo;
@@ -135,6 +136,10 @@ public class CatalogoFactory extends EventDispatcher {
 	private var _marcas:ArrayCollection = new ArrayCollection();
 	
 	private var _categoriasArticulo:ArrayCollection = new ArrayCollection();
+	
+	private var _referencias:ArrayCollection = new ArrayCollection();
+	
+	private var _unidadesstock:ArrayCollection = new ArrayCollection();
 
 
 	private var _ivas:ArrayCollection = new ArrayCollection();
@@ -600,7 +605,7 @@ public class CatalogoFactory extends EventDispatcher {
 		giros = new ArrayCollection();
 		bancos = new ArrayCollection();
 		marcas = new ArrayCollection();
-
+		referencias = new ArrayCollection();
 
 		// Para el tema expediciones
 		usuarios = new ArrayCollection();
@@ -943,6 +948,10 @@ public class CatalogoFactory extends EventDispatcher {
 						if (values) {
 							comprobantes = sort(values);
 						}
+						for each (var i:Comprobante in comprobantes) {
+							trace("codigo :: " + i.codigo);
+						}
+						
 						resetRemoteObject();
 						errorPanel.errorText = "Cargando catálogo de 'Entregas'.";
 						remObjCat.getCatalogoByName("Entrega");
@@ -1164,6 +1173,36 @@ public class CatalogoFactory extends EventDispatcher {
 							categoriasArticulo = sort(values, false);
 						}
 						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Unidades Stock'.";
+						remObjCat.getCatalogoByName("UnidadesStock");
+						break;
+					}
+				case 30:
+					{
+						if (values) {
+							unidadesstock = sort(values, false);
+						}
+						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Referencias'.";
+						remObjCat.getCatalogoByName("Referencia");
+						break;
+					}
+				case 31:
+					{
+						if (values) {
+							referencias = sort(values, false);
+						}
+						resetRemoteObject();
+						errorPanel.errorText = "Cargando catálogo de 'Conceptos'.";
+						remObjCat.getCatalogoByName("Concepto");
+						break;
+					}
+				case 32:
+					{
+						if (values) {
+							conceptos = sort(values, false);
+						}
+						resetRemoteObject();
 						errorPanel.errorText = "Catálogos cargados.";
 						myTimer.start();
 						break;
@@ -1349,6 +1388,21 @@ public class CatalogoFactory extends EventDispatcher {
 		_categoriasArticulo = value;
 	}
 
+	public function get referencias():ArrayCollection {
+		return _referencias;
+	}
+
+	public function set referencias(value:ArrayCollection):void {
+		_referencias = value;
+	}
+
+	public function get unidadesstock():ArrayCollection {
+		return _unidadesstock;
+	}
+
+	public function set unidadesstock(value:ArrayCollection):void {
+		_unidadesstock = value;
+	}
 
 
 }

@@ -307,6 +307,10 @@
 
 				var isValidForm:Boolean = validatorErrorArray.length == 0;
 				if (isValidForm) {
+					if (txtRUT.text && txtRUT.text.length > 0) { // Si el usuario tiene RUT seteado el tipo de documento es RUT siempre.
+						proveedor.contacto.ctoDocumentoTipo = "R";
+					}
+					
 					if (!proveedor.esNuevo) {
 						proveedor.mergeProveedor();
 					} else {
@@ -475,17 +479,16 @@
 			protected function fname_changeHandler(event:TextOperationEvent):void {
 				proveedor.nombre = fname.text;
 				proveedor.contacto.nombre = fname.text;
-				
 			}
 			
 			protected function ddlTipoDoc_changeHandler(event:IndexChangeEvent):void {
 				var selectedItem:Object = ddlTipoDoc.selectedItem;
 				
 				proveedor.contacto.ctoDocumentoTipo = selectedItem.value as String;
-				proveedor.contacto.ctoDocumentoSigla = selectedItem.label as String;
-				proveedor.contacto.ctoDocumento = "";
+				if (proveedor.contacto.ctoDocumentoTipo && proveedor.contacto.ctoDocumentoTipo != "R") {
+					proveedor.contacto.ctoDocumentoSigla = selectedItem.label as String;
+				}
 			}
-
 			
 			protected function txtCodigo_changeHandler(event:TextOperationEvent):void {
 				if (txtCodigo.text != null && txtCodigo.text.length > 0) {
@@ -585,10 +588,13 @@
 											<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
 										</s:FormItem>
 										<s:FormItem width="100%" label="RUT" styleName="ItemStyle">
-											<s:TextInput id="txtRUT" width="46%" text="@{proveedor.contacto.ctoRUT}" enter="txtDireccion.setFocus()" restrict="0-9" maxChars="12" />
+											<s:TextInput id="txtRUT" width="235" text="@{proveedor.contacto.ctoRUT}" enter="txtDocumentSigla.setFocus()" restrict="0-9" maxChars="12" />
 										</s:FormItem>
-										<s:FormItem width="100%" label="{proveedor.contacto.ctoDocumentoSigla}" styleName="ItemStyle">
-											<s:TextInput id="txtDocument" width="46%" text="@{proveedor.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+										<s:FormItem width="100%" label="Documento" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:TextInput id="txtDocumentSigla" width="70" text="@{proveedor.contacto.ctoDocumentoSigla}" enter="txtDocument.setFocus()" maxChars="16" />
+												<s:TextInput id="txtDocument" width="160" text="@{proveedor.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+											</s:HGroup>
 										</s:FormItem>
 										
 										<s:FormItem width="100%" label="Dirección" styleName="ItemStyle">

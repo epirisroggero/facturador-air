@@ -2,67 +2,55 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/fulltime-client-air/src/assets/alerts/Exclamation.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fulltime-client-air/src/assets/background/fuzz_blue.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/alert/Error.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/alert/Exclamation.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/alert/Info.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/alert/Warning.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/Cotizacion.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/Cuponera.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/Factura.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/OrdenDeCompra.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/Recibo.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/SummaryGasto.mxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasGasto.mxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/dto/StockActualDTO.as" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/CentrosCosto.as" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Referencia.as" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/UnidadesStock.as" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/.settings/org.eclipse.core.resources.prefs" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/.settings/org.eclipse.core.resources.prefs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_Bold.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_Bold_Italic.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_Italic.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_Light.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_Light_Italic.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_Regular.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/fonts/Sansation_plate.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/icon24/Apply.png" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/icon24/Apply.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/facturador.css" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/facturador.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/skin/components/ButtonSkin.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/skin/components/ButtonSkin.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/skin/components/CustomApplicationSkin.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/skin/components/CustomApplicationSkin.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/Cuponera.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/Factura.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/ImportacionDeCompra.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/OrdenDeCompra.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/Recibo.jpg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/assets/background/fuzz_blue.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/assets/background/gradient_darkblue.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/LoginPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/LoginPnl.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorLeftPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorLeftPanel.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainMenuBar.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainMenuBar.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/Cotizacion.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/Factura.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/ImportacionDeCompra.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/OrdenDeCompra.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/assets/general/Recibo.jpg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/contactos/ListaContactos.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/contactos/ListaContactos.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoDeudoresCliente.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoDeudoresCliente.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/PrintJobDeudores.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/PrintJobDeudores.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/documentosValores/ListDocumentosValores.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/documentosValores/ListDocumentosValores.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/InfoArticulo.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/InfoArticulo.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmDetalleTarea.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmDetalleTarea.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmExpediciones.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmExpediciones.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmImprimirExpediciones.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmImprimirExpediciones.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmNuevaTarea.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmNuevaTarea.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/AntecedentesPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/AntecedentesPnl.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/ArticulosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/ArticulosPnl.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/CapturarImagen.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/CapturarImagen.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/LstFacturasPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/LstFacturasPnl.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFactura.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFactura.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/reportes/FrmRentaComprobantes.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/reportes/FrmRentaComprobantes.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/stockprecio/FrmStockPrecio.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/stockprecio/FrmStockPrecio.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmEMail.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmEMail.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmFacturasGrabadas.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmFacturasGrabadas.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmHistoricoCompras.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmHistoricoCompras.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasAuditoriaDoc.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasAuditoriaDoc.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasCuponera.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasCuponera.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/TipoFacturaPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/TipoFacturaPnl.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasVenta.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasVenta.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmNotaLinea.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmNotaLinea.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/FiltroGastosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/FiltroGastosPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/LstGastosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/LstGastosPnl.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/EditarCliente.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/EditarCliente.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/InfoCliente.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/InfoCliente.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListaClientes.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListaClientes.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/EditarProveedor.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/EditarProveedor.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/InfoProveedor.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/InfoProveedor.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/ListaProveedores.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/ListaProveedores.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/util/FilteredDataGrid.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/util/FilteredDataGrid.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/conf/GeneralOptions.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/conf/GeneralOptions.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/dto/ProveedoresQuery.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/dto/ProveedoresQuery.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/.flexLibProperties" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/.flexLibProperties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/AgendaTarea.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/AgendaTarea.as" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Comprobante.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Comprobante.as" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/DocumentoBase.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/DocumentoBase.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaCuponera.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaCuponera.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-model/src/util/ErrorPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/util/ErrorPanel.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/util/CatalogoFactory.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/util/CatalogoFactory.as" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -99,13 +87,27 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
+            <state relative-caret-position="374">
               <caret line="22" column="39" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
             </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="204">
+              <caret line="12" column="59" selection-start-line="12" selection-start-column="59" selection-end-line="12" selection-end-column="59" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/EditarCliente.mxml">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
     </leaf>
@@ -121,14 +123,15 @@
         <option value="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" />
         <option value="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" />
         <option value="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" />
+        <option value="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/EditarCliente.mxml" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-9" />
-    <option name="y" value="-9" />
-    <option name="width" value="1938" />
-    <option name="height" value="1048" />
+    <option name="x" value="1912" />
+    <option name="y" value="-8" />
+    <option name="width" value="1456" />
+    <option name="height" value="876" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -136,8 +139,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -153,6 +154,12 @@
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-client-air" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
               <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -175,6 +182,25 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="biz" type="462c0819:PsiDirectoryNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="personas" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
@@ -215,6 +241,8 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -290,17 +318,17 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <frame x="1912" y="-8" width="1456" height="876" extended-state="6" />
     <layout>
       <window_info id="Capture Tool" order="0" />
       <window_info id="Designer" order="1" />
       <window_info id="UI Designer" order="2" />
       <window_info id="Favorites" order="3" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.1442953" />
+      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.16260745" />
       <window_info id="Structure" order="5" weight="0.25" />
       <window_info id="Image Layers" order="6" />
       <window_info anchor="bottom" id="Event Log" order="0" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.7776204" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.32032302" />
       <window_info anchor="bottom" id="Terminal" order="2" />
       <window_info anchor="bottom" id="Message" order="3" />
       <window_info anchor="bottom" id="Find" order="4" />
@@ -388,10 +416,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
+        <state relative-caret-position="374">
           <caret line="22" column="39" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="12" column="59" selection-start-line="12" selection-start-column="59" selection-end-line="12" selection-end-column="59" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/EditarCliente.mxml">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>

@@ -9,51 +9,32 @@
 			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.dto.CreditoInfo;
-			import biz.fulltime.dto.EFacturaResult;
 			import biz.fulltime.event.ClaveSupervisoraEvent;
-			import biz.fulltime.event.ClienteEvent;
-			import biz.fulltime.event.ExportToPDFEvent;
 			import biz.fulltime.event.MonedaEvent;
 			import biz.fulltime.event.ProveedorEvent;
 			import biz.fulltime.model.AgendaTarea;
-			import biz.fulltime.model.Articulo;
 			import biz.fulltime.model.Auditoria;
-			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.CentrosCosto;
 			import biz.fulltime.model.Comprobante;
 			import biz.fulltime.model.Contacto;
 			import biz.fulltime.model.CotizacionesModel;
 			import biz.fulltime.model.CotizacionesMonedas;
-			import biz.fulltime.model.Deposito;
 			import biz.fulltime.model.Documento;
-			import biz.fulltime.model.LineaDocumento;
 			import biz.fulltime.model.Moneda;
-			import biz.fulltime.model.Pais;
-			import biz.fulltime.model.ParametrosAdministracion;
-			import biz.fulltime.model.ParticipacionVendedor;
-			import biz.fulltime.model.PlanPagos;
-			import biz.fulltime.model.PreciosVenta;
 			import biz.fulltime.model.Proveedor;
+			import biz.fulltime.model.Referencia;
 			import biz.fulltime.model.SerieNumero;
 			import biz.fulltime.model.Tarea;
 			import biz.fulltime.model.Usuario;
-			import biz.fulltime.model.Vendedor;
-			import biz.fulltime.model.deudores.DocPendientesCliente;
-			import biz.fulltime.model.deudores.DocumentoDeudor;
-			import biz.fulltime.ui.components.HelpClientPnl;
 			import biz.fulltime.ui.components.HelpProveedorPnl;
-			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
 			import biz.fulltime.ui.expediciones.FrmNuevaTarea;
 			import biz.fulltime.ui.facturacion.FrmClaveSupervisora;
 			import biz.fulltime.ui.facturacion.PrintJobFactura;
 			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
-			import biz.fulltime.ui.forms.FrmLineasVenta;
-			import biz.fulltime.ui.forms.FrmNotasEnvio;
+			import biz.fulltime.ui.forms.FrmLineasGasto;
 			import biz.fulltime.ui.forms.FrmTrazabilidadDocumento;
-			import biz.fulltime.ui.forms.FrmVendedores;
 			
 			import com.hillelcoren.components.AutoComplete;
-			
-			import flash.utils.setTimeout;
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
@@ -61,27 +42,22 @@
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CalendarLayoutChangeEvent;
 			import mx.events.CloseEvent;
-			import mx.events.CollectionEvent;
 			import mx.events.FlexEvent;
 			import mx.events.PropertyChangeEvent;
-			import mx.events.ValidationResultEvent;
 			import mx.formatters.DateFormatter;
 			import mx.managers.ISystemManager;
 			import mx.managers.PopUpManager;
 			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.remoting.RemoteObject;
-			import mx.utils.StringUtil;
 			
 			import spark.components.TitleWindow;
-			import spark.events.IndexChangeEvent;
 			import spark.events.TextOperationEvent;
 			import spark.formatters.NumberFormatter;
 			
 			import util.CatalogoFactory;
 			import util.DateUtil;
 			import util.ErrorPanel;
-			import util.Utils;
 			
 			private const WINDOW_WIDTH:Number = 640;
 			
@@ -97,13 +73,7 @@
 			
 			[Bindable]
 			private var _documento:Documento;
-			
-			[Bindable]
-			public var tiposDocList:ArrayCollection = new ArrayCollection([
-				{value:"C", label:"C.I."}, 
-				{value:"R", label:"RUT"} 
-			]);
-			
+						
 			private var remObjSerieNumero:RemoteObject;
 			
 			private var remObjSave:RemoteObject;
@@ -175,11 +145,18 @@
 			
 			[Bindable]
 			private var _usuarioAutorizante:String;
+
+			[Bindable]
+			private var _centroCostos:CentrosCosto;
+
+			[Bindable]
+			private var _referencia:Referencia;
+
 			
 			//
 			// Seleccion de Líneas de Gasto
 			// 
-			private var frmLineasVenta:FrmLineasVenta;
+			private var frmLineasGasto:FrmLineasGasto;
 			
 			[Bindable]
 			private var tipoDoc:Object
@@ -254,6 +231,8 @@
 				super.commitProperties();
 				
 				if (_changeGasto) {
+					_changeGasto = false;
+					
 					// Si el comprobante no es aster, no mostrar las monedas aster. 
 					cargarMonedas();
 					
@@ -265,14 +244,29 @@
 						var contacto:Contacto = _documento.cliente ? _documento.cliente.contacto : (_documento.proveedor ? _documento.proveedor.contacto : null);
 						if (contacto && contacto.paisIdCto == "UY") {
 							rut_stringValidator.validate();
-						}
-						
+						}						
 					}
 					
 					_usuarioAutorizante = null;
 					for each (var u:Usuario in CatalogoFactory.getInstance().usuarios) {
 						if (u.codigo == _documento.usuIdAut) {
 							_usuarioAutorizante = u.nombre;
+							break;
+						}
+					}
+					
+					_centroCostos = null;
+					for each (var cc:CentrosCosto in CatalogoFactory.getInstance().centrosCosto) {
+						if (cc.codigo == _documento.centroCostosId) {
+							_centroCostos = cc;
+							break;
+						}
+					}
+					
+					_referencia = null;
+					for each (var ref:Referencia in CatalogoFactory.getInstance().referencias) {
+						if (ref.codigo == _documento.referencia) {
+							_referencia = ref;
 							break;
 						}
 					}
@@ -301,29 +295,13 @@
 						_documento.docTCC = new BigDecimal(_documento.docTCC).setScale(2, MathContext.ROUND_HALF_UP).toString();
 					}
 					
-					if (_documento.depositoOrigen) { // Las cotizaciones no tienen deposito de origen predeterminado.
-						for each (var l:LineaDocumento in _documento.lineas.lineas) {
-							if (!l.articulo || l.articulo.codigo == "") {
-								continue;
-							}
-							l.deposito = _documento.depositoOrigen.codigo;
-							l.obtenerStock();
-						}
-					}
 					
-					// Si es un movimiento de stock genero serie y numero... en todos los movimientos de stock estos son autogenerados...
-					if (!_documento.esCotizacionDeVenta && !_documento.esOrdenDeVenta && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE && _documento.nuevo) {
-						remObjSerieNumero.generateSerieNumero(_documento.comprobante);
-					}
-					
-					// Los vendedores (junior, distribuidor, senior) solo pueden editar documentos que ellos crearon (Documento.usuarioId). 
-					// Si no son creadores, entonces el documento aparece para solo lectura. 
-					// Administradores y Supervisores pueden editar cualquier cosa.
 					if (!_modoVisualizacion) {
 						if (_documento.nuevo) {
 							_modoVisualizacion = false;
 						} else {
-							if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado && !_documento.esCotizacionDeVenta && !_documento.esOrdenDeVenta && (DateUtil.compareDates(_documento.fechaDoc, CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) == -1)) {
+							if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado 
+								&& (DateUtil.compareDates(_documento.fechaDoc, CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) == -1)) {
 								_modoVisualizacion = true;
 							} else {
 								_modoVisualizacion = !_documento.permisosDocumentoUsuario.edicion;
@@ -332,21 +310,13 @@
 					}
 					
 					tieneCambios = false;
+					
 					lineasTienenCambios = false;
-					callLater(function():void {
-						_documento.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
-							if (evt.property != "depto" && evt.property != "cotizacion" && evt.property != "esSolicitudCompra") {
-								tieneCambios = true;
-							}
-							
-						});
-					});
 					
 					callLater(function():void {
 						// Setear el foco en el campo proveedor.-
 						cmbProveedor.setFocus();
-					});
-					_changeGasto = false;
+					});					
 				}
 				
 			}
@@ -379,8 +349,7 @@
 			private function closePreciosHandler(event:Event):void {
 				helpWindow.removeEventListener(CloseEvent.CLOSE, closePreciosHandler);
 				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-				helpWindow = null;
-				
+				helpWindow = null;				
 			}
 			
 			private function resultModify(event:ResultEvent):void {
@@ -399,25 +368,7 @@
 					emitir(gasto);
 				}
 			}
-			
-			private function resultGuardarNroEnvio(event:ResultEvent):void {
-				customPopup = new ErrorPanel();
-				customPopup.cornerRadius = 10;
-				customPopup.backgroundAlpha = .95;
-				customPopup.showButtons = false;
-				customPopup.type = 2;
-				
-				customPopup.errorText = "Número de envío guardado.";
-				
-				PopUpManager.addPopUp(customPopup, this, true);
-				PopUpManager.centerPopUp(customPopup);
-				
-				setTimeout(function():void {
-					PopUpManager.removePopUp(customPopup);
-				}, 1000);
-				
-			}
-			
+						
 			private function grabarFacturaOk(close:Boolean = false):void {
 				if (_documento.emitido || (!_documento.pendiente && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR)) {
 					if (_documento.iva != _documento.getIva().setScale(4, MathContext.ROUND_UP).toString()) {
@@ -456,18 +407,8 @@
 					grabarFacturaOk(false);
 					return;
 				}
-				if ((_documento.cliente && _documento.cliente.categCliId == 'G')) {
-					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
-						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-						helpWindow = null;
-						
-						_documento.usuIdAut = evt.usuarioId;
-						grabarFacturaOk(false);
-					});
-				} else {
-					grabarFacturaOk(false);
-				}
 				
+				grabarFacturaOk(false);
 			}
 			
 			private function obtenerClaveSupervisora(result:Function):void {
@@ -606,15 +547,6 @@
 				if (cmbMoney) {
 					cmbMoney.clear();
 				}
-				if (cmbDepositoD) {
-					cmbDepositoD.clear();
-				}
-				if (cmbDepositoH) {
-					cmbDepositoH.clear();
-				}
-				if (txtCotizacion) {
-					txtCotizacion.text = "";
-				}
 			}
 			
 			public function get gasto():Documento {
@@ -625,6 +557,7 @@
 				if (_documento) {
 					_documento.removeEventListener("_changeTipoDoc", changeTipoDoc);
 					_documento.removeEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
+					_documento.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, changePropertyDoc);
 				}
 				_modoVisualizacion = false;
 				
@@ -642,153 +575,57 @@
 				_documento.cuotasDocumento.inicializarCuotas();
 				_documento.addEventListener("_changeTipoDoc", changeTipoDoc);
 				_documento.addEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
+				_documento.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, changePropertyDoc);
 				
 				_changeGasto = true;
 				
 				dispatchEvent(new Event("_changeDocumento"));
+				
 				invalidateProperties();
+				
+				tieneCambios = false;
+				
+				lineasTienenCambios = false;
+			}
+			
+			public function changePropertyDoc(evt:PropertyChangeEvent):void {
+				if (evt.property != "depto") {
+					tieneCambios = true;
+				}
 			}
 			
 			private function changeTipoDoc(event:Event):void {
-				if (_documento.tipoDoc && _documento.tipoDoc.length > 0) {
-					for each (var tipo:Object in new ArrayCollection(tiposDocList.source)) {
-						if (tipo.value == _documento.tipoDoc) {
-							tipoDoc = tipo;
-						}
-					}
-				} else {
-					tipoDoc = tiposDocList[1];
-				}
-				
 				if (txtRUT) {
 					var contacto:Contacto = _documento.cliente ? _documento.cliente.contacto : (_documento.proveedor ? _documento.proveedor.contacto : null);
 					if (contacto && contacto.paisIdCto == "UY") {
 						rut_stringValidator.validate();
-						
 					}
 				}
 			}
-			
+						
 			private function cargarMonedas():void {
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj.showBusyCursor = true;
-				
-				_documento.esCotizacionDeVenta = _documento.comprobante.codigo == '1';
-				_documento.esOrdenDeVenta = _documento.comprobante.codigo == '10';
-				
-				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					_documento.esCotizacionDeVenta = evt.result as Boolean;
-					if (_documento.nuevo && _documento.esCotizacionDeVenta) {
-						remObjSerieNumero.generateSerieNumero(_documento.comprobante);
-					}
-				});
-				remObj.esCotizacionDeVenta(_documento.comprobante.codigo);
-				
-				var remObj2:RemoteObject = new RemoteObject();
-				remObj2.destination = "CreatingRpc";
-				remObj2.channelSet = ServerConfig.getInstance().channelSet;
-				remObj2.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj2.showBusyCursor = true;
-				remObj2.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					_documento.esOrdenDeVenta = evt.result as Boolean;
-					if (_documento.nuevo && _documento.esOrdenDeVenta) {
-						remObjSerieNumero.generateSerieNumero(_documento.comprobante);
-					}
-				});
-				remObj2.esOrdenDeVenta(_documento.comprobante.codigo);
-				
-				var remObjSol:RemoteObject = new RemoteObject();
-				remObjSol.destination = "CreatingRpc";
-				remObjSol.channelSet = ServerConfig.getInstance().channelSet;
-				remObjSol.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjSol.showBusyCursor = true;
-				remObjSol.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					_documento.esSolicitudCompra = evt.result as Boolean;
-					if (_documento.nuevo && _documento.esSolicitudCompra) {
-						remObjSerieNumero.generateSerieNumero(_documento.comprobante);
-					}
-				});
-				remObjSol.esSolicitudCompra(_documento.comprobante.codigo);
-				
-				
-				cargarMonedasComprobante();
-			}
-			
-			private function cargarMonedasComprobante():void {
-				if (_documento.esOrdenDeVenta || _documento.esCotizacionDeVenta || _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE) {
+				if (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
 					monedas = new ArrayCollection();
 					var code:Number = Number(_documento.comprobante.codigo);
 					for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
-						if (_documento.comprobante.esProceso80()) {
-							if (moneda.codigo == "1" || moneda.codigo == "2" || moneda.codigo == "4" || moneda.codigo == "5") {
-								monedas.addItem(moneda);
-							}
-						} else if (_documento.comprobante.esProceso14()) { // Para los 14, 15 y 16 solo Dólares *
-							if (moneda.codigo == "5") {
-								monedas.addItem(moneda);
-							}
-						} else {
-							monedas.addItem(moneda);
-						}
-						
+						monedas.addItem(moneda);
 					}
 					if (_documento.moneda) {
-						var m:Moneda = _documento.moneda;
-						if (m.nombre.indexOf("*") <= 0) {
-							_documento.comprobante.aster = false;
-						} else {
-							_documento.comprobante.aster = true;
-						}
+						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
 					}
 				} else {
-					if (!_documento.comprobante.aster) { // Si es oficial el comprobante.
-						monedas = new ArrayCollection();
-						for each (var m1:Moneda in CatalogoFactory.getInstance().monedas) {
-							if (m1.nombre.indexOf("*") <= 0 || _documento.comprobante.codigo == '100' || _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '120') { // Agrega las monedas oficiales.
-								if (_documento.comprobante.codigo == '120') {
-									if (!(m1.codigo == '1' || m1.codigo == '4')) {
-										monedas.addItem(m1);
-									}
-								} else {
-									monedas.addItem(m1);
-								}
-							}
-						}
-					} else {
-						monedas = new ArrayCollection();
-						for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
-							if (mda.nombre.indexOf("*") > 0) { // Agrega las monedas NO oficiales.
-								monedas.addItem(mda);
-							}
+					monedas = new ArrayCollection();
+					for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
+						if (mda.nombre.indexOf("*") > 0) { // Agrega las monedas NO oficiales.
+							monedas.addItem(mda);
 						}
 					}
-					if (_documento.moneda) {
-						var mm:Moneda = _documento.moneda;
-						if (mm.nombre.indexOf("*") <= 0) {
-							_documento.comprobante.aster = false;
-						} else {
-							_documento.comprobante.aster = true;
-						}
+					if (_documento.moneda) {						
+						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
 					}
-					
 				}
 				_documento.update();
 				
-				/*
-				tieneCambios = false;
-				callLater(function():void {
-				_documento.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
-				if (evt.property != "depto" && evt.property != "cotizacion" && evt.property != "esSolicitudCompra") {
-				tieneCambios = true;
-				}
-				
-				});
-				
-				});
-				*/
 			}
 			
 			private function resultSerieNumero(event:ResultEvent):void {
@@ -818,33 +655,20 @@
 					helpWindow.width = 1120;
 					helpWindow.height = 600;
 					
-					frmLineasVenta = new FrmLineasVenta();
-					frmLineasVenta.documento = _documento;
-					frmLineasVenta.lineasVenta = _documento.lineas;
-					frmLineasVenta.moneda = cmbMoney.selectedItem; // Pasar Moneda. 
-					
-					if (_documento.esCotizacionDeVenta) {
-						var param:ParametrosAdministracion = CatalogoFactory.getInstance().parametrosAdministracion;
-						var depPpal:String = param.depIdParAdm.toString();
-						for each (var dep:Deposito in CatalogoFactory.getInstance().depositos) {
-							if (depPpal == dep.codigo) {
-								frmLineasVenta.deposito = dep;
-								break;
-							}
-						}
-					} else {
-						frmLineasVenta.deposito = cmbDepositoD.selectedItem; // Pasar Deposito para control de Stock.
-					}
-					
+					frmLineasGasto = new FrmLineasGasto();
+					frmLineasGasto.documento = _documento;
+					frmLineasGasto.lineasDocumento = _documento.lineas;
+					frmLineasGasto.moneda = cmbMoney.selectedItem; // Pasar Moneda. 
+										
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
 					
 					helpWindow.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
-					frmLineasVenta.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+					frmLineasGasto.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
 					
 					helpWindow.closeButton.visible = false;
 					
-					helpWindow.addElement(frmLineasVenta);
+					helpWindow.addElement(frmLineasGasto);
 				}
 			}
 			
@@ -853,14 +677,14 @@
 				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 				helpWindow = null;
 				
-				if (frmLineasVenta.tieneCambios) {
+				if (frmLineasGasto.tieneCambios) {
 					tieneCambios = true;
 					lineasTienenCambios = true;
 					_documento.usuIdAut = null;
 					_usuarioAutorizante = null;
 				}
 				
-				frmLineasVenta = null;
+				frmLineasGasto = null;
 				
 				callLater(function():void {
 					_documento.update();
@@ -930,27 +754,7 @@
 					cmbProveedor.setFocus();
 				});
 			}
-			
-			protected function hayStock():Boolean {
-				for each (var linea:LineaDocumento in _documento.lineas.lineas) {
-					if (!linea.hasStock) {
-						return false;
-					}
-				}
-				return true;
-			}
-			
-			private function getStockInsuficienteMessage(lineas:ArrayCollection):String {
-				var probMsg:String = "Stock Insuficiente:\n";
-				for each (var linea:LineaDocumento in lineas) {
-					if (!linea.hasStock) {
-						var stock:BigDecimal = linea.stock ? linea.stock.setScale(2, MathContext.ROUND_HALF_UP) : BigDecimal.ZERO;
-						probMsg += "[" + linea.articulo.codigo + "-" + linea.concepto + "]. En stock '" + stock + "'. Vendidas: " + linea.cantidad + ".\n";
-					}
-				}
-				return probMsg;
-			}
-			
+						
 			private function confirm_closeHandler(event:Event):void {
 				helpWindow.removeEventListener(CloseEvent.CLOSE, confirm_closeHandler);
 				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -970,16 +774,9 @@
 					}
 				});
 				remObj.existeTCFiscal(_documento.moneda.codigo);
-				
 			}
-			
 						
 			private function guardarGasto(auditoria:Auditoria = null):void {
-				// Si documento es un contado, el plan de pagos debe de ser nulo y las cuotas deben de ser 0;
-				/*if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO || _documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.RECIBO_COBRO || _documento.comprobante.isMovimentoDeStockDeCliente() || _documento.comprobante.isMovimentoDeStockDeProveedor()) {
-					_documento.planPagos = null;
-					_documento.cuotasDocumento.cuotas = new ArrayCollection();
-				}*/
 				tieneCambios = false;
 				
 				running = true;
@@ -1142,8 +939,9 @@
 				if (item && item.hasOwnProperty("codigo")) {
 					label = item.codigo;
 				}
+				
 				if (item && item.hasOwnProperty("nombre")) {
-					label += " - " + item.nombre;
+					label += " - " + String(item.nombre).toUpperCase();
 				}				
 				return label;
 			}			
@@ -1199,7 +997,7 @@
 						
 			protected function txtComments_keyDownHandler(event:KeyboardEvent):void {
 				if (event.keyCode == Keyboard.TAB) {
-					cmdImprimir.setFocus();
+					//cmdImprimir.setFocus();
 				}
 			}
 			
@@ -1215,13 +1013,7 @@
 					remObjBorrar.baja(_documento);
 				}
 			}
-			
-			protected function txtCotizacion_changeHandler(event:Event):void {
-				_documento.docTCC = txtCotizacion.text;
-				tieneCambios = true;
-				CatalogoFactory.getInstance().ultimaCotizacion = Number(txtCotizacion.text);
-			}
-			
+						
 			protected function changeMonedaListener(event:MonedaEvent):void {
 				var oldmoneda:Moneda = event.oldValue as Moneda;
 				var newmoneda:Moneda = event.newValue as Moneda;
@@ -1495,29 +1287,6 @@
 				}				
 			}	
 			
-			
-			protected function ddlTipoDoc_changeHandler(event:IndexChangeEvent):void {
-				tipoDoc = ddlTipoDoc.selectedItem as Object;
-				_documento.tipoDoc = tipoDoc.value;
-				
-				var ctoDocumento:String = "";
-				if (_documento.cliente != null) {
-					ctoDocumento = Utils.clean_ci(_documento.cliente.contacto.ctoDocumento);
-				} else if (_documento.proveedor != null) {
-					ctoDocumento = Utils.clean_ci(_documento.proveedor.contacto.ctoDocumento);
-				}
-				
-				txtRUT.maxChars = tipoDoc != null && tipoDoc.value == 'C' ? 8 : 12;
-				txtRUT.text = (tipoDoc != null && tipoDoc.value == 'C') 
-					? (ctoDocumento != null && ctoDocumento.length > 0 ? ctoDocumento : "") 
-					: (_documento.cliente ? _documento.cliente.contacto.ctoRUT : _documento.proveedor.contacto.ctoRUT);
-				
-				callLater(function():void {
-					txtRUT.setFocus();
-				});
-			}
-			
-			
 			protected function txtRUT_changeHandler(event:TextOperationEvent):void {
 				var count:int = tipoDoc != null && tipoDoc.value == 'C' ? 7 : 12;
 				
@@ -1559,6 +1328,16 @@
 			}
 			
 			
+			protected function cmbCentroCosto_changeHandler(event:Event):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function cmbReferencia_changeHandler(event:Event):void {
+				// TODO Auto-generated method stub
+				
+			}
+			
 		]]>
 		
 	</fx:Script>
@@ -1584,10 +1363,10 @@
 		<loader:LoadComponent />
 	</s:VGroup>
 	<s:Group width="100%" height="100%" excludeFrom="cargando"> 		
-		<s:Label width="120" color="#ff0000" fontSize="24" left="440" textAlign="center" top="15" text="Finalizado" visible="{!_documento.pendiente}" />
+		<s:Label width="120" color="#ff0000" fontSize="28" left="640" textAlign="center" top="15" text="Finalizado" visible="{!_documento.pendiente}" />
 		<s:VGroup width="100%" height="100%" gap="0">
 			<s:HGroup width="100%" paddingTop="0" gap="0">
-				<s:Form id="form" width="380" textAlign="right" maxWidth="340">
+				<s:Form id="form" width="580" textAlign="right" maxWidth="340">
 					<s:layout>
 						<s:FormLayout gap="-12" />
 					</s:layout>
@@ -1619,6 +1398,21 @@
 						<s:TextInput id="txtRazonSocial" width="100%" textAlign="left" enter="{cmbMoney.setFocus()}" prompt="Ingrese razón social" text="@{_documento.razonSocial}"
 									 editable="{!_modoVisualizacion}" maxChars="100" />
 					</s:FormItem>
+					<s:FormItem width="100%" label="Centro costo">
+						<components:MyAutoComplete id="cmbCentroCosto" width="100%" textAlign="left" change="cmbCentroCosto_changeHandler(event)" 
+												   dataProvider="{CatalogoFactory.getInstance().centrosCosto}" labelField="nombre" matchType="anyPart" prompt="Ingrese centro costo" allowNewValues="false"
+												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
+												   dropDownWidth="320" dropDownRowCount="10" selectedItem="{_centroCostos}"/>
+					</s:FormItem>
+					<s:FormItem width="100%" label="Referencia">
+						<components:MyAutoComplete id="cmbReferencia" width="100%" textAlign="left" change="cmbReferencia_changeHandler(event)" 
+												   dataProvider="{CatalogoFactory.getInstance().referencias}" labelField="nombre" matchType="anyPart" prompt="Ingrese referencia" allowNewValues="false"
+												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
+												   dropDownWidth="320" dropDownRowCount="10" selectedItem="{_referencia}"/>
+					</s:FormItem>
+					
 				</s:Form>
 				
 				<s:Form width="100%" textAlign="right">
@@ -1645,15 +1439,13 @@
 						<s:TextInput id="txtDirection" width="100%" textAlign="left" enter="{txtRUT.setFocus()}" prompt="" text="@{_documento.direccion}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="100" />
 					</s:FormItem>
-					<s:FormItem width="100%" label="Documento">
+					<s:FormItem width="100%" label="RUT">
 						<s:HGroup width="100%">
-							<s:DropDownList id="ddlTipoDoc" dataProvider="{tiposDocList}" width="75" textAlign="left" change="ddlTipoDoc_changeHandler(event)" selectedItem="{tipoDoc}"/>
-							<s:TextInput id="txtRUT" textAlign="left" enter="{txtTelephone.setFocus()}" prompt="No tiene" text="@{_documento.rut}" change="txtRUT_changeHandler(event)" restrict="0-9"
-										 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="{tipoDoc != null &amp;&amp; tipoDoc.value == 'C' ? 8 : 12}" widthInChars="12" />
+							<s:TextInput id="txtRUT" textAlign="left" enter="{txtTelephone.setFocus()}" prompt="No tiene" text="{_documento.rut}" editable="false"/>
 						</s:HGroup>
 					</s:FormItem>
 					<s:FormItem width="100%" label="Teléfono">
-						<s:TextInput id="txtTelephone" width="100%" textAlign="left" enter="{cmbDepositoD.setFocus()}" prompt="No tiene" text="@{_documento.telefono}"
+						<s:TextInput id="txtTelephone" width="100%" textAlign="left" prompt="No tiene" text="@{_documento.telefono}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="50" />
 					</s:FormItem>
 				</s:Form>
@@ -1664,34 +1456,6 @@
 						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"
 									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
 					</s:HGroup>
-					<s:Spacer height="5" />
-					<s:Form width="100%" textAlign="right">
-						<s:layout>
-							<s:FormLayout gap="-12" />
-						</s:layout>
-						<s:FormItem width="100%" label="Depósito desde">
-							<components:MyAutoComplete id="cmbDepositoD" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre"
-													   matchType="anyPart" prompt="Ninguno" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
-													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
-													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{cmbDepositoH}" previous_focus="{txtTelephone}"
-													   selectedItem="@{_documento.depositoOrigen}" enabled="{!_modoVisualizacion}" />
-						</s:FormItem>
-						<s:FormItem width="100%" label="Depósito hasta">
-							<components:MyAutoComplete id="cmbDepositoH" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().depositos }" labelField="nombre"
-													   matchType="anyPart" prompt="Ninguno" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
-													   allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
-													   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{txtTCF}" previous_focus="{cmbDepositoD}"
-													   selectedItem="@{_documento.depositoDestino}" enabled="{!_modoVisualizacion}" />
-						</s:FormItem>
-						<s:FormItem width="100%" label="T.C.Fiscal"> 
-							<components1:MyTextInput id="txtTCF" width="100" text="{_documento.docTCF}" enter="cmdEditSL.setFocus()"
-													 editable="false" permitirNegativos="false"/>
-						</s:FormItem>
-						<s:FormItem width="100%" label="T.C.Comercial">
-							<components1:MyTextInput id="txtCotizacion" width="100" text="@{_documento.docTCC}" enter="cmdEditSL.setFocus()" change="txtCotizacion_changeHandler(event)" 
-													 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" permitirNegativos="false" fontFamily="Helvetica"/>
-						</s:FormItem>
-					</s:Form>
 				</s:VGroup>
 			</s:HGroup>
 			
@@ -1716,7 +1480,7 @@
 				</s:VGroup>
 				
 				<s:VGroup width="316" height="100%" gap="0">
-					<facturacion:SummaryPnl id="summary" width="100%" height="100%" factura="{_documento}" />
+					<facturacion:SummaryGasto id="summary" width="100%" height="100%" gasto="{_documento}" />
 				</s:VGroup>
 			</s:HGroup>
 		</s:VGroup>
@@ -1735,12 +1499,12 @@
 	
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
-			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
+			<!--components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
 			<s:Spacer width="10" />
 			<components1:IconButton id="cmdTrazabilidad" click="cmdTrazabilidad_clickHandler(event)" styleName="trackingButton" label="Trazabilidad" toolTip="Trazabilidad"
 									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}" />
 			<components1:IconButton id="cmdAuditoria" click="cmdAuditoria_clickHandler(event)" styleName="trackingButton" label="Auditoría" toolTip="Líneas auditoría"
-									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}"/>
+									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}"/-->
 			
 			<s:Spacer width="100%" />
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />

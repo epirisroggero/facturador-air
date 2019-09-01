@@ -218,7 +218,7 @@
 						if (esAfilado() && modoCuponera) {
 							nueva.setArticulo(cuponera.articulo);
 							nueva.setConcepto(cuponera.articulo.nombre);
-							nueva.precio = cuponera.precioUnitario;
+							nueva.precio = convertirMoneda(cuponera).toString();
 						}
 						lineasVenta.lineas.addItem(nueva);
 					}
@@ -228,6 +228,10 @@
 					}
 					dgLineasVenta.dataProvider = lineasVenta.lineas;
 				}
+			}
+			
+			private function convertirMoneda(cuponera:Cuponera):BigDecimal {
+				return documento.convertirMoneda(cuponera.moneda, documento.moneda, new BigDecimal(cuponera.precioUnitario));
 			}
 
 			private function closePnlHelpHandler(event:CloseEvent):void {
@@ -278,9 +282,15 @@
 											// Obtengo la línea y le seteo los nuevos valores
 											var ld2:LineaDocumento = lineasVenta.lineas.getItemAt(cellPos.rowIndex) as LineaDocumento;
 											ld2.cantidad = ld.cantidad;
-											ld2.precio = ld.precio;
-											ld2.articulo = ld.articulo;
-											ld2.concepto = ld.concepto;
+											if (modoCuponera) {
+												ld2.articulo = cuponera.articulo;
+												ld2.concepto = cuponera.articulo.nombre;
+												ld2.precio = convertirMoneda(cuponera).toString();
+											} else {
+												ld2.precio = ld.precio;
+												ld2.articulo = ld.articulo;
+												ld2.concepto = ld.concepto;
+											}
 											ld2.diametro = ld.diametro;
 											ld2.cascados = ld.cascados;
 											ld2.afilador = ld.afilador;
@@ -313,7 +323,8 @@
 						helpWindow.height = 720;
 
 						articulosPnl = new ArticulosPnl();
-						articulosPnl.articulos = _articulos
+						articulosPnl.articulos = _articulos;
+						articulosPnl.documento =  documento;
 						articulosPnl.articulosCuponera = documento.artCuponera;
 
 						PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
@@ -446,7 +457,7 @@
 				if (esAfilado() && modoCuponera) {
 					nueva.setArticulo(cuponera.articulo);
 					nueva.setConcepto(cuponera.articulo.nombre);
-					nueva.precio = cuponera.precioUnitario;
+					nueva.precio = convertirMoneda(cuponera).toString();
 				}
 				lineasVenta.lineas.addItem(nueva);
 
@@ -605,7 +616,7 @@
 								if (modoCuponera) {
 									ld2.articulo = cuponera.articulo;
 									ld2.concepto = cuponera.articulo.nombre;
-									ld2.precio = cuponera.precioUnitario
+									ld2.precio = convertirMoneda(cuponera).toString();
 								} else {
 									ld2.articulo = ld.articulo;
 									ld2.concepto = ld.concepto;
@@ -770,7 +781,8 @@
 				var lineaVenta:LineaDocumento = lineasVenta.lineas.getItemAt(cellPos.rowIndex) as LineaDocumento;
 
 				var codigoContacto:String = documento.esSolicitudCompra ? (documento.proveedor ? documento.proveedor.codigo : null) : (documento.cliente ? documento.cliente.codigo : null);
-
+				var nombreContacto:String = documento.esSolicitudCompra ? (documento.proveedor ? documento.proveedor.nombre : "") : (documento.cliente ? documento.cliente.nombre : "");
+				
 				if (!lineaVenta.articulo || !lineaVenta.articulo.codigo || !codigoContacto) {
 					return;
 				}
@@ -779,7 +791,7 @@
 				}
 
 				helpWindow = new TitleWindow();
-				helpWindow.title = "Antecedentes artículo";
+				helpWindow.title = "Antecedentes de " + (documento.esSolicitudCompra ? "compra" : "venta") + " del artículo a '" + nombreContacto.toUpperCase() + "'";
 				helpWindow.width = 1000;
 				helpWindow.height = 500;
 
@@ -847,13 +859,13 @@
 				}
 
 				helpWindow = new TitleWindow();
-				helpWindow.title = "Antecedentes artículo";
+				helpWindow.title = "Antecedentes de " + (documento.esSolicitudCompra ? "compra" : "venta") + " del artículo";
 				helpWindow.width = 1000;
 				helpWindow.height = 500;
 
 				var antecedentesPnl:AntecedentesPnl = new AntecedentesPnl();
 				antecedentesPnl.articulo = lineaVenta.articulo.codigo;
-				antecedentesPnl.obtenerAntecedentes();
+				antecedentesPnl.obtenerAntecedentes(!documento.esSolicitudCompra);
 
 				PopUpManager.addPopUp(helpWindow, this.parentApplication.owner, true);
 				PopUpManager.centerPopUp(helpWindow);
@@ -1073,14 +1085,18 @@
 
 													public function codigoNombreLabelFunction(item:Object):String {
 														var label:String;
+														if (!item) {
+															return "";
+														}
+														
 
-														if (item && item.hasOwnProperty("codigo")) {
+														if (item.hasOwnProperty("codigo")) {
 															label = item.codigo;
 														}
-														if (item && item.hasOwnProperty("nombre")) {
+														if (item.hasOwnProperty("nombre")) {
 															label += " - " + (outerDocument.esAfilado() ? item.nombre.toUpperCase() : item.nombre);
 														}
-														if (item && item.hasOwnProperty("codigoOrigen")) {
+														if (item.hasOwnProperty("codigoOrigen")) {
 															label += (item.codigoOrigen && item.codigoOrigen.length > 0) ? (" [" + item.codigoOrigen + "]") : "";
 														}
 														return label;
@@ -1773,7 +1789,7 @@
 					</s:stroke>
 				</s:Rect>
 				<s:HGroup height="100%" horizontalAlign="left" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="middle" gap="6">
-					<s:Label text="Stock:" visible="{currentLine.stockValue.length > 0}" includeInLayout="{currentLine.stockValue.length > 0}" />
+					<s:Label text="STOCK:" visible="{currentLine.stockValue.length > 0}" includeInLayout="{currentLine.stockValue.length > 0}" />
 					<s:Label text="Sin control de stock." visible="{currentLine.stockValue.length == 0}" includeInLayout="{currentLine.stockValue.length == 0}" />
 					<s:Label id="txtStock" text="{nf_Espanol_Espanol.format(currentLine.stockValue)}" visible="{currentLine.stockValue.length > 0}"
 							 includeInLayout="{currentLine.stockValue.length > 0}" />

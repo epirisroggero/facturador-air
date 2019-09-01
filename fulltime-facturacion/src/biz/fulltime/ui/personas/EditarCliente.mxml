@@ -455,6 +455,9 @@
 				var isValidForm:Boolean = validatorErrorArray.length == 0;
 				if (isValidForm) {
 					if (!cliente.esNuevo) {
+						if (txtRUT.text && txtRUT.text.length > 0) { // Si el usuario tiene RUT seteado el tipo de documento es RUT siempre.
+							cliente.contacto.ctoDocumentoTipo = "R";
+						}
 						cliente.mergeCliente();
 					} else {
 						if (esVendedorJunior()) {
@@ -694,8 +697,9 @@
 				var selectedItem:Object = ddlTipoDoc.selectedItem;
 				
 				cliente.contacto.ctoDocumentoTipo = selectedItem.value as String;
-				cliente.contacto.ctoDocumentoSigla = selectedItem.label as String;
-				cliente.contacto.ctoDocumento = "";
+				if (cliente.contacto.ctoDocumentoTipo && cliente.contacto.ctoDocumentoTipo != "R") {
+					cliente.contacto.ctoDocumentoSigla = selectedItem.label as String;
+				}
 			}
 			
 			protected function txtCodigo_changeHandler(event:TextOperationEvent):void {
@@ -790,17 +794,20 @@
 											</s:HGroup>
 										</mx:FormItem>
 										<mx:FormItem width="100%" label="Razón Social" styleName="ItemStyle">
-											<s:TextInput id="txtRazonSocial" width="100%" text="@{cliente.contacto.ctoRSocial}" enter="txtRUT.setFocus()" maxChars="100"/>
+											<s:TextInput id="txtRazonSocial" width="100%" text="@{cliente.contacto.ctoRSocial}" enter="txtDireccion.setFocus()" maxChars="100"/>
 										</mx:FormItem>
-										<mx:FormItem width="100%" label="RUT" styleName="ItemStyle">
-											<s:TextInput id="txtRUT" width="46%" text="@{cliente.contacto.ctoRUT}" enter="txtDireccion.setFocus()" restrict="0-9" maxChars="12" />
-										</mx:FormItem>
-										<mx:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
-											<s:HGroup width="46%" verticalAlign="middle">
-												<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
-												<s:TextInput id="txtDocument" width="100%" text="@{cliente.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
+										<s:FormItem width="100%" label="Tipo Documento" styleName="ItemStyle">
+											<s:DropDownList id="ddlTipoDoc" width="100" dataProvider="{tipodDocList}" selectedItem="{_tipoDoc}" change="ddlTipoDoc_changeHandler(event)"/>
+										</s:FormItem>
+										<s:FormItem width="100%" label="RUT" styleName="ItemStyle">
+											<s:TextInput id="txtRUT" width="235" text="@{cliente.contacto.ctoRUT}" enter="txtDocumentSigla.setFocus()" restrict="0-9" maxChars="12" />
+										</s:FormItem>
+										<s:FormItem width="100%" label="Documento" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle">
+												<s:TextInput id="txtDocumentSigla" width="70" text="@{cliente.contacto.ctoDocumentoSigla}" enter="txtDocument.setFocus()" maxChars="16" />
+												<s:TextInput id="txtDocument" width="160" text="@{cliente.contacto.ctoDocumento}" enter="txtDireccion.setFocus()" restrict="0-9A-Z" maxChars="24" />
 											</s:HGroup>
-										</mx:FormItem>
+										</s:FormItem>
 										<mx:FormItem width="100%" label="Dirección" styleName="ItemStyle">
 											<s:TextInput id="txtDireccion" width="100%" text="@{cliente.contacto.ctoDireccion}" enter="txtLocalidad.setFocus()" maxChars="50"/>
 										</mx:FormItem>

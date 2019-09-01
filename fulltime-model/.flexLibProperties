@@ -97,6 +97,10 @@
     <classEntry path="biz.fulltime.model.CategoriasArticulo"/>
     <classEntry path="biz.fulltime.model.LineaCuponera"/>
     <classEntry path="biz.fulltime.model.Cuponera"/>
+    <classEntry path="biz.fulltime.dto.StockActualDTO"/>
+    <classEntry path="biz.fulltime.model.CentrosCosto"/>
+    <classEntry path="biz.fulltime.model.Referencia"/>
+    <classEntry path="biz.fulltime.model.UnidadesStock"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

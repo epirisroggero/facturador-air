@@ -109,6 +109,8 @@
     <classEntry path="biz.fulltime.ui.forms.FrmLineasCuponera"/>
     <classEntry path="biz.fulltime.ui.forms.DGNumberEditorInt"/>
     <classEntry path="biz.fulltime.ui.facturacion.CapturarImagen"/>
+    <classEntry path="biz.fulltime.ui.forms.FrmLineasGasto"/>
+    <classEntry path="biz.fulltime.ui.facturacion.SummaryGasto"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

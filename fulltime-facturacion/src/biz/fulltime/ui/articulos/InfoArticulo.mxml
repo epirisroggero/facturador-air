@@ -13,6 +13,7 @@
 			import biz.fulltime.model.CotizacionesModel;
 			import biz.fulltime.model.Moneda;
 			import biz.fulltime.model.PreciosVenta;
+			import biz.fulltime.model.UnidadesStock;
 			import biz.fulltime.model.Usuario;
 			import biz.fulltime.rapi.Cotizaciones;
 			import biz.fulltime.ui.facturacion.AntecedentesPnl;
@@ -35,6 +36,8 @@
 			import mx.rpc.remoting.RemoteObject;
 			
 			import spark.components.TitleWindow;
+			
+			import util.CatalogoFactory;
 
 
 			private const DEFAULT_WITH:Number = 100;
@@ -48,6 +51,9 @@
 
 			[Bindable]
 			private var _stock:BigDecimal;
+
+			[Bindable]
+			private var _unidad:String;
 
 
 			[Bindable]
@@ -191,9 +197,6 @@
 				if (_changeArticulo) {
 					_changeArticulo = false;
 					if (_articulo) {
-//						if (container.numChildren > 0) {
-//							container.removeChildAt(0);
-//						}
 						if (_articulo.blob && _articulo.blob.length > 1) {
 							var movieClipLoader:Loader = new Loader();
 							movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
@@ -204,6 +207,16 @@
 							maximizeImage = false;
 						}
 						obtenerStock();
+						
+						if (_articulo.unidadId) {
+							for each (var unidad:UnidadesStock in CatalogoFactory.getInstance().unidadesstock)  {
+								if (unidad.codigo == _articulo.unidadId) {
+									_unidad = unidad.nombre;
+									break;
+								}
+								
+							}
+						}						
 
 						var cotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
 
@@ -905,10 +918,11 @@
 								</s:FormItem>
 							</s:Form>
 						</s:Panel>
-						<s:VGroup width="230" height="100%">
+						<s:VGroup width="300" height="100%">
 							<s:Panel width="100%" height="75" title="Stock principal" styleName="pnlInternoArticulo" minHeight="0">
-								<s:HGroup width="100%" horizontalAlign="right" paddingTop="10" paddingRight="10">
+								<s:HGroup width="100%" horizontalAlign="right" paddingTop="10" paddingRight="10" gap="10">
 									<s:Label fontSize="22" text="{nf_Espanol_Espanol.format(_stock)}" maxDisplayedLines="1" />
+									<s:Label fontSize="22" text="{_unidad}" maxDisplayedLines="1" />
 								</s:HGroup>
 							</s:Panel>
 							<s:Panel width="100%" height="100%" title="Otros datos" styleName="pnlInternoArticulo" fontWeight="normal">

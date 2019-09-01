@@ -802,12 +802,13 @@
 						</s:HGroup>
 						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
 							<s:HGroup width="50%" paddingTop="0" verticalAlign="middle" styleName="ItemStyle" gap="5">
-								<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="RUT" />
+								<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" 
+									text="{cliente.contacto.ctoDocumentoSigla ? cliente.contacto.ctoDocumentoSigla : ''}" />
 								<s:BorderContainer width="100%" backgroundColor="0xFAFAFA" minWidth="0" minHeight="0" borderAlpha=".3">
 									<s:layout>
 										<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
 									</s:layout>
-									<s:Label id="lblRUT" width="100%" text="{cliente.contacto.ctoRUT ? cliente.contacto.ctoRUT : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
+									<s:Label width="100%" text="{cliente.contacto.ctoDocumento ? cliente.contacto.ctoDocumento : ''}" maxDisplayedLines="1" showTruncationTip="true" />
 								</s:BorderContainer>
 							</s:HGroup>
 
@@ -873,14 +874,6 @@
 				</s:HGroup>
 				<s:HGroup width="100%">
 					<s:HGroup width="34%" verticalAlign="middle" styleName="ItemStyle">
-						<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" 
-								 text="{cliente.contacto.ctoDocumentoSigla ? cliente.contacto.ctoDocumentoSigla : ''}" />
-						<s:BorderContainer width="100%" backgroundColor="0xFAFAFA" minWidth="0" minHeight="0" borderAlpha=".3">
-							<s:layout>
-								<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
-							</s:layout>
-							<s:Label width="100%" text="{cliente.contacto.ctoDocumento ? cliente.contacto.ctoDocumento : ''}" maxDisplayedLines="1" showTruncationTip="true" />
-						</s:BorderContainer>
 					</s:HGroup>
 					<s:HGroup width="66%" verticalAlign="middle" styleName="ItemStyle">
 						<s:Label width="80" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Correo 2" />

@@ -76,7 +76,7 @@
 						<menuitem label="Listado de recibos      " data="recibos" accelerator="F6" enabled="true"/>
 					</menu>
 					<menu label="Gastos" data="top">
-						<menuitem label="Listado de gastos" data="gastos" enabled="false"/>
+						<menuitem label="Listado de gastos" data="gastos" enabled="true"/>
 					</menu>
 				</menues>
 				;

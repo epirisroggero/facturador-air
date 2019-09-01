@@ -60,6 +60,9 @@
 			[Bindable]
 			public var myDP:ArrayCollection = new ArrayCollection([{value:"B", label:"Baja"}, {value:"M", label:"Media"}, {value:"A", label:"Alta"}]);
 
+			[Bindable]
+			public var myDPVincula:ArrayCollection = new ArrayCollection([{value:"", label:""}, {value:"N", label:"NO vincula"}, {value:"V", label:"SI vincula"}]);
+
 			private var imageFilter:FileFilter = new FileFilter("Images", "*.jpg;*.jpeg;*.gif;*.png");
 
 			private var fileR:FileReference = new FileReference();
@@ -815,6 +818,7 @@
 				myTabBar.setCloseableTab(1, false);
 				myTabBar.setCloseableTab(2, false);
 				myTabBar.setCloseableTab(3, false);
+				myTabBar.setCloseableTab(4, false);
 			}
 			
 			protected function dfSelectedDate_changeHandler(event:CalendarLayoutChangeEvent):void {
@@ -961,7 +965,7 @@
 			
 			
 
-			
+						
 		]]>
 	</fx:Script>
 
@@ -1107,10 +1111,30 @@
 							<s:TextArea id="txtPreview" width="100%" height="100%" />
 						</s:VGroup>
 					</s:VGroup>
-					
+				</s:NavigatorContent>
+				
+				<s:NavigatorContent label="Vincular usuario" enabled="false">
+					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">
+						<s:Form width="100%" height="100%" fontStyle="normal">
+							<s:layout>
+								<s:FormLayout paddingBottom="5" gap="-12"/>
+							</s:layout>
+							<s:FormItem fontWeight="bold" textAlign="right" label="Vincula" >
+								<s:DropDownList id="ddlVincula" textAlign="left" labelField="label" dataProvider="{myDPVincula}" selectedIndex="0" />
+							</s:FormItem>
+							<s:FormItem textAlign="right" label="Contacto" enabled="{ nueva }">
+								<components:MyAutoComplete id="cmbContacto1" width="100%" textAlign="left"
+														   dataProvider="{ catalogs.getContactosActivos()}" labelField="nombre" matchType="anyPart"
+														   prompt="Contacto" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+														   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="contactoLabelFunction" backspaceAction="focus"
+														   dropDownRowCount="10" selectedItem="{tarea.contacto}" />
+							</s:FormItem>
+						</s:Form>
+					</s:VGroup>
 				</s:NavigatorContent>
 					
-				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta">
+				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta" enabled="false">
 					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">
 						<s:HGroup width="100%" verticalAlign="middle" paddingLeft="10" paddingRight="10">
 							<s:Label text="Adjuntar Imagen:" />

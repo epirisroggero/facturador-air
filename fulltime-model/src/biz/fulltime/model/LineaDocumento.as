@@ -52,13 +52,15 @@ public class LineaDocumento extends EventDispatcher {
 	
 	public var notas:String="";
 	
-	public var conceptoIdLin:String="";
+	public var conceptoIdLin:String = "";
 
 	public var documento:Documento;
 	
 	private var _deposito:String;
 	
 	private var _articulo:Articulo;
+	
+	private var _concept:Concepto;
 	
 	private var remObj:RemoteObject;
 
@@ -337,8 +339,6 @@ public class LineaDocumento extends EventDispatcher {
 
 
 	public function elegirArticulo(value:Articulo):void {
-		//articulo = value;
-		
 		if (value != null) {
 			if (documento != null) {
 				var artNombre:String = value.nombre; 
@@ -356,8 +356,26 @@ public class LineaDocumento extends EventDispatcher {
 			precioDistribuidor = "0";
 			costo = "0";
 		}
-
 		
+	}
+
+	public function elegirConcepto(value:Concepto):void {
+		if (value != null) {
+			if (documento != null) {
+				var conceptoNombre:String = value.nombre; 
+				if (conceptoNombre && conceptoNombre.length > 50) {
+					conceptoNombre = conceptoNombre.substr(0, 50);
+				}
+				
+				conceptoIdLin = value.codigo;
+			} 
+		} 
+	}
+
+	public function elegirIva(value:Iva):void {
+		if (value != null) {
+			ivaArticulo = value;
+		} 
 	}
 	
 	public function obtenerStock():void {
@@ -389,6 +407,9 @@ public class LineaDocumento extends EventDispatcher {
 		var value:* = event.result;
 		if (value is String) {
 			var stockValue:BigDecimal = new BigDecimal(value);
+			if (documento.esAfilado()) {
+				stockValue = stockValue.negate().setScale(0, MathContext.ROUND_HALF_UP);
+			}
 			if (stockValue.subtract(getCantidad()).compareTo(BigDecimal.ZERO) == -1) {
 				hasStock = false;
 			} else {
@@ -574,15 +595,20 @@ public class LineaDocumento extends EventDispatcher {
 			case '124':
 				return false;
 		}
+		
 		return (articulo != null && !documento.comprobante.aster && !documento.comprobante.exento);
 	}
 
 
 	public function getTasaIva():BigDecimal {
-		if (!comprobanteComputaIva()) {
-			return BigDecimal.ZERO;
+		if (!documento.comprobante.esGasto()) {
+			if (!comprobanteComputaIva()) {
+				return BigDecimal.ZERO;
+			} else {
+				return articulo.getTasaIva();
+			}			
 		} else {
-			return articulo.getTasaIva();
+			return ivaArticulo != null ? ivaArticulo.getTasaIva() : BigDecimal.ZERO;
 		}
 	}
 
@@ -675,6 +701,7 @@ public class LineaDocumento extends EventDispatcher {
 	public function getCostoTotal():BigDecimal {
 		return getCosto().multiply(new BigDecimal(cantidad)).setScale(4, MathContext.ROUND_UP);
 	}
+	
 	
 	public function getPrecioBaseDistribuidorTotal():BigDecimal {
 		return getPrecioBaseDistribuidor().multiply(new BigDecimal(cantidad)).setScale(4, MathContext.ROUND_UP);
@@ -853,6 +880,14 @@ public class LineaDocumento extends EventDispatcher {
 		} else {
 			return new BigDecimal(linDto4);	
 		}
+	}
+
+	public function get concept():Concepto {
+		return _concept;
+	}
+
+	public function set concept(value:Concepto):void {
+		_concept = value;
 	}
 
 

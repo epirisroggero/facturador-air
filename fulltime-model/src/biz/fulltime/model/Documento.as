@@ -927,6 +927,10 @@ public class Documento extends DocumentoBase {
 	}
 
 	public function comprobanteComputaIva():Boolean {
+		if (comprobante.esGasto()) {
+			return true;
+		}
+		
 		switch (comprobante.codigo) {
 			case '122':
 			case '124':

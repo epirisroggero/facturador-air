@@ -604,25 +604,31 @@
 			}
 						
 			private function cargarMonedas():void {
-				if (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
-					monedas = new ArrayCollection();
-					var code:Number = Number(_documento.comprobante.codigo);
-					for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
-						monedas.addItem(moneda);
-					}
-					if (_documento.moneda) {
-						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
-					}
-				} else {
-					monedas = new ArrayCollection();
-					for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
-						if (mda.nombre.indexOf("*") > 0) { // Agrega las monedas NO oficiales.
+//				if (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
+//					monedas = new ArrayCollection();
+//					var code:Number = Number(_documento.comprobante.codigo);
+//					for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+//						monedas.addItem(moneda);
+//					}
+//					if (_documento.moneda) {
+//						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
+//					}
+//				} else {
+				monedas = new ArrayCollection();
+				for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
+					var monedaAster:Boolean = mda.nombre.indexOf("*") > 0;
+					if (_documento.comprobante.aster) {
+						if (monedaAster) {
+							monedas.addItem(mda);
+						}
+					} else {
+						if (!monedaAster) {
 							monedas.addItem(mda);
 						}
 					}
-					if (_documento.moneda) {						
-						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
-					}
+//					if (_documento.moneda) {						
+//						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
+//					}
 				}
 				_documento.update();
 				
@@ -638,10 +644,11 @@
 			
 			protected function cmdEditSL_clickHandler(event:MouseEvent):void {
 				if (_documento.moneda == null || (_documento.preciosVenta == null)) {
-					if (!_documento.esSolicitudCompra) {
+					/*if (!_documento.esSolicitudCompra) {
 						Alert.show("Para poder agregar Líneas de Venta debe seleccionar una 'Moneda' y 'Lista de Precios'", "Error");
 						return;
-					} else if (!_documento.moneda) {
+					} else */
+					if (!_documento.moneda) {
 						Alert.show("Para poder agregar Líneas de Compra debe seleccionar una 'Moneda'", "Error");
 						return;
 					}
@@ -1388,9 +1395,8 @@
 													   dataProvider="{_proveedores}" labelField="nombre" matchType="anyPart" prompt="Ingrese proveedor" allowNewValues="false"
 													   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 													   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus" next_focus="{txtRazonSocial}"
-													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" dropDownWidth="320" dropDownRowCount="10" 
-													   enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
-							<s:Label id="lblCorreoProveedor" fontSize="10" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
+													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
+							<s:Label id="lblCorreoProveedor" fontSize="12" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
 									 visible="{_documento.proveedor &amp;&amp; _documento.proveedor.contacto.ctoEmail1}" />
 						</s:VGroup>
 					</s:FormItem>
@@ -1403,14 +1409,14 @@
 												   dataProvider="{CatalogoFactory.getInstance().centrosCosto}" labelField="nombre" matchType="anyPart" prompt="Ingrese centro costo" allowNewValues="false"
 												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
-												   dropDownWidth="320" dropDownRowCount="10" selectedItem="{_centroCostos}"/>
+												   dropDownRowCount="10" selectedItem="{_centroCostos}"/>
 					</s:FormItem>
 					<s:FormItem width="100%" label="Referencia">
 						<components:MyAutoComplete id="cmbReferencia" width="100%" textAlign="left" change="cmbReferencia_changeHandler(event)" 
 												   dataProvider="{CatalogoFactory.getInstance().referencias}" labelField="nombre" matchType="anyPart" prompt="Ingrese referencia" allowNewValues="false"
 												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
-												   dropDownWidth="320" dropDownRowCount="10" selectedItem="{_referencia}"/>
+												   dropDownRowCount="10" selectedItem="{_referencia}"/>
 					</s:FormItem>
 					
 				</s:Form>
@@ -1420,7 +1426,13 @@
 						<s:FormLayout gap="-12" />
 					</s:layout>
 					
-					<s:Spacer height="56" />
+					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
+						<s:Label text="Fecha" styleName="myLabel" />
+						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"
+									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
+					</s:HGroup>
+
+					<s:Spacer height="30" />
 					<s:FormItem width="100%" label="Moneda">
 						<s:VGroup>
 							<components:MyAutoComplete id="cmbMoney" width="200" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart" prompt="Ingrese moneda"
@@ -1450,13 +1462,6 @@
 					</s:FormItem>
 				</s:Form>
 				
-				<s:VGroup width="380">
-					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
-						<s:Label text="Fecha" styleName="myLabel" />
-						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"
-									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
-					</s:HGroup>
-				</s:VGroup>
 			</s:HGroup>
 			
 			<s:HGroup width="100%" height="100%" gap="0">
@@ -1499,28 +1504,21 @@
 	
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
-			<!--components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
-			<s:Spacer width="10" />
-			<components1:IconButton id="cmdTrazabilidad" click="cmdTrazabilidad_clickHandler(event)" styleName="trackingButton" label="Trazabilidad" toolTip="Trazabilidad"
-									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}" />
-			<components1:IconButton id="cmdAuditoria" click="cmdAuditoria_clickHandler(event)" styleName="trackingButton" label="Auditoría" toolTip="Líneas auditoría"
-									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}"/-->
-			
 			<s:Spacer width="100%" />
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
 			
 			<s:Button id="cmdFinalizar" click="cmdFinalizar_clickHandler(event)" styleName="finishButton" label="Finalizar" toolTip="Finalizar documento"
-					  enabled="{_documento.pendiente &amp;&amp; !_documento.nuevo}" focusEnabled="false" />
+					  enabled="{_documento.pendiente &amp;&amp; !_documento.nuevo}" focusEnabled="false" visible="false"/>
 			
 			<s:Spacer width="5" />
-			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false" />
+			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false" enabled="false"/>
 			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Borrar" toolTip="Borrar documento"
 					  enabled="{!_documento.emitido &amp;&amp; !_documento.nuevo}" visible="{!_modoVisualizacion &amp;&amp; !modoVentana}" includeInLayout="{!_modoVisualizacion &amp;&amp; !modoVentana}" focusEnabled="false" />
 			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" visible="{showGuardar &amp;&amp; !_modoVisualizacion}"
 					  includeInLayout="{showGuardar &amp;&amp; !_modoVisualizacion}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
-			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" enabled="{!_documento.nuevo}" includeInLayout="{showEMail}"
-					  visible="{showEMail}" focusEnabled="false" />
+			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" includeInLayout="{showEMail}"
+					  visible="{showEMail}" focusEnabled="false" enabled="false"/>
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />

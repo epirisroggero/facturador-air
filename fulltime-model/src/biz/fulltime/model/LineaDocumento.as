@@ -52,7 +52,7 @@ public class LineaDocumento extends EventDispatcher {
 	
 	public var notas:String="";
 	
-	public var conceptoIdLin:String = "";
+	private var _conceptoIdLin:String;
 
 	public var documento:Documento;
 	
@@ -590,25 +590,45 @@ public class LineaDocumento extends EventDispatcher {
 	}
 	
 	public function comprobanteComputaIva():Boolean {
-		switch (documento.comprobante.codigo) {
-			case '122':
-			case '124':
-				return false;
+		if (documento.comprobante.esGasto()) {
+			return conceptoIdLin != null && !documento.comprobante.aster && !documento.comprobante.exento;
+			
+		} else {
+			switch (documento.comprobante.codigo) {
+				case '122':
+				case '124':
+					return false;
+			}
+			
+			return (articulo != null && !documento.comprobante.aster && !documento.comprobante.exento);
 		}
 		
-		return (articulo != null && !documento.comprobante.aster && !documento.comprobante.exento);
 	}
 
 
 	public function getTasaIva():BigDecimal {
 		if (!documento.comprobante.esGasto()) {
-			if (!comprobanteComputaIva()) {
+			if (!comprobanteComputaIva() || documento.comprobante.aster) {
 				return BigDecimal.ZERO;
 			} else {
 				return articulo.getTasaIva();
 			}			
 		} else {
-			return ivaArticulo != null ? ivaArticulo.getTasaIva() : BigDecimal.ZERO;
+			if (conceptoIdLin && documento.comprobante.esGasto() && comprobanteComputaIva()) {
+		
+				if (ivaArticulo) {
+					return ivaArticulo.getTasaIva();
+				} else {
+					var ivaIdConcepto:Number = _concept.ivaIdConcepto;getIva()
+					
+					for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
+						if (iva && _concept && iva.codigo == _concept.ivaIdConcepto.toString()) {
+							return iva.getTasaIva();
+						}
+					}				
+				}
+			}
+			return BigDecimal.ZERO;
 		}
 	}
 
@@ -888,6 +908,26 @@ public class LineaDocumento extends EventDispatcher {
 
 	public function set concept(value:Concepto):void {
 		_concept = value;
+		
+		if (_concept && _concept.codigo) {
+			_conceptoIdLin = _concept.codigo;
+		}
+	}
+
+	public function get conceptoIdLin():String {
+		return _conceptoIdLin;
+	}
+
+	public function set conceptoIdLin(value:String):void {
+		_conceptoIdLin = value;
+		
+		for each (var c:Concepto in CatalogoFactory.getInstance().conceptos) {
+			if (c.codigo == _conceptoIdLin) {
+				concept = c;	
+				break;
+			}															
+		}									
+
 	}
 
 

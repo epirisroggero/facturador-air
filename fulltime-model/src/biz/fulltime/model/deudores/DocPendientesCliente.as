@@ -348,30 +348,35 @@ public class DocPendientesCliente extends EventDispatcher {
 		var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
 
 		// Convertir Pesos a Dolares & Dolares a Pesos
-		var dolarValue:String = cotizaciones.cotizaciones.dolarVenta.@value[0];
-		var dolar:BigDecimal = new BigDecimal(dolarValue);
+		var dolarVenta:String = cotizaciones.cotizaciones.dolarVenta.@value[0];
+		var dolarV:BigDecimal = new BigDecimal(dolarVenta);
+
+		var dolarCompra:String = cotizaciones.cotizaciones.dolarCompra.@value[0];
+		var dolarC:BigDecimal = new BigDecimal(dolarCompra);
 		
 		if ((monedaDesde == Moneda.PESOS || monedaDesde == Moneda.PESOS_ASTER) && (monedaHasta == Moneda.DOLARES || monedaHasta == Moneda.DOLARES_ASTER)) { // Peso a Dolar
-			if (dolar.numberValue() > 0) {
-				valor = valor.divide(dolar);
+			if (dolarC.numberValue() > 0) {
+				valor = valor.divide(dolarC);
 			} else {
 				valor = BigDecimal.ZERO;
 			}
 		} else if ((monedaDesde == Moneda.DOLARES || monedaDesde == Moneda.DOLARES_ASTER) && (monedaHasta == Moneda.PESOS || monedaHasta == Moneda.PESOS_ASTER)) { // Dolar a Pesos
-			valor = valor.multiply(dolar);
+			valor = valor.multiply(dolarV);
 		}
 
 		// Convertir Pesos a Euros & Euros a Pesos
-		var euroValue:String = cotizaciones.cotizaciones.euroVenta.@value[0];
-		var euro:BigDecimal = new BigDecimal(euroValue);
+		var euroCompra:String = cotizaciones.cotizaciones.euroCompra.@value[0];
+		var euroVenta:String = cotizaciones.cotizaciones.euroVenta.@value[0];
+		var euroC:BigDecimal = new BigDecimal(euroCompra);
+		var euroV:BigDecimal = new BigDecimal(euroVenta);
 		if ((monedaDesde == Moneda.PESOS || monedaDesde == Moneda.PESOS_ASTER) && (monedaHasta == Moneda.EUROS || monedaHasta == Moneda.EUROS_ASTER)) { // Peso a Euro
-			if (euro.numberValue() > 0) {
-				valor = valor.divide(euro);
+			if (euroC.numberValue() > 0) {
+				valor = valor.divide(euroC);
 			} else {
 				valor = BigDecimal.ZERO;
 			}
 		} else if ((monedaDesde == Moneda.EUROS || monedaDesde == Moneda.EUROS_ASTER) && (monedaHasta == Moneda.PESOS || monedaHasta == Moneda.PESOS_ASTER)) { // Euro a Pesos
-			valor = valor.multiply(euro);
+			valor = valor.multiply(euroV);
 		}
 
 		// Convertir Dolares a Euros & Euros a Dolares

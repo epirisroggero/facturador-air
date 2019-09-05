@@ -286,7 +286,7 @@
 
 			private function mostrarFacturasPendientes():void {
 				var facPendWindow:TitleWindow = new TitleWindow();
-				facPendWindow.title = "Facturas Pendientes: " + cliente.nombre;
+				facPendWindow.title = "Facturas pendientes: " + cliente.nombre;
 				facPendWindow.width = 840;
 				facPendWindow.height = 600;
 
@@ -300,6 +300,11 @@
 
 				PopUpManager.addPopUp(facPendWindow, Sprite(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(facPendWindow);
+				
+				facPendWindow.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
 
 				frmListadoDeudores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
 						PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
@@ -315,7 +320,7 @@
 
 				facPendWindow.addElement(frmListadoDeudores);
 
-				facPendWindow.closeButton.visible = false;
+				facPendWindow.closeButton.visible = true;
 			}
 
 			/////////////////////////
@@ -764,6 +769,15 @@
 									<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
 								</s:layout>
 								<s:Label id="lblRazonSocial" width="100%" text="{cliente.contacto.ctoRSocial ? cliente.contacto.ctoRSocial : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
+							</s:BorderContainer>
+						</s:HGroup>
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="RUT" />
+							<s:BorderContainer width="100%" backgroundColor="0xFAFAFA" minWidth="0" minHeight="0" borderAlpha=".3">
+								<s:layout>
+									<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+								</s:layout>
+								<s:Label id="lblRUT" width="100%" text="{cliente.contacto.ctoRUT ? cliente.contacto.ctoRUT : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:BorderContainer>
 						</s:HGroup>
 

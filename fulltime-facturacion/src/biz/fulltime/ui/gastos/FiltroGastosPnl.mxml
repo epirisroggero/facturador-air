@@ -65,12 +65,14 @@
 				
 				if (codPrv && codPrv != "") {
 					_docQuery.proveedor = codPrv;
-				} 
-
+				}
+				
+				_docQuery.pendiente = chbPendientes ? chbPendientes.selected : false;
+				
 				_docQuery.fechaDesde = fechaDesde;
 				_docQuery.fechaHasta = fechaHasta;
 
-				dispatchEvent(new FilterEvent(FilterEvent.FILTRAR_DOCUMENTOS, false, false, _docQuery));
+				dispatchEvent(new FilterEvent(FilterEvent.FILTRAR_DOCUMENTOS_GASTO, false, false, _docQuery));
 			}
 			
 			protected function cmdLimpiar_clickHandler(event:MouseEvent):void {
@@ -188,6 +190,10 @@
 					<mx:DateField id="txtFechaHasta" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"/>
 				</mx:FormItem>
 			</mx:Form> 
+			<s:VGroup paddingTop="15" paddingLeft="15">
+				<s:CheckBox id="chbPendientes" fontWeight="normal" label="Solo pendientes" selected="false"/>
+			</s:VGroup>
+
 		</s:HGroup>
 	</s:VGroup>
 	<components2:controlBarContent>

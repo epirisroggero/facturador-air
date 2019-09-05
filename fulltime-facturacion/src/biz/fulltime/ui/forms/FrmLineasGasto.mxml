@@ -657,7 +657,7 @@
 								</s:itemEditor>
 							</s:GridColumn>
 
-							<s:GridColumn width="110" dataField="precio" headerText="P. UNITARIO" editable="{hasPermEdition() || GeneralOptions.getInstance().loggedUser.esSupervisor()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+							<s:GridColumn width="100" dataField="precio" headerText="P. UNITARIO" editable="{hasPermEdition() || GeneralOptions.getInstance().loggedUser.esSupervisor()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -679,7 +679,7 @@
 							</s:GridColumn>			
 								
 							
-							<s:GridColumn width="110" headerText="SUBTOTAL" editable="false">
+							<s:GridColumn width="100" headerText="SUBTOTAL" editable="false">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -702,7 +702,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 							
-							<s:GridColumn width="90" dataField="ivaArticulo" headerText="IVA" editable="true">
+							<s:GridColumn width="90" dataField="ivaArticulo" headerText="TIPO IVA" editable="true" visible="{!documento.comprobante.aster &amp;&amp; !documento.comprobante.exento}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -714,11 +714,8 @@
 														if (!data) {
 															return;
 														}														
-														if (LineaDocumento(data).ivaArticulo) {
-															label = LineaDocumento(data).ivaArticulo.nombre + " - " + outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getIva());
-														} else {
-															label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getIva());
-														}
+														
+														label = LineaDocumento(data).ivaArticulo ? LineaDocumento(data).ivaArticulo.nombre : "";
 														
 													}
 												]]>
@@ -731,8 +728,10 @@
 										<s:GridItemEditor>
 											<fx:Script>
 												<![CDATA[
+													import biz.fulltime.model.Iva;
 													import biz.fulltime.model.LineaDocumento;
 													
+													import mx.collections.ArrayCollection;
 													import mx.events.FlexEvent;
 													import mx.utils.StringUtil;
 													
@@ -741,6 +740,9 @@
 													import util.CatalogoFactory;
 																										
 													override public function get value():Object {
+														if (acIva.selectedItem.codigo == "") {
+															return null;
+														}
 														return acIva.selectedItem;
 													}
 													
@@ -755,25 +757,60 @@
 													protected function acIva_creationCompleteHandler(event:FlexEvent):void {
 														callLater(function():void {
 															acIva.textInput.setFocus();
-														});														
+														});
+														
+														var iva:Iva = new Iva();
+														iva.codigo = "";
+														iva.nombre = "[exento]";
+
+														var options:ArrayCollection = new ArrayCollection();
+														options.addItem(iva);
+														options.addAll(CatalogoFactory.getInstance().ivas);
+														
+														acIva.dataProvider = options;
 													}
 													
 													
 												]]>
 											</fx:Script>
-											<components1:MyAutoComplete id="acIva" width="100%" height="100%" 
+											<components1:MyAutoComplete id="acIva" width="100%" height="100%" textAlign="left"
 																		creationComplete="acIva_creationCompleteHandler(event)" 
-																		dataProvider="{ CatalogoFactory.getInstance().ivas }" matchType="anyPart" allowMultipleSelection="false"
+																		matchType="anyPart" allowMultipleSelection="false"
 																		labelField="nombre" backspaceAction="remove" allowNewValues="false"
-																		dropDownWidth="460" dropDownRowCount="10" toolTip="{acIva.text}" />
+																		toolTip="{acIva.text}" />
 										</s:GridItemEditor>
 									</fx:Component>
 								</s:itemEditor>
-
-								
 							</s:GridColumn>
 							
-							<s:GridColumn width="110" headerText="TOTAL" editable="false">
+
+							<s:GridColumn width="80" headerText="IVA" editable="false" visible="{!documento.comprobante.aster &amp;&amp; !documento.comprobante.exento}">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (!data) {
+															return;
+														}														
+														if (LineaDocumento(data).comprobanteComputaIva()) {
+															label = outerDocument.nf_Espanol_Espanol.format(LineaDocumento(data).getIva());
+														} else {
+															label = "";
+														}
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>							
+							
+							
+							<s:GridColumn width="100" headerText="TOTAL" editable="false">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -840,7 +877,7 @@
 											
 											<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingLeft="2" verticalAlign="middle">
 												<s:Button id="cmdNotas" width="100%" height="100%" icon="@Embed('/assets/general/notes.png')" click="cmdNotas_clickHandler(event)" focusEnabled="false" 
-														  toolTip="Ver Notas"/>
+														  toolTip="Ver notas"/>
 											</s:VGroup>
 										</s:GridItemRenderer>
 									</fx:Component>

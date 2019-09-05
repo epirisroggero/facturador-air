@@ -289,6 +289,7 @@
 				
 				_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				_query.esGasto = true;
+				_query.pendiente = false;
 					
 				remObjQuery.queryDocumentos(_query);
 			}
@@ -388,21 +389,18 @@
 			}
 			
 			protected function pnlFilters_creationCompleteHandler(event:FlexEvent):void {
-				pnlFilters.addEventListener(FilterEvent.FILTRAR_DOCUMENTOS, filtrarDocumentos);
+				pnlFilters.addEventListener(FilterEvent.FILTRAR_DOCUMENTOS_GASTO, filtrarDocumentos);
 				pnlFilters.addEventListener(FilterEvent.BORRAR_FILTROS, borrarFiltros);
 			}
 			
 			private function filtrarDocumentos(event:FilterEvent):void {
 				_query = event.docQuery as DocumentoQuery;
 				
-				_current = 1;
-				
 				_query.start = 0;
 				_query.limit = DOCUMENTOS_POR_PAGINA;
-				
 				_query.esGasto = true;
 				
-				//_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
+				_current = 1;
 				
 				remObjCount.countDocumentos(_query);
 				remObjQuery.queryDocumentos(_query);
@@ -415,9 +413,7 @@
 				}				
 				_query.start = 0;
 				_query.limit = DOCUMENTOS_POR_PAGINA;
-				
 				_query.esGasto = true;
-				//_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				
 				_current = 1;
 				
@@ -504,6 +500,35 @@
 			</s:GridColumn>
 			<s:GridColumn dataField="cliente" headerText="PROVEEDOR" labelFunction="cliente_labelFunction"/>
 			<s:GridColumn dataField="razonSocial" headerText="RAZÓN SOCIAL" />
+			<s:GridColumn width="75" dataField="pendiente" headerText="PENDIENTE">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:GridItemRenderer clipAndEnableScrolling="true">
+							<fx:Script>
+								<![CDATA[
+									import biz.fulltime.dto.DocumentoDTO;
+									
+									override public function prepare(hasBeenRecycled:Boolean):void {
+										if (data) {
+											var item:DocumentoDTO = data as DocumentoDTO;
+//											if (item.tipoComprobante == "21" || item.tipoComprobante == "23" || item.tipoComprobante == "31" || item.tipoComprobante == "32") {
+//												chbState.setVisible(true);
+//											} else {
+//												chbState.setVisible(false);
+//											}											
+										}
+									}
+								]]>
+							</fx:Script>
+							<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+								<s:CheckBox id="chbState" selected="{DocumentoDTO(data).pendiente}" enabled="false" alpha="1"/>
+							</s:HGroup>
+						</s:GridItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+				
+			</s:GridColumn>
+			
 		</s:ArrayList>
 		
 		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>

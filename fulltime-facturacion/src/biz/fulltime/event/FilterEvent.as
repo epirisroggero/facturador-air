@@ -15,7 +15,9 @@ import flash.events.Event;
 public class FilterEvent extends Event {
 
 	public static const FILTRAR_DOCUMENTOS:String = "_filtrar_documentos_";
-	
+
+	public static const FILTRAR_DOCUMENTOS_GASTO:String = "_filtrar_documentos_gasto_";
+
 	public static const BORRAR_FILTROS:String = "_borrar_filtros_";
 	
 	private var _docQuery:DocumentoQuery;

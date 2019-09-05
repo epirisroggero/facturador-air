@@ -37,6 +37,9 @@
 			
 			private var _modoGasto:Boolean = false;
 
+			private var comprobantesGasto:ArrayCollection = new ArrayCollection(["110","111","112","113","114","115","116","212","213","214","215"]); 
+
+			
 			public function get modoRecibo():Boolean {
 				return _modoRecibo;
 			}
@@ -68,7 +71,7 @@
 							}
 						}
 					} else if (modoGasto) {
-						if (comprobante.codigo == "110" || comprobante.codigo == "111" || comprobante.codigo == "116") {
+						if (comprobantesGasto.contains(comprobante.codigo)) {
 							myDP.addItem(comprobante);
 						}
 					} else if (modoRecibo) {

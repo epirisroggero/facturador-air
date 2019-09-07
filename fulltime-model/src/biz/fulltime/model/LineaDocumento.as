@@ -619,7 +619,7 @@ public class LineaDocumento extends EventDispatcher {
 				if (ivaArticulo) {
 					return ivaArticulo.getTasaIva();
 				} else {
-					var ivaIdConcepto:Number = _concept.ivaIdConcepto;getIva()
+					var ivaIdConcepto:Number = _concept.ivaIdConcepto;
 					
 					for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
 						if (iva && _concept && iva.codigo == _concept.ivaIdConcepto.toString()) {

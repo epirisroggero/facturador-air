@@ -135,10 +135,10 @@ public class PrintJobNotaEnvio extends Sprite {
 
 		if (!imageOnly) {
 			var strCliente:String = factura.cliente ? factura.cliente.nombre.toUpperCase() : "";
-			var strLocalidad:String = localidad != null ? localidad.toUpperCase() : "";
-			var strDireccion:String = dirEntrega != null ? dirEntrega.toUpperCase() : "";
-			var strDepartamento:String = departamento != null ? departamento.toUpperCase() : "";
-			var strAgencia:String = agencia != null ? agencia.toUpperCase() : "";
+			var strLocalidad:String = localidad ? localidad.toUpperCase() : "";
+			var strDireccion:String = dirEntrega ? dirEntrega.toUpperCase() : "";
+			var strDepartamento:String = departamento ? departamento.toUpperCase() : "";
+			var strAgencia:String = agencia ? agencia.toUpperCase() : "";
 			var strChofer:String = factura.chofer ? factura.chofer.toUpperCase() : "";
 			var strBultos:String = String(_current) + " / " + String(factura.cantidadBultos);
 			var strTelefono:String = factura.telefono ? factura.telefono : "";

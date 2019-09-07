@@ -517,6 +517,9 @@
 													}
 													
 													override public function set value(newValue:Object):void {
+														if (!newValue) {
+															return;
+														}
 														for each (var concept:Concepto in outerDocument.conceptos) {
 															if (concept.codigo == newValue.toString()) {
 																acConcepto.selectedItem = concept;	
@@ -610,21 +613,9 @@
 														if (!data) {
 															return;
 														}
-														var f:Function = function updateLinea(linea:LineaDocumento):void {
-															try {
-																setStyle("color", "#000000");
-																setStyle("fontWeight", "normal");
-															} catch (error:Error) {
-															}
-														}
 														
 														var linea:LineaDocumento = LineaDocumento(data);
-														linea.addEventListener("changeStock", function():void {
-															f(linea);
-														});
-														f(linea);
-														
-														label = linea.getConcepto() != null ? StringUtil.trim(linea.getConcepto()) : "";
+														label = linea && linea.getConcepto() != null ? StringUtil.trim(linea.getConcepto()) : "";
 														
 													}
 												]]>

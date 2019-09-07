@@ -1345,6 +1345,12 @@
 				
 			}
 			
+			protected function cmdConvertirGasto_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
 		]]>
 		
 	</fx:Script>
@@ -1508,8 +1514,14 @@
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
 			
+			<s:Button id="cmdConvertirGasto" click="cmdConvertirGasto_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir gasto"
+					  visible="{(_documento.comprobante.tipo == 31)}"
+					  enabled="{!_documento.nuevo &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"/>
+			
+			<s:Spacer width="5" />
 			<s:Button id="cmdFinalizar" click="cmdFinalizar_clickHandler(event)" styleName="finishButton" label="Finalizar" toolTip="Finalizar documento"
 					  enabled="{_documento.pendiente &amp;&amp; !_documento.nuevo}" focusEnabled="false" visible="false"/>
+			
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false" enabled="false"/>

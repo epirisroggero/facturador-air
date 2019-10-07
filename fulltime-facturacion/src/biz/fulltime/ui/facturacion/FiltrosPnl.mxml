@@ -34,21 +34,11 @@
 
 			private var _soloPendientes:Boolean = true;
 
-//			private var _soloConSaldo:Boolean = true;
-
 			private var _modoSolicitudes:Boolean;
 			
 			private var _modoGastos:Boolean;
 
 			private var _modoRecibo:Boolean;
-
-//			public function get soloConSaldo():Boolean {
-//				return _soloConSaldo;
-//			}
-//
-//			public function set soloConSaldo(value:Boolean):void {
-//				_soloConSaldo = value;
-//			}
 
 			[Bindable]
 			public function get modoRecibo():Boolean {
@@ -111,17 +101,17 @@
 				soloPendientes = chbPendientes ? chbPendientes.selected : false;;
 				
 				if (modoRecibo) {
-					_docQuery.emitido = rbEmitidos ? rbEmitidos.selected : false;				
+					if (rbTodos.selected) {
+						_docQuery.estado = null;
+					} else {
+						_docQuery.estado = rbEmitidos.selected ? "S" : "N";				
+					}
 				} else {
 					_docQuery.pendiente = chbPendientes ? chbPendientes.selected : false;
 					
 				}
 				
-				//if (modoRecibo) {
 				_docQuery.tieneSaldo = chbRecibosConSaldo ? chbRecibosConSaldo.selected : false;
-				//} else {
-				//	_docQuery.tieneSaldo = false;
-				//}
 
 				if (lineaConcepto && lineaConcepto != "") {
 					_docQuery.lineaConcepto = lineaConcepto;
@@ -219,7 +209,6 @@
 				}
 				return lblCliente;
 			}
-
 			
 			public function clienteLabelFunction(item:Object):String {
 				var client:Cliente = item as Cliente;
@@ -254,7 +243,6 @@
 
 				return label;
 			}
-
 
 			private function capture_keyDownHandler(event:KeyboardEvent):void {
 				if (event.keyCode == Keyboard.F1) {
@@ -344,69 +332,68 @@
 	</fx:Declarations>
 
 
-	<s:VGroup width="100%" height="100%">
-		<s:HGroup height="100%" paddingBottom="0" gap="0">
-			<s:Form visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
-				<s:layout>
-					<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0"/>
-				</s:layout>
-				<s:FormItem fontWeight="normal" label="Serie">
-					<s:TextInput id="txtSerie" width="90" enter="txtNumero.setFocus()" />
-				</s:FormItem>
-				<s:FormItem fontWeight="normal" label="Número">
-					<s:TextInput id="txtNumero" width="90" restrict="0-9" enter="acTipoComprobante.setFocus()" />
-				</s:FormItem>
-			</s:Form>
-			<s:Form>
-				<s:layout>
-					<s:FormLayout gap="-12" />
-				</s:layout>
-				<s:FormItem fontWeight="normal" label="Comprobante" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
-					<components1:MyAutoComplete id="acTipoComprobante" width="260" labelField="nombre" matchType="anyPart" prompt="Filtrar por Comprobante" allowNewValues="false"
-												selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-												dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" />
-				</s:FormItem>
-				<s:FormItem fontWeight="normal" label="Cliente" visible="{!modoSolicitudes}" includeInLayout="{!modoSolicitudes}">
-					<components1:MyAutoComplete id="acCliente" width="260" keyDown="capture_keyDownHandler(event)" labelField="nombre" matchType="anyPart" prompt="Filtrar por Cliente"
-												allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-												allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
-												dataProvider="{CatalogoFactory.getInstance().clientes}" />
-				</s:FormItem>
-				<s:FormItem fontWeight="normal" label="Proveedor" visible="{modoSolicitudes &amp;&amp; !modoRecibo}" includeInLayout="{modoSolicitudes &amp;&amp; !modoRecibo}">
-					<components1:MyAutoComplete id="acProveedor" width="260" labelField="nombre" matchType="anyPart" prompt="Filtrar por Proveedor" allowNewValues="false"
-												selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-												dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus"
-												dataProvider="{CatalogoFactory.getInstance().proveedores}" />
-				</s:FormItem>
+	<s:HGroup width="100%" height="100%" paddingBottom="0" paddingRight="15" gap="0">
+		<s:Form visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
+			<s:layout>
+				<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0"/>
+			</s:layout>
+			<s:FormItem fontWeight="normal" label="Serie">
+				<s:TextInput id="txtSerie" width="90" enter="txtNumero.setFocus()" />
+			</s:FormItem>
+			<s:FormItem fontWeight="normal" label="Número">
+				<s:TextInput id="txtNumero" width="90" restrict="0-9" enter="acTipoComprobante.setFocus()" />
+			</s:FormItem>
+		</s:Form>
+		<s:Form width="100%">
+			<s:layout>
+				<s:FormLayout gap="-12"/>
+			</s:layout>
+			<s:FormItem fontWeight="normal" label="Comprobante" width="100%" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
+				<components1:MyAutoComplete id="acTipoComprobante" width="100%" labelField="nombre" matchType="anyPart" prompt="Filtrar por Comprobante" allowNewValues="false"
+											selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+											dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownRowCount="15"/>
+			</s:FormItem>
+			<s:FormItem fontWeight="normal" label="Cliente" width="100%" visible="{!modoSolicitudes}" includeInLayout="{!modoSolicitudes}">
+				<components1:MyAutoComplete id="acCliente" width="100%" keyDown="capture_keyDownHandler(event)" labelField="nombre" matchType="anyPart" prompt="Filtrar por Cliente"
+											allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+											allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
+											dataProvider="{CatalogoFactory.getInstance().clientes}" dropDownRowCount="15"/>
+			</s:FormItem>
+			<s:FormItem fontWeight="normal" label="Proveedor" width="100%" visible="{modoSolicitudes &amp;&amp; !modoRecibo}" includeInLayout="{modoSolicitudes &amp;&amp; !modoRecibo}">
+				<components1:MyAutoComplete id="acProveedor" width="100%" labelField="nombre" matchType="anyPart" prompt="Filtrar por Proveedor" allowNewValues="false"
+											selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+											dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus"
+											dataProvider="{CatalogoFactory.getInstance().proveedores}" dropDownRowCount="15"/>
+			</s:FormItem>
 
-			</s:Form>
-			<s:Form fontFamily="Helvetica">
-				<s:layout>
-					<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0" />
-				</s:layout>
-				<s:FormItem fontWeight="normal" label="Fecha desde">
-					<mx:DateField id="txtFechaDesde" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
-				</s:FormItem>
-				<s:FormItem fontWeight="normal" label="Fecha hasta">
-					<mx:DateField id="txtFechaHasta" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
-				</s:FormItem>
-			</s:Form>
-			<s:VGroup paddingTop="20" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
-				<s:CheckBox id="chbRecibosConSaldo" fontWeight="normal" label="Mostrar documentos con saldo" selected="{modoRecibo}" 
-							visible="{!modoSolicitudes}" includeInLayout="{!modoSolicitudes}"/>
-				<s:CheckBox id="chbPendientes" fontWeight="normal" label="Pendientes y/o NO emitidos" selected="true" visible="{!modoRecibo}" includeInLayout="{!modoRecibo}"/>
-				<s:HGroup paddingTop="10" verticalAlign="middle">
-					<s:Label text="Concepto" />
-					<s:TextInput id="txtConcepto" width="200" />
-				</s:HGroup>
-			</s:VGroup>
-			<s:VGroup paddingTop="20" visible="{modoRecibo}" includeInLayout="{modoRecibo}" paddingLeft="20" paddingBottom="10">
-				<s:RadioButton id="rbNoEmitidos" label="Solo NO emitidos" selected="true" />
-				<s:RadioButton id="rbEmitidos" label="Solo emitidos" selected="false" />
-			</s:VGroup>
-			
-		</s:HGroup>
-	</s:VGroup>
+		</s:Form>
+		<s:Form fontFamily="Helvetica">
+			<s:layout>
+				<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0" />
+			</s:layout>
+			<s:FormItem fontWeight="normal" label="Fecha desde">
+				<mx:DateField id="txtFechaDesde" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
+			</s:FormItem>
+			<s:FormItem fontWeight="normal" label="Fecha hasta">
+				<mx:DateField id="txtFechaHasta" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"/>
+			</s:FormItem>
+		</s:Form>
+		<s:VGroup paddingTop="20" visible="{!soloCotizaciones}" includeInLayout="{!soloCotizaciones}">
+			<s:CheckBox id="chbPendientes" fontWeight="normal" label="Pendientes y/o NO emitidos" selected="true" visible="{!modoRecibo}" includeInLayout="{!modoRecibo}"/>
+			<s:CheckBox id="chbRecibosConSaldo" fontWeight="normal" label="Mostrar documentos con saldo" selected="{modoRecibo}" 
+						visible="{!modoSolicitudes}" includeInLayout="{!modoSolicitudes}"/>
+			<s:HGroup paddingTop="10" verticalAlign="middle">
+				<s:Label text="Concepto" />
+				<s:TextInput id="txtConcepto" width="220" />
+			</s:HGroup>
+		</s:VGroup>
+		<s:VGroup paddingTop="20" paddingRight="20" visible="{modoRecibo}" includeInLayout="{modoRecibo}" paddingLeft="20" paddingBottom="10">
+			<s:RadioButton id="rbTodos" label="Todos" selected="false" />
+			<s:RadioButton id="rbNoEmitidos" label="Solo NO emitidos" selected="true" />
+			<s:RadioButton id="rbEmitidos" label="Solo emitidos" selected="false" />
+		</s:VGroup>			
+	</s:HGroup>
+
 	<components2:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />

@@ -24,9 +24,10 @@ public class DocumentoQuery {
 	public var lineaConcepto:String;
 	public var moneda:String;
 	
-	public var emitido:Boolean = false;
+	public var emitido:Boolean;
 	public var pendiente:Boolean = true;
 	public var tieneSaldo:Boolean = false;
+	public var estado:String = "N"; 
 	
 	public var esSolicitud:Boolean = false;
 	public var esRecibo:Boolean = false;

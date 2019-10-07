@@ -39,12 +39,7 @@
 			import util.CatalogoFactory;
 			
 			private static const DOCUMENTOS_POR_PAGINA:int = 20;
-			
-			private var gastosGuardadas:ArrayCollection;
-			
-			[Bindable]
-			private var _limiteCreditoExcedido:Boolean = false;
-									
+						
 			[Bindable]
 			private var gastos:ArrayCollection = new ArrayCollection();
 			
@@ -123,28 +118,15 @@
 			
 			private function nuevoDocumento(evt:Event):void {
 				var oldComprobante:Comprobante = _gasto.comprobante;
-				/*
-				if (_gasto != null) {
-					_gasto.removeEventListener("_changeCliente", obtenerDatosCliente);
-					if (_gasto.cliente) { 
-						//_gasto.cliente.removeEventListener(GastosGrabadasEvent.FACTURAS_GRABADAS_CHANGED, gastosGrabadasListener);
-						//_gasto.cliente.removeEventListener(GastosPendientesEvent.FACTURAS_PENDIENTES_CHANGED, gastosPendientesListener);
-					}
-				}
-				*/
+
 				_gasto = Documento.getNuevoDocumento(oldComprobante);
-				// _gasto.addEventListener("_changeCliente", obtenerDatosCliente);
-				
-				gastosGuardadas = null;
-				// gastosPendientes = null;
 				
 				callLater(function():void {
 					// Seleccionar la vista con la factura
 					viewStack.selectedIndex = 2;
 				});
 				
-			}
-			
+			}			
 			
 			protected function cmdNueva_clickHandler(event:MouseEvent):void {
 				// Crear una nueva factura
@@ -174,70 +156,21 @@
 			}
 			
 			public function abrirDocumento(docId:String):void {
-				gastosGuardadas = null;
-				//gastosPendientes = null;
-				
 				remObj.getDocumento(docId);
 			}
 			
 			private function cargarFactura():void {				
-				gastosGuardadas = null;
-				
 				if (dgGastos.selectedItem != null) {
 					var _doc:DocumentoDTO = DocumentoDTO(dgGastos.selectedItem);
 					remObj.getDocumento(_doc.docId);
 				}
 			}
-			
-			public function obtenerCotizacionVenta(cliente:Cliente):void {
-				var comprobantes:ArrayCollection = CatalogoFactory.getInstance().comprobantesUsuario;
-				for each (var comprobante:Comprobante in comprobantes) {
-					if (comprobante.codigo == "31") {
-						_gasto = Documento.getNuevoDocumento(comprobante);
-						break;
-					}
-				}
-				
-			}
-			
-			public function obtenerOrdenGasto(cliente:Proveedor):void {
-				var comprobantes:ArrayCollection = CatalogoFactory.getInstance().comprobantesUsuario;
-				for each (var comprobante:Comprobante in comprobantes) {
-					if (comprobante.codigo == "31") {
-						/*
-						_gasto = Documento.getNuevoDocumento(comprobante);
-						_gasto.addEventListener("_changeCliente", obtenerDatosCliente);
-						
-						callLater(function():void {
-							// Seleccionar la vista con la factura
-							viewStack.selectedIndex = 2;
-							
-							callLater(function():void {
-								_gasto.tomarCamposDelCliente(cliente.codigo);
-							});
-						});
-						*/
-						break;
-					}
-				}
-				
-			}
-			
+									
 			protected function tipoGasto_creationCompleteHandler(event:FlexEvent):void {
 				tipoGasto.addEventListener("next_step_", function():void {
-					/*
-					if (_gasto != null) {
-						_gasto.removeEventListener("_changeCliente", obtenerDatosCliente);
-						if (_gasto.cliente) { 
-							//_gasto.cliente.removeEventListener(GastosGrabadasEvent.FACTURAS_GRABADAS_CHANGED, gastosGrabadasListener);
-							//_gasto.cliente.removeEventListener(GastosPendientesEvent.FACTURAS_PENDIENTES_CHANGED, gastosPendientesListener);
-						}
-					}
-					*/					
 					var selectFacturaPnl:TipoFacturaPnl = event.target as TipoFacturaPnl;
 					
 					_gasto = Documento.getNuevoDocumento(Comprobante(selectFacturaPnl.tipoFactura));
-					//_gasto.addEventListener("_changeCliente", obtenerDatosCliente);
 					
 					callLater(function():void {
 						// Seleccionar la vista con la factura
@@ -255,30 +188,7 @@
 			private function result(event:ResultEvent):void {
 				CursorManager.removeBusyCursor();
 				
-				/*if (_gasto != null) {
-					_gasto.removeEventListener("_changeCliente", obtenerDatosCliente);
-					if (_gasto.cliente) { 
-						//_gasto.cliente.removeEventListener(GastosGrabadasEvent.FACTURAS_GRABADAS_CHANGED, gastosGrabadasListener);
-						//_gasto.cliente.removeEventListener(GastosPendientesEvent.FACTURAS_PENDIENTES_CHANGED, gastosPendientesListener);
-					}
-				}*/
-				
 				_gasto = event.result as Documento;
-				
-				gastosGuardadas = null;
-				//gastosPendientes = null;
-				_limiteCreditoExcedido = false;
-				
-				//_gasto.addEventListener(GastosPendientesEvent.LIMITE_CREDITO_EXCEDIDO, creditoExcedido);
-				/*if (!modoGastos) {
-					_gasto.addEventListener("_changeCliente", obtenerDatosCliente);
-					//_gasto.cliente.addEventListener(GastosPendientesEvent.FACTURAS_PENDIENTES_CHANGED, gastosPendientesListener);
-					
-					// Cuando abro una factura nos fijamos si el cliente tiene gastos pendientes y/o limite de crédito excedido...
-					if (_gasto.cliente) {
-						_gasto.cliente.obtenerDocumentosPendientes();
-					}
-				}*/
 				
 				viewStack.selectedIndex = 2;
 			}
@@ -287,10 +197,12 @@
 				_query.start = DOCUMENTOS_POR_PAGINA * (_current - 1);
 				_query.limit = DOCUMENTOS_POR_PAGINA;
 				
+				/*
 				_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				_query.esGasto = true;
 				_query.pendiente = false;
-					
+				*/	
+				
 				remObjQuery.queryDocumentos(_query);
 			}
 			
@@ -314,8 +226,10 @@
 				_query.start = 0;
 				_query.limit = DOCUMENTOS_POR_PAGINA;
 				
+				/*
 				_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
 				_query.esGasto = true;
+				*/
 				
 				remObjCount.countDocumentos(_query);
 			}
@@ -410,6 +324,8 @@
 				_query = event.docQuery as DocumentoQuery;
 				if (!_query) {
 					_query = new DocumentoQuery();	
+					_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
+
 				}				
 				_query.start = 0;
 				_query.limit = DOCUMENTOS_POR_PAGINA;
@@ -435,6 +351,10 @@
 					_cargarGastos = false;
 					
 					_query = new DocumentoQuery();
+					_query.comprobantes = "110,111,112,113,114,115,116,212,213,214,215";
+					_query.esGasto = true;
+					_query.pendiente = false;
+
 					queryDocumentos();
 					countDocumentos();
 				}
@@ -446,8 +366,8 @@
 	
 	<fx:Declarations>
 		<s:ArrayList id="cols">
-			<s:GridColumn width="200" dataField="comprobante" headerText="TIPO" labelFunction="comprobante_cod_labelFunction" />
-			<s:GridColumn width="90" dataField="numero" headerText="SERIE y NRO.">
+			<s:GridColumn width="320" dataField="comprobante" headerText="TIPO" labelFunction="comprobante_cod_labelFunction" />
+			<s:GridColumn width="90" dataField="numero" headerText="SERIE/NRO.">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -456,10 +376,14 @@
 									import biz.fulltime.dto.DocumentoDTO;
 									override public function prepare(hasBeenRecycled:Boolean):void {
 										if (data) {	
-											var serie:String = DocumentoDTO(data).serie ? DocumentoDTO(data).serie : "";
+											var serie:String = DocumentoDTO(data).serie ? DocumentoDTO(data).serie : null;
 											var numero:String = DocumentoDTO(data).numero ? DocumentoDTO(data).numero : "";
 											
-											label = serie + numero;
+											if (serie) {
+												label = serie + "/" + numero;
+											} else {
+												label = numero;	
+											}											
 										}
 										
 									}
@@ -507,17 +431,6 @@
 							<fx:Script>
 								<![CDATA[
 									import biz.fulltime.dto.DocumentoDTO;
-									
-									override public function prepare(hasBeenRecycled:Boolean):void {
-										if (data) {
-											var item:DocumentoDTO = data as DocumentoDTO;
-//											if (item.tipoComprobante == "21" || item.tipoComprobante == "23" || item.tipoComprobante == "31" || item.tipoComprobante == "32") {
-//												chbState.setVisible(true);
-//											} else {
-//												chbState.setVisible(false);
-//											}											
-										}
-									}
 								]]>
 							</fx:Script>
 							<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
@@ -526,9 +439,7 @@
 						</s:GridItemRenderer>
 					</fx:Component>
 				</s:itemRenderer>
-				
-			</s:GridColumn>
-			
+			</s:GridColumn>			
 		</s:ArrayList>
 		
 		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>

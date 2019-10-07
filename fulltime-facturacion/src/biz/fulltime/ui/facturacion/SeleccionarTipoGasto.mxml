@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:util="biz.fulltime.util.*"
+		 width="100%" height="100%" backgroundAlpha="0.0" creationComplete="panel1_creationCompleteHandler(event)" title="Seleccionar comprobante al que se desea convertir" xmlns:components="components.*">
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.model.Comprobante;
+			import biz.fulltime.ui.components.HelpPnl;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.gridClasses.CellPosition;
+			import spark.events.GridSelectionEvent;
+			
+			import util.CatalogoFactory;
+			
+			[Bindable]
+			public var myDP:ArrayCollection;
+						
+			private var _selectedName:String = "";
+			
+			private var _tipoFactura:Object;
+			
+			private var _filter:String;
+			
+			private var _hideComprobante:String;
+			
+			private var _showComprobanteTipo:Array;
+			
+			public function get showComprobanteTipo():Array {
+				return _showComprobanteTipo;
+			}
+			
+			public function set showComprobanteTipo(value:Array):void {
+				_showComprobanteTipo = value;
+			}
+			
+			public function get hideComprobante():String {
+				return _hideComprobante;
+			}
+			
+			public function set hideComprobante(value:String):void {
+				_hideComprobante = value;
+			}
+			
+			[Bindable]
+			public function get filter():String {
+				return _filter;
+			}
+			
+			public function set filter(value:String):void {
+				_filter = value;
+			}
+			
+			protected function panel1_creationCompleteHandler(event:FlexEvent):void {
+				dgTipoFactura.setFocus();
+				
+				myDP = new ArrayCollection();
+				for each (var comprobante:Comprobante in CatalogoFactory.getInstance().comprobantesUsuario) {
+					if ((_hideComprobante && _hideComprobante == comprobante.codigo) || (comprobante.isMovimentoDeStockDeCliente()) || (comprobante.nombre.search("COTIZ") >= 0)) {
+						continue;
+					} else {
+						var size:int = showComprobanteTipo.length;
+						for (var i:int = 0; i < size; i++) {
+							if (Number(showComprobanteTipo[i]) == comprobante.tipo) {
+								if (filter != null) {
+									if (comprobante.cmpgastos == 'S') {
+										if (comprobante.aster && filter == "aster") {
+											myDP.addItem(comprobante);
+										} else if (!comprobante.aster && filter == "noaster") {
+											myDP.addItem(comprobante);
+										}
+									}
+								} else {
+									myDP.addItem(comprobante);
+								}
+							}
+						}
+					}		
+					
+				}	
+				
+				callLater(function():void {
+					dgTipoFactura.setSelectedIndex(0);
+				});
+				
+				_tipoFactura = myDP.getItemAt(0);
+			}
+			
+			[Bindable]
+			public function get tipoFactura():Object {
+				return _tipoFactura;
+			}
+			
+			public function set tipoFactura(value:Object):void {
+				_tipoFactura = value;
+			}
+			
+			public function reset():void {
+				if (dgTipoFactura.hasFilter()) {
+					dgTipoFactura.filterReset();
+				}
+				dgTipoFactura.setFocus();
+				dgTipoFactura.setSelectedIndex(0);
+				
+			}
+			
+			protected function vgroup1_showHandler(event:FlexEvent):void {
+				dgTipoFactura.setFocus()
+			}
+			
+			
+			protected function dgTipoFactura_doubleClickHandler(event:MouseEvent):void {
+				_tipoFactura = dgTipoFactura.selectedItem as Comprobante;
+				dispatchEvent(new Event("accept_"));
+			}
+			
+			private function tipo_labelFunction(item:Object, column:GridColumn):String {
+				return item.tipo + " - " + item.cmptiponom;
+			}
+			
+			private function aster_labelFunction(item:Object, column:GridColumn):String {
+				return item.aster ? "*" : "";
+			}
+			
+			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				_tipoFactura = dgTipoFactura.selectedItem as Comprobante;
+				dispatchEvent(new Event("accept_"));
+			}
+			
+			protected function cmdCancelar_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0" show="vgroup1_showHandler(event)">
+		<util:FilteredDataGrid id="dgTipoFactura" width="700" height="100%" doubleClick="dgTipoFactura_doubleClickHandler(event)" 
+							   doubleClickEnabled="true" dataProvider="{myDP}" editable="false">
+			<util:columns>
+				<s:ArrayList>
+					<s:GridColumn width="70" dataField="codigo" headerText="CÓDIGO" sortable="true" />
+					<s:GridColumn dataField="nombre" headerText="DESCRIPCIÓN" sortable="true" />
+					<s:GridColumn width="200" dataField="tipo" headerText="TIPO COMPROBANTE" sortable="true" labelFunction="tipo_labelFunction" />
+					<s:GridColumn width="32" dataField="aster" headerText="" sortable="false" labelFunction="aster_labelFunction" />
+				</s:ArrayList>
+			</util:columns>
+		</util:FilteredDataGrid>
+	</s:VGroup>
+	
+	<s:controlBarContent>
+		<s:HGroup width="100%" horizontalAlign="center" paddingBottom="0" paddingTop="0">
+			<s:HGroup width="100%" horizontalAlign="right">
+				<s:Spacer width="100%" />
+				<components:IconButton id="cmdAceptar" click="cmdAceptar_clickHandler(event)" label="Aceptar" styleName="aceptarButton" />
+				<components:IconButton id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cancelar" styleName="cancelarButton" />
+			</s:HGroup>
+		</s:HGroup>
+	</s:controlBarContent>
+</s:Panel>

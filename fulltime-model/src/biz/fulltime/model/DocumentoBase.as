@@ -189,6 +189,15 @@ public class DocumentoBase extends EventDispatcher {
 		var newValue:Moneda = value;
 
 		_moneda = value;
+		
+		// TODO: Revisar. Se configura el comprobante en base a la moneda...
+		if (_moneda && _moneda.nombre) {
+			if (_moneda.nombre.indexOf("*") > 0) {
+				comprobante.aster = true;
+			} else {
+				comprobante.aster = false;
+			}
+		}
 
 		dispatchEvent(new MonedaEvent(MonedaEvent.MONEDA_CHANGED, oldValue, newValue));
 	}
@@ -227,7 +236,7 @@ public class DocumentoBase extends EventDispatcher {
 			cargarCuponeras();
 		}
 	}
-
+	
 	public function cargarCuponeras():void {
 		artCuponera.removeAll();			
 		cuponerasList.removeAll();
@@ -246,7 +255,7 @@ public class DocumentoBase extends EventDispatcher {
 		
 		if (cliente && cliente.codigo && cliente.codigo != "99") {
 			for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos) {
-				if (articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
+				if (articulo.activo && articulo.codigo.toLowerCase().indexOf(cliente.codigo.toLowerCase() + ".") == 0) {
 					var codigo:String = articulo.codigo;
 					var familiaId:String = articulo.familiaId ? articulo.familiaId : "";
 					for each (var art:String in GeneralOptions.getInstance().articulosServicio) {
@@ -264,8 +273,18 @@ public class DocumentoBase extends EventDispatcher {
 	
 	}
 	
+	public var tieneCuponeraConSaldo:Boolean = false;	
+	
 	private function resultCuponeras(event:ResultEvent):void {
 		cuponerasList = event.result as ArrayCollection;
+		
+		tieneCuponeraConSaldo = false;
+		for each (var cuponera:Cuponera in cuponerasList) {
+			if (cuponera.fecha != null && cuponera.getStockValue().compareTo(BigDecimal.ZERO) > 0) {
+				tieneCuponeraConSaldo = true;
+				break;
+			}			
+		}
 		
 		dispatchEvent(new Event("_changeCuponeras", true, true));
 	}

@@ -398,8 +398,6 @@ public class PrintJobFactura {
 	private function ioErrorHandler(event:IOErrorEvent):void {
 		Alert.buttonHeight = 32;
 		Alert.show("No se pudo cargar la imagen de la factura");
-		
-
 	}
 
 	public function get via():String {

@@ -13,6 +13,7 @@
 			import biz.fulltime.event.MonedaEvent;
 			import biz.fulltime.event.ProveedorEvent;
 			import biz.fulltime.model.AgendaTarea;
+			import biz.fulltime.model.Articulo;
 			import biz.fulltime.model.Auditoria;
 			import biz.fulltime.model.CentrosCosto;
 			import biz.fulltime.model.Comprobante;
@@ -20,6 +21,7 @@
 			import biz.fulltime.model.CotizacionesModel;
 			import biz.fulltime.model.CotizacionesMonedas;
 			import biz.fulltime.model.Documento;
+			import biz.fulltime.model.LineaDocumento;
 			import biz.fulltime.model.Moneda;
 			import biz.fulltime.model.Proveedor;
 			import biz.fulltime.model.Referencia;
@@ -30,9 +32,11 @@
 			import biz.fulltime.ui.expediciones.FrmNuevaTarea;
 			import biz.fulltime.ui.facturacion.FrmClaveSupervisora;
 			import biz.fulltime.ui.facturacion.PrintJobFactura;
+			import biz.fulltime.ui.facturacion.SeleccionarTipoFactura;
+			import biz.fulltime.ui.facturacion.SeleccionarTipoGasto;
 			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
-			import biz.fulltime.ui.forms.FrmLineasGasto;
 			import biz.fulltime.ui.forms.FrmTrazabilidadDocumento;
+			import biz.fulltime.util.DocumentosUtils;
 			
 			import com.hillelcoren.components.AutoComplete;
 			
@@ -86,17 +90,15 @@
 			
 			private var helpWindow:TitleWindow;
 			
-			private var emitiendo_documento:Boolean = false;
-			
 			private var _changeGasto:Boolean = false;
 			
 			private var creditoInfo:CreditoInfo;
 			
+			private var problemasMsg:String;
+			
 			private var _problemasEncontrados:Boolean = false;
 			
 			private var _verificacionFinalizada:Boolean = false;
-			
-			private var problemasMsg:String;
 			
 			private var verificando:Boolean = false;
 			
@@ -151,7 +153,6 @@
 
 			[Bindable]
 			private var _referencia:Referencia;
-
 			
 			//
 			// Seleccion de Líneas de Gasto
@@ -170,43 +171,24 @@
 						
 			private var _showEMail:Boolean = true;
 						
-			private var copiando_documento:Boolean = false;
-			
+			private var fireEvents:Boolean = false;
 			
 						
 			protected function initializeHandler(event:FlexEvent):void {
 				// Guardar Documento
-				remObjSave = new RemoteObject();
-				remObjSave.destination = "CreatingRpc";
-				remObjSave.channelSet = ServerConfig.getInstance().channelSet;
+				remObjSave = DocumentosUtils.getNewRemoteObject();
 				remObjSave.addEventListener(ResultEvent.RESULT, resultSave);
 				remObjSave.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjSave.showBusyCursor = true;
-				
-				// Serie / Número de Documento
-				remObjSerieNumero = new RemoteObject();
-				remObjSerieNumero.destination = "CreatingRpc";
-				remObjSerieNumero.channelSet = ServerConfig.getInstance().channelSet;
-				remObjSerieNumero.addEventListener(ResultEvent.RESULT, resultSerieNumero);
-				remObjSerieNumero.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjSerieNumero.showBusyCursor = true;
-				
+								
 				// Modificar Documento
-				remObjModify = new RemoteObject();
-				remObjModify.destination = "CreatingRpc";
-				remObjModify.channelSet = ServerConfig.getInstance().channelSet;
+				remObjModify = DocumentosUtils.getNewRemoteObject();
 				remObjModify.addEventListener(ResultEvent.RESULT, resultModify);
 				remObjModify.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjModify.showBusyCursor = true;
 				
 				// Borrar Documento
-				remObjBorrar = new RemoteObject();
-				remObjBorrar.destination = "CreatingRpc";
-				remObjBorrar.channelSet = ServerConfig.getInstance().channelSet;
+				remObjBorrar = DocumentosUtils.getNewRemoteObject();
 				remObjBorrar.addEventListener(ResultEvent.RESULT, resultBorrar);
-				remObjBorrar.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjBorrar.showBusyCursor = true;
-				
+				remObjModify.addEventListener(FaultEvent.FAULT, handleFault);
 			}
 			
 			protected function onCreationComplete(event:FlexEvent):void {
@@ -231,6 +213,8 @@
 				super.commitProperties();
 				
 				if (_changeGasto) {
+					fireEvents = false;
+					
 					_changeGasto = false;
 					
 					// Si el comprobante no es aster, no mostrar las monedas aster. 
@@ -241,12 +225,12 @@
 					_proveedores = CatalogoFactory.getInstance().proveedores;
 															
 					if (txtRUT) {
-						var contacto:Contacto = _documento.cliente ? _documento.cliente.contacto : (_documento.proveedor ? _documento.proveedor.contacto : null);
+						var contacto:Contacto = _documento.proveedor ? _documento.proveedor.contacto : null;
 						if (contacto && contacto.paisIdCto == "UY") {
 							rut_stringValidator.validate();
 						}						
-					}
-					
+					}					
+
 					_usuarioAutorizante = null;
 					for each (var u:Usuario in CatalogoFactory.getInstance().usuarios) {
 						if (u.codigo == _documento.usuIdAut) {
@@ -272,13 +256,14 @@
 					}
 					
 					// Setear el estado de la gasto
-					this.currentState = _documento.comprobante.tipo == Comprobante.VENTA_CONTADO ? "contado" : "default";
+					this.currentState = "default";
 					
 					// Ponerle el titulo de la gasto					
 					title = _documento.comprobante.nombre.toUpperCase();
 					
 					// Actualizar campo de cotizacion fiscal.
-					if (_documento.docTCF && (_documento.emitido || !_documento.pendiente)) {
+					if (_documento.docTCF && (_documento.emitido || !_documento.isPendiente())) {
+						fireEvents = false;
 						_documento.docTCF = new BigDecimal(_documento.docTCF).setScale(3, MathContext.ROUND_HALF_UP).toString();
 					} else {
 						obtenerTipoCambioFiscal();
@@ -287,14 +272,15 @@
 					// Actualizar campo de cotizacion comercial.
 					if (!_documento.docTCC || new BigDecimal(_documento.docTCC).compareTo(BigDecimal.ZERO) <= 0) {
 						if (CatalogoFactory.getInstance().ultimaCotizacion) {
+							fireEvents = false;
 							_documento.docTCC = new BigDecimal(CatalogoFactory.getInstance().ultimaCotizacion.toString()).setScale(2, MathContext.ROUND_HALF_UP).toString();
 						} else {
 							obtenerTipoCambio();
 						}
 					} else {
+						fireEvents = false;
 						_documento.docTCC = new BigDecimal(_documento.docTCC).setScale(2, MathContext.ROUND_HALF_UP).toString();
-					}
-					
+					}					
 					
 					if (!_modoVisualizacion) {
 						if (_documento.nuevo) {
@@ -309,9 +295,16 @@
 						}
 					}
 					
+					if (_documento && _documento.moneda) {
+						var monedaAster:Boolean = _documento.moneda.nombre.indexOf("*") > 0;
+						_documento.comprobante.aster = monedaAster;
+					}
+					
 					tieneCambios = false;
 					
 					lineasTienenCambios = false;
+					
+					fireEvents = true;
 					
 					callLater(function():void {
 						// Setear el foco en el campo proveedor.-
@@ -339,6 +332,10 @@
 				PopUpManager.centerPopUp(customPopup);
 				
 				setTimeout(function():void {
+					PopUpManager.removePopUp(customPopup);
+				}, 500);
+
+				setTimeout(function():void {
 					tieneCambios = false;
 					lineasTienenCambios = false;
 					running = false;
@@ -353,42 +350,26 @@
 			}
 			
 			private function resultModify(event:ResultEvent):void {
-				if (!emitiendo_documento) {
-					if (!copiando_documento) {
-						// Guardar documeto
-						resultGuardarDocumento(event)
-					} else {
-						copiando_documento = false;
-						running = false;
-					}
-				} else {
-					// Emitir documento
-					gasto = event.result as Documento;
-					running = true;
-					emitir(gasto);
-				}
+				gasto = event.result as Documento;
+				running = false;
 			}
 						
 			private function grabarFacturaOk(close:Boolean = false):void {
-				if (_documento.emitido || (!_documento.pendiente && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE && _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR)) {
+				if (_documento.emitido || (!_documento.isPendiente() && (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR))) {
 					if (_documento.iva != _documento.getIva().setScale(4, MathContext.ROUND_UP).toString()) {
 						Alert.show("Los valores de 'Subtotal', 'Total' e 'IVA' no se puede modificar en documentos ya emitodos. \n" + "\nTotal = [Antes:" + _documento.total + "  Después:" + _documento.getTotalRedondeado().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nSubtotal = [" + _documento.subTotal + " Después:" + _documento.getSubTotal().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nIva = [" + _documento.iva + " Después:" + _documento.getIva().setScale(4, MathContext.ROUND_UP).toString() + "]" + "", "Información");
 					} else {
 						running = true;
 						
 						// Guardar la gasto.
-						var remObj:RemoteObject = new RemoteObject();
-						remObj.destination = "CreatingRpc";
-						remObj.channelSet = ServerConfig.getInstance().channelSet;
+						var remObj:RemoteObject = DocumentosUtils.getNewRemoteObject(true);
 						remObj.addEventListener(ResultEvent.RESULT, resultGuardarDocumento);
 						remObj.addEventListener(FaultEvent.FAULT, handleFault);
-						remObj.showBusyCursor = true;
-						
 						remObj.guardarGasto(_documento);
-					}
-					
+					}					
 				} else {
 					guardarGasto();
+					
 					if (close) {
 						dispatchEvent(new Event("_cancel_gasto"));
 					}
@@ -396,8 +377,9 @@
 			}
 			
 			protected function cmdGuardar_clickHandler(event:MouseEvent, close:Boolean = false):void {
-				emitiendo_documento = false;
-				
+				if (!verificarDatosGasto()) {
+					return;
+				}
 				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
 					_documento.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
 					grabarFacturaOk(false);
@@ -432,19 +414,14 @@
 			}
 						
 			private function enviarEmail():void {
-				/*if (!chbEnvioMailAut.selected) {
-					running = false;
-					Alert.show("¿Desea enviar comprobante de gasto por correo?", "Envío del gasto", Alert.YES | Alert.NO, this, alertClickHandler);
-				} else {*/
 				printToPrinter();
-				//}
+
 				currentState = "default";
 			}
 			
 			private function printToPrinter():void {
 				var pgasto:PrintJobFactura = new PrintJobFactura(false);
 				pgasto.documento = _documento;
-				//pgasto.createSMSImage(chbEnvioMailAut.selected);
 				
 				setTimeout(function():void {
 					running = false;
@@ -459,46 +436,13 @@
 					//Enviar eMail
 					var pgasto:PrintJobFactura = new PrintJobFactura(false);
 					pgasto.documento = this._documento;
-					//pgasto.createSMSImage(chbEnvioMailAut.selected);
 				}
 				setTimeout(function():void {
 					gastoEmitida();
 				}, 1000);
 				
 			}
-			
-			public function emitirFactura(docId:String):void {
-				running = true;
-				
-				var remObj1:RemoteObject = new RemoteObject();
-				remObj1.destination = "CreatingRpc";
-				remObj1.channelSet = ServerConfig.getInstance().channelSet;
-				remObj1.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					gasto = evt.result as Documento;					
-					emitir(gasto);
-				});
-				remObj1.getDocumento(docId);
-			}
-			
-			private function emitir(doc:Documento):void {
-			}
-			
-			private function reloadDocumento(docId:String, saving:Boolean = false):void {
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					gasto = evt.result as Documento;
-					running = false;
-					currentState = "default";
-				});
-				
-				remObj.getDocumento(docId);
-				
-			}
-			
+						
 			private function gastoEmitida():void {
 				tieneCambios = false;
 				lineasTienenCambios = false;
@@ -525,21 +469,6 @@
 				pjFactura.print();
 			}
 			
-			public function handleFault(event:FaultEvent):void {
-				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.cause ? event.fault.rootCause.cause.localizedMessage : null;
-				if (!message) {
-					message = event.message.toString();
-				}				
-				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
-				
-				emitiendo_documento = false;
-				copiando_documento = false;
-				
-				running = false;
-				_convirtiendo = false;
-				currentState = "default";
-			}
-			
 			public function clear():void {
 				if (cmbProveedor) {
 					cmbProveedor.clear();
@@ -547,6 +476,13 @@
 				if (cmbMoney) {
 					cmbMoney.clear();
 				}
+				if (cmbCentroCosto) {
+					cmbCentroCosto.clear();
+				}
+				if (cmbReferencia) {
+					cmbReferencia.clear();
+				}				
+			
 			}
 			
 			public function get gasto():Documento {
@@ -559,11 +495,16 @@
 					_documento.removeEventListener(MonedaEvent.MONEDA_CHANGED, changeMonedaListener);
 					_documento.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, changePropertyDoc);
 				}
+				
+				fireEvents = false;
+				
 				_modoVisualizacion = false;
 				
 				clear();
+
+				currentState = "default";
 				
-				_documento = value;
+				_documento = value;				
 				
 				if (_documento.pagos == null) {
 					_documento.pagos = new ArrayCollection();
@@ -586,11 +527,16 @@
 				tieneCambios = false;
 				
 				lineasTienenCambios = false;
+				
+				running = false;
 			}
 			
 			public function changePropertyDoc(evt:PropertyChangeEvent):void {
-				if (evt.property != "depto") {
-					tieneCambios = true;
+				if (fireEvents) {
+					//trace("property :: " + evt.property);
+					if (evt.property != "depto") {
+						tieneCambios = true;
+					}
 				}
 			}
 			
@@ -604,20 +550,14 @@
 			}
 						
 			private function cargarMonedas():void {
-//				if (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
-//					monedas = new ArrayCollection();
-//					var code:Number = Number(_documento.comprobante.codigo);
-//					for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
-//						monedas.addItem(moneda);
-//					}
-//					if (_documento.moneda) {
-//						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
-//					}
-//				} else {
 				monedas = new ArrayCollection();
+				
 				for each (var mda:Moneda in CatalogoFactory.getInstance().monedas) {
 					var monedaAster:Boolean = mda.nombre.indexOf("*") > 0;
-					if (_documento.comprobante.aster) {
+					if (_documento.comprobante.codigo == "110" || _documento.comprobante.codigo == "111" || _documento.comprobante.codigo == "116") {
+						monedas.addItem(mda);
+						
+					} else if (_documento.comprobante.aster) {
 						if (monedaAster) {
 							monedas.addItem(mda);
 						}
@@ -626,32 +566,27 @@
 							monedas.addItem(mda);
 						}
 					}
-//					if (_documento.moneda) {						
-//						_documento.comprobante.aster = (_documento.moneda.nombre.indexOf("*") > 0);
-//					}
 				}
+				fireEvents = false;
 				_documento.update();
+				fireEvents = true;
 				
 			}
 			
 			private function resultSerieNumero(event:ResultEvent):void {
 				var serie:SerieNumero = event.result as SerieNumero;
 				if (serie) {
+					fireEvents = false;
 					_documento.serie = serie.serie;
 					_documento.numero = serie.numero;
+					fireEvents = true;
 				}
 			}
 			
 			protected function cmdEditSL_clickHandler(event:MouseEvent):void {
-				if (_documento.moneda == null || (_documento.preciosVenta == null)) {
-					/*if (!_documento.esSolicitudCompra) {
-						Alert.show("Para poder agregar Líneas de Venta debe seleccionar una 'Moneda' y 'Lista de Precios'", "Error");
-						return;
-					} else */
-					if (!_documento.moneda) {
-						Alert.show("Para poder agregar Líneas de Compra debe seleccionar una 'Moneda'", "Error");
-						return;
-					}
+				if (!_documento.moneda) {
+					Alert.show("Para poder agregar líneas de gasto debe seleccionar una 'Moneda'", "Error");
+					return;
 				}
 				if (helpWindow == null) {
 					if (_documento.proveedor) {
@@ -673,8 +608,7 @@
 					helpWindow.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
 					frmLineasGasto.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
 					
-					helpWindow.closeButton.visible = false;
-					
+					helpWindow.closeButton.visible = false;					
 					helpWindow.addElement(frmLineasGasto);
 				}
 			}
@@ -693,6 +627,28 @@
 				
 				frmLineasGasto = null;
 				
+				/// AJUSTAR LINEAS DE GASTO CON ARTICULOS CREADOS PARA ESTO
+				var artGastoSinIva:Articulo = null;
+				var artGastoConIva:Articulo = null;
+				
+				var articulos:ArrayCollection = CatalogoFactory.getInstance().getArticulos(_documento.comprobante.codigo);
+				for each (var articulo:Articulo in articulos) {
+					if (articulo.codigo == "GASTOS VARIOS2") {
+						artGastoSinIva = articulo;
+					} else if (articulo.codigo == "GASTOS VARIOS"){
+						artGastoConIva = articulo;
+					}
+				}
+				var items:ArrayCollection = _documento.lineas.lineas;
+				for each (var lineaDocumento:LineaDocumento in items) {
+					if (_documento.comprobante.aster) {
+						lineaDocumento.articulo = artGastoSinIva;	
+					} else {
+						lineaDocumento.articulo = artGastoConIva;	
+					}					
+				}
+				//////////////////////////////////////
+				
 				callLater(function():void {
 					_documento.update();
 				});
@@ -700,8 +656,6 @@
 					cmdEditSL.setFocus();
 				});
 			}
-			
-			
 			
 			private function capture_keyDownHandlerProveedor(event:KeyboardEvent):void {
 				if (event.keyCode == Keyboard.F1) {
@@ -767,24 +721,17 @@
 				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 				helpWindow = null;
 			}
-			
-			protected function verificarDocumento():void {
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-					var isSucessfull:Boolean = evt.result as Boolean;
-					if (!isSucessfull) {
-						var alert:Alert = Alert.show("No hay tipo de cambio fiscal definido para el día de hoy.\nDebe definir el tipo de cambio fiscal para poder emitir.", "Advertencia");
-						alert.width = 500;
-					}
-				});
-				remObj.existeTCFiscal(_documento.moneda.codigo);
-			}
-						
+									
 			private function guardarGasto(auditoria:Auditoria = null):void {
-				tieneCambios = false;
+				//
+				// Si documento es un contado, el plan de pagos debe de ser nulo y las cuotas deben de ser 0;
+				//
+				if (_documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_COMPRA_CONTADO 
+					|| _documento.comprobante.isMovimentoDeStockDeProveedor()) {
+					
+					_documento.planPagos = null;
+					_documento.cuotasDocumento.cuotas = new ArrayCollection();
+				}
 				
 				running = true;
 								
@@ -792,7 +739,7 @@
 				
 				// guardar errores para auditoría
 				if (_documento.nuevo) {
-					remObjSave.alta(_documento, auditoria);
+					remObjSave.altaGasto(_documento);
 				} else {
 					remObjModify.modificar(_documento, auditoria);
 				}
@@ -863,18 +810,21 @@
 			
 			
 			private function resultSave(event:ResultEvent):void {
-				var docId:String = event.result as String;
-				if (!docId) {
+				var doc:Documento = event.result as Documento;
+				if (!doc) {
 					Alert.show("No se grabó correctamente el gasto", "Error");
 					return;
 				}
+				gasto = doc;
+				gasto.nuevo = false;
+				
 				customPopup = new ErrorPanel();
 				customPopup.cornerRadius = 10;
 				customPopup.backgroundAlpha = .95;
 				customPopup.showButtons = false;
 				customPopup.type = 2;
 				
-				customPopup.errorText = "Documento de gasto GUARDADO.";
+				customPopup.errorText = "Documento de gasto GUARDADO correctamente.";
 				
 				PopUpManager.addPopUp(customPopup, this, true);
 				PopUpManager.centerPopUp(customPopup);
@@ -883,28 +833,15 @@
 					PopUpManager.removePopUp(customPopup);
 				}, 1500);
 				
-				_documento.docId = docId;
-				
-				gasto.nuevo = false;
 				lineasTienenCambios = false;
 				tieneCambios = false;
-				
-				if (!emitiendo_documento) {
-					running = true;
-					if (!copiando_documento) {
-						reloadDocumento(docId, true);
-					} else {
-						copiando_documento = false;
-					}
-				} else {
-					emitirFactura(docId);
-				}
+				running = false;
 				
 			}
 			
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				if (tieneCambios && _documento.permisosDocumentoUsuario.edicion && !_modoVisualizacion && _documento.cliente) {
-					var alert:Alert = Alert.show("El Gasto ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
+					var alert:Alert = Alert.show("El gasto ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
 					alert.width = 400;
 					alert.height = 200;
 				} else {
@@ -946,7 +883,6 @@
 				if (item && item.hasOwnProperty("codigo")) {
 					label = item.codigo;
 				}
-				
 				if (item && item.hasOwnProperty("nombre")) {
 					label += " - " + String(item.nombre).toUpperCase();
 				}				
@@ -964,9 +900,8 @@
 					label += " - " + item.nombre;
 				}
 				if (proveedor.contacto.ctoRSocial != proveedor.contacto.nombre) {
-					label += " [" + proveedor.contacto.ctoRSocial + "] ";
-				}
-				
+					label += " | " + proveedor.contacto.ctoRSocial;
+				}				
 				return label;
 			}			
 			
@@ -1001,13 +936,7 @@
 			private function resultBorrar(event:ResultEvent):void {
 				dispatchEvent(new Event("_cancel_"));
 			}
-						
-			protected function txtComments_keyDownHandler(event:KeyboardEvent):void {
-				if (event.keyCode == Keyboard.TAB) {
-					//cmdImprimir.setFocus();
-				}
-			}
-			
+									
 			protected function cmdBorrar_clickHandler(event:MouseEvent):void {
 				var alert:Alert = Alert.show("¿Esta seguro de BORRAR el gasto?", "Borrar gasto", Alert.YES | Alert.NO, this, alertBorrarClickHandler, mediaIcon);
 				alert.width = 400;
@@ -1045,11 +974,9 @@
 			}
 						
 			protected function cmdNuevo_clickHandler(event:MouseEvent):void {
-				if (tieneCambios) {
-					copiando_documento = true;
+				if (tieneCambios && _documento.centroCostosId && _documento.proveedor) {
 					guardarGasto();
-				}
-				
+				}				
 				dispatchEvent(new Event("_nuevo_gasto"));
 			}
 			
@@ -1057,33 +984,27 @@
 				if (!_documento.moneda) {
 					return;
 				}
-				var remObjCotizaciones:RemoteObject = new RemoteObject();
-				remObjCotizaciones.destination = "CreatingRpc";
-				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
+				var remObjCotizaciones:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
+				remObjCotizaciones.addEventListener(FaultEvent.FAULT, handleFault);
 				remObjCotizaciones.addEventListener(ResultEvent.RESULT, resultTipoCambioFiscal);
-				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
-					Alert.show(evt.fault.faultString, "Advertencia");
-				});
 				remObjCotizaciones.getTipoCambioFiscal(_documento.moneda.codigo, fecha ? fecha : new Date());
 			}
 			
 			private function resultTipoCambioFiscal(event:ResultEvent):void {
 				var result:String = event.result as String;
+				fireEvents = false;
 				if (result && result.length > 0) {
 					_documento.docTCF = new BigDecimal(result).setScale(3, MathContext.ROUND_HALF_UP).toString();
 				} else {
 					_documento.docTCF = "";
 				}
+				fireEvents = true;
 			}
 			
 			private function obtenerTipoCambio():void {
-				var remObjCotizaciones:RemoteObject = new RemoteObject();
-				remObjCotizaciones.destination = "CreatingRpc";
-				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
+				var remObjCotizaciones:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
 				remObjCotizaciones.addEventListener(ResultEvent.RESULT, resultCotizaciones);
-				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
-					Alert.show(evt.fault.faultString, "Advertencia");
-				});
+				remObjCotizaciones.addEventListener(FaultEvent.FAULT, handleFault);
 				remObjCotizaciones.getCotizacionHoy();
 			}
 			
@@ -1120,7 +1041,9 @@
 				CotizacionesModel.getInstance().cotizaciones = _cotizaciones;
 				
 				if (_documento) {
+					fireEvents = false;
 					_documento.docTCC = _cotizaciones.dolarVenta.@value;
+					fireEvents = true;
 				}
 			}
 			
@@ -1130,25 +1053,12 @@
 				// Datos que vienen del proveedor
 				if (proveedor != null) {
 					_documento.tomarCamposDelProveedor(proveedor.codigo);
-					/*
-					for each (var p:Pais in CatalogoFactory.getInstance().paises) {
-						if (p.codigo == proveedor.contacto.paisIdCto) {
-							_pais = p;
-							break;
-						}
-					}
-					*/
 				}
 			}
 			
-			protected function cmdConvertirSol_clickHandler(event:MouseEvent):void {
-			}
-			
-			
 			protected function cmdTrazabilidad_clickHandler(event:MouseEvent):void {
-				var remTrazabilidad:RemoteObject = new RemoteObject();
-				remTrazabilidad.destination = "CreatingRpc";
-				remTrazabilidad.channelSet = ServerConfig.getInstance().channelSet;
+				var remTrazabilidad:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
+				remTrazabilidad.addEventListener(FaultEvent.FAULT, handleFault);
 				remTrazabilidad.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 					var listDocuments:ArrayCollection = evt.result as ArrayCollection;
 					if (listDocuments && listDocuments.length > 0) {
@@ -1173,7 +1083,7 @@
 						var closeHandler:Function = function closeHandler(event:CloseEvent):void {
 							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 						}
-						trazabilidadPanel.addEventListener("_openDocument", function(evt:Event):void {
+						trazabilidadPanel.addEventListener("_openDocumentGasto", function(evt:Event):void {
 							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 							if (trazabilidadPanel.documento && _documento.docId == trazabilidadPanel.documento.docId) {
 								return;
@@ -1186,7 +1096,7 @@
 									}
 									PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 								}
-								Alert.show("Los cambios realizados se perderán.\n¿Esta usted seguro?", "Confirmación", Alert.YES | Alert.NO, parent, alertHandler);
+								Alert.show("Los cambios se perderán.\n¿Esta usted seguro?", "Confirmación", Alert.YES | Alert.NO, parent, alertHandler);
 							} else {
 								gasto = trazabilidadPanel.documento;
 							}
@@ -1203,15 +1113,12 @@
 					}
 					
 				});
-				remTrazabilidad.addEventListener(FaultEvent.FAULT, handleFault);
-				
 				remTrazabilidad.getTrazabilidad((_documento.processId && _documento.processId.length > 0 && _documento.processId != "NaN" && _documento.processId != "0") ? _documento.processId : _documento.docId);
 			}
 			
 			protected function cmdAuditoria_clickHandler(event:MouseEvent):void {
-				var remAuditoria:RemoteObject = new RemoteObject();
-				remAuditoria.destination = "CreatingRpc";
-				remAuditoria.channelSet = ServerConfig.getInstance().channelSet;
+				var remAuditoria:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
+				remAuditoria.addEventListener(FaultEvent.FAULT, handleFault);
 				remAuditoria.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 					var lineasAuditoria:ArrayCollection = evt.result as ArrayCollection;
 					if (lineasAuditoria && lineasAuditoria.length > 0) {
@@ -1222,7 +1129,7 @@
 						
 						var parent:Sprite;
 						var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
-						// no types so no dependencies
+
 						var mp:Object = sm.getImplementation("mx.managers.IMarshallPlanSystemManager");
 						if (mp && mp.useSWFBridge()) {
 							parent = Sprite(sm.getSandboxRoot());
@@ -1247,8 +1154,6 @@
 					}
 					
 				});
-				remAuditoria.addEventListener(FaultEvent.FAULT, handleFault);
-				
 				if (_documento.docId) {
 					remAuditoria.getLineasAuditoria(_documento.docId);
 				}
@@ -1264,34 +1169,20 @@
 					
 					guardarGasto();
 				});
-				
 			}
 			
 			protected function cmdFinalizar_clickHandler(event:MouseEvent):void {
+				if (!verificarDatosGasto()) {
+					return;
+				}
 				var docId:String = _documento.docId;
 				
-				var remObjR:RemoteObject = new RemoteObject();
-				remObjR.destination = "CreatingRpc";
-				remObjR.showBusyCursor = true;
-				remObjR.channelSet = ServerConfig.getInstance().channelSet;
+				var remObjR:RemoteObject = DocumentosUtils.getNewRemoteObject();
 				remObjR.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
-					var remObj1:RemoteObject = new RemoteObject();
-					remObj1.destination = "CreatingRpc";
-					remObj1.showBusyCursor = true;
-					remObj1.channelSet = ServerConfig.getInstance().channelSet;
-					remObj1.addEventListener(FaultEvent.FAULT, handleFault);
-					remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-						gasto = evt.result as Documento;
-					});
-					remObj1.getDocumento(docId);
-				});
-				
-				if (_documento.esCompra()) {
-					remObjR.finalizarCompra(_documento);
-				} else {
-					remObjR.finalizarMovimientoStock(_documento);
-				}				
+				remObjR.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					gasto = evt.result as Documento;
+				});				
+				remObjR.finalizarGasto(_documento);
 			}	
 			
 			protected function txtRUT_changeHandler(event:TextOperationEvent):void {
@@ -1304,6 +1195,8 @@
 			}			
 			
 			protected function txtDate_changeHandler(event:CalendarLayoutChangeEvent):void {
+				_documento.fechaDoc = event.newDate;
+				
 				obtenerTipoCambioFiscal();
 			}
 			
@@ -1333,24 +1226,171 @@
 			public function set showEMail(value:Boolean):void {
 				_showEMail = value;
 			}
-			
-			
+						
 			protected function cmbCentroCosto_changeHandler(event:Event):void {
-				// TODO Auto-generated method stub
+				var cc:CentrosCosto = cmbCentroCosto.selectedItem as CentrosCosto;
+				_documento.centroCostosId = cc.codigo;
 				
 			}
 			
 			protected function cmbReferencia_changeHandler(event:Event):void {
-				// TODO Auto-generated method stub
+				var ref:Referencia = cmbReferencia.selectedItem as Referencia;
+				_documento.referencia = ref.codigo;				
+			}
+			
+			private function verificarDatosGasto():Boolean {
+				if (!_documento.centroCostosId || !_documento.proveedor) {
+					Alert.show("El 'Centro costo' y el 'Proveedor' son requeridos.", "Advertencia");
+					return false;
+				}
+				return true;
 				
 			}
 			
-			protected function cmdConvertirGasto_clickHandler(event:MouseEvent):void
-			{
-				// TODO Auto-generated method stub
+			protected function cmdConvertirGasto_clickHandler(event:MouseEvent):void {
+				if (!verificarDatosGasto()) {
+					return;
+				}
+				
+				if (_documento.usuIdAut || (GeneralOptions.getInstance().loggedUser.esSupervisor() 
+					|| GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || GeneralOptions.getInstance().loggedUser.permisoId == Usuario.USUARIO_FACTURACION)) {
+					convertirGastoAut();
+				} else {
+					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
+						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						helpWindow = null;
+						
+						_documento.usuIdAut = evt.usuarioId;
+						
+						var auditoria:Auditoria = new Auditoria();
+						auditoria.problemas = "No hubo problemas";
+						auditoria.docId = _documento.docId;
+						auditoria.notas = "Solicitud autorizado por: ";
+						auditoria.usuId = GeneralOptions.getInstance().loggedUser.codigo;
+						auditoria.usuNom = GeneralOptions.getInstance().loggedUser.nombre;
+						auditoria.fechaEnv = new Date();
+						auditoria.audFechaHora = new Date();
+						auditoria.destinatarios = "";
+						
+						var remObj:RemoteObject = new RemoteObject();
+						remObj.destination = "CreatingRpc";
+						remObj.channelSet = ServerConfig.getInstance().channelSet;
+						remObj.showBusyCursor = false;
+						
+						remObj.modificar(_documento, auditoria);
+						
+						convertirGastoAut();
+					});
+				}				
+			}
+			
+			private function convertirGastoAut():void {
+				var convertRemObj:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
+				convertRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				convertRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					gasto = evt.result as Documento;
+					currentState = "default";
+					_convirtiendo = false;
+				});
+					
+				if (_documento.comprobante.codigo == '110') {
+					currentState = "cargando";
+					_convirtiendo = true;
+					
+					convertRemObj.convertirDocumento(_documento, "111", GeneralOptions.getInstance().usarCajaPrincipal);
+					
+				} else if (_documento.comprobante.codigo == '111' || _documento.comprobante.codigo == '116') {
+					convertirMS2Factura(_documento, _documento.comprobante.nombre);
+				} 
+			}			
+			
+			private function convertirMS2Factura(doc:Documento, title:String = null):void {
+				helpWindow = new TitleWindow();
+				helpWindow.title = "Convertir" + " '" + title + "'";
+				helpWindow.height = 420;
+				helpWindow.visible = true;
+				
+				var convertPnl:SeleccionarTipoGasto = new SeleccionarTipoGasto();
+				convertPnl.hideComprobante = doc.comprobante.codigo;
+				
+				convertPnl.showComprobanteTipo = 
+					(_documento.comprobante.codigo == '111' ? [Comprobante.COMPRA_CREDITO, Comprobante.COMPRA_CONTADO] : 
+					(_documento.comprobante.codigo == '116' ? [Comprobante.NOTA_CREDITO_COMPRA, Comprobante.DEVOLUCION_COMPRA_CONTADO] : [])) ;
+				
+				var moneda:Moneda = cmbMoney.selectedItem as Moneda;
+				convertPnl.filter = (moneda.nombre.indexOf("*") <= 0) ? "noaster" : "aster";
+				
+				helpWindow.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
+					helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerConvert);
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+					helpWindow = null;
+				});
+				convertPnl.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
+					helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerConvert);
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+					helpWindow = null;
+				});
+				convertPnl.addEventListener("accept_", resultConvertirDocumento);
+				
+				helpWindow.addElement(convertPnl);
+				PopUpManager.addPopUp(helpWindow, parentApplication.owner, true);
+				PopUpManager.centerPopUp(helpWindow);
 				
 			}
 			
+			private function resultConvertirDocumento(event:Event):void {
+				var convertPnl:SeleccionarTipoGasto = event.target as SeleccionarTipoGasto;
+				
+				currentState = "cargando";
+				_convirtiendo = true;
+				
+				var comprobante:Comprobante = convertPnl.tipoFactura as Comprobante;
+				var codigo:String = comprobante.codigo;
+				
+				var convertRemObj:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
+				convertRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				convertRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					gasto = evt.result as Documento;
+					currentState = "default";
+					_convirtiendo = false;
+				});
+				convertRemObj.convertirDocumento(_documento, codigo, GeneralOptions.getInstance().usarCajaPrincipal);
+				
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerConvert);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+			}
+			
+			private function closeHandlerConvert(event:Event):void {
+				helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerConvert);
+				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				helpWindow = null;
+				
+				currentState = "default";
+				_convirtiendo = false;
+			}
+			
+			protected function cmbMoney_changeHandler(event:Event):void {
+				var moneda:Moneda = cmbMoney.selectedItem as Moneda;
+				
+				var monedaAster:Boolean = moneda.nombre.indexOf("*") > 0;
+
+				_documento.comprobante.aster = monedaAster;
+			}
+			
+			public function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.message ? event.fault.rootCause.message : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+				
+				running = false;
+				_convirtiendo = false;
+				currentState = "default";
+			}
+			
+
 		]]>
 		
 	</fx:Script>
@@ -1360,15 +1400,12 @@
 			<renderers:CodigoNombreItemRenderer />
 		</fx:Component>
 		
-		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" maxLength="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 12 : 8}" 
-						   tooShortError="{tipoDoc &amp;&amp; tipoDoc.value == 'R' ? 'Número de RUT inválido.' : 'Número de documento inválido.'}" checkRut="{tipoDoc &amp;&amp; tipoDoc.value == 'R'}" />
+		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="12" maxLength="12" tooShortError="Número de RUT inválido" checkRut="true" />
 		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="0" locale="es_ES" />
-		<s:NumberFormatter id="nf_Cotizaciones" fractionalDigits="3" locale="es_ES" />
 	</fx:Declarations>
 	
 	<s:states>
 		<s:State name="default" />
-		<s:State name="contado" />
 		<s:State name="cargando" />
 	</s:states>
 	
@@ -1376,7 +1413,24 @@
 		<loader:LoadComponent />
 	</s:VGroup>
 	<s:Group width="100%" height="100%" excludeFrom="cargando"> 		
-		<s:Label width="120" color="#ff0000" fontSize="28" left="640" textAlign="center" top="15" text="Finalizado" visible="{!_documento.pendiente}" />
+		<s:Rect height="42" width="170" left="620" top="10" visible="{!_documento.isPendiente()}">
+			<s:fill>
+				<s:LinearGradient rotation="90">
+					<s:GradientEntry color="0x000000" ratio="0.2" alpha="0.33" />
+					<s:GradientEntry color="0x000000" ratio="0.48" alpha="0.52" />
+					<s:GradientEntry color="0x000000" ratio="0.48001" alpha="0.83" />
+				</s:LinearGradient>
+			</s:fill>
+			<s:stroke>
+				<s:LinearGradientStroke rotation="90" weight="3">
+					<s:GradientEntry color="0xFF0000" alpha="0.70" ratio="0.4" />
+					<s:GradientEntry color="0xFA0000" alpha="0.40" ratio="0.965" />
+					<s:GradientEntry color="0xFF0000" alpha="0.30" ratio="0.9651" />
+				</s:LinearGradientStroke>
+			</s:stroke>
+		</s:Rect>
+		<s:Label width="120" color="#ffffff" fontSize="28" left="640" textAlign="center" top="20" text="Finalizado" visible="{!_documento.isPendiente()}" />
+
 		<s:VGroup width="100%" height="100%" gap="0">
 			<s:HGroup width="100%" paddingTop="0" gap="0">
 				<s:Form id="form" width="580" textAlign="right" maxWidth="340">
@@ -1387,11 +1441,13 @@
 					<s:FormItem width="100%" label="Serie">
 						<s:HGroup width="100%" verticalAlign="middle">
 							<s:TextInput id="txtSerial" width="100%" textAlign="left" enter="{txtNumber.setFocus()}" text="@{_documento.serie}"
-										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="6" />
+										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido &amp;&amp; (!_documento.comprobante.numCmpId)}" 
+										 maxChars="6" />
 							<s:Spacer width="10" />
 							<s:Label text="Número" />
 							<s:TextInput id="txtNumber" width="100%" change="txtNumber_changeHandler(event)" enter="{cmbProveedor.setFocus()}" restrict="0-9" text="{_documento.numero}"
-										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" maxChars="20" />
+										 editable="{!_modoVisualizacion &amp;&amp; !_documento.emitido &amp;&amp; (!_documento.comprobante.numCmpId)}" 
+										 maxChars="20" />
 						</s:HGroup>
 					</s:FormItem>
 					<s:Spacer height="25" />
@@ -1410,45 +1466,6 @@
 						<s:TextInput id="txtRazonSocial" width="100%" textAlign="left" enter="{cmbMoney.setFocus()}" prompt="Ingrese razón social" text="@{_documento.razonSocial}"
 									 editable="{!_modoVisualizacion}" maxChars="100" />
 					</s:FormItem>
-					<s:FormItem width="100%" label="Centro costo">
-						<components:MyAutoComplete id="cmbCentroCosto" width="100%" textAlign="left" change="cmbCentroCosto_changeHandler(event)" 
-												   dataProvider="{CatalogoFactory.getInstance().centrosCosto}" labelField="nombre" matchType="anyPart" prompt="Ingrese centro costo" allowNewValues="false"
-												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
-												   dropDownRowCount="10" selectedItem="{_centroCostos}"/>
-					</s:FormItem>
-					<s:FormItem width="100%" label="Referencia">
-						<components:MyAutoComplete id="cmbReferencia" width="100%" textAlign="left" change="cmbReferencia_changeHandler(event)" 
-												   dataProvider="{CatalogoFactory.getInstance().referencias}" labelField="nombre" matchType="anyPart" prompt="Ingrese referencia" allowNewValues="false"
-												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
-												   dropDownRowCount="10" selectedItem="{_referencia}"/>
-					</s:FormItem>
-					
-				</s:Form>
-				
-				<s:Form width="100%" textAlign="right">
-					<s:layout>
-						<s:FormLayout gap="-12" />
-					</s:layout>
-					
-					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
-						<s:Label text="Fecha" styleName="myLabel" />
-						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"
-									  selectedDate="@{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
-					</s:HGroup>
-
-					<s:Spacer height="30" />
-					<s:FormItem width="100%" label="Moneda">
-						<s:VGroup>
-							<components:MyAutoComplete id="cmbMoney" width="200" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart" prompt="Ingrese moneda"
-													   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-													   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
-													   backspaceAction="focus" next_focus="{txtDirection}" selectedItem="@{_documento.moneda}" dropDownRowCount="{monedas.length}"
-													   previous_focus="{txtRazonSocial}" enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" />
-						</s:VGroup>
-						
-					</s:FormItem>
 					<s:FormItem width="100%" label="Depto.">
 						<s:TextInput id="txtDpto" width="100%" textAlign="left" enter="{txtDirection.setFocus()}" prompt="" text="@{_documento.departamento}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="40" />
@@ -1459,21 +1476,60 @@
 					</s:FormItem>
 					<s:FormItem width="100%" label="RUT">
 						<s:HGroup width="100%">
-							<s:TextInput id="txtRUT" textAlign="left" enter="{txtTelephone.setFocus()}" prompt="No tiene" text="{_documento.rut}" editable="false"/>
+							<s:TextInput id="txtRUT" textAlign="left" enter="{txtTelephone.setFocus()}" prompt="No tiene" text="@{_documento.rut}"/>
 						</s:HGroup>
 					</s:FormItem>
 					<s:FormItem width="100%" label="Teléfono">
 						<s:TextInput id="txtTelephone" width="100%" textAlign="left" prompt="No tiene" text="@{_documento.telefono}"
 									 editable="{!_modoVisualizacion  &amp;&amp; !_documento.emitido}" maxChars="50" />
-					</s:FormItem>
+					</s:FormItem>					
 				</s:Form>
 				
+				<s:Form width="100%" textAlign="right">
+					<s:layout>
+						<s:FormLayout gap="-12" />
+					</s:layout>
+					
+					<s:HGroup width="100%" horizontalAlign="right" paddingRight="40" paddingTop="16" verticalAlign="middle">
+						<s:Label text="Fecha" styleName="myLabel" />
+						<mx:DateField id="txtDate" fontSize="14" focusEnabled="false" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"
+									  selectedDate="{_documento.fechaDoc}" change="txtDate_changeHandler(event)" yearNavigationEnabled="true" enabled="{!_modoVisualizacion}"/>
+					</s:HGroup>
+
+					<s:Spacer height="30" />
+					<s:FormItem width="100%" label="Moneda">
+						<components:MyAutoComplete id="cmbMoney" width="200" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart" prompt="Ingrese moneda"
+												   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+												   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
+												   backspaceAction="focus" selectedItem="@{_documento.moneda}" dropDownRowCount="{monedas.length}"
+												   enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" change="cmbMoney_changeHandler(event)" 
+												   previous_focus="{txtRazonSocial}" next_focus="{cmbCentroCosto}" />
+					</s:FormItem>
+					<s:FormItem width="100%" label="Centro costo">
+						<components:MyAutoComplete id="cmbCentroCosto" width="100%" textAlign="left" change="cmbCentroCosto_changeHandler(event)" 
+												   dataProvider="{CatalogoFactory.getInstance().centrosCosto}" labelField="nombre" matchType="anyPart" prompt="Ingrese centro costo" allowNewValues="false"
+												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
+												   dropDownRowCount="10" selectedItem="{_centroCostos}" next_focus="{cmbReferencia}"/>
+					</s:FormItem>
+					<s:FormItem width="100%" label="Referencia">
+						<components:MyAutoComplete id="cmbReferencia" width="100%" textAlign="left" change="cmbReferencia_changeHandler(event)" 
+												   dataProvider="{CatalogoFactory.getInstance().referencias}" labelField="nombre" matchType="anyPart" prompt="Ingrese referencia" allowNewValues="false"
+												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
+												   dropDownRowCount="10" selectedItem="{_referencia}" next_focus="{txtTCF}"/>
+					</s:FormItem>
+					<s:FormItem width="100%" label="T.C.Fiscal">
+						<components1:MyTextInput id="txtTCF" width="100" text="{_documento.docTCF}" enter="cmdEditSL.setFocus()"
+												 editable="false" permitirNegativos="false"/>
+					</s:FormItem>					
+				</s:Form>				
 			</s:HGroup>
 			
 			<s:HGroup width="100%" height="100%" gap="0">
 				<s:VGroup width="100%" height="100%" gap="0">
-					<s:HGroup width="100%" height="100%" gap="0">
-						<s:Panel width="100%" height="100%" title="Venta" styleName="pnlInterno">
+					<s:HGroup width="100%" height="125" gap="0">
+						<s:Panel width="100%" height="100%" title="Gastos" styleName="pnlInterno">
 							<s:VGroup width="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
 								<s:Button id="cmdEditSL" width="180" height="45" click="cmdEditSL_clickHandler(event)" keyDown="cmdEditSL_keyDownHandler(event)" styleName="textButton"
 										  label="Líneas de gasto..." toolTip="Editar líneas de gasto" focusEnabled="false" />
@@ -1483,7 +1539,7 @@
 					<s:HGroup width="100%" height="100%" gap="0">
 						<s:Panel width="100%" height="100%" title="Observaciones" styleName="pnlInterno">
 							<s:VGroup width="100%" height="100%" gap="0">
-								<s:TextArea id="txtComments" width="100%" height="100%" keyDown="txtComments_keyDownHandler(event)" borderAlpha="0" contentBackgroundAlpha=".78" text="@{_documento.notas}"
+								<s:TextArea id="txtComments" width="100%" height="100%" borderAlpha="0" contentBackgroundAlpha=".78" text="@{_documento.notas}"
 											editable="{!_modoVisualizacion}" minHeight="0" maxChars="1024" />
 							</s:VGroup>
 						</s:Panel>
@@ -1510,27 +1566,31 @@
 	
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" visible="false" includeInLayout="false"/>
+			<components1:IconButton id="cmdTrazabilidad" click="cmdTrazabilidad_clickHandler(event)" styleName="trackingButton" label="Trazabilidad" toolTip="Trazabilidad"
+									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}" />
+			
 			<s:Spacer width="100%" />
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
 			
 			<s:Button id="cmdConvertirGasto" click="cmdConvertirGasto_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir gasto"
-					  visible="{(_documento.comprobante.tipo == 31)}"
+					  visible="{_documento.isPendiente() &amp;&amp; _documento.comprobante.tipo == 31}"
 					  enabled="{!_documento.nuevo &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"/>
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdFinalizar" click="cmdFinalizar_clickHandler(event)" styleName="finishButton" label="Finalizar" toolTip="Finalizar documento"
-					  enabled="{_documento.pendiente &amp;&amp; !_documento.nuevo}" focusEnabled="false" visible="false"/>
-			
+					  visible="{_documento.comprobante.tipo != 31}"
+					  enabled="{_documento.isPendiente() &amp;&amp; !_documento.nuevo}" focusEnabled="false" />
 			
 			<s:Spacer width="5" />
-			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false" enabled="false"/>
-			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Borrar" toolTip="Borrar documento"
+			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo" focusEnabled="false" />
+			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Borrar" toolTip="Borrar"
 					  enabled="{!_documento.emitido &amp;&amp; !_documento.nuevo}" visible="{!_modoVisualizacion &amp;&amp; !modoVentana}" includeInLayout="{!_modoVisualizacion &amp;&amp; !modoVentana}" focusEnabled="false" />
-			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" visible="{showGuardar &amp;&amp; !_modoVisualizacion}"
+			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar" visible="{showGuardar &amp;&amp; !_modoVisualizacion}"
 					  includeInLayout="{showGuardar &amp;&amp; !_modoVisualizacion}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
-			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" includeInLayout="{showEMail}"
-					  visible="{showEMail}" focusEnabled="false" enabled="false"/>
+			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" 
+					  visible="{/* showEMail */false}" includeInLayout="{/* showEMail */false}" focusEnabled="false" />
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />

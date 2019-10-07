@@ -52,7 +52,7 @@
 			private var exclamationIcon:Class;
 			
 			[Bindable]
-			public var version:String = "FullTime - Facturador v1.7.100";
+			public var version:String = "FullTime - Facturador v1.7.205";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);
@@ -68,8 +68,8 @@
 			protected function application1_creationCompleteHandler(event:FlexEvent):void {
 				pnlLogin.addEventListener(LoginPnl.LOGED_OK, loggedHandler);
 				
+				Alert.buttonWidth = 85;
 				Alert.buttonHeight = 25;
-				Alert.buttonWidth = 80;
 
 				loadOpciones();
 			}
@@ -111,7 +111,7 @@
 				
 				var loggedUser:Usuario = GeneralOptions.getInstance().loggedUser;
 				if (loggedUser.usuTipo == "S") {
-					this.title = version + " [Tipo de Usuario: Supervisor][Nombre: " + GeneralOptions.getInstance().loggedUser.nombre + "]";
+					this.title = version + " | Tipo de Usuario: Supervisor | Nombre: " + GeneralOptions.getInstance().loggedUser.nombre;
 				
 				} else {
 					if (loggedUser.permisoId == Usuario.USUARIO_SUPERVISOR) {
@@ -132,7 +132,7 @@
 						permiso = "Aliado Comercial";
 					}	
 
-					this.title = version + " [Tipo de Usuario: General]" + "[Permiso: " + permiso + "] [Nombre: " + GeneralOptions.getInstance().loggedUser.nombre + "]";
+					this.title = version + " | Tipo de Usuario: General | " + "Permiso: " + permiso + " | Nombre: " + GeneralOptions.getInstance().loggedUser.nombre;
 					
 				}				
 				
@@ -287,8 +287,6 @@
 						trace("Problemas con el archivo a abrir.");
 					}				
 				}
-				
-				
 			}
 			
 			private function exportToPDF(event:ExportToPDFEvent):void {
@@ -354,11 +352,9 @@
 				appUpdater.initialize();
 			}
 			
-			
 			private function onDownloadError(evt:DownloadErrorEvent):void {
 				//Alert.show(evt.toString());
 			}
-
 			
 			protected function pnlLogin_creationCompleteHandler(event:FlexEvent):void {
 				pnlLogin.addEventListener("checkUpdates", function(event:Event):void {

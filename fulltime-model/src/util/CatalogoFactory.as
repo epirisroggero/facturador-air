@@ -948,10 +948,6 @@ public class CatalogoFactory extends EventDispatcher {
 						if (values) {
 							comprobantes = sort(values);
 						}
-						for each (var i:Comprobante in comprobantes) {
-							trace("codigo :: " + i.codigo);
-						}
-						
 						resetRemoteObject();
 						errorPanel.errorText = "Cargando catálogo de 'Entregas'.";
 						remObjCat.getCatalogoByName("Entrega");

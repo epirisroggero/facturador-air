@@ -3,6 +3,8 @@
 		  width="100%" height="100%" creationComplete="creationCompleteHandler(event)" show="showHandler(event)">
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.ui.forms.DGNumStepperEditor;
+			import biz.fulltime.ui.forms.FrmNotaLinea;
 			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.model.Cuponera;
 			import biz.fulltime.model.Documento;
@@ -41,7 +43,7 @@
 			
 			private var cellPos:CellPosition;
 			
-			private var _changeLineasVenta:Boolean;
+			private var _changeLineasGasto:Boolean;
 						
 			public var tieneCambios:Boolean = false;
 			
@@ -85,9 +87,9 @@
 			
 			protected function creationCompleteHandler(event:FlexEvent):void {
 				callLater(function():void {
-					dgLineasVenta.setFocus();
-					if (dgLineasVenta.dataProvider.length > 0) {
-						dgLineasVenta.setSelectedCell(0, 0);						
+					dgLineasGasto.setFocus();
+					if (dgLineasGasto.dataProvider.length > 0) {
+						dgLineasGasto.setSelectedCell(0, 0);						
 						currentLine = lineasDocumento.lineas[0];
 					}
 				});
@@ -100,15 +102,15 @@
 			
 			public function set lineasDocumento(value:LineasDocumento):void {
 				_lineasDocumento = value;
-				_changeLineasVenta = true;
+				_changeLineasGasto = true;
 				invalidateProperties();
 			}
 			
 			override protected function commitProperties():void {
 				super.commitProperties();
 				
-				if (_changeLineasVenta) {
-					_changeLineasVenta = false;
+				if (_changeLineasGasto) {
+					_changeLineasGasto = false;
 					
 					if (!_lineasDocumento) {
 						_lineasDocumento = new LineasDocumento();
@@ -119,7 +121,7 @@
 						nueva.documento = documento;
 						lineasDocumento.lineas.addItem(nueva);
 					}
-					dgLineasVenta.dataProvider = lineasDocumento.lineas;
+					dgLineasGasto.dataProvider = lineasDocumento.lineas;
 				}
 			}
 			
@@ -130,13 +132,13 @@
 			private function closePnlHelpHandler(event:CloseEvent):void {
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHelpHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
-				dgLineasVenta.setFocus();
+				dgLineasGasto.setFocus();
 			}
 			
 			protected function dg_keyDownHandler(event:KeyboardEvent):void {
-				cellPos = dgLineasVenta.selectedCell;
+				cellPos = dgLineasGasto.selectedCell;
 				
-				const columns1:IList = dgLineasVenta.columns;
+				const columns1:IList = dgLineasGasto.columns;
 				var col2:GridColumn = ((cellPos.columnIndex >= 0) && (cellPos.columnIndex < columns1.length)) ? columns1.getItemAt(cellPos.columnIndex) as GridColumn : null;
 				var dataField:String = col2 ? col2.dataField : "";
 				
@@ -147,19 +149,13 @@
 				var maxRow:int = 0;
 				
 				
-				if (event.keyCode == Keyboard.F2) { // Se presiono la tecla 'F2'
-					if (dataField == "concepto") {
-						event.preventDefault();
-						//mostrarAntecedentes(event);
-					}
-					
-				} else if (event.keyCode == Keyboard.INSERT) { // Se presiono la tecla 'INSERT'
-					maxRow = dgLineasVenta.dataProvider.length - 1;
+				if (event.keyCode == Keyboard.INSERT) { // Se presiono la tecla 'INSERT'
+					maxRow = dgLineasGasto.dataProvider.length - 1;
 					if (hasPermEdition()) {
 						if (maxRow + 2 > 17 && !documento.comprobante.esImportacion()) {
-							Alert.show("Se pueden agregar un máximo de 17 líneas por documento.");
+							Alert.show("Se pueden agregar un máximo de 17 líneas.");
 						} else {
-							agregarLineaVenta();
+							agregarLineaGasto();
 						}
 					}
 					
@@ -170,20 +166,20 @@
 					
 				} else if (event.keyCode == Keyboard.ENTER) {
 					var count:int = 0;
-					var columns:ArrayCollection = new ArrayCollection(dgLineasVenta.columns.toArray());
+					var columns:ArrayCollection = new ArrayCollection(dgLineasGasto.columns.toArray());
 					for each (var col:GridColumn in columns) {
 						if (col.visible) {
 							count++;
 						}
 					}
 					var maxCol:int = columns.length - 3;
-					maxRow = dgLineasVenta.dataProvider.length - 1;
+					maxRow = dgLineasGasto.dataProvider.length - 1;
 					
 					var colIndex:int;
 					var rowIndex:int;
 					if (cellPos == null) {
-						colIndex = dgLineasVenta.editorColumnIndex;
-						rowIndex = dgLineasVenta.editorRowIndex
+						colIndex = dgLineasGasto.editorColumnIndex;
+						rowIndex = dgLineasGasto.editorRowIndex
 					} else {
 						var i:int = 1;
 						while (!columns[cellPos.columnIndex + i].visible) {
@@ -198,28 +194,28 @@
 						if (rowIndex == maxRow) {
 							if (hasPermEdition())
 								if (maxRow + 2 > 17 && !documento.comprobante.esImportacion()) {
-									Alert.show("Se pueden agregar un máximo de 17 líneas por documento.");
+									Alert.show("Se pueden agregar un máximo de 17 líneas.");
 								} else {
-									agregarLineaVenta();
+									agregarLineaGasto();
 								}
 						} else {
 							rowIndex += 1;
-							currentLine = dgLineasVenta.dataProvider.getItemAt(rowIndex) as LineaDocumento;
+							currentLine = dgLineasGasto.dataProvider.getItemAt(rowIndex) as LineaDocumento;
 						}
 					}
 					
-					dgLineasVenta.setSelectedCell(rowIndex, colIndex);
+					dgLineasGasto.setSelectedCell(rowIndex, colIndex);
 					
 				} else if ((permitirNegativos && (event.keyCode == Keyboard.MINUS || event.keyCode == Keyboard.NUMPAD_SUBTRACT)) || (event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9) || event.keyCode == Keyboard.NUMPAD_DECIMAL || event.keyCode == Keyboard.PERIOD) {
 					if (hasPermEdition()) {
-						if ((dgLineasVenta.columns.getItemAt(cellPos.columnIndex) as GridColumn).editable) {
-							dgLineasVenta.startItemEditorSession(cellPos.rowIndex, cellPos.columnIndex);
+						if ((dgLineasGasto.columns.getItemAt(cellPos.columnIndex) as GridColumn).editable) {
+							dgLineasGasto.startItemEditorSession(cellPos.rowIndex, cellPos.columnIndex);
 						}
 					}
 				}
 			}
 			
-			private function agregarLineaVenta():void {
+			private function agregarLineaGasto():void {
 				var nueva:LineaDocumento = new LineaDocumento();
 				nueva.documento = lineasDocumento.documento;
 				lineasDocumento.lineas.addItem(nueva);
@@ -231,10 +227,10 @@
 				callLater(function():void {
 					var row:int = lineasDocumento.lineas.length - 1;
 					var col:int = 2;
-					dgLineasVenta.setSelectedCell(row, col);
+					dgLineasGasto.setSelectedCell(row, col);
 					
 					callLater(function():void {
-						dgLineasVenta.setFocus();
+						dgLineasGasto.setFocus();
 					});
 				});
 				
@@ -244,7 +240,7 @@
 				if (helpWindow) {
 					helpWindow.removeEventListener(CloseEvent.CLOSE, antecedentesCloseHandler);
 					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-					dgLineasVenta.setFocus();
+					dgLineasGasto.setFocus();
 					helpWindow = null;
 				}
 			}
@@ -252,7 +248,7 @@
 			private function closePnlHandler(event:CloseEvent):void {
 				event.target.removeEventListener(CloseEvent.CLOSE, closePnlHandler);
 				PopUpManager.removePopUp(event.target as IFlexDisplayObject);
-				dgLineasVenta.setFocus();
+				dgLineasGasto.setFocus();
 			}
 			
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
@@ -294,10 +290,10 @@
 			}
 			
 			protected function showHandler(event:FlexEvent):void {
-				dgLineasVenta.setFocus();
+				dgLineasGasto.setFocus();
 			}
 			
-			protected function dgLineasVenta_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void {
+			protected function dgLineasGasto_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void {
 				var ld2:LineaDocumento = lineasDocumento.lineas.getItemAt(event.rowIndex) as LineaDocumento;
 				
 				var field:String = event.column.dataField;
@@ -312,16 +308,16 @@
 					}
 				}
 				
-				dgLineasVenta.setSelectedCell(event.rowIndex, event.columnIndex);
+				dgLineasGasto.setSelectedCell(event.rowIndex, event.columnIndex);
 				callLater(function():void {
-					dgLineasVenta.setFocus();
+					dgLineasGasto.setFocus();
 				});
 				
 				tieneCambios = true;
 			}
 						
-			public function borrarLineaVenta():void {
-				var rowIndex:int = dgLineasVenta.selectedCell.rowIndex;
+			public function borrarLineaGasto():void {
+				var rowIndex:int = dgLineasGasto.selectedCell.rowIndex;
 				
 				if (lineasDocumento.lineas.length == 1) { // Tengo un solo elemento.
 					lineasDocumento.lineas.removeItemAt(rowIndex);
@@ -334,18 +330,18 @@
 					lineasDocumento.lineas.addItem(lineaDoc);
 				} else {
 					lineasDocumento.lineas.removeItemAt(rowIndex);
-					dgLineasVenta.invalidateDisplayList();
+					dgLineasGasto.invalidateDisplayList();
 				}
 				
 				callLater(function():void {
-					var maxIndex:int = dgLineasVenta.dataProvider.length - 1;
-					if (dgLineasVenta.dataProvider.length >= 0) {
+					var maxIndex:int = dgLineasGasto.dataProvider.length - 1;
+					if (dgLineasGasto.dataProvider.length >= 0) {
 						if (rowIndex == 0) {
-							dgLineasVenta.setSelectedCell(rowIndex, 2);
+							dgLineasGasto.setSelectedCell(rowIndex, 2);
 						} else if (rowIndex > maxIndex) {
-							dgLineasVenta.setSelectedCell(maxIndex, 2);
+							dgLineasGasto.setSelectedCell(maxIndex, 2);
 						} else {
-							dgLineasVenta.setSelectedCell(rowIndex, 2);
+							dgLineasGasto.setSelectedCell(rowIndex, 2);
 						}
 					}
 				});
@@ -384,48 +380,10 @@
 				helpWindow = null;
 			}
 			
-			protected function dgLineasVenta_creationCompleteHandler(event:FlexEvent):void {
-				//dgLineasVenta.addEventListener("_mostrarAntecedentes", mostrarAntecedentes);
+			protected function dgLineasGasto_creationCompleteHandler(event:FlexEvent):void {
 			}
 						
-			private function mostrarDepositos(event:Event):void {
-				cellPos = dgLineasVenta.selectedCell;
-				
-				var lineaVenta:LineaDocumento = lineasDocumento.lineas.getItemAt(cellPos.rowIndex) as LineaDocumento;
-				if (documento.esSolicitudCompra || !lineaVenta.articulo || !lineaVenta.articulo.codigo || !documento.cliente.codigo) {
-					return;
-				}
-				if (helpWindow) {
-					return;
-				}
-				
-				helpWindow = new TitleWindow();
-				helpWindow.title = "Depósito/Stock: " + lineaVenta.articulo.codigo + " | " + lineaVenta.articulo.nombre;
-				helpWindow.width = 450;
-				helpWindow.height = 500;
-				
-				var frmStockArticulo:StockArticuloPnl = new StockArticuloPnl();
-				frmStockArticulo.articulo = lineaVenta.articulo.codigo;
-				frmStockArticulo.obtenerStockArticulo();
-				
-				PopUpManager.addPopUp(helpWindow, Sprite(FlexGlobals.topLevelApplication), true);
-				PopUpManager.centerPopUp(helpWindow);
-				
-				frmStockArticulo.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
-					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-					helpWindow = null;
-				});
-				
-				helpWindow.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
-					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-					helpWindow = null;
-				});
-				
-				helpWindow.addElement(frmStockArticulo);
-				
-			}
-						
-			protected function dgLineasVenta_selectionChangeHandler(event:GridSelectionEvent):void {
+			protected function dgLineasGasto_selectionChangeHandler(event:GridSelectionEvent):void {
 				var rowIndex:int = event.selectionChange.rowIndex;
 				
 				currentLine = lineasDocumento.lineas[rowIndex];
@@ -458,12 +416,12 @@
 		<s:NumberFormatter id="nf_Espanol_Espanol_2" fractionalDigits="0" locale="es_ES" />
 	</fx:Declarations>
 	
-	<s:Panel width="100%" height="100%" styleName="pntLineasVenta">
+	<s:Panel width="100%" height="100%" styleName="pntLineasGasto">
 		<s:VGroup width="100%" height="100%">
 			<s:HGroup width="100%" height="100%" gap="0">
-				<s:DataGrid id="dgLineasVenta" width="100%" height="100%" fontSize="12" creationComplete="dgLineasVenta_creationCompleteHandler(event)" keyDown="dg_keyDownHandler(event)"
-							gridItemEditorSessionSave="dgLineasVenta_gridItemEditorSessionSaveHandler(event)" dataProvider="{lineasDocumento.lineas}" selectionMode="singleCell" sortableColumns="false"
-							selectionChange="dgLineasVenta_selectionChangeHandler(event)" editable="{hasPermEdition()}">
+				<s:DataGrid id="dgLineasGasto" width="100%" height="100%" fontSize="12" creationComplete="dgLineasGasto_creationCompleteHandler(event)" keyDown="dg_keyDownHandler(event)"
+							gridItemEditorSessionSave="dgLineasGasto_gridItemEditorSessionSaveHandler(event)" dataProvider="{lineasDocumento.lineas}" selectionMode="singleCell" sortableColumns="false"
+							selectionChange="dgLineasGasto_selectionChangeHandler(event)" editable="{hasPermEdition()}">
 					<s:columns>
 						<s:ArrayList>
 							
@@ -496,6 +454,7 @@
 											<fx:Script>
 												<![CDATA[
 													import biz.fulltime.model.Concepto;
+													import biz.fulltime.model.Iva;
 													import biz.fulltime.model.LineaDocumento;
 													
 													import mx.events.FlexEvent;
@@ -561,7 +520,19 @@
 														var c2:Concepto = acConcepto.selectedItem as Concepto;
 														if (c2 != null) {
 															LineaDocumento(data).conceptoIdLin = c2.codigo;
-															LineaDocumento(data).concepto = c2.nombre;
+															if (LineaDocumento(data).concepto == null || LineaDocumento(data).concepto.length == 0) {
+																LineaDocumento(data).concepto = c2.nombre;	
+																
+																if (c2.ivaIdConcepto) {
+																	for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
+																		if (iva.codigo == c2.ivaIdConcepto.toString()) {
+																			LineaDocumento(data).ivaLin = iva;
+																		}																
+																	}							
+
+																}
+															}
+															
 														}
 														
 													}
@@ -637,7 +608,6 @@
 														}
 														if (event.keyCode == Keyboard.F1 || event.keyCode == Keyboard.F2) {
 															DataGrid(owner).endItemEditorSession();
-															DataGrid(owner).dispatchEvent(new Event("_mostrarAntecedentes"));
 														}
 														
 													}
@@ -693,20 +663,29 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 							
-							<s:GridColumn width="90" dataField="ivaArticulo" headerText="TIPO IVA" editable="true" visible="{!documento.comprobante.aster &amp;&amp; !documento.comprobante.exento}">
+							<s:GridColumn width="145" headerText="TIPO IVA" editable="true" visible="{!documento.comprobante.aster &amp;&amp; !documento.comprobante.exento}">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
 											<fx:Script>
 												<![CDATA[
+													import biz.fulltime.model.Iva;
 													import biz.fulltime.model.LineaDocumento;
+													
+													import util.CatalogoFactory;
 													
 													override public function prepare(hasBeenRecycled:Boolean):void {
 														if (!data) {
 															return;
 														}														
-														
-														label = LineaDocumento(data).ivaArticulo ? LineaDocumento(data).ivaArticulo.nombre : "";
+														 
+														label = "[exento]";
+														for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
+															if (LineaDocumento(data).ivaLin && iva.codigo == LineaDocumento(data).ivaLin.codigo) {
+																label = iva.nombre;
+																break;
+															}																
+														}					
 														
 													}
 												]]>
@@ -729,6 +708,9 @@
 													import spark.components.DataGrid;
 													
 													import util.CatalogoFactory;
+													
+													[Bindable]
+													var selectedIva:Iva = null;
 																										
 													override public function get value():Object {
 														if (acIva.selectedItem.codigo == "") {
@@ -740,35 +722,54 @@
 													override public function set value(newValue:Object):void {
 														acIva.selectedItem = newValue;
 													}
-																																							
-													override public function setFocus():void {
-														acIva.setFocus();
-													}
+																																						
 																										
 													protected function acIva_creationCompleteHandler(event:FlexEvent):void {
 														callLater(function():void {
 															acIva.textInput.setFocus();
 														});
-														
+
 														var iva:Iva = new Iva();
-														iva.codigo = "";
+														iva.codigo = "0";
 														iva.nombre = "[exento]";
 
 														var options:ArrayCollection = new ArrayCollection();
 														options.addItem(iva);
-														options.addAll(CatalogoFactory.getInstance().ivas);
+														
+														for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
+															if (iva.codigo == "3" || iva.codigo == "4") {
+																options.addItem(iva);
+															}																
+														}													
 														
 														acIva.dataProvider = options;
+
+														var currentIva:String = LineaDocumento(data).ivaLin ? LineaDocumento(data).ivaLin.codigo : "0";
+														
+														if (currentIva) {
+															for each(var iva:Iva in options) {
+																if (currentIva == iva.codigo) {
+																	selectedIva = iva;
+																	break;
+																}
+															}
+														}					
 													}
 													
 													
+													protected function acIva_changeHandler(event:Event):void {
+														var iva:Iva = acIva.selectedItem as Iva;
+														
+														LineaDocumento(data).ivaLin = iva.codigo == "0" ? null : iva;
+													}
+													
 												]]>
 											</fx:Script>
-											<components1:MyAutoComplete id="acIva" width="100%" height="100%" textAlign="left"
+											<components1:MyAutoComplete id="acIva" width="100%" height="100%" textAlign="left" change="acIva_changeHandler(event)"
 																		creationComplete="acIva_creationCompleteHandler(event)" 
 																		matchType="anyPart" allowMultipleSelection="false"
-																		labelField="nombre" backspaceAction="remove" allowNewValues="false"
-																		toolTip="{acIva.text}" />
+																		labelField="nombre" allowNewValues="false"
+																		selectedItem="{selectedIva}"/>
 										</s:GridItemEditor>
 									</fx:Component>
 								</s:itemEditor>
@@ -837,7 +838,7 @@
 													
 													private function myCloseHandler(event:CloseEvent):void {
 														if (event.detail == Alert.YES) {
-															this.outerDocument.borrarLineaVenta();
+															this.outerDocument.borrarLineaGasto();
 														}
 													}
 												]]>

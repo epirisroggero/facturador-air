@@ -718,17 +718,6 @@
 				return "";
 			}
 
-			private function pendiente_labelFunction(item:Object, column:spark.components.gridClasses.GridColumn):String {
-				if (item.tipoComprobante == "32") {
-					if (item.pendiente) {
-						return "SI";
-					} else {
-						return "NO";
-					}
-				}
-				return "";
-			}
-
 			protected function dgFacturas_doubleClickHandler(event:MouseEvent):void {
 				//cargarFactura();
 			}

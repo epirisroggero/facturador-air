@@ -61,7 +61,7 @@ public class Documento extends DocumentoBase {
 
 	public var emitidoPor:String;
 
-	public var pendiente:Boolean = true;
+	public var pendiente:String = "S";
 
 	public var agencia:String;
 
@@ -216,8 +216,11 @@ public class Documento extends DocumentoBase {
 	public var docCFEFileName:String; 
 	
 	public var centroCostosId:String; 
-	
-	public var docReferencia:String; 
+
+	public function isPendiente():Boolean {
+		return pendiente == null || pendiente != "N";
+	}
+
 	
 	// FIN FACTURA ELECTRÓNICA
 
@@ -348,14 +351,6 @@ public class Documento extends DocumentoBase {
 		remObjStock.addEventListener(ResultEvent.RESULT, resultStock);
 		remObjStock.addEventListener(FaultEvent.FAULT, handleFault);
 		remObjStock.showBusyCursor = true;
-		
-		remObjCuponera = new RemoteObject();
-		remObjCuponera.destination = "CreatingRpc";
-		remObjCuponera.channelSet = ServerConfig.getInstance().channelSet;
-		remObjCuponera.addEventListener(ResultEvent.RESULT, resultCuponera);
-		remObjCuponera.addEventListener(FaultEvent.FAULT, handleFault);
-		remObjCuponera.showBusyCursor = true;
-
 	}
 
 	public function get entrega():Entrega {
@@ -911,7 +906,7 @@ public class Documento extends DocumentoBase {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in items) {
-			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
+			if (!lineaDocumento.articulo && !comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getSubTotal().setScale(2, MathContext.ROUND_HALF_EVEN));
@@ -927,10 +922,6 @@ public class Documento extends DocumentoBase {
 	}
 
 	public function comprobanteComputaIva():Boolean {
-		if (comprobante.esGasto()) {
-			return true;
-		}
-		
 		switch (comprobante.codigo) {
 			case '122':
 			case '124':
@@ -950,7 +941,7 @@ public class Documento extends DocumentoBase {
 			var items:ArrayCollection = lineas.lineas;
 			var sum:BigDecimal = BigDecimal.ZERO;
 			for each (var lineaDocumento:LineaDocumento in items) {
-				if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
+				if (!lineaDocumento.articulo && !comprobante.esGasto()) {
 					continue;
 				}
 				sum = sum.add(lineaDocumento.getIva());
@@ -964,7 +955,7 @@ public class Documento extends DocumentoBase {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in items) {
-			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
+			if (!lineaDocumento.articulo && !comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getSubTotal());
@@ -975,7 +966,7 @@ public class Documento extends DocumentoBase {
 	private function getCostoTotal():BigDecimal {
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in lineas.lineas) {
-			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
+			if (!lineaDocumento.articulo && !comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getCostoTotal());
@@ -986,7 +977,7 @@ public class Documento extends DocumentoBase {
 	private function getPrecioDistTotal():BigDecimal {
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var lineaDocumento:LineaDocumento in lineas.lineas) {
-			if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
+			if (!lineaDocumento.articulo && !comprobante.esGasto()) {
 				continue;
 			}
 			sum = sum.add(lineaDocumento.getPrecioBaseDistribuidorTotal());
@@ -998,7 +989,7 @@ public class Documento extends DocumentoBase {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
 		for each (var linea:LineaDocumento in items) {
-			if (!linea.articulo && !linea.documento.comprobante.esGasto()) {
+			if (!linea.articulo && !comprobante.esGasto()) {
 				continue;
 			}
 			if (linea.esArticuloServicio()) {
@@ -1020,7 +1011,7 @@ public class Documento extends DocumentoBase {
 			var items:ArrayCollection = lineas.lineas;
 			var sum:BigDecimal = BigDecimal.ZERO;
 			for each (var lineaDocumento:LineaDocumento in items) {
-				if (!lineaDocumento.articulo && !lineaDocumento.documento.comprobante.esGasto()) {
+				if (!lineaDocumento.articulo && !comprobante.esGasto()) {
 					continue;
 				}
 				sum = sum.add(lineaDocumento.getImporteDescuentoTotal());
@@ -1582,7 +1573,7 @@ public class Documento extends DocumentoBase {
 	}
 	
 	public function esConsumoFinal():Boolean {
-		if (tipoDoc == "R" || tipoCFEid == 111 || tipoCFEid == 112) {
+		if ((tipoDoc == "R" && rut && rut.length > 0) || tipoCFEid == 111 || tipoCFEid == 112) {
 			return false;
 		}		
 		var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();

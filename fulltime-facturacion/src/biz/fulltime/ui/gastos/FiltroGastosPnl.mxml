@@ -47,6 +47,8 @@
 				var fechaDesde:Date = txtFechaDesde.selectedDate;
 				var fechaHasta:Date = txtFechaHasta.selectedDate;
 				
+				var lineaConcepto:String = txtConcepto.text;
+				
 				_docQuery = new DocumentoQuery();
 								
 				if (serie && serie != "") {
@@ -59,8 +61,14 @@
 				} else {
 					_docQuery.numero = null;
 				}
-				
-				_docQuery.comprobantes = acTipoComprobante.selectedItem != null ? acTipoComprobante.selectedItem.codigo : null;
+				if (lineaConcepto && lineaConcepto != "") {
+					_docQuery.lineaConcepto = lineaConcepto;
+				} else {
+					_docQuery.lineaConcepto = null;
+				}
+
+				_docQuery.comprobantes = acTipoComprobante.selectedItem != null ? acTipoComprobante.selectedItem.codigo : "110,111,112,113,114,115,116,212,213,214,215";
+
 				_docQuery.proveedor = null;
 				
 				if (codPrv && codPrv != "") {
@@ -81,6 +89,7 @@
 				
 				txtNumero.text = "";
 				txtSerie.text = "";
+				txtConcepto.text = "";
 				
 				acProveedor.clear();
 				acTipoComprobante.clear();
@@ -114,9 +123,9 @@
 				if (item != null && item.hasOwnProperty("nombre")) {
 					lblCliente += " - " + item.nombre;
 				}
-				return lblCliente;
-			}
-			
+				
+				return lblCliente ? lblCliente.toUpperCase() : "";
+			}			
 			
 			public function proveedorLabelFunction(item:Object):String {
 				var proveedor:Proveedor = item as Proveedor;
@@ -127,7 +136,9 @@
 				}
 				if (item && item.hasOwnProperty("nombre")) {
 					label += " - " + item.nombre;
-				}
+				}				
+				label = label ? label.toUpperCase() : "";
+				
 				if (proveedor.contacto.ctoRSocial != proveedor.contacto.nombre) {
 					label += " [" + proveedor.contacto.ctoRSocial + "] ";
 				}
@@ -155,47 +166,57 @@
 	</fx:Declarations>
 	
 	
-	<s:VGroup width="100%" height="100%">
-		<s:HGroup height="100%" paddingBottom="0">
-			<mx:Form>
-				<mx:FormItem label="Serie" fontSize="13" fontWeight="normal">
-					<mx:TextInput id="txtSerie" width="90" enter="txtNumero.setFocus()" />
-				</mx:FormItem>
-				<mx:FormItem label="Número" fontSize="13" fontWeight="normal">
-					<s:TextInput id="txtNumero" width="90" restrict="0-9" enter="acTipoComprobante.setFocus()" />
-				</mx:FormItem>
-			</mx:Form>
-			<mx:Form>
-				<mx:FormItem label="Comprobante" fontSize="13" fontWeight="normal">
-					<components1:MyAutoComplete id="acTipoComprobante" width="260" labelField="nombre"
-												matchType="anyPart" prompt="Filtrar por Comprobante" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-												allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-												dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" 
-												backspaceAction="focus" />
-				</mx:FormItem>
-				<mx:FormItem label="Proveedor" fontSize="13" fontWeight="normal">
-					<components1:MyAutoComplete id="acProveedor" width="260" 
-												labelField="nombre" matchType="anyPart" prompt="Filtrar por Proveedor" allowNewValues="false"
-												selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-												allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction"
-												backspaceAction="focus" dataProvider="{CatalogoFactory.getInstance().proveedores}"/>
-				</mx:FormItem>
-				
-			</mx:Form>
-			<mx:Form>
-				<mx:FormItem label="Fecha desde" fontSize="13" fontWeight="normal">
-					<mx:DateField id="txtFechaDesde" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"/>
-				</mx:FormItem>
-				<mx:FormItem label="Fecha hasta" fontSize="13" fontWeight="normal">
-					<mx:DateField id="txtFechaHasta" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"/>
-				</mx:FormItem>
-			</mx:Form> 
-			<s:VGroup paddingTop="15" paddingLeft="15">
-				<s:CheckBox id="chbPendientes" fontWeight="normal" label="Solo pendientes" selected="false"/>
-			</s:VGroup>
+	<s:HGroup width="100%" height="100%" paddingBottom="0" paddingRight="20" gap="0">
+		<s:Form>
+			<s:layout>
+				<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0"/>
+			</s:layout>
+			<s:FormItem label="Serie"  fontWeight="normal">
+				<s:TextInput id="txtSerie" width="90" enter="txtNumero.setFocus()" />
+			</s:FormItem>
+			<s:FormItem label="Número" fontWeight="normal">
+				<s:TextInput id="txtNumero" width="90" restrict="0-9" enter="acTipoComprobante.setFocus()" />
+			</s:FormItem>
+		</s:Form>
+		<s:Form width="100%">
+			<s:layout>
+				<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0"/>
+			</s:layout>
+			<s:FormItem label="Comprobante" width="100%" fontWeight="normal">
+				<components1:MyAutoComplete id="acTipoComprobante"  width="100%" labelField="nombre"
+											matchType="anyPart" prompt="Filtrar por Comprobante" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+											allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+											dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" 
+											backspaceAction="focus" dropDownRowCount="15"/>
+			</s:FormItem>
+			<s:FormItem label="Proveedor"  width="100%" fontWeight="normal">
+				<components1:MyAutoComplete id="acProveedor"  width="100%" labelField="nombre" 
+											matchType="anyPart" prompt="Filtrar por Proveedor" allowNewValues="false"
+											selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+											allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction"
+											backspaceAction="focus" dataProvider="{CatalogoFactory.getInstance().proveedores}" dropDownRowCount="15"/>
+			</s:FormItem>
+		</s:Form>
+		<s:Form fontFamily="Helvetica">
+			<s:layout>
+				<s:FormLayout gap="-12" paddingLeft="0" paddingRight="0"/>
+			</s:layout>
+			<s:FormItem label="Fecha desde" fontWeight="normal">
+				<mx:DateField id="txtFechaDesde" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"/>
+			</s:FormItem>
+			<s:FormItem label="Fecha hasta" fontWeight="normal">
+				<mx:DateField id="txtFechaHasta" width="110" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es" fontFamily="Helvetica"/>
+			</s:FormItem>
+		</s:Form> 
+		<s:VGroup paddingTop="20" paddingLeft="15">
+			<s:CheckBox id="chbPendientes" fontWeight="normal" label="Solo pendientes" selected="false"/>
+			<s:HGroup paddingTop="5" verticalAlign="middle">
+				<s:Label text="Concepto" />
+				<s:TextInput id="txtConcepto" width="220" />
+			</s:HGroup>
+		</s:VGroup>
+	</s:HGroup>
 
-		</s:HGroup>
-	</s:VGroup>
 	<components2:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />

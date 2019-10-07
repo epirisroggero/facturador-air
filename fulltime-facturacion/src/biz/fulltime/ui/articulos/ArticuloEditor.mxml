@@ -10,7 +10,7 @@
 			import mx.controls.Alert;
 			import mx.events.FlexEvent;
 			import mx.rpc.events.FaultEvent;
-			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.ResultEvent; 
 			import mx.rpc.remoting.RemoteObject;
 			
 			private var _articuloSeleccionado:Articulo;

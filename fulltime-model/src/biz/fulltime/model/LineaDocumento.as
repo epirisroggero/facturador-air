@@ -83,8 +83,6 @@ public class LineaDocumento extends EventDispatcher {
 
 	private var _hasStock:Boolean = true;
 	
-	public var ivaArticulo:Iva;
-	
 	public var rubIdlin:String;
 	
 	public var afilador:String;
@@ -106,6 +104,12 @@ public class LineaDocumento extends EventDispatcher {
 	public var linDto3:String = "0"; // Máximo 33
 	
 	public var linDto4:String = "0"; // Máximo 25
+	
+	public var ivaLin:Iva;
+	
+	//public var ivaId:Number;
+	
+	//public var linIva:String;
 	
 	public var ordenTrabajo:String;
 	
@@ -182,7 +186,7 @@ public class LineaDocumento extends EventDispatcher {
 	public function set articulo(value:Articulo):void {
 		this._articulo = value;
 		
-		if (value) {
+		if (value && !documento.comprobante.esGasto()) {
 			// Obtener todos los dataos del articulo ...
 			var remObj:RemoteObject = new RemoteObject();
 			remObj.destination = "CreatingRpc";
@@ -201,13 +205,12 @@ public class LineaDocumento extends EventDispatcher {
 				}
 			});
 			remObj.findCatalogEntity("Articulo", value.codigo);	
-		}		
-		
-		
+		}	
+	
 	}
 	
-	private function obtenerIva(articulo:Articulo):void {
-		ivaArticulo = articulo.iva;
+	private function obtenerIva(articulo:Articulo):void {		
+		ivaLin = articulo.iva;
 	}
 
 	public function get stock():BigDecimal {
@@ -369,12 +372,8 @@ public class LineaDocumento extends EventDispatcher {
 				
 				conceptoIdLin = value.codigo;
 			} 
-		} 
-	}
-
-	public function elegirIva(value:Iva):void {
-		if (value != null) {
-			ivaArticulo = value;
+			
+			
 		} 
 	}
 	
@@ -452,10 +451,11 @@ public class LineaDocumento extends EventDispatcher {
 				
 				remObj.addEventListener(ResultEvent.RESULT, resultMontoMayorCotizacion);
 				if (GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor) {
-					remObj.getPrecioSugerido(_articulo.codigo, "1", documento.moneda.codigo/*, oCotizaciones*/);
+					remObj.getPrecioSugerido(_articulo.codigo, "1", documento.moneda.codigo);
 				} else if (_articulo.monedaCosto != null) {
 					remObj.getMontoMayorCotizacion(_articulo.codigo, _articulo.fechaCosto, _articulo.monedaCosto.codigo, _articulo.costo, monedaFacturacion, documento.esRemito(), oCotizaciones);
 				}
+				
 			} else {	
 				if (documento.comprobante.esImportacion()) {
 					if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
@@ -463,7 +463,7 @@ public class LineaDocumento extends EventDispatcher {
 					} else {
 						this.precio = "0";
 					}
-					this.costo = _articulo.costo;// al finalizarlo borrar el costo que se agregó de forma provisoria
+					this.costo = _articulo.costo; // Al finalizarlo borrar el costo que se agregó de forma provisoria.
 
 				} else if (_articulo.monedaCosto && monedaFacturacion != _articulo.monedaCosto.codigo) {
 					remObj.addEventListener(ResultEvent.RESULT, resultCostoMayorCotizacion);
@@ -591,43 +591,39 @@ public class LineaDocumento extends EventDispatcher {
 	
 	public function comprobanteComputaIva():Boolean {
 		if (documento.comprobante.esGasto()) {
-			return conceptoIdLin != null && !documento.comprobante.aster && !documento.comprobante.exento;
+			return conceptoIdLin != null && !(documento.comprobante.aster || documento.comprobante.exento);
 			
 		} else {
 			switch (documento.comprobante.codigo) {
 				case '122':
 				case '124':
 					return false;
-			}
-			
-			return (articulo != null && !documento.comprobante.aster && !documento.comprobante.exento);
+			}			
+			return articulo != null && !(documento.comprobante.aster || documento.comprobante.exento);
 		}
 		
 	}
 
-
 	public function getTasaIva():BigDecimal {
 		if (!documento.comprobante.esGasto()) {
-			if (!comprobanteComputaIva() || documento.comprobante.aster) {
+			if (!comprobanteComputaIva()) {
 				return BigDecimal.ZERO;
-			} else {
-				return articulo.getTasaIva();
-			}			
+			}
+			return articulo.getTasaIva();
+						
 		} else {
-			if (conceptoIdLin && documento.comprobante.esGasto() && comprobanteComputaIva()) {
-		
-				if (ivaArticulo) {
-					return ivaArticulo.getTasaIva();
-				} else {
-					var ivaIdConcepto:Number = _concept.ivaIdConcepto;
-					
+			if (comprobanteComputaIva()) {
+				if (ivaLin) {
+					return ivaLin.getTasaIva();
+				} /*else if (concept && concept.ivaIdConcepto) {
 					for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
-						if (iva && _concept && iva.codigo == _concept.ivaIdConcepto.toString()) {
+						if (iva && iva.codigo == _concept.ivaIdConcepto.toString()) {
 							return iva.getTasaIva();
 						}
-					}				
-				}
+					}
+				}*/
 			}
+			
 			return BigDecimal.ZERO;
 		}
 	}
@@ -663,7 +659,6 @@ public class LineaDocumento extends EventDispatcher {
 			return new BigDecimal(cascados);	
 		}
 	}
-
 
 	public function getArticulo():Articulo {
 		return articulo;
@@ -854,8 +849,8 @@ public class LineaDocumento extends EventDispatcher {
 		_diametro = value;
 		
 		if (documento.esAfilado()) {
-			for each(var cuponera:Articulo in documento.artCuponera) {
-				if (articulo && cuponera && cuponera.codigo == articulo.codigo) {
+			for each(var cuponera:Cuponera in documento.cuponerasList) {
+				if (articulo && cuponera && cuponera.articulo && (cuponera.articulo.codigo == articulo.codigo)) {
 					return; // es cuponera por tanto no hago nada
 				}
 			}
@@ -903,6 +898,14 @@ public class LineaDocumento extends EventDispatcher {
 	}
 
 	public function get concept():Concepto {
+		if (!_concept && _conceptoIdLin) {
+			for each (var c:Concepto in CatalogoFactory.getInstance().conceptos) {
+				if (c.codigo == _conceptoIdLin) {
+					_concept = c;	
+					break;
+				}															
+			}									
+		}
 		return _concept;
 	}
 
@@ -923,7 +926,8 @@ public class LineaDocumento extends EventDispatcher {
 		
 		for each (var c:Concepto in CatalogoFactory.getInstance().conceptos) {
 			if (c.codigo == _conceptoIdLin) {
-				concept = c;	
+				concept = c;
+				
 				break;
 			}															
 		}									

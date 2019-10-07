@@ -67,6 +67,10 @@
 			import util.ErrorPanel;
 			import util.Maths;
 
+			private const WINDOW_WIDTH:Number = 640;
+			
+			private const WINDOW_HEIGHT:Number = 600;
+			
 			[Bindable]
 			[Embed("/assets/general/exclamation.png")]
 			public var mediaIcon:Class;
@@ -100,10 +104,6 @@
 			private var notas:String;
 
 			private var error:ErrorPanel;
-
-			private const WINDOW_WIDTH:Number = 640;
-
-			private const WINDOW_HEIGHT:Number = 600;
 
 			[Bindable]
 			private var _convirtiendo:Boolean = false;
@@ -162,13 +162,32 @@
 			[Bindable]
 			private var serieSelected:Object;
 			
-			private var _changes:Boolean = false; 
-
-			
 			[Bindable]
 			public var isAster:Boolean = false; 
+
+			private var fireEvents:Boolean = false;
 			
 			
+			
+			protected function initializeHandler(event:FlexEvent):void {
+				// Guardar Documento
+				remObjSave = getNewRemoteObject();
+				remObjSave.addEventListener(ResultEvent.RESULT, resultSave);
+
+				// Modificar Documento
+				remObjModify = getNewRemoteObject();
+				remObjModify.addEventListener(ResultEvent.RESULT, resultModify);
+
+				// Borrar Documento
+				remObjBorrar = getNewRemoteObject();
+				remObjBorrar.addEventListener(ResultEvent.RESULT, resultBorrar);
+
+				// Emitir Documento
+				remObjEmitir = getNewRemoteObject();
+				remObjEmitir.addEventListener(ResultEvent.RESULT, resultEmitir);
+
+			}
+
 			protected function cargarMonedas():void {
 				monedas = new ArrayCollection();
 				if (!isAster) { // Si es oficial el comprobante.
@@ -185,43 +204,7 @@
 					}
 				}				
 			}
-
-
-			protected function initializeHandler(event:FlexEvent):void {
-				// Guardar Documento
-				remObjSave = new RemoteObject();
-				remObjSave.destination = "CreatingRpc";
-				remObjSave.channelSet = ServerConfig.getInstance().channelSet;
-				remObjSave.addEventListener(ResultEvent.RESULT, resultSave);
-				remObjSave.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjSave.showBusyCursor = true;
-
-				// Modificar Documento
-				remObjModify = new RemoteObject();
-				remObjModify.destination = "CreatingRpc";
-				remObjModify.channelSet = ServerConfig.getInstance().channelSet;
-				remObjModify.addEventListener(ResultEvent.RESULT, resultModify);
-				remObjModify.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjModify.showBusyCursor = true;
-
-				// Borrar Documento
-				remObjBorrar = new RemoteObject();
-				remObjBorrar.destination = "CreatingRpc";
-				remObjBorrar.channelSet = ServerConfig.getInstance().channelSet;
-				remObjBorrar.addEventListener(ResultEvent.RESULT, resultBorrar);
-				remObjBorrar.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjBorrar.showBusyCursor = true;
-
-				// Emitir Documento
-				remObjEmitir = new RemoteObject();
-				remObjEmitir.destination = "CreatingRpc";
-				remObjEmitir.channelSet = ServerConfig.getInstance().channelSet;
-				remObjEmitir.addEventListener(ResultEvent.RESULT, resultEmitir);
-				remObjEmitir.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjEmitir.showBusyCursor = true;
-
-			}
-
+			
 			protected function onCreationComplete(event:FlexEvent):void {
 				txtNumero.setFocus();
 
@@ -236,6 +219,8 @@
 				title = (tieneCambios ? "[*]" : "") + _recibo.comprobante.nombre.toUpperCase()
 
 				if (_changeRecibo) {
+					fireEvents = false;
+					
 					_changeRecibo = false;
 					
 					isAster = _recibo.comprobante.aster;
@@ -374,10 +359,6 @@
 						_recibo.getDepartamento();
 					}
 					
-					_recibo.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(evt:PropertyChangeEvent):void {
-							tieneCambios = true;
-							invalidateProperties();
-						});
 					
 					serieReciboList.removeAll();
 					if (_recibo.comprobante.codigo != "32") { 
@@ -414,6 +395,7 @@
 						}						
 					});
 					
+					fireEvents = true;
 				}
 				
 				// Verificar monedas
@@ -422,18 +404,23 @@
 				} else {
 					monedasDistintas = false;
 				}
+				
 			}
 
 			private function resultModify(event:ResultEvent):void {
 				if (emitiendo_recibo) {
 					recibo = event.result as Documento;
-					running = true;
 					
 					// Emitir recibo si este no esta emitido
 					if (!recibo.emitido) {
+						fireEvents = false;
 						recibo.emitidoPor = GeneralOptions.getInstance().loggedUser.codigo;
+						fireEvents = true;
+						
+						running = true;
 						remObjEmitir.emitir(recibo, "");
 					}
+					
 				} else if (creando_nuevo) {
 					creando_nuevo = false;
 					tieneCambios = false;
@@ -494,13 +481,8 @@
 
 			private function grabarFacturaOk(close:Boolean = false):void {
 				// Guardar la recibo.
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				var remObj:RemoteObject = getNewRemoteObject(true);
 				remObj.addEventListener(ResultEvent.RESULT, resultGuardarRecibo);
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj.showBusyCursor = true;
-
 				remObj.guardarDocumento(_recibo);
 			}
 
@@ -508,8 +490,7 @@
 				recibo = event.result as Documento;
 				
 				if (emitiendo_recibo) {
-					running = true;
-					
+					running = true;					
 					if (!recibo.emitido) {
 						recibo.emitidoPor = GeneralOptions.getInstance().loggedUser.codigo;
 						remObjEmitir.emitir(recibo, "");
@@ -536,22 +517,13 @@
 					}, 1500);
 			}
 
-
-			private function reloadDocumento(docId:String, saving:Boolean = false):void {
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+			private function reloadDocumento(docId:String):void {
+				var remObj:RemoteObject = getNewRemoteObject();
 				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-						recibo = evt.result as Documento;
-						running = false;
-						tieneCambios = false;						
-						currentState = "default";
-						invalidateProperties();
-					});
+					recibo = evt.result as Documento;
+				});
 				remObj.getDocumento(docId);
 			}
-
 
 			private function obtenerClaveSupervisora(result:Function):void {
 				if (helpWindow == null) {
@@ -570,7 +542,6 @@
 					frmClaveSup.addEventListener("_claveSupOK", result);
 					helpWindow.addElement(frmClaveSup);
 				}
-
 			}
 
 			private function handleFault(event:FaultEvent):void {
@@ -583,7 +554,6 @@
 				emitiendo_recibo = false;
 				running = false;
 				creando_nuevo = false
-				
 				
 				_convirtiendo = false;
 				currentState = "default";
@@ -601,16 +571,39 @@
 			}
 
 			public function set recibo(value:Documento):void {
+				fireEvents = false;
+				
 				clear();
 
+				if (_recibo) {
+					_recibo.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, changePropertyDoc);
+				}
 				_recibo = value;
 
 				if (!_recibo.facturasVinculadas) {
 					_recibo.facturasVinculadas = new ArrayCollection();
 				}
+				
+				_recibo.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, changePropertyDoc);
+
 				_changeRecibo = true;
 				dispatchEvent(new Event("_changeDocumento"));
 				invalidateProperties();
+				
+				currentState = "default";
+				
+				running = false;
+				tieneCambios = false;
+				fireEvents = true;
+			}
+
+			public function changePropertyDoc(evt:PropertyChangeEvent):void {
+				if (fireEvents) {					
+					if (evt.property != "descuentos" && evt.property != "descuentosPorc" && evt.property != "departamento") {
+						//trace("property :: " + evt.property)
+						tieneCambios = true;
+					}
+				}
 			}
 
 			private function resultSerieNumero(event:ResultEvent):void {
@@ -666,8 +659,8 @@
 				helpWindow = null;
 
 				callLater(function():void {
-						cmbClient.setFocus();
-					});
+					cmbClient.setFocus();
+				});
 			}
 
 			private function cliente_closeHandler(event:Event):void {
@@ -676,8 +669,8 @@
 				helpWindow = null;
 
 				callLater(function():void {
-						cmbClient.setFocus();
-					});
+					cmbClient.setFocus();
+				});
 			}
 
 			private function confirm_closeHandler(event:Event):void {
@@ -697,8 +690,7 @@
 				// Agregar linea en tabla de pagos
 				if (_recibo.docId) {
 					_recibo.establecerFormaPago();				
-				}
-				
+				}				
 				if (!_recibo.saldo) {
 					_recibo.saldo = _recibo.docRecNeto;
 				}
@@ -717,7 +709,7 @@
 
 				// guardar errores para auditoría
 				if (_recibo.nuevo) {
-					remObjSave.alta(_recibo, auditoria);
+					remObjSave.altaRecibo(_recibo, auditoria);
 				} else {
 					remObjModify.modificar(_recibo, auditoria);
 				}
@@ -732,10 +724,9 @@
 				PopUpManager.removePopUp(ttlWnd as IFlexDisplayObject);
 			}
 
-
 			private function resultSave(event:ResultEvent):void {
-				var docId:String = event.result as String;
-				if (!docId) {
+				var result:Documento = event.result as Documento;
+				if (!recibo) {
 					Alert.show("No se grabó correctamente el recibo", "Error");
 					return;
 				}
@@ -754,13 +745,10 @@
 						PopUpManager.removePopUp(error);
 					}, 1500);
 
-				_recibo.docId = docId;
-
+				recibo = result;				
 				recibo.nuevo = false;
 				tieneCambios = false;
-
-				reloadDocumento(docId, true);
-
+				running = false;
 			}
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
@@ -771,7 +759,6 @@
 				} else {
 					dispatchEvent(new Event("_cancel_", true, true));
 				}
-
 			}
 
 			protected function confirmCloseHandler(eventObj:CloseEvent):void {
@@ -782,7 +769,6 @@
 					invalidateProperties();
 					dispatchEvent(new Event("_cancel_", true, true));
 				}
-
 			}
 
 			public function codigoNombreLabelFunction(item:Object):String {
@@ -810,7 +796,6 @@
 				if (client && client.razonSocial != client.nombre) {
 					label += " [" + client.razonSocial + "] ";
 				}
-
 				return label;
 			}
 
@@ -859,17 +844,11 @@
 					guardarRecibo();
 				} 
 				dispatchEvent(new Event("_nuevo_recibo"));
-
 			}
 
 			private function obtenerTipoCambio():void {
-				var remObjCotizaciones:RemoteObject = new RemoteObject();
-				remObjCotizaciones.destination = "CreatingRpc";
-				remObjCotizaciones.channelSet = ServerConfig.getInstance().channelSet;
+				var remObjCotizaciones:RemoteObject = getNewRemoteObject();
 				remObjCotizaciones.addEventListener(ResultEvent.RESULT, resultCotizaciones);
-				remObjCotizaciones.addEventListener(FaultEvent.FAULT, function(evt:FaultEvent):void {
-						Alert.show(evt.fault.faultString, "Advertencia");
-					});
 				remObjCotizaciones.getCotizacionHoy();
 			}
 
@@ -907,7 +886,9 @@
 				CotizacionesModel.getInstance().cotizaciones = _cotizaciones;
 
 				if (_recibo) {
+					fireEvents = false;
 					_recibo.docTCC = _cotizaciones.dolarVenta.@value;
+					fireEvents = true;
 				}
 			}
 
@@ -945,7 +926,6 @@
 				frmFacturas.hasSaldoPendiente = true;
 				frmFacturas.documentos = new ArrayCollection();
 				
-				
 				var comprobantes:String = "2,4,5,6,7,8,9,19,20,22,98"; 
 				if (isAster) { // RECIBOS ASTER
 					if (recibo.serie == "C") {
@@ -975,10 +955,7 @@
 						var factura:DocumentoDTO = doc as DocumentoDTO;
 						
 						if (factura != null) {
-							var remObj:RemoteObject = new RemoteObject();
-							remObj.destination = "CreatingRpc";
-							remObj.channelSet = ServerConfig.getInstance().channelSet;
-							remObj.addEventListener(FaultEvent.FAULT, handleFault);
+							var remObj:RemoteObject = getNewRemoteObject();
 							remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 								var doc:Documento = evt.result as Documento;
 								
@@ -988,11 +965,7 @@
 									vinculo = (VinculoDocumentos) (recibo.facturasVinculadas.getItemAt(rowIndex)); 
 									
 									var ajusteS:BigDecimal;
-									//if (isAster) {
 									ajusteS = vinculo.neto && vinculo.neto.length > 0 ? new BigDecimal(vinculo.neto) : BigDecimal.ZERO;
-									//} else {
-									//	ajusteS = vinculo.monto && vinculo.monto.length > 0 ? new BigDecimal(vinculo.monto) : BigDecimal.ZERO;
-									//}
 									ajusteS = recibo.convertirMoneda(recibo.moneda, recibo.docRecMda, ajusteS);
 									saldoPendiente = saldoPendiente.add(ajusteS);
 								}
@@ -1037,10 +1010,7 @@
 				frmFacturas.addEventListener("facturaSeleccionada", function(evt:Event):void {
 						var factura:DocumentoDTO = frmFacturas.selectedItem as DocumentoDTO;
 						if (factura != null) {
-							var remObj:RemoteObject = new RemoteObject();
-							remObj.destination = "CreatingRpc";
-							remObj.channelSet = ServerConfig.getInstance().channelSet;
-							remObj.addEventListener(FaultEvent.FAULT, handleFault);
+							var remObj:RemoteObject = getNewRemoteObject();
 							remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 									var doc:Documento = evt.result as Documento;
 
@@ -1090,7 +1060,6 @@
 									
 								});
 							remObj.getDocumento(factura.docId);
-
 						}
 
 						PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
@@ -1139,10 +1108,7 @@
 					
 					var factura:DocumentoDTO = map[serieNumero];
 					if (factura) {
-						var remObj:RemoteObject = new RemoteObject();
-						remObj.destination = "CreatingRpc";
-						remObj.channelSet = ServerConfig.getInstance().channelSet;
-						remObj.addEventListener(FaultEvent.FAULT, handleFault);
+						var remObj:RemoteObject = getNewRemoteObject();
 						remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 							var doc:Documento = evt.result as Documento;
 							
@@ -1272,6 +1238,7 @@
 				recibo.docVinculado = tieneVinculos ? "S" : "N";
 				recibo.saldo = saldoPendiente ? saldoPendiente.toString() : BigDecimal.ZERO.toString();
 				
+				fireEvents = false;
 				// En comprobantes aster calculo el descuento y porcentage de descuento.
 				if (isAster) {
 					var totalMdaVinculos:BigDecimal = netoTotal.add(desctoTotal);
@@ -1284,8 +1251,8 @@
 					recibo.descuentos = BigDecimal.ZERO.toString();
 					recibo.descuentosPorc = BigDecimal.ZERO.toString();
 				}
-
 				recibo.docRenFin = rentaTotal.toString();
+				fireEvents = true;
 				
 				actualizarTotales(netoTotal, montoTotal, desctoTotal, rentaTotal);
 			}
@@ -1462,42 +1429,15 @@
 			}
 
 			private function resultEmitir(event:ResultEvent):void {
-				var serieNumero:SerieNumero = event.result as SerieNumero;
-				if (serieNumero) {
-					_recibo.serie = serieNumero.serie;
-					_recibo.numero = serieNumero.numero;
-
-					for each (var o:Object in serieReciboList)  {
-						if (o.value == _recibo.serie) {
-							serieSelected = o;
-						}
-					}
-					txtNumero.text = _recibo.numero.toString();
-				}
 				emitiendo_recibo = false;
-				recibo.emitido = true;
-
-				running = false;
-				currentState = "default";
-
-				var remObj:RemoteObject = new RemoteObject();
-				remObj.destination = "CreatingRpc";
-				remObj.channelSet = ServerConfig.getInstance().channelSet;
-				remObj.addEventListener(FaultEvent.FAULT, handleFault);
-				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-						recibo = evt.result as Documento;
-					});
-				remObj.getDocumento(_recibo.docId);
-
+				
+				recibo = event.result as Documento;
 			}
 			
 			public function obtenerFacturas(orden:String = null):void {
 				if (!remFacturasCliente) {
-					remFacturasCliente = new RemoteObject();
-					remFacturasCliente.destination = "CreatingRpc";
-					remFacturasCliente.channelSet = ServerConfig.getInstance().channelSet;
+					remFacturasCliente = getNewRemoteObject(false);
 					remFacturasCliente.addEventListener(ResultEvent.RESULT, resultFacturasPendientes);
-					remFacturasCliente.addEventListener(FaultEvent.FAULT, onFault);
 				}
 				
 				var moneda:Moneda = cmbMonedaVinculos.selectedItem as Moneda;
@@ -1647,10 +1587,10 @@
 						
 						// Agregar una linea vacia al documento
 						var lineaDoc:LineaDocumento = new LineaDocumento();
+						lineaDoc.documento = docVin;
 						lineaDoc.numeroLinea = index;
 						lineaDoc.cantidad = "1";
 						lineaDoc.articulo = art;
-						lineaDoc.documento = docVin;
 						lineaDoc.concepto = concepto;
 						lineaDoc.notas = notas;
 						lineaDoc.precio = precio.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
@@ -1662,7 +1602,6 @@
 						if (index == 0) {
 							docVin.moneda = vinculo.factura.moneda;
 						}
-						
 						// Indice de la línea
 						index++;
 					}
@@ -1703,10 +1642,8 @@
 				
 				PopUpManager.addPopUp(facWindow, DisplayObject(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(facWindow);
-
 				
 				facWindow.addElement(frmFactura);
-
 				facWindow.closeButton.visible = false;
 				
 			}
@@ -1721,9 +1658,7 @@
 			}
 			
 			protected function cmdAuditoria_clickHandler(event:MouseEvent):void {
-				var remAuditoria:RemoteObject = new RemoteObject();
-				remAuditoria.destination = "CreatingRpc";
-				remAuditoria.channelSet = ServerConfig.getInstance().channelSet;
+				var remAuditoria:RemoteObject = getNewRemoteObject(); 
 				remAuditoria.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 					var lineasAuditoria:ArrayCollection = evt.result as ArrayCollection;
 					if (lineasAuditoria && lineasAuditoria.length > 0) {
@@ -1761,7 +1696,6 @@
 					}
 					
 				});
-				remAuditoria.addEventListener(FaultEvent.FAULT, handleFault);
 				
 				if (_recibo.docId) {
 					remAuditoria.getLineasAuditoria(_recibo.docId);
@@ -1861,23 +1795,10 @@
 			protected function cmdFinalizar_clickHandler(event:MouseEvent):void {
 				var docId:String = _recibo.docId;
 				
-				var remObjR:RemoteObject = new RemoteObject();
-				remObjR.destination = "CreatingRpc";
-				remObjR.showBusyCursor = true;
-				remObjR.channelSet = ServerConfig.getInstance().channelSet;
-				remObjR.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjR.addEventListener(ResultEvent.RESULT, function(evt1:ResultEvent):void {
-					var remObj1:RemoteObject = new RemoteObject();
-					remObj1.destination = "CreatingRpc";
-					remObj1.showBusyCursor = true;
-					remObj1.channelSet = ServerConfig.getInstance().channelSet;
-					remObj1.addEventListener(FaultEvent.FAULT, handleFault);
-					remObj1.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
-						recibo = evt.result as Documento;
-					});
-					remObj1.getDocumento(docId);
+				var remObjR:RemoteObject = getNewRemoteObject();
+				remObjR.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					recibo = evt.result as Documento;
 				});
-				
 				remObjR.finalizarRecibo(_recibo);
 				
 			}
@@ -1991,18 +1912,23 @@
 			protected function cmdActualizar_clickHandler(event:MouseEvent):void {
 				// Emitir Documento
 				
-				var remObjActualizar:RemoteObject = new RemoteObject();
-				remObjActualizar.destination = "CreatingRpc";
-				remObjActualizar.channelSet = ServerConfig.getInstance().channelSet;
+				var remObjActualizar:RemoteObject = getNewRemoteObject();
 				remObjActualizar.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
 					Alert.show("Actualización finalizada");
 				});
-				remObjActualizar.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjActualizar.showBusyCursor = true;
-				
 				remObjActualizar.actualizarRecibosWithNCF();
-				
 			}
+			
+			private function getNewRemoteObject(showBusyCursor:Boolean = true):RemoteObject {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.showBusyCursor = showBusyCursor;
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				
+				return remObj;
+			}
+
 			
 		]]>
 

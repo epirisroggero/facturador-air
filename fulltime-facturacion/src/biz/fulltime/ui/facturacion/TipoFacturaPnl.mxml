@@ -66,8 +66,10 @@
 				for each (var comprobante:Comprobante in comprobantes) {
 					if (modoSolicitud) {
 						if (comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
-							if (comprobante.codigo == "100" || comprobante.codigo == "110" || comprobante.codigo == "120") {
-								myDP.addItem(comprobante);
+							if (!comprobantesGasto.contains(comprobante.codigo)) {
+								if (comprobante.codigo == "100" || comprobante.codigo == "110" || comprobante.codigo == "120") {
+									myDP.addItem(comprobante);
+								}
 							}
 						}
 					} else if (modoGasto) {
@@ -78,17 +80,19 @@
 						if (comprobante.codigo == "30" || comprobante.codigo == "31" || comprobante.codigo == "32") {
 							myDP.addItem(comprobante);
 						}
-					} else {
-	 					if (comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
-							if (comprobante.codigo == "80" || comprobante.codigo == "90" || comprobante.codigo == "70" || comprobante.codigo == "130" ||  comprobante.codigo == "1" || comprobante.codigo == "10" || comprobante.codigo == "11" || comprobante.codigo == "14") {
-								myDP.addItem(comprobante);
+					} else {						
+						if (!comprobantesGasto.contains(comprobante.codigo)) {
+							if (comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR) {
+								if (comprobante.codigo == "80" || comprobante.codigo == "90" || comprobante.codigo == "70" || comprobante.codigo == "130" ||  comprobante.codigo == "1" || comprobante.codigo == "10" || comprobante.codigo == "11" || comprobante.codigo == "14") {
+									myDP.addItem(comprobante);
+								}
+							} else {
+								if (comprobante.tipo != 21 && comprobante.tipo != 23 && comprobante.tipo != 5 && comprobante.codigo != "5" && comprobante.codigo != "8" && comprobante.codigo != "28") {
+									myDP.addItem(comprobante);
+									
+								}
 							}
-						} else {
-							if (comprobante.tipo != 21 && comprobante.tipo != 23 && comprobante.tipo != 5 && comprobante.codigo != "5" && comprobante.codigo != "8" && comprobante.codigo != "28") {
-								myDP.addItem(comprobante);
-								
-							}
-						}
+						}  
 					}
 				}			
 				callLater(function():void {

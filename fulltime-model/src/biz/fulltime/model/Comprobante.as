@@ -32,7 +32,10 @@ public class Comprobante extends CodigoNombreEntity {
 
 	public static const COMPRA_CONTADO:int = 23;
 	
+	public static const NOTA_CREDITO_COMPRA:int = 22;
 	
+	public static const DEVOLUCION_COMPRA_CONTADO:int = 24;
+
 	public static const MOVIMIENTO_DE_STOCK_DE_CLIENTE:int = 32;
 	
 	public static const MOVIMIENTO_DE_STOCK_DE_PROVEEDOR:int = 31;
@@ -96,7 +99,6 @@ public class Comprobante extends CodigoNombreEntity {
 	public function isContado():Boolean {
 		return tipo == VENTA_CONTADO || tipo == COMPRA_CONTADO;
 	}
-
 	
 	/**
 	 * Retorna true si es un comprobante que genera deuda para el cliente.
@@ -109,7 +111,6 @@ public class Comprobante extends CodigoNombreEntity {
 	public function isNotaCreditoFinanciera():Boolean { 
 		return codigo == "28";
 	}
-	
 
 	/**
 	 * Los documentos de comprobantes que mueven caja deben especificar una {@link FormaPago}

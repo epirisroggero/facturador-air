@@ -239,6 +239,8 @@
 			///// FACTURAS PENDIENTES //////
 			////////////////////////////////
 
+			private var facturasPendientes:DocPendientesCliente;
+			
 			public function obtenerDocumentosPendientes():void {
 				if (!remFactPendientes) {
 					remFactPendientes = new RemoteObject();
@@ -248,11 +250,8 @@
 					remFactPendientes.addEventListener(FaultEvent.FAULT, handleFault);
 				}
 
-				remFactPendientes.getDocumentosDeudores();
+				remFactPendientes.getDocumentosDeudoresCliente(_cliente.codigo);
 			}
-
-			private var facturasPendientes:DocPendientesCliente;
-
 
 			private function resultFacturasPendientes(event:ResultEvent):void {
 				var data:ArrayCollection = event.result as ArrayCollection;

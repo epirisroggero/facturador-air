@@ -20,6 +20,8 @@
 			import biz.fulltime.ui.facturacion.stockprecio.StockArticuloPnl;
 			import biz.fulltime.ui.personas.ListadoCotizacionesPanel;
 			
+			import com.adobe.utils.StringUtil;
+			
 			import flash.filesystem.File;
 			import flash.filesystem.FileMode;
 			import flash.filesystem.FileStream;
@@ -92,18 +94,8 @@
 			private var bitmapData:BitmapData
 
 			private var remObjStock:RemoteObject;
-
-			private var remObjPSMin:RemoteObject;
-
-			private var remObjPSMay:RemoteObject;
-
-			private var remObjPSDist:RemoteObject;
-
-			private var remObjPSFab:RemoteObject;
 			
-			private var remObjCosto:RemoteObject;
-
-			private var remObjPSReventa:RemoteObject;
+			private var remObjPrecios:RemoteObject;
 
 			[Bindable]
 			private var monedaCosto:String = Moneda.PESOS;
@@ -123,48 +115,12 @@
 				remObjStock.addEventListener(FaultEvent.FAULT, handleFault);
 				remObjStock.showBusyCursor = false;
 
-				remObjPSMin = new RemoteObject();
-				remObjPSMin.destination = "CreatingRpc";
-				remObjPSMin.channelSet = ServerConfig.getInstance().channelSet;
-				remObjPSMin.addEventListener(ResultEvent.RESULT, resultPrecioMinorista);
-				remObjPSMin.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjPSMin.showBusyCursor = false;
-
-				remObjPSMay = new RemoteObject();
-				remObjPSMay.destination = "CreatingRpc";
-				remObjPSMay.channelSet = ServerConfig.getInstance().channelSet;
-				remObjPSMay.addEventListener(ResultEvent.RESULT, resultPrecioMayorista);
-				remObjPSMay.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjPSMay.showBusyCursor = false;
-
-				remObjPSDist = new RemoteObject();
-				remObjPSDist.destination = "CreatingRpc";
-				remObjPSDist.channelSet = ServerConfig.getInstance().channelSet;
-				remObjPSDist.addEventListener(ResultEvent.RESULT, resultPrecioDistribuidor);
-				remObjPSDist.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjPSDist.showBusyCursor = false;
-
-				remObjPSReventa = new RemoteObject();
-				remObjPSReventa.destination = "CreatingRpc";
-				remObjPSReventa.channelSet = ServerConfig.getInstance().channelSet;
-				remObjPSReventa.addEventListener(ResultEvent.RESULT, resultPrecioReventa);
-				remObjPSReventa.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjPSReventa.showBusyCursor = false;
-
-				remObjPSFab = new RemoteObject();
-				remObjPSFab.destination = "CreatingRpc";
-				remObjPSFab.channelSet = ServerConfig.getInstance().channelSet;
-				remObjPSFab.addEventListener(ResultEvent.RESULT, resultPrecioFabrica);
-				remObjPSFab.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjPSFab.showBusyCursor = false;
-				
-				remObjCosto = new RemoteObject();
-				remObjCosto.destination = "CreatingRpc";
-				remObjCosto.channelSet = ServerConfig.getInstance().channelSet;
-				remObjCosto.addEventListener(ResultEvent.RESULT, resultCosto);
-				remObjCosto.addEventListener(FaultEvent.FAULT, handleFault);
-				remObjCosto.showBusyCursor = false;
-
+				remObjPrecios = new RemoteObject();
+				remObjPrecios.destination = "CreatingRpc";
+				remObjPrecios.channelSet = ServerConfig.getInstance().channelSet;
+				remObjPrecios.addEventListener(ResultEvent.RESULT, resultPrecios);
+				remObjPrecios.addEventListener(FaultEvent.FAULT, handleFault);
+				remObjPrecios.showBusyCursor = false;
 
 			}
 
@@ -216,11 +172,12 @@
 								}
 								
 							}
-						}						
+						}	
+						articulo.nombre = articulo.nombre ? StringUtil.trim(articulo.nombre) : "";
 
 						var cotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
 
-						monedaCostoNombre = "DOLARES";
+						monedaCostoNombre = null;//"DOLARES";
 						monedaCosto = Moneda.DOLARES;
 
 						_costo = null;
@@ -231,13 +188,7 @@
 						_precioMayorista = null;
 						_precioReventa = null;
 						
-						remObjPSFab.getArticuloPrecio(articulo.codigo, "7");
-						remObjPSDist.getPrecioSugerido(articulo.codigo, "1", monedaCosto);
-						remObjPSMay.getPrecioSugerido(articulo.codigo, "2", monedaCosto);
-						remObjPSMin.getPrecioSugerido(articulo.codigo, "3", monedaCosto);
-						remObjPSReventa.getPrecioSugerido(articulo.codigo, "4", monedaCosto);
-						
-						remObjCosto.getArticuloCosto(articulo.codigo);
+						remObjPrecios.getArticuloPrecios(articulo.codigo, monedaCosto);
 					}
 				}
 			}
@@ -278,55 +229,27 @@
 				}
 			}
 
-			private function resultPrecioMinorista(event:ResultEvent):void {
-				var precio:Object = event.result;
-				if (precio is String) {
-					_precioMinorista = new BigDecimal(precio).toString();
-				} else {
-					_precioMinorista = "0";
+			private function resultPrecios(event:ResultEvent):void {
+				var precios:ArrayCollection = event.result as ArrayCollection;
+				
+				monedaCostoNombre = "DOLARES";
+				
+				for each (var articuloPrecio:ArticuloPrecio in precios) {
+					if (articuloPrecio.precioBaseId == "01") {
+						_monedaPrecioFabrica = articuloPrecio.moneda ? articuloPrecio.moneda.simbolo : "";
+						_precioFabrica = new BigDecimal(articuloPrecio.precio).toString();
+					} else if (articuloPrecio.precioBaseId == "0") {
+						_costo = new BigDecimal(articuloPrecio.precio).toString();
+					} else if (articuloPrecio.precioBaseId == "1") {
+						_precioDistribuidor = new BigDecimal(articuloPrecio.precio).toString();
+					} else if (articuloPrecio.precioBaseId == "2") {
+						_precioMayorista = new BigDecimal(articuloPrecio.precio).toString();	
+					} else if (articuloPrecio.precioBaseId == "3") {
+						_precioMinorista = new BigDecimal(articuloPrecio.precio).toString();	
+					} else if (articuloPrecio.precioBaseId == "4") {
+						_precioReventa  = new BigDecimal(articuloPrecio.precio).toString();
+					} 
 				}
-			}
-
-			private function resultPrecioMayorista(event:ResultEvent):void {
-				var precio:Object = event.result;
-				if (precio is String) {
-					_precioMayorista = new BigDecimal(precio).toString();
-				} else {
-					_precioMayorista = "0";
-				}
-			}
-
-			private function resultPrecioDistribuidor(event:ResultEvent):void {
-				var precio:Object = event.result;
-				if (precio is String) {
-					_precioDistribuidor = new BigDecimal(precio).toString();
-				} else {
-					_precioDistribuidor = "0";
-				}
-			}
-
-			private function resultPrecioReventa(event:ResultEvent):void {
-				var precio:Object = event.result;
-				if (precio is String) {
-					_precioReventa = new BigDecimal(precio).toString();
-				} else {
-					_precioReventa = "0";
-				}
-			}
-
-			private function resultPrecioFabrica(event:ResultEvent):void {
-				var articuloPrecio:ArticuloPrecio = event.result as ArticuloPrecio;
-				if (articuloPrecio && articuloPrecio is ArticuloPrecio) {
-					_monedaPrecioFabrica = articuloPrecio.moneda ? articuloPrecio.moneda.simbolo : "";
-					_precioFabrica = articuloPrecio.precio;
-				} else {
-					_precioFabrica = "0";
-				}
-			}
-			
-			private function resultCosto(event:ResultEvent):void {
-				var costoArt:String = event.result as String;
-				_costo = costoArt != null ? costoArt : "0.00";
 			}
 
 			private function convert(precio:BigDecimal):BigDecimal {
@@ -372,30 +295,6 @@
 					message = event.message.toString();
 				}				
 				trace(message); 
-			}
-
-			protected function cmdFoto_clickHandler(event:MouseEvent):void {
-				var antedentesWindow:TitleWindow = new TitleWindow();
-				antedentesWindow.title = "Foto: " + articulo.nombre;
-				antedentesWindow.width = 800;
-				antedentesWindow.height = 600;
-
-				var frmImage:ImageArticulo = new ImageArticulo();
-				frmImage.loadImage(articulo.blob);
-
-				PopUpManager.addPopUp(antedentesWindow, Sprite(FlexGlobals.topLevelApplication), true);
-				PopUpManager.centerPopUp(antedentesWindow);
-
-				frmImage.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
-						PopUpManager.removePopUp(antedentesWindow as IFlexDisplayObject);
-						antedentesWindow = null;
-					});
-
-				antedentesWindow.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
-						PopUpManager.removePopUp(antedentesWindow as IFlexDisplayObject);
-						antedentesWindow = null;
-					});
-				antedentesWindow.addElement(frmImage);
 			}
 
 			protected function chbActivo_changeHandler(event:Event):void {
@@ -817,8 +716,8 @@
 								</s:FormItem>
 								<s:Spacer height="25" />
 								<s:FormItem height="48" label="P. Fábrica"
-											 visible="{_costo &amp;&amp; GeneralOptions.getInstance().opciones.modoMostrador == 'false'}"
-											 includeInLayout="{_costo &amp;&amp; GeneralOptions.getInstance().opciones.modoMostrador == 'false'}">
+											 visible="{_precioFabrica &amp;&amp; GeneralOptions.getInstance().opciones.modoMostrador == 'false'}"
+											 includeInLayout="{_precioFabrica &amp;&amp; GeneralOptions.getInstance().opciones.modoMostrador == 'false'}">
 									<s:BorderContainer width="120" height="28" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6" visible="{_precioFabrica}" includeInLayout="{_precioFabrica}">
 										<s:layout>
 											<s:HorizontalLayout horizontalAlign="left" paddingBottom="4" paddingLeft="5" paddingRight="5" paddingTop="4" verticalAlign="middle" />
@@ -833,7 +732,7 @@
 								<s:layout>
 									<s:FormLayout paddingLeft="-25" paddingTop="0" verticalAlign="middle" gap="-16" />
 								</s:layout>
-								<s:FormItem>
+								<s:FormItem visible="{monedaCostoNombre}">
 									<s:HGroup gap="2">
 										<s:BorderContainer width="120" backgroundAlpha="0" backgroundColor="0xEAEAEA" minWidth="0" minHeight="0" borderAlpha="0">
 											<s:layout>

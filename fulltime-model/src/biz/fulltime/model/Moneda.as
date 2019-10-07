@@ -18,6 +18,9 @@ public class Moneda extends CodigoNombreEntity {
 	
 	public var simbolo:String;
 
+	public var mndAbrevia:String;
+
+	
 	public function get aster():Boolean {
 		if (codigo) {
 			return codigo == PESOS_ASTER || codigo == DOLARES_ASTER || codigo == EUROS_ASTER;

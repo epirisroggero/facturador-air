@@ -84,14 +84,7 @@
 			[Bindable]
 			public var _pbFabricaIVA:Boolean;
 			
-			
 			private var remObj:RemoteObject;
-			
-			private var remObjPSMin:RemoteObject;
-			
-			private var remObjPSMay:RemoteObject;
-			
-			private var remObjPSDist:RemoteObject;
 			
 			private var artPrecios:ArrayCollection = new ArrayCollection();
 			

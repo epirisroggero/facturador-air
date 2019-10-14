@@ -1706,7 +1706,7 @@
 				if (!_documento.comprobante.aster) {
 					var total:BigDecimal = new BigDecimal(_documento.total);
 					var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
-					var maxUI:BigDecimal = new BigDecimal("39244"); // Valor de la UI año 2018
+					var maxUI:BigDecimal = new BigDecimal("42975"); // Valor de la UI año 2018
 					
 					if (_documento.moneda.codigo == Moneda.DOLARES) {
 						var dolarStr:String = cotizaciones.cotizaciones.dolarVenta.@value;
@@ -1722,8 +1722,8 @@
 					
 					
 					if (total.compareTo(maxUI) > 0) {
-						if (!_documento.rut || _documento.rut.length == 0) {
-							Alert.show("Para las ventas superiores a 10.000 UI se requiere documento del cliente.");
+						if (!_documento.rut || _documento.rut.length == 0) {							
+							Alert.show("En documentos por monto superior a 10.000 UI se requiere documento del cliente.");
 							return;
 						}
 						var resultV:ValidationResultEvent = rut_stringValidator.validate();
@@ -1732,13 +1732,6 @@
 							return;
 						}	
 						
-						// Si es una venta contado
-						if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO) {		
-							if (total.compareTo(maxUI.multiply(new BigDecimal(4))) > 0) { 
-								verificarVentaContado();
-								return;
-							}
-						}
 					}					
 					
 					if (_documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO) {
@@ -1778,29 +1771,6 @@
 				}
 			}
 			
-			protected function verificarVentaContado():void {
-				if (!_documento.comprobante.aster) {
-
-					if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO) {
-						var total:BigDecimal = new BigDecimal(_documento.total);
-						var cotizaciones:CotizacionesModel = CotizacionesModel.getInstance();
-						var maxUI:BigDecimal = new BigDecimal("39244"); // Valor de la UI año 2018
-						
-						if (_documento.moneda.codigo == Moneda.DOLARES) {
-							var dolarStr:String = cotizaciones.cotizaciones.dolarVenta.@value;
-							var dolar:BigDecimal = new BigDecimal(dolarStr);
-							
-							maxUI = maxUI.divide(dolar);
-						} else  if (_documento.moneda.codigo == Moneda.EUROS) {
-							var euroStr:String = cotizaciones.cotizaciones.euroVenta.@value;
-							var euro:BigDecimal = new BigDecimal(euroStr);
-							
-							maxUI = maxUI.divide(euro);
-						}
-					}
-				}
-			}
-
 			protected function emitirFacturaOk():void {
 				emitiendo_documento = true;
 				_problemasEncontrados = false;
@@ -2145,7 +2115,6 @@
 				if (summary) {
 					summary.updateVendedores();
 				}
-
 				tieneCambios = true;
 
 				callLater(function():void {
@@ -2444,11 +2413,7 @@
 
 				if (_documento.esSolicitudCompra || _documento.esCotizacionDeVenta || _documento.esOrdenDeVenta || _documento.comprobante.esProceso80() || _documento.comprobante.esProceso90() || _documento.comprobante.esProceso14()) {
 					if (newmoneda) {
-						if (newmoneda.nombre.indexOf("*") <= 0) { // Agrega las monedas oficiales.
-							_documento.comprobante.aster = false;
-						} else {
-							_documento.comprobante.aster = true;
-						}
+						_documento.comprobante.aster = newmoneda.nombre.indexOf("*") > 0;
 					}
 				}
 				if (newmoneda) {
@@ -3669,8 +3634,8 @@
 				currentState = "default";
 			}
 
-			
-			
+
+
 		]]>
 
 	</fx:Script>

@@ -216,6 +216,8 @@ public class Documento extends DocumentoBase {
 	public var docCFEFileName:String; 
 	
 	public var centroCostosId:String; 
+	
+	public var docCenCostosId:String; 
 
 	public function isPendiente():Boolean {
 		return pendiente == null || pendiente != "N";

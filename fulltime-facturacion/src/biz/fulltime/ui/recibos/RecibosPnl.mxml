@@ -433,20 +433,6 @@
 			}
 
 			protected function cmdGuardar_clickHandler(event:MouseEvent, close:Boolean = false):void {
-				var monto:String = "";
-				
-				try {
-					var valor:BigDecimal = new BigDecimal(_recibo.docRecNeto);
-					if (valor.compareTo(BigDecimal.ZERO) <= 0) {
-						_recibo.docRecNeto = "";
-					} else {
-						_recibo.docRecNeto = valor.setScale(2).toString();
-					}
-					monto = _recibo.docRecNeto;
-					
-				} catch (error:Error) {
-					_recibo.docRecNeto = "";
-				}
 				
 				var alert:Alert;
 				if (!_recibo.numero || recibo.numero.length == 0) {
@@ -466,6 +452,35 @@
 					cmbClient.setFocus();
 					return;
 				}
+				
+				/*
+				var aux:ArrayCollection = new ArrayCollection();
+				var facturasVinculadas:ArrayCollection = _recibo.facturasVinculadas;
+				for each (var vinculo:VinculoDocumentos in facturasVinculadas) {
+					if (new BigDecimal(vinculo.monto).compareTo(new BigDecimal(vinculo.factura.saldo)) > 0) {
+						alert = Alert.show("La factura vinculada '" + vinculo.factura.serie + vinculo.factura.numero + "' no es correcta. Monto a cancelar es mayor al saldo pendiente. (" + vinculo.monto + ">" + vinculo.factura.saldo + ")", "Error");
+						alert.width = 400;
+						alert.height = 200;
+						
+						return;
+					}
+				}*/
+
+				var monto:String = "";
+				
+				try {
+					var valor:BigDecimal = new BigDecimal(_recibo.docRecNeto);
+					if (valor.compareTo(BigDecimal.ZERO) <= 0) {
+						_recibo.docRecNeto = "";
+					} else {
+						_recibo.docRecNeto = valor.setScale(2).toString();
+					}
+					monto = _recibo.docRecNeto;
+					
+				} catch (error:Error) {
+					_recibo.docRecNeto = "";
+				}
+				
 				if (monto.length == 0) {
 					alert = Alert.show("El monto debe ser mayor a cero.", "Error");
 					alert.width = 400;
@@ -474,16 +489,46 @@
 					txtTotal.setFocus();
 					return;
 				}
+
 				
 				guardarRecibo();
 				
 			}
-
+			
 			private function grabarFacturaOk(close:Boolean = false):void {
 				// Guardar la recibo.
 				var remObj:RemoteObject = getNewRemoteObject(true);
-				remObj.addEventListener(ResultEvent.RESULT, resultGuardarRecibo);
+
+				if (close) {
+					remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+						tieneCambios = false;
+						running = false;
+
+						error = new ErrorPanel();
+						error.cornerRadius = 10;
+						error.backgroundAlpha = .95;
+						error.showButtons = false;
+						error.type = 2;
+						
+						error.errorText = "El recibo ha sido GUARDADO.";
+						
+						PopUpManager.addPopUp(error, this, true);
+						PopUpManager.centerPopUp(error);
+						
+						invalidateProperties();
+						
+						setTimeout(function():void {
+							PopUpManager.removePopUp(error);
+						}, 1500);
+						
+						dispatchEvent(new Event("_cancel_", true, true));	
+					});
+					
+				} else {
+					remObj.addEventListener(ResultEvent.RESULT, resultGuardarRecibo);
+				}
 				remObj.guardarDocumento(_recibo);
+
 			}
 
 			private function resultGuardarRecibo(event:ResultEvent):void {
@@ -544,21 +589,7 @@
 				}
 			}
 
-			private function handleFault(event:FaultEvent):void {
-				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
-				if (!message) {
-					message = event.message.toString();
-				}				
-				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
-
-				emitiendo_recibo = false;
-				running = false;
-				creando_nuevo = false
-				
-				_convirtiendo = false;
-				currentState = "default";
-			}
-
+			
 			public function clear():void {
 				if (cmbClient) {
 					cmbClient.clear();
@@ -600,7 +631,6 @@
 			public function changePropertyDoc(evt:PropertyChangeEvent):void {
 				if (fireEvents) {					
 					if (evt.property != "descuentos" && evt.property != "descuentosPorc" && evt.property != "departamento") {
-						//trace("property :: " + evt.property)
 						tieneCambios = true;
 					}
 				}
@@ -705,7 +735,7 @@
 						aux.addItem(vinculo);
 					}
 				}
-				recibo.facturasVinculadas = aux;
+				_recibo.facturasVinculadas = aux;
 
 				// guardar errores para auditoría
 				if (_recibo.nuevo) {
@@ -1148,6 +1178,8 @@
 
 					vinculo.calcularRentaFinanciera(isAster, recibo.serie);
 					updateTotalFacturasVinculadas();
+					
+					tieneCambios = true;
 				}
 			}
 			
@@ -1928,6 +1960,25 @@
 				
 				return remObj;
 			}
+
+			
+			public function handleFault(event:FaultEvent):void {
+				var message:String = (event.fault && event.fault.rootCause) 
+					? (event.fault.rootCause.cause ? event.fault.rootCause.cause.message : "") 
+					: null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+				
+				emitiendo_recibo = false;
+				running = false;
+				creando_nuevo = false
+				
+				_convirtiendo = false;
+				currentState = "default";
+			}
+			
 
 			
 		]]>

@@ -152,8 +152,14 @@
 			private var _centroCostos:CentrosCosto;
 
 			[Bindable]
-			private var _referencia:Referencia;
+			private var _centroCostosTmp:CentrosCosto;
 			
+			[Bindable]
+			private var _referencia:Referencia;
+
+			[Bindable]
+			private var _esMovimienteStockProveedores:Boolean = true;
+
 			//
 			// Seleccion de Líneas de Gasto
 			// 
@@ -223,15 +229,17 @@
 					_convirtiendo = false;
 					
 					_proveedores = CatalogoFactory.getInstance().proveedores;
+					
+					_esMovimienteStockProveedores = _documento.comprobante.isMovimentoDeStockDeProveedor();
 															
 					if (txtRUT) {
 						var contacto:Contacto = _documento.proveedor ? _documento.proveedor.contacto : null;
 						if (contacto && contacto.paisIdCto == "UY") {
 							rut_stringValidator.validate();
 						}						
-					}					
-
+					}
 					_usuarioAutorizante = null;
+					
 					for each (var u:Usuario in CatalogoFactory.getInstance().usuarios) {
 						if (u.codigo == _documento.usuIdAut) {
 							_usuarioAutorizante = u.nombre;
@@ -243,6 +251,14 @@
 					for each (var cc:CentrosCosto in CatalogoFactory.getInstance().centrosCosto) {
 						if (cc.codigo == _documento.centroCostosId) {
 							_centroCostos = cc;
+							break;
+						}
+					}
+
+					_centroCostosTmp = null;
+					for each (var ct:CentrosCosto in CatalogoFactory.getInstance().centrosCosto) {
+						if (ct.codigo == _documento.docCenCostosId) {
+							_centroCostosTmp  = ct;
 							break;
 						}
 					}
@@ -262,11 +278,10 @@
 					title = _documento.comprobante.nombre.toUpperCase();
 					
 					// Actualizar campo de cotizacion fiscal.
-					if (_documento.docTCF && (_documento.emitido || !_documento.isPendiente())) {
-						fireEvents = false;
-						_documento.docTCF = new BigDecimal(_documento.docTCF).setScale(3, MathContext.ROUND_HALF_UP).toString();
-					} else {
+					if (_documento.docTCF == null || new BigDecimal(_documento.docTCF).compareTo(BigDecimal.ZERO) <= 0) {
 						obtenerTipoCambioFiscal();
+					} else {
+						_documento.docTCF = new BigDecimal(_documento.docTCF).setScale(3, MathContext.ROUND_HALF_UP).toString();
 					}
 					
 					// Actualizar campo de cotizacion comercial.
@@ -1239,7 +1254,7 @@
 			}
 			
 			private function verificarDatosGasto():Boolean {
-				if (!_documento.centroCostosId || !_documento.proveedor) {
+				if ((_esMovimienteStockProveedores ? !_documento.docCenCostosId : !_documento.centroCostosId) || !_documento.proveedor) {
 					Alert.show("El 'Centro costo' y el 'Proveedor' son requeridos.", "Advertencia");
 					return false;
 				}
@@ -1391,6 +1406,23 @@
 			}
 			
 
+			protected function cmbCentroCostoTMP_changeHandler(event:Event):void{
+				var cc:CentrosCosto = cmbCentroCostoTMP.selectedItem as CentrosCosto;
+				_documento.docCenCostosId = cc ? cc.codigo : "";
+			}
+			
+			
+			
+			protected function cmdDuplicar_clickHandler(event:MouseEvent):void {
+				var cloneRemObj:RemoteObject = DocumentosUtils.getNewRemoteObject(false);
+				cloneRemObj.addEventListener(FaultEvent.FAULT, handleFault);
+				cloneRemObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
+					gasto = evt.result as Documento;
+					currentState = "default";
+				});
+				cloneRemObj.clonarDocumento(_documento);
+			}
+			
 		]]>
 		
 	</fx:Script>
@@ -1505,12 +1537,20 @@
 												   enabled="{!_modoVisualizacion &amp;&amp; !_documento.emitido}" change="cmbMoney_changeHandler(event)" 
 												   previous_focus="{txtRazonSocial}" next_focus="{cmbCentroCosto}" />
 					</s:FormItem>
-					<s:FormItem width="100%" label="Centro costo">
+					<s:Spacer height="25" />
+					<s:FormItem width="100%" label="Centro costo" visible="{!_esMovimienteStockProveedores}" includeInLayout="{!_esMovimienteStockProveedores}">
 						<components:MyAutoComplete id="cmbCentroCosto" width="100%" textAlign="left" change="cmbCentroCosto_changeHandler(event)" 
 												   dataProvider="{CatalogoFactory.getInstance().centrosCosto}" labelField="nombre" matchType="anyPart" prompt="Ingrese centro costo" allowNewValues="false"
 												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
 												   dropDownRowCount="10" selectedItem="{_centroCostos}" next_focus="{cmbReferencia}"/>
+					</s:FormItem>
+					<s:FormItem width="100%" label="Centro costo" visible="{_esMovimienteStockProveedores}" includeInLayout="{_esMovimienteStockProveedores}">
+						<components:MyAutoComplete id="cmbCentroCostoTMP" width="100%" textAlign="left" change="cmbCentroCostoTMP_changeHandler(event)" 
+												   dataProvider="{CatalogoFactory.getInstance().centrosCosto}" labelField="nombre" matchType="anyPart" prompt="Ingrese centro costo" allowNewValues="false"
+												   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+												   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" 
+												   dropDownRowCount="10" selectedItem="{_centroCostosTmp}" next_focus="{cmbReferencia}"/>
 					</s:FormItem>
 					<s:FormItem width="100%" label="Referencia">
 						<components:MyAutoComplete id="cmbReferencia" width="100%" textAlign="left" change="cmbReferencia_changeHandler(event)" 
@@ -1574,7 +1614,11 @@
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			<s:Spacer width="100%" />
 			
-			<s:Button id="cmdConvertirGasto" click="cmdConvertirGasto_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir gasto"
+			<s:Button id="cmdDuplicar" click="cmdDuplicar_clickHandler(event)" styleName="nuevoButton" label="Duplicar" toolTip="Duplicar"
+					  enabled="false"/>
+			<s:Spacer width="25" />
+
+			<s:Button id="cmdConvertirGasto" click="cmdConvertirGasto_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Convertir gasto"
 					  visible="{_documento.isPendiente() &amp;&amp; _documento.comprobante.tipo == 31}"
 					  enabled="{!_documento.nuevo &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"/>
 			

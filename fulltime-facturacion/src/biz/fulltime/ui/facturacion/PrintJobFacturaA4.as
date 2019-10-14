@@ -55,6 +55,7 @@ package biz.fulltime.ui.facturacion {
 	import mx.rpc.remoting.RemoteObject;
 	import mx.styles.StyleManager;
 	import mx.utils.LoaderUtil;
+	import mx.utils.StringUtil;
 	
 	import org.alivepdf.fonts.FontFamily;
 	
@@ -456,12 +457,12 @@ package biz.fulltime.ui.facturacion {
 			frame.graphics.drawRect(50, YY, 200, 50);
 			frame.graphics.drawRect(50, YY, 350, 50);
 
-			sheet.addChild(createText("Gral. LUNA 1388", 
+			sheet.addChild(createText("Gral. LUNA 1386/1390", 
 				{x:50, y:YY-90, width:250, height:20, fontSize:11, align:'left'}));
 			sheet.addChild(createText("Tels.: 2204 47 72 - Cel.: 099 68 15 86", 
 				{x:50, y:YY-70, width:250, height:20, fontSize:11, align:'left'}));
-			sheet.addChild(createText("Email: ventas@fulltimeuy.com - www.fulltime.uy", 
-				{x:50, y:YY-50, width:250, height:20, fontSize:11, align:'left'}));
+			sheet.addChild(createText("Email: ventas@fulltimeuy.com - www.fulltime.com.uy", 
+				{x:50, y:YY-50, width:300, height:20, fontSize:11, align:'left'}));
 			sheet.addChild(createText("MONTEVIDEO - Uruguay", 
 				{x:50, y:YY-30, width:250, height:20, fontSize:11, align:'left'}));
 
@@ -555,13 +556,13 @@ package biz.fulltime.ui.facturacion {
 				{x:125, y:YY+5, width:275, height:20, fontSize:11, align:'center'}));
 						
 			// RIGTH TOP			
-			YY-=205; 
-			frame.graphics.drawRect(420, YY, 230, 150);
-			frame.graphics.drawRect(420, YY+50, 130, 100);
+			YY-=190; 
+			frame.graphics.drawRect(420, YY, 230, 125);
+			frame.graphics.drawRect(420, YY+50, 130, 75);
 
 			YY+=5; 
 			sheet.addChild(createText(documento.CAEnom ? documento.CAEnom : documento.comprobante.nombre, 
-				{x:420, y:YY, width:230, height:25, fontSize:11, align:'center'}));
+				{x:420, y:YY, width:230, height:25, fontSize:12, align:'center'}));
 			sheet.addChild(createText("Serie " + (documento.serie ? documento.serie.toUpperCase() : "") + " " + (documento.numero ? documento.numero : ""), 
 				{x:420, y:YY+20, width:230, height:25, fontSize:12, align:'center'}, false, true));
 
@@ -569,28 +570,25 @@ package biz.fulltime.ui.facturacion {
 			frame.graphics.drawRect(420, YY, 230, 25);
 			frame.graphics.drawRect(420, YY+25, 230, 25);
 			frame.graphics.drawRect(420, YY+50, 230, 25);
-			frame.graphics.drawRect(420, YY+75, 230, 25);
 			
-			sheet.addChild(createText("FORMA DE PAGO", 
+			sheet.addChild(createText("COMPROBANTE TIPO", 
 				{x:425, y:YY+5, width:120, height:25, fontSize:11, align:'left'}));
 			sheet.addChild(createText("MONEDA", 
 				{x:425, y:YY+30, width:120, height:25, fontSize:11, align:'left'}));
-			sheet.addChild(createText("VENCIMIENTO", 
-				{x:425, y:YY+55, width:120, height:25, fontSize:11, align:'left'}));
 			sheet.addChild(createText("FECHA", 
-				{x:425, y:YY+80, width:120, height:25, fontSize:11, align:'left'}, false, true));
+				{x:425, y:YY+55, width:120, height:25, fontSize:11, align:'left'}, false, true));
 
-			frame.graphics.drawRect(420, YY+110, 130, 75);
-			frame.graphics.drawRect(420, YY+110, 230, 25);
-			frame.graphics.drawRect(420, YY+135, 230, 25);
-			frame.graphics.drawRect(420, YY+160, 230, 25);
+			frame.graphics.drawRect(420, YY+90, 130, 75);
+			frame.graphics.drawRect(420, YY+90, 230, 25);
+			frame.graphics.drawRect(420, YY+115, 230, 25);
+			frame.graphics.drawRect(420, YY+140, 230, 25);
 
 			sheet.addChild(createText("AGENCIA", 
-				{x:425, y:YY+115, width:120, height:25, fontSize:11, align:'left'}));
+				{x:425, y:YY+95, width:120, height:25, fontSize:11, align:'left'}));
 			sheet.addChild(createText("ENC. DE CTA.", 
-				{x:425, y:YY+140, width:120, height:25, fontSize:11, align:'left'}));
+				{x:425, y:YY+120, width:120, height:25, fontSize:11, align:'left'}));
 			sheet.addChild(createText("TIPO ENTREGA", 
-				{x:425, y:YY+165, width:120, height:25, fontSize:11, align:'left'}));
+				{x:425, y:YY+145, width:120, height:25, fontSize:11, align:'left'}));
 
 			
 			if (documento.CAEnom) {
@@ -633,17 +631,15 @@ package biz.fulltime.ui.facturacion {
 			
 			sheet.addChild(createText(documento.moneda.nombre,  
 				{x:550, y:YY, width:100, height:18, fontSize:11, align:'center'}));
-			sheet.addChild(createText("",  
-				{x:550, y:YY+25, width:100, height:18, fontSize:11, align:'center'}));
 			sheet.addChild(createText(dtf.format(documento.fechaDoc), 
-				{x:550, y:YY+50, width:100, height:18, fontSize:11, align:'center'}, false, true));
+				{x:550, y:YY+25, width:100, height:18, fontSize:11, align:'center'}, false, true));
 
 			sheet.addChild(createText(documento.agencia, 
-				{x:550, y:YY+85, width:100, height:18, fontSize:11, align:'center'}));
+				{x:550, y:YY+65, width:100, height:18, fontSize:11, align:'center'}));
 			sheet.addChild(createText(_comisiones, 
-				{x:550, y:YY+110, width:100, height:18, fontSize:11, align:'center'}));
+				{x:550, y:YY+90, width:100, height:18, fontSize:11, align:'center'}));
 			sheet.addChild(createText(documento.entrega ? documento.entrega.codigo : "", 
-				{x:550, y:YY+135, width:100, height:18, fontSize:11, align:'center'}));
+				{x:550, y:YY+115, width:100, height:18, fontSize:11, align:'center'}));
 
 			var simbolo:String = documento.moneda.simbolo;
 			var mda:String = documento.moneda.mndAbrevia;
@@ -664,9 +660,9 @@ package biz.fulltime.ui.facturacion {
 			var l:LineaDocumento = null;
 			
 			var XX:int = 50;
-			YY += 180;
+			YY += 160;
 
-			sheet.addChild(createText("Producto",  
+			sheet.addChild(createText("Códigos",  
 				{x:50, y:YY, width:100, height:18, fontSize:11, align:'left'}, true, true));
 			sheet.addChild(createText("Detalle",  
 				{x:150, y:YY, width:250, height:18, fontSize:11, align:'left'}, true, true));
@@ -678,6 +674,7 @@ package biz.fulltime.ui.facturacion {
 				{x:510, y:YY, width:60, height:18, fontSize:11, align:'center'}, true, true));
 			sheet.addChild(createText("Total",  
 				{x:570, y:YY, width:80, height:18, fontSize:11, align:'rigth'}, true, true));
+
 			
 			YY += 25;
 			
@@ -818,9 +815,9 @@ package biz.fulltime.ui.facturacion {
 			frame.graphics.drawRect(XX, YY, 600, 47);
 
 			sheet.addChild(createText("ADENDA:", 
-				{x:XX+5, y:YY+5, width:75, height:32, fontSize:11, align:'left'}));
-			sheet.addChild(createText((documento.notas != null ? documento.notas : ""), 
-				{x:XX+75, y:YY+5, width:510, height:40, fontSize:10, align:'left'}));
+				{x:XX+5, y:YY+5, width:60, height:32, fontSize:11, align:'left'}));
+			sheet.addChild(createText((documento.notas != null ? StringUtil.trim(documento.notas) : ""), 
+				{x:XX+60, y:YY+5, width:510, height:40, fontSize:10, align:'left'}));
 			
 			if (_via == "COBRANZA") {
 				sheet.addChild(createText(disguise(documento.getUtilidadEstimada()), 
@@ -828,17 +825,25 @@ package biz.fulltime.ui.facturacion {
 			}
 			
 			//PLAN de PAGO
-			frame.graphics.drawRect(XX, 725, 130, 25);
-			frame.graphics.drawRect(XX+130, 725, 220, 25);
+			if (documento.comprobante.isCredito()) {
+				sheet.addChild(createText("Plan de pago".toUpperCase(), 
+					{x:XX, y:725, width:100, height:16, fontSize:10, align:'left'}, true, false));
+				if (documento.planPagos) {
+					sheet.addChild(createText(documento.planPagos.nombre, 
+						{x:XX+100, y:725, width:175, height:16, fontSize:10, align:'left'}, true, false));
+				} else if (documento.condicion) {
+					sheet.addChild(createText(documento.condicion.nombre, 
+						{x:XX+100, y:725, width:175, height:16, fontSize:10, align:'left'}, true, false));
+				}
 
-			sheet.addChild(createText(documento.planPagos ? "Plan de pago".toUpperCase() : "Condición de pago".toUpperCase(), 
-				{x:XX, y:730, width:130, height:25, fontSize:11, align:'left'}));
-			if (documento.planPagos) {
-				sheet.addChild(createText(documento.planPagos.nombre, 
-					{x:XX+140, y:730, width:210, height:25, fontSize:11, align:'left'}));
-			} else if (documento.condicion) {
-				sheet.addChild(createText(documento.condicion.nombre, 
-					{x:XX+140, y:730, width:210, height:25, fontSize:11, align:'left'}));
+				if (documento.comprobante.codigo == "8" || documento.comprobante.codigo == "9") {
+					XX = 47; 
+					YY = 700;
+					
+					sheet.addChild(createText("BONIFICACIÓN POR CUMPLIMIENTO: Plazo acordado 36%, vencido 30 días 20%, vencido 60 días Neto",  
+						{x:XX, y:YY, width:550, height:16, fontSize:9, align:'left'}, false, true));
+				} 
+				
 			}
 
 		}

@@ -1681,7 +1681,7 @@
 
 					if (total.compareTo(maxUI) > 0) {
 						if (!_documento.rut || _documento.rut.length == 0) {
-							Alert.show("Para las ventas superiores a 10.000 UI se requiere documento del cliente.");
+							Alert.show("Para mnontos superiores a 10.000 UI se requiere documento del cliente.");
 							return;
 						}
 						var resultV:ValidationResultEvent = rut_stringValidator.validate();
@@ -2087,9 +2087,19 @@
 			}
 
 			protected function cmdEMail_clickHandler(event:MouseEvent):void {
-				var pfactura:PrintJobFacturaA4 = new PrintJobFacturaA4(false);
-				pfactura.documento = this._documento;
-				pfactura.createSMSImage();
+        if (_documento.esCotizacionDeVenta || _documento.esOrdenDeVenta || _documento.comprobante.codigo == "1" || _documento.comprobante.codigo == "10" ||
+         _documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" ||
+         _documento.comprobante.esImportacion() || _documento.esRecibo() || _documento.comprobante.codigo == "84") {
+
+          var pfactura:PrintJobFactura = new PrintJobFactura(false);
+          pfactura.documento = this._documento;
+          pfactura.createSMSImage();
+
+        } else {
+  				var pfactura:PrintJobFacturaA4 = new PrintJobFacturaA4(false);
+          pfactura.documento = this._documento;
+          pfactura.createSMSImage();
+        }
 			}
 
 			public function codigoNombreLabelFunction(item:Object):String {

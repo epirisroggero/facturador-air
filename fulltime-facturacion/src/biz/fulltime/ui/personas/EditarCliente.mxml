@@ -111,7 +111,6 @@
 				{value:"E", label:"OTRO"}				
 			]);
 
-			
 			[Bindable]
 			public var showPreciosList:ArrayCollection = new ArrayCollection([
 				{code:"0", label:"NINGUNO", action:"No ve ningún precio"}, 
@@ -126,7 +125,6 @@
 
 			private function init():void {
 				validatorArr = new Array();
-
 				validatorArr.push(codigo_stringValidator);
 				
 				validatorArr.push(fname_stringValidator);
@@ -141,8 +139,6 @@
 				validatorArr.push(celular_Validator);
 
 				validatorArr.push(pais_Validator);
-				//validatorArr.push(departamento_Validator);
-				
 				validatorArr.push(rut_stringValidator);
 
 				mFileReference.addEventListener(Event.SELECT, onFileSelected);
@@ -152,7 +148,6 @@
 				}
 				
 				Validator.validateAll(validatorArr);
-
 			}
 
 			private function onFileSelected(event:Event):void {
@@ -174,7 +169,6 @@
 				progressBar.mode = ProgressBarMode.MANUAL;
 				progressBar.minimum = 0;
 				progressBar.maximum = 100;
-
 			}
 
 			// This function is called to notify us of the uploading progress
@@ -202,7 +196,6 @@
 				var movieClipLoader:Loader = new Loader();
 				movieClipLoader.loadBytes(data);
 				movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
-
 			}
 
 			// This function below is specific to this example.
@@ -350,7 +343,6 @@
 					}
 				}
 
-
 				_encCuenta = null
 				var encCodigo:String = cliente.encargadoCuenta;
 				if (encCodigo) {
@@ -414,7 +406,7 @@
 						myViewStack.selectedIndex = 0;
 					}
 				});
-				
+
 				obtenerUltimoDisponible();
 
 				dispatchEvent(new Event("_changeCliente", true, true));

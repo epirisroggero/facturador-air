@@ -190,7 +190,6 @@
 
 			[Bindable]
 			private var _usuarioAutorizante:String;
-			
 
 			private var fireEvents:Boolean = false;
 
@@ -281,7 +280,6 @@
 				dispatchEvent(new Event("_changeDocumento"));
 				
 				invalidateProperties();
-				
 			}
 
 			override protected function commitProperties():void {
@@ -369,7 +367,6 @@
 						if (contacto && contacto.paisIdCto == "UY") {
 							rut_stringValidator.validate();
 						}
-						
 					}										
 					_usuarioAutorizante = null;
 					for each (var u:Usuario in CatalogoFactory.getInstance().usuarios) {
@@ -494,7 +491,6 @@
 						notas = hlpPanel.notas;
 						confirm_closeHandler(evt);
 					});
-					
 					helpWindow.addElement(hlpPanel);
 				}
 				
@@ -566,8 +562,8 @@
 				}
 
 				summary.addEventListener("next_focus_", function():void {
-						cmdGuardar.setFocus();
-					});
+		          cmdGuardar.setFocus();
+		        });
 
 				if (CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado) {
 					txtDate.disabledRanges = [{rangeEnd:CatalogoFactory.getInstance().parametrosAdministracion.parAdmFechaTrabado}];
@@ -587,16 +583,14 @@
 			private function resultGuardarDocumento(event:ResultEvent):void {
 				factura = event.result as Documento;
 				running = false;
-				
+
 				if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' 
 					|| _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
 					
 					var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
 					alert.width = 340;
 					alert.height = 180
-						
 				}
-				
 				currentState = "default";
 
 				customPopup = new ErrorPanel();
@@ -774,27 +768,24 @@
 				} else {
 					grabarFacturaOk(false);
 				}
-
 			}
 
 			private function obtenerClaveSupervisora(result:Function):void {
 				if (helpWindow == null) {
+					var frmClaveSup:FrmClaveSupervisora = new FrmClaveSupervisora();
+					frmClaveSup.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
+					frmClaveSup.addEventListener("_claveSupOK", result);
+
 					helpWindow = new TitleWindow();
 					helpWindow.title = "Ingrese clave supervisora";
 					helpWindow.width = 400;
 					helpWindow.height = 220;
-
-					var frmClaveSup:FrmClaveSupervisora = new FrmClaveSupervisora();
+					helpWindow.addElement(frmClaveSup);
+					helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
 
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
-
-					helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
-					frmClaveSup.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
-					frmClaveSup.addEventListener("_claveSupOK", result);
-					helpWindow.addElement(frmClaveSup);
 				}
-
 			}
 
 			private function obtenerMensajesError():void {
@@ -860,7 +851,6 @@
 				invalidateProperties();
 
 				running = false;
-
 			}
 
 			private function tieneCredito(pendientes:DocPendientesCliente = null):void {
@@ -893,7 +883,6 @@
 				return problemasMsgV;
 			}
 
-
 			private function verificarCreditoCliente():void {
 				// Chequear si tiene credito disponible...
 				if (_documento.cliente.codigo) {
@@ -904,7 +893,6 @@
 					remObj.getDocumentosDeudoresCliente(_documento.cliente.codigo);
 				}
 			}
-
 
 			private function resultVerificarCreditoCliente(event:ResultEvent):void {
 				var data:ArrayCollection = event.result as ArrayCollection;
@@ -1025,30 +1013,26 @@
 			}
 			
 			private function printToPrinter():void {
-				var pfactura:PrintJobFacturaA4 = new PrintJobFacturaA4(false);
-				pfactura.documento = _documento;
-				pfactura.createSMSImage(chbEnvioMailAut.selected);
-				
+				createEmailImage(chbEnvioMailAut.selected);
+
 				setTimeout(function():void {
 					running = false;
 					facturaEmitida();
 				}, 1000);
-				
+
 			}
 
 			// Event handler function for displaying the selected Alert button.
 			private function alertClickHandler(evt:CloseEvent):void {
 				if (evt.detail == Alert.YES) {
 					//Enviar eMail
-					var pfactura:PrintJobFacturaA4 = new PrintJobFacturaA4(false);
-					pfactura.documento = this._documento;
-					pfactura.createSMSImage(chbEnvioMailAut.selected);
+					createEmailImage(chbEnvioMailAut.selected);
 				}
 				setTimeout(function():void {
 						facturaEmitida();
 					}, 1000);
-
 			}
+			
 
 			public function emitirFactura(docId:String):void {
 				running = true;
@@ -1094,11 +1078,7 @@
 							} else {
 								emitiendo_documento = false;
 								running = false;
-								
-								var helpWindow:TitleWindow = new TitleWindow();
-								helpWindow.title = "E-Factura: Error al generar CFE";
-								helpWindow.width = 600;
-								
+
 								var errorPnl:ErrorPanel = new ErrorPanel();
 								errorPnl.type = 2;
 								errorPnl.backgroundAlpha = .08;
@@ -1107,6 +1087,9 @@
 								errorPnl.detailsText = eFactura.resultData;
 								errorPnl.showButtons = true;
 								
+								var helpWindow:TitleWindow = new TitleWindow();
+								helpWindow.title = "E-Factura: Error al generar CFE";
+								helpWindow.width = 600;
 								helpWindow.addElement(errorPnl);
 								
 								PopUpManager.addPopUp(helpWindow, Sprite(FlexGlobals.topLevelApplication));
@@ -1133,15 +1116,14 @@
 						running = false;
 
 						if (saving) {
-							if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90' || _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
-								//Alert.buttonWidth = 60;
+							if (_documento.comprobante.codigo == '10' || _documento.comprobante.codigo == '70' || _documento.comprobante.codigo == '90'
+							|| _documento.comprobante.codigo == '110' || _documento.comprobante.codigo == '130') {
 
 								var alert:Alert = Alert.show("¿Desea crear una nueva expedición?", "Información", Alert.YES + Alert.NO, null, generarExpedicion);
 								alert.width = 340;
 								alert.height = 180
 							}
 						}
-
 						currentState = "default";
 					});
 				
@@ -1173,20 +1155,33 @@
 					printNotasInterlineadas = true;	
 				}
 				imprimirFactura(printNotasInterlineadas);
-	
 			}
 			
-			private function imprimirFactura(imprimirNotas:Boolean):void {
-				var pjFactura:PrintJobFacturaA4 = new PrintJobFacturaA4();
-				pjFactura.documento = factura;
-				pjFactura.printNotasInterlineadas = imprimirNotas; 
-				
-				if (factura.esRemito()) {
-					pjFactura.print_vias = [PrintJobFacturaA4.VIA_COBRANZA];
-				}
-				pjFactura.print();
-			}
+			private function imprimirFactura(imprimirNotas:Boolean):void {				
+				if (_documento.comprobante.esImportacion() 
+					|| _documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" 
+					|| _documento.comprobante.codigo == "84") {
 
+					var pjFactura:PrintJobFactura = new PrintJobFactura();
+					pjFactura.documento = factura;
+					pjFactura.printNotasInterlineadas = imprimirNotas; 
+					
+					if (factura.esRemito()) {
+						pjFactura.print_vias = [PrintJobFacturaA4.VIA_COBRANZA];
+					}
+					pjFactura.print();
+
+				} else {
+					var pjFacturaA4:PrintJobFacturaA4 = new PrintJobFacturaA4();
+					pjFacturaA4.documento = factura;
+					pjFacturaA4.printNotasInterlineadas = imprimirNotas; 
+					
+					if (factura.esRemito()) {
+						pjFacturaA4.print_vias = [PrintJobFacturaA4.VIA_COBRANZA];
+					}
+					pjFacturaA4.print();
+				}
+			}
 
 			public function clear():void {
 				if (cmbClient) {
@@ -1234,7 +1229,6 @@
 				}
 			}
 
-			
 			private function changeCuponeras(event:Event):void {
 				modoCuponera = false;
 				cuponeraEsValida = false;
@@ -1255,7 +1249,6 @@
 						}
 					}
 				}
-
 			}
 			
 			private function changeTipoDoc(event:Event):void {
@@ -1269,12 +1262,10 @@
 				} else {
 					tipoDoc = tiposDocList[1];
 				}
-				
 				if (txtRUT) {
 					var contacto:Contacto = _documento.cliente ? _documento.cliente.contacto : (_documento.proveedor ? _documento.proveedor.contacto : null);
 					if (contacto && contacto.paisIdCto == "UY") {
 						rut_stringValidator.validate();
-						
 					}
 				}
 			}
@@ -1295,10 +1286,10 @@
 				var remObj2:RemoteObject = getNewRemoteObject();
 				remObj2.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 					_documento.esOrdenDeVenta = evt.result as Boolean;
-						if (_documento.nuevo && _documento.esOrdenDeVenta) {
+					  if (_documento.nuevo && _documento.esOrdenDeVenta) {
 							remObjSerieNumero.generateSerieNumero(_documento.comprobante);
 						}
-					});
+				});
 				remObj2.esOrdenDeVenta(_documento.comprobante.codigo);
 
 				var remObjSol:RemoteObject = getNewRemoteObject();
@@ -1311,7 +1302,6 @@
 						fireEvents = true;
 					});
 				remObjSol.esSolicitudCompra(_documento.comprobante.codigo);
-
 
 				cargarMonedasComprobante();
 			}
@@ -1367,10 +1357,8 @@
 						var mm:Moneda = _documento.moneda;
 						_documento.comprobante.aster = mm.nombre.indexOf("*") >= 0;
 					}
-
 				}
 				_documento.update();
-
 			}
 
 			private function resultSerieNumero(event:ResultEvent):void {
@@ -1386,7 +1374,6 @@
 			private function changeComisionesListener(event:Event):void {
 				actualizarComisiones();
 			}
-
 
 			protected function cmdEditSL_clickHandler(event:MouseEvent):void {
 				if (_documento.moneda == null || (_documento.preciosVenta == null)) {
@@ -1406,8 +1393,7 @@
 						} else if (_documento.cuponera.getStockValue().compareTo(BigDecimal.ZERO) <= 0) {
 							Alert.show("La cuponera seleccionada no tiene saldo.", "No se pueden agregar líneas de afilado.", Alert.OK, null, null, infoSymbol);	
 							return;
-						}			
-						
+						}
 					}
 				}
 				
@@ -1415,10 +1401,6 @@
 					if (_documento.proveedor) {
 						CatalogoFactory.getInstance().updateArticulosProveedor(_documento.proveedor.codigo);
 					}
-					helpWindow = new TitleWindow();
-					helpWindow.title = _documento.esSolicitudCompra ? "Líneas de compra" : (_documento.comprobante.esProceso80() ? "Líneas de afilado" :  "Líneas de venta");
-					helpWindow.width = 1320;
-					helpWindow.height = 600;
 
 					frmLineasVenta = new FrmLineasVenta();
 					frmLineasVenta.documento = _documento;
@@ -1426,8 +1408,7 @@
 						frmLineasVenta.modoCuponera = modoCuponera;
 						frmLineasVenta.cuponera = _documento.cuponera;
 						frmLineasVenta.updateArticulosAfilado();
-					} 
-					
+					}
 					frmLineasVenta.lineasVenta = _documento.lineas;
 					frmLineasVenta.moneda = cmbMoney.selectedItem; // Pasar Moneda. 
 					frmLineasVenta.preciosVenta = cmbListaPrecios.selectedItem; // Pasar Precios Venta.
@@ -1444,16 +1425,19 @@
 					} else {
 						frmLineasVenta.deposito = cmbDepositoD.selectedItem; // Pasar Deposito para control de Stock.
 					}
+					frmLineasVenta.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
+
+					helpWindow = new TitleWindow();
+					helpWindow.title = _documento.esSolicitudCompra ? "Líneas de compra" : (_documento.comprobante.esProceso80() ? "Líneas de afilado" :  "Líneas de venta");
+					helpWindow.width = 1320;
+					helpWindow.height = 600;
+					helpWindow.addElement(frmLineasVenta);
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
 
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
 
-					helpWindow.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
-					frmLineasVenta.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
-
 					helpWindow.closeButton.visible = false;
-
-					helpWindow.addElement(frmLineasVenta);
 				}
 			}
 
@@ -1468,7 +1452,6 @@
 					_documento.usuIdAut = null;
 					_usuarioAutorizante = null;
 				}
-
 				frmLineasVenta = null;
 
 				callLater(function():void {
@@ -1486,22 +1469,20 @@
 			// 
 			protected function cmdEditVencimientos_clickHandler(event:MouseEvent):void {
 				if (helpWindow == null) {
+					frmVencimientos = new FrmVencimientos();
+					frmVencimientos.documento = _documento;
+					frmVencimientos.cuotasDocumento = _documento.cuotasDocumento.cuotas;
+					frmVencimientos.addEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
+
 					helpWindow = new TitleWindow();
 					helpWindow.title = "Vencimientos";
 					helpWindow.width = 400;
 					helpWindow.height = 390;
+					helpWindow.addElement(frmVencimientos);
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
 
-					frmVencimientos = new FrmVencimientos();
-					frmVencimientos.documento = _documento;
-					frmVencimientos.cuotasDocumento = _documento.cuotasDocumento.cuotas;
-					
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
-
-					helpWindow.addEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
-					frmVencimientos.addEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
-
-					helpWindow.addElement(frmVencimientos);
 
 					helpWindow.closeButton.visible = false;
 				}
@@ -1511,7 +1492,6 @@
 				if (frmVencimientos.tieneCambios) {
 					tieneCambios = true;
 				}
-
 				helpWindow.removeEventListener(CloseEvent.CLOSE, closeVencimientosHandler);
 				PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 				helpWindow = null;
@@ -1536,16 +1516,16 @@
 					helpWindow.title = "Clientes";
 					helpWindow.width = 840;
 					helpWindow.height = 620;
-
+					
 					var hlpPanel:HelpClientPnl = new HelpClientPnl();
-
+					
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
-
+					
 					helpWindow.addEventListener(CloseEvent.CLOSE, cliente_closeHandler);
 					hlpPanel.addEventListener(CloseEvent.CLOSE, cliente_closeHandler);
 					hlpPanel.addEventListener(ClienteEvent.CLIENTE_SELECCIONADO, clienteSeleccionado);
-
+					
 					helpWindow.addElement(hlpPanel);
 				}
 			}
@@ -1561,24 +1541,21 @@
 			// 
 			protected function cmbProveedor_helpFTHandler(event:Event = null):void {
 				if (helpWindow == null) {
+					var hlpPanel:HelpProveedorPnl = new HelpProveedorPnl();
+					hlpPanel.addEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
+					hlpPanel.addEventListener(ProveedorEvent.PROVEEDOR_SELECCIONADO, proveedorSeleccionado);
+
 					helpWindow = new TitleWindow();
 					helpWindow.title = "Proveedores";
 					helpWindow.width = 840;
 					helpWindow.height = 620;
-
-					var hlpPanel:HelpProveedorPnl = new HelpProveedorPnl();
+					helpWindow.addEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
+					helpWindow.addElement(hlpPanel);
 
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
-
-					helpWindow.addEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
-					hlpPanel.addEventListener(CloseEvent.CLOSE, proveedor_closeHandler);
-					hlpPanel.addEventListener(ProveedorEvent.PROVEEDOR_SELECCIONADO, proveedorSeleccionado);
-
-					helpWindow.addElement(hlpPanel);
 				}
 			}
-
 
 			private function clienteSeleccionado(event:ClienteEvent):void {
 				helpWindow.removeEventListener(CloseEvent.CLOSE, cliente_closeHandler);
@@ -1719,20 +1696,19 @@
 						
 						maxUI = maxUI.divide(euro);
 					}
-					
-					
+
 					if (total.compareTo(maxUI) > 0) {
-						if (!_documento.rut || _documento.rut.length == 0) {							
-							Alert.show("En documentos por monto superior a 10.000 UI se requiere documento del cliente.");
+						if (!_documento.rut || _documento.rut.length == 0) {
+							Alert.show("En documentos por monto superior a 10.000 UI se requiere ingresar RUT del cliente.");
 							return;
 						}
 						var resultV:ValidationResultEvent = rut_stringValidator.validate();
 						if (resultV.type != ValidationResultEvent.VALID) {
 							Alert.show(resultV.message);
 							return;
-						}	
-						
-					}					
+						}
+
+					}
 					
 					if (_documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO) {
 						var isValid:Boolean = true;
@@ -1753,7 +1729,6 @@
 							return;
 						}
 					}
-
 				}
 				
 				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
@@ -1770,7 +1745,7 @@
 					emitirFacturaOk();
 				}
 			}
-			
+
 			protected function emitirFacturaOk():void {
 				emitiendo_documento = true;
 				_problemasEncontrados = false;
@@ -1794,7 +1769,6 @@
 					_documento.pendiente = "N";
 				}
 				tieneCambios = false;
-
 				running = true;
 				
 				if (_documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.COMPRA_CREDITO) {
@@ -1806,7 +1780,6 @@
 						remObj.getCompraVentaCostos(_documento);
 					}
 				}
-
 				_documento.updateCaja();
 						
 				// guardar errores para auditoría
@@ -1815,7 +1788,6 @@
 				} else {
 					remObjModify.modificar(_documento, auditoria);
 				}
-
 			}
 			
 			public function costosResult(event:ResultEvent):void {
@@ -1849,10 +1821,8 @@
 						PopUpManager.centerPopUp(helpWindow);
 					}
 				}
-				
 			}
 
-			
 			private function generarExpedicion(evt:CloseEvent):void {
 				if (evt.detail == Alert.YES) {
 					var wndAltaTarea:TitleWindow = new TitleWindow();
@@ -1903,7 +1873,6 @@
 							PopUpManager.removePopUp(wndAltaTarea as IFlexDisplayObject);
 						});
 
-
 					wndAltaTarea.addElement(frmNuevaTarea);
 				}
 			}
@@ -1913,7 +1882,6 @@
 				ttlWnd.removeEventListener(CloseEvent.CLOSE, closeHandler);
 				PopUpManager.removePopUp(ttlWnd as IFlexDisplayObject);
 			}
-
 
 			private function resultSave(event:ResultEvent):void {
 				var docId:String = event.result as String;
@@ -1926,7 +1894,6 @@
 				customPopup.backgroundAlpha = .95;
 				customPopup.showButtons = false;
 				customPopup.type = 2;
-
 				customPopup.errorText = "Documento GUARDADO.";
 
 				PopUpManager.addPopUp(customPopup, this, true);
@@ -1952,6 +1919,22 @@
 				} else {
 					emitirFactura(docId);
 				}
+			}
+
+			public function showPopupMessage() {
+		        customPopup = new ErrorPanel();
+		        customPopup.cornerRadius = 10;
+		        customPopup.backgroundAlpha = .95;
+		        customPopup.showButtons = false;
+		        customPopup.type = 2;
+		        customPopup.errorText = "Documento GUARDADO.";
+		
+		        PopUpManager.addPopUp(customPopup, this, true);
+		        PopUpManager.centerPopUp(customPopup);
+		
+		        setTimeout(function():void {
+		            PopUpManager.removePopUp(customPopup);
+		          }, 1500);
 			}
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
@@ -2118,14 +2101,12 @@
 				tieneCambios = true;
 
 				callLater(function():void {
-						txtVendedores.setFocus();
-					});
+		          txtVendedores.setFocus();
+		        });
 			}
 
 			protected function cmdEMail_clickHandler(event:MouseEvent):void {
-				var pfactura:PrintJobFacturaA4 = new PrintJobFacturaA4(false);
-				pfactura.documento = this._documento;
-				pfactura.createSMSImage();
+				createEmailImage(false);
 			}
 
 			public function codigoNombreLabelFunction(item:Object):String {
@@ -2160,7 +2141,6 @@
 				if (client.razonSocial != client.nombre) {
 					label += " [" + client.razonSocial + "] ";
 				}
-
 				return label;
 			}
 
@@ -2177,7 +2157,6 @@
 				if (proveedor.contacto.ctoRSocial != proveedor.contacto.nombre) {
 					label += " [" + proveedor.contacto.ctoRSocial + "] ";
 				}
-
 				return label;
 			}
 
@@ -2207,11 +2186,8 @@
 			protected function cmbFormaPago_changeHandler(event:Event):void {
 				if (cmbFormaPago.selectedItem) {
 					var planPagos:PlanPagos = cmbFormaPago.selectedItems[0] as PlanPagos;
-
 					_documento.updatePlanPagos(planPagos);
-
 					tieneCambios = true;
-
 					cmdVencimiento.enabled = true;
 				} else {
 					cmdVencimiento.enabled = false;
@@ -2223,12 +2199,24 @@
 			}
 
 			private function imprimir():void {
-				var pjFactura:PrintJobFacturaA4 = new PrintJobFacturaA4();
-				pjFactura.documento = factura;
-				pjFactura.forzarRemitos = true;
-				pjFactura.print_vias = [PrintJobFacturaA4.VIA_CLIENTE];
+				if (_documento.comprobante.esImportacion() 
+					|| _documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" 
+					|| _documento.comprobante.codigo == "84") {
+					
+					var pjFactura:PrintJobFactura = new PrintJobFactura();
+					pjFactura.documento = factura;
+					pjFactura.forzarRemitos = true;
+					pjFactura.print_vias = [PrintJobFacturaA4.VIA_CLIENTE];
+					pjFactura.print();
+				
+				} else {
+					var pjFacturaA4:PrintJobFacturaA4 = new PrintJobFacturaA4();
+					pjFacturaA4.documento = factura;
+					pjFacturaA4.forzarRemitos = true;
+					pjFacturaA4.print_vias = [PrintJobFacturaA4.VIA_CLIENTE];
+					pjFacturaA4.print();
+				}
 
-				pjFactura.print();
 			}
 
 			private function cs_closeHandler(event:Event):void {
@@ -2299,7 +2287,6 @@
 								telefono = cliente.contacto.ctoTelefono;
 							}
 						}
-						
 						var vendedor:Vendedor = cliente.vendedor;
 
 						// Creación de un nuevo documento para el comprobante
@@ -2362,7 +2349,6 @@
 															alert.width = 340;
 															alert.height = 180
 														}
-
 													});
 												remObj1.getDocumento(docId);
 											});
@@ -2373,7 +2359,6 @@
 						remObjSN.generateSerieNumero(doc.comprobante);
 					});
 				clienteRemObj.findCatalogEntity("Cliente", _documento.cliente.codigo);
-
 			}
 
 			protected function cmdConvertirCotizacion_clickHandler(event:MouseEvent):void {
@@ -2381,17 +2366,7 @@
 					convertirCotizacion();
 				} else if ((_documento.cliente && _documento.cliente.categCliId == 'G')) {
 					if (helpWindow == null) {
-						helpWindow = new TitleWindow();
-						helpWindow.title = "Ingrese clave supervisora";
-						helpWindow.width = 400;
-						helpWindow.height = 200;
-
 						var frmClaveSup:FrmClaveSupervisora = new FrmClaveSupervisora();
-
-						PopUpManager.addPopUp(helpWindow, this, true);
-						PopUpManager.centerPopUp(helpWindow);
-
-						helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
 						frmClaveSup.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
 						frmClaveSup.addEventListener("_claveSupOK", function(evt:Event):void {
 								PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -2400,7 +2375,15 @@
 								convertirCotizacion();
 							});
 
+						helpWindow = new TitleWindow();
+						helpWindow.title = "Ingrese clave supervisora";
+						helpWindow.width = 400;
+						helpWindow.height = 200;
 						helpWindow.addElement(frmClaveSup);
+						helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
+
+            PopUpManager.addPopUp(helpWindow, this, true);
+            PopUpManager.centerPopUp(helpWindow);
 					}
 				} else {
 					convertirCotizacion();
@@ -2423,7 +2406,6 @@
 						_documento.update();
 					}
 				}
-				
 				obtenerTipoCambioFiscal();
 			}
 
@@ -2465,10 +2447,7 @@
 				} else if (_documento.comprobante.codigo == '92') {
 					convertirMovimientoStock(_documento, '93');
 				} else if (_documento.comprobante.codigo == '93') {
-					helpWindow = new TitleWindow();
-					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
 					var nextMovStockPanel2:FrmConvert9499 = new FrmConvert9499();
-					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
 					nextMovStockPanel2.addEventListener(CloseEvent.CLOSE, closeHandler);
 					nextMovStockPanel2.addEventListener("_selectedFinished", function(event:Event):void {
 							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -2481,6 +2460,9 @@
 								convertirMovimientoStock(_documento, '94');
 							}
 						});
+          helpWindow = new TitleWindow();
+          helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
+          helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
 					helpWindow.addElement(nextMovStockPanel2);
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
@@ -2491,10 +2473,7 @@
 				} else if (_documento.comprobante.codigo == '72') {
 					convertirMovimientoStock(_documento, '73');
 				} else if (_documento.comprobante.codigo == '73') {
-					helpWindow = new TitleWindow();
-					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
 					var nextMovStockPanel3:FrmConvert7399 = new FrmConvert7399();
-					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
 					nextMovStockPanel3.addEventListener(CloseEvent.CLOSE, closeHandler);
 					nextMovStockPanel3.addEventListener("_selectedFinished", function(event:Event):void {
 							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -2504,7 +2483,12 @@
 								convertirMovimientoStock(_documento, '98');
 							}
 						});
+
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
 					helpWindow.addElement(nextMovStockPanel3);
+
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
 				} else if (_documento.comprobante.codigo == '130') {
@@ -2514,10 +2498,7 @@
 				} else if (_documento.comprobante.codigo == '132') {
 					convertirMovimientoStock(_documento, '133');
 				} else if (_documento.comprobante.codigo == '133') {
-					helpWindow = new TitleWindow();
-					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
 					var nextMovStockPanel4:FrmConvert7399 = new FrmConvert7399();
-					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
 					nextMovStockPanel4.addEventListener(CloseEvent.CLOSE, closeHandler);
 					nextMovStockPanel4.addEventListener("_selectedFinished", function(event:Event):void {
 							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -2527,7 +2508,11 @@
 								convertirMovimientoStock(_documento, '98');
 							}
 						});
+					helpWindow = new TitleWindow();
+					helpWindow.title = "Convertir '" + _documento.comprobante.nombre + "'";
+					helpWindow.addEventListener(CloseEvent.CLOSE, closeHandler);
 					helpWindow.addElement(nextMovStockPanel4);
+
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
 				}
@@ -2596,7 +2581,6 @@
 								telefono = cliente.contacto.ctoTelefono;
 							}
 						}
-
 						var vendedor:Vendedor = cliente.vendedor;
 						var preciosVenta:PreciosVenta = cliente.preciosVenta;
 
@@ -2698,23 +2682,12 @@
 			}
 
 			private function convertirMS2Factura(doc:Documento, title:String = null):void {
-				helpWindow = new TitleWindow();
-				helpWindow.title = "Convertir '" + title + "'";
-				helpWindow.height = 420;
-				helpWindow.visible = true;
+  			var moneda:Moneda = cmbMoney.selectedItem as Moneda;
 
 				var convertPnl:SeleccionarTipoFactura = new SeleccionarTipoFactura();
 				convertPnl.hideComprobante = doc.comprobante.codigo;
-
 				convertPnl.showComprobanteTipo = doc.comprobante.codigo == "11" ? [Comprobante.NOTA_CREDITO, Comprobante.DEVOLUCION_CONTADO] : [Comprobante.VENTA_CREDITO, Comprobante.VENTA_CONTADO];
-				var moneda:Moneda = cmbMoney.selectedItem as Moneda;
-				convertPnl.filter = (moneda.nombre.indexOf("*") <= 0) ? "noaster" : "aster";
-
-				helpWindow.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
-						helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
-						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
-						helpWindow = null;
-					});
+				convertPnl.filter = (moneda.nombre.indexOf("*") >= 0) ?  "aster" : "noaster";
 				convertPnl.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
 						helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
 						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -2723,7 +2696,17 @@
 				convertPnl.addEventListener("accept_", resultConvertirDocumento);
 				convertPnl.addEventListener("next_step_", resultConvertirDocumento);
 
-				helpWindow.addElement(convertPnl);
+				helpWindow = new TitleWindow();
+				helpWindow.title = "Convertir '" + title + "'";
+				helpWindow.height = 420;
+				helpWindow.visible = true;
+			  helpWindow.addElement(convertPnl);
+				helpWindow.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
+						helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
+						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+						helpWindow = null;
+					});
+
 				PopUpManager.addPopUp(helpWindow, parentApplication.owner, true);
 				PopUpManager.centerPopUp(helpWindow);
 			}
@@ -2848,11 +2831,12 @@
 
 				if (_documento.esCotizacionDeVenta) {
 					if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
-						if (_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92") {
+					  return !(_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92");
+ 						/*if (_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92") {
 							return false;
 						} else {
 							return true;
-						}
+						}*/
 					} else if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 						return true;
 					} 
@@ -2965,11 +2949,11 @@
 
 				CotizacionesModel.getInstance().cotizaciones = _cotizaciones;
 
-				fireEvents = false;
 				if (_documento) {
+				  fireEvents = false;
 					_documento.docTCC = _cotizaciones.dolarVenta.@value;
+					fireEvents = true;
 				}
-				fireEvents = true;
 			}
 
 			protected function cmbProveedor_changeHandler(event:Event):void {
@@ -3188,7 +3172,6 @@
 					}
 				});
 				remObj1.convertirMovimientoStock(oldDoc, newDoc, tieneCambios);
-
 			}
 
 			protected function cmdTrazabilidad_clickHandler(event:MouseEvent):void {
@@ -3221,7 +3204,6 @@
 								if (trazabilidadPanel.documento && _documento.docId == trazabilidadPanel.documento.docId) {
 									return;
 								}
-
 								if (cmdGuardar.enabled) {
 									var alertHandler:Function = function alertHandler(event:CloseEvent):void {
 											if (event.detail == Alert.YES) {
@@ -3284,13 +3266,11 @@
 					} else {
 						Alert.show("'" + (_documento.serie ? _documento.serie : "") + (_documento.numero ? _documento.numero : " | ") + _documento.comprobante.nombre + "' no tiene auditoría.", "Información");
 					}
-
 				});
 			
 				if (_documento.docId) {
 					remAuditoria.getLineasAuditoria(_documento.docId);
 				}
-
 			}
 
 			protected function cmdAutorizar_clickHandler(event:MouseEvent):void {
@@ -3364,19 +3344,18 @@
 				var result:ArrayCollection = event.result as ArrayCollection;
 				
 				if (helpWindow == null) {
+					var frmVerificarCostos:FrmVerificarVentas = new FrmVerificarVentas();
+					frmVerificarCostos.documento = _documento;
+					frmVerificarCostos.setCostos(result);
+					frmVerificarCostos.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
+
 					helpWindow = new TitleWindow();
 					helpWindow.title = "Cruce de costos";
 					helpWindow.width = 1120;
 					helpWindow.height = 600;
-					
-					var frmVerificarCostos:FrmVerificarVentas = new FrmVerificarVentas();
-					frmVerificarCostos.documento = _documento;
-					frmVerificarCostos.setCostos(result);
-					
 					helpWindow.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
-					frmVerificarCostos.addEventListener(CloseEvent.CLOSE, closeCompraVentaVerificacionHandler);
-					
 					helpWindow.addElement(frmVerificarCostos);
+
 					PopUpManager.addPopUp(helpWindow, this, true);
 					PopUpManager.centerPopUp(helpWindow);
 				}
@@ -3439,19 +3418,24 @@
 			}
 			
 			protected function cmdMostrarFacturasPendientes_clickHandler(event:MouseEvent):void {
+				var docPendientes:ArrayCollection = new ArrayCollection();
+				docPendientes.addItem(_documento.cliente.documentsPendientes);
+
+				var frmListadoDeudores:ListadoDeudoresCliente = new ListadoDeudoresCliente();
+				frmListadoDeudores.dataProvider = docPendientes;
+				frmListadoDeudores.codigoCliente = _documento.cliente.codigo;
+				frmListadoDeudores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
+
 				var facPendWindow:TitleWindow = new TitleWindow();
 				facPendWindow.title = "Facturas Pendientes: " + _documento.cliente.nombre;
 				facPendWindow.width = 860;
 				facPendWindow.height = 600;
-				
-				var frmListadoDeudores:ListadoDeudoresCliente = new ListadoDeudoresCliente();
-				
-				var docPendientes:ArrayCollection = new ArrayCollection();
-				docPendientes.addItem(_documento.cliente.documentsPendientes);
-				
-				frmListadoDeudores.dataProvider = docPendientes;
-				frmListadoDeudores.codigoCliente = _documento.cliente.codigo;
-				
+				facPendWindow.addElement(frmListadoDeudores);
+				facPendWindow.closeButton.visible = false;
+
 				var parent:Sprite;
 				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
 				// no types so no dependencies
@@ -3461,19 +3445,9 @@
 				} else {
 					parent = Sprite(FlexGlobals.topLevelApplication);
 				}
-				
+
 				PopUpManager.addPopUp(facPendWindow, parent, true);
 				PopUpManager.centerPopUp(facPendWindow);
-				
-				frmListadoDeudores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
-					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
-					facPendWindow = null;
-				});
-				
-				facPendWindow.addElement(frmListadoDeudores);
-				
-				facPendWindow.closeButton.visible = false;
-				
 			}
 						
 			protected function cmdReparar_clickHandler(event:MouseEvent):void {
@@ -3607,6 +3581,24 @@
 				}
 			}
 			
+			private function createEmailImage(sendMessage:Boolean = false):void {
+				if (_documento.esCotizacionDeVenta || _documento.comprobante.codigo == "1" 
+					|| _documento.esOrdenDeVenta || _documento.comprobante.codigo == "10" 
+					|| _documento.comprobante.esImportacion() 
+					|| _documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111" 
+					|| _documento.comprobante.codigo == "84") {
+					
+					var pfactura:PrintJobFactura = new PrintJobFactura(false);
+					pfactura.documento = _documento;
+					pfactura.createSMSImage(chbEnvioMailAut.selected);
+					
+				} else {
+					var pfacturaA4:PrintJobFacturaA4 = new PrintJobFacturaA4(false);
+					pfacturaA4.documento = _documento;
+					pfacturaA4.createEmailImage(sendMessage);
+				}
+			}
+			
 			private function getNewRemoteObject(showBusyCursor:Boolean = true):RemoteObject {
 				var remObj:RemoteObject = new RemoteObject();
 				remObj.destination = "CreatingRpc";
@@ -3633,8 +3625,6 @@
 				_convirtiendo = false;
 				currentState = "default";
 			}
-
-
 
 		]]>
 

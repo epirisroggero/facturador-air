@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="">
+    <list default="true" id="a8cbbaa5-53c8-4fe5-9ea2-d253ed1e431b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/header-mail-2.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/header-mail.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/header-mail.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFacturaA4.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFacturaA4.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/SummaryGasto.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/SummaryGasto.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListadoFacturasPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListadoFacturasPanel.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -10,16 +21,21 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="DefaultGradleProjectSettings">
+    <option name="testRunner" value="GRADLE" />
+    <option name="delegatedBuild" value="true" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1RxwZdLs2BeVLmrtwkcFOD1gHbh" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="1912" />
+    <option name="y" value="-8" />
+    <option name="width" value="1456" />
+    <option name="height" value="876" />
+  </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../facturador-server" />
-    <property name="project.structure.last.edited" value="SDKs" />
-    <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -89,6 +105,16 @@
       <updated>1538527496921</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">

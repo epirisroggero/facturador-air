@@ -458,7 +458,7 @@
 				<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
 				<s:Button id="cmdAceptar" width="100" height="32" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Aceptar" focusEnabled="true" />
-				<s:Button id="cmdClose" width="80" height="32" click="cmdClose_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" />
+				<s:Button id="cmdClose" width="100" height="32" click="cmdClose_clickHandler(event)" styleName="cancelarButton" label="Cancelar" focusEnabled="true" />
 			</s:BorderContainer>
 
 			

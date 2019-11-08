@@ -143,41 +143,26 @@ public class Cliente extends CodigoNombreEntity {
 			remFactPendientes.addEventListener(FaultEvent.FAULT, handleFault);
 		}
 
-		remFactPendientes.getDocumentosDeudores();
-	}
-	
-	
-	public function obtenerDocumentosGrabados():void {
-		if (remFactGrabadas == null) {
-			remFactGrabadas = new RemoteObject();
-			remFactGrabadas.destination = "CreatingRpc";
-			remFactGrabadas.channelSet = ServerConfig.getInstance().channelSet;
-			remFactGrabadas.addEventListener(ResultEvent.RESULT, resultdocumentsGrabadas);
-			remFactGrabadas.addEventListener(FaultEvent.FAULT, handleFault);
-		}
-
-		remFactGrabadas.getDocumentosPendientes(codigo);
+		remFactPendientes.getDocumentosDeudoresCliente(cliente);
 	}
 
-	
+
 	private function resultDocumentsPendientes(event:ResultEvent):void {
 		var data:ArrayCollection = event.result as ArrayCollection;
 		
 		var resultPendientes:ArrayCollection = new ArrayCollection();
 		
 		for each (var doc:DocumentoDeudor in data) {
-			if (doc.deudor.codigo == codigo) {
-				if (resultPendientes.length > 0) {
-					var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
-					pendiente.documentos.addItem(doc);
-				} else {
-					var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
-					docsDeudores.codCliente = doc.deudor.codigo;
-					docsDeudores.cliente = doc.deudor;
-					docsDeudores.documentos.addItem(doc);
-					
-					resultPendientes.addItem(docsDeudores);
-				}
+			if (resultPendientes.length > 0) {
+				var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+				pendiente.documentos.addItem(doc);
+			} else {
+				var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
+				docsDeudores.codCliente = doc.deudor.codigo;
+				docsDeudores.cliente = doc.deudor;
+				docsDeudores.documentos.addItem(doc);
+				
+				resultPendientes.addItem(docsDeudores);
 			}
 		}
 		if (resultPendientes.length > 0) {
@@ -190,7 +175,20 @@ public class Cliente extends CodigoNombreEntity {
 		}
 	}
 	
-	private function resultdocumentsGrabadas(event:ResultEvent):void {
+	public function obtenerDocumentosGrabados():void {
+		if (!remFactGrabadas) {
+			remFactGrabadas = new RemoteObject();
+			remFactGrabadas.destination = "CreatingRpc";
+			remFactGrabadas.channelSet = ServerConfig.getInstance().channelSet;
+			remFactGrabadas.addEventListener(ResultEvent.RESULT, resultDocumentsGrabadas);
+			remFactGrabadas.addEventListener(FaultEvent.FAULT, handleFault);
+		}
+
+		remFactGrabadas.getDocumentosPendientes(codigo);
+	}
+
+	
+	private function resultDocumentsGrabadas(event:ResultEvent):void {
 		var resultG:* = event.result;
 		
 		if (resultG is ArrayCollection) {

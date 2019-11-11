@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:components="components.*" xmlns:components1="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark"
+				   width="100%" height="100%" creationComplete="creationCompleteHandler(event)" backgroundAlpha="0.85" backgroundColor="0xfafafa">
+	
+	<s:layout>
+		<s:VerticalLayout gap="0" />
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.AbrirFacturaEvent;
+			import biz.fulltime.model.Cliente;
+			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.deudores.DocPendientesCliente;
+			import biz.fulltime.model.deudores.DocumentoDeudor;
+			
+			import com.hillelcoren.components.AutoComplete;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.BorderContainer;
+			import spark.components.HGroup;
+			import spark.components.Label;
+			import spark.layouts.HorizontalLayout;
+			import spark.layouts.VerticalLayout;
+			
+			import util.CatalogoFactory;
+			
+			private var _dataProvider:ArrayCollection;
+			
+			private var _changeDataProvider:Boolean;
+			
+			[Bindable]
+			private var catalogs:CatalogoFactory = CatalogoFactory.getInstance();
+			
+			[Bindable]
+			private var monedas:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var goclientes:ArrayCollection = new ArrayCollection();
+			
+			private var remObj:RemoteObject;
+			
+			private var _filter:String;
+			
+			private var _codigoCliente:String;
+			
+			private var _fechaVencimiento:Date;
+			
+			private var _codigoVendedor:String;
+			
+			private var _codigoZona:String;
+			
+			private var dateFormatter:DateFormatter = new DateFormatter();
+			
+			private var _clientesImprimir:ArrayCollection = new ArrayCollection();
+			
+						
+			[Bindable]
+			public var myDP:ArrayCollection = new ArrayCollection([{filtro:"Cliente", valor:1}, {filtro:"Vendedor", valor:2}, {filtro:"Zona", valor:3}, {filtro:"Grupo", valor:4}]);
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				
+				if (_changeDataProvider) {
+					_changeDataProvider = false;
+					
+					mainList.dataProvider = _dataProvider;
+					
+					currentState = "default";
+				}
+			}
+			
+			public function set dataProvider(data:ArrayCollection):void {
+				this._dataProvider = data;
+				
+				_changeDataProvider = true;
+				
+				this.invalidateProperties();
+			}
+			
+			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				dateFormatter.formatString = "DD-MM-YYYY";
+				
+				monedas = new ArrayCollection();
+				for each (var moneda:Moneda in CatalogoFactory.getInstance().monedas) {
+					if (moneda.nombre.indexOf("*") < 0) { // Agrega las monedas oficiales.
+						monedas.addItem(moneda);
+					}
+				}
+				// 
+				remObj = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(ResultEvent.RESULT, resultDocumentosVencidos);
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.showBusyCursor = true;
+				
+				currentState = "cargando";
+				remObj.getDocumentosVencidos();
+			}
+			
+			/**
+			 * Agrupar todas las facturas para cada cliente ...
+			 */
+			private function resultDocumentosVencidos(event:ResultEvent):void {
+				currentState = "default";
+				
+				var data:ArrayCollection = event.result as ArrayCollection;												
+				data.filterFunction = null;
+				data.refresh();
+				
+				dataProvider = sort(data, "date", false);
+			}
+			
+			private function filterCliente(item:Object):Boolean {
+				return item["codCliente"] == _filter;
+			}
+			
+			public function handleFault(event:FaultEvent):void {
+				// Handle operation fault.
+				currentState = "default";
+				
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+			
+			protected function cmbClient_changeHandler(event:Event):void {
+				var client:Cliente = cmbClient.selectedItem as Cliente;
+				_codigoCliente = client ? client.nombre : null;
+				
+				cmdFiltrar_clickHandler(null);
+			}
+			
+			public function codigoNombreLabelFunction(item:Object, column:GridColumn):String {
+				var label:String = "";
+				
+				if (column.dataField == "planPago") {
+					if (item && item.planPago && item.planPago.hasOwnProperty("nombre")) {
+						label += item.planPago.nombre.toUpperCase();
+					}
+				} else if (column.dataField == "comprobante") {
+					if (item && item.comprobante && item.comprobante.hasOwnProperty("nombre")) {
+						label += item.comprobante.nombre.toUpperCase();
+					}
+				} else if (column.dataField == "moneda") {
+					if (item && item.moneda && item.moneda.hasOwnProperty("nombre")) {
+						label += item.moneda.nombre.toUpperCase();
+					}
+				}
+				return label;
+			}
+						
+			
+			private function sort(arrColl:ArrayCollection, fieldName:String, numerico:Boolean = false):ArrayCollection {
+				/* Create the SortField object for the "data" field in the ArrayCollection object, and make sure we do a numeric sort. */
+				var dataSortField:SortField = new SortField();
+				dataSortField.name = fieldName;
+				//dataSortField.numeric = numerico;
+				
+				/* Create the Sort object and add the SortField object created earlier to the array of fields to sort on. */
+				var numericDataSort:Sort = new Sort();
+				numericDataSort.fields = [dataSortField];
+				
+				/* Set the ArrayCollection object's sort property to our custom sort, and refresh the ArrayCollection. */
+				arrColl.sort = numericDataSort;
+				arrColl.refresh();
+				
+				return arrColl;
+			}			
+			
+					
+			protected function cmdRefrescar_clickHandler(event:MouseEvent):void {
+				currentState = "cargando";
+				
+				if (cmbClient) {
+					cmbClient.clear();
+				}
+				
+				var timer:Timer = new Timer(1000, 1);
+				timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:TimerEvent):void {
+					_dataProvider.filterFunction = null;
+					_dataProvider.refresh();
+					
+					_changeDataProvider = true;
+					invalidateProperties();
+					
+				});
+				
+				timer.start();				
+				
+			}
+						
+			protected function cmdFiltrar_clickHandler(event:MouseEvent):void {
+				currentState = "cargando";
+				
+				var timer:Timer = new Timer(250, 1);
+				timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(evt:TimerEvent):void {
+					var client:Cliente = cmbClient.selectedItem as Cliente;
+					_codigoCliente = client ? client.codigo : null;
+					_fechaVencimiento = txtFechaVencimiento.selectedDate;
+					
+					if (_codigoCliente || _fechaVencimiento) {
+						_dataProvider.filterFunction = filtrar;
+						_dataProvider.refresh();
+					} else {
+						_dataProvider.filterFunction = null;
+						_dataProvider.refresh();
+					}
+					
+					_changeDataProvider = true;
+					invalidateProperties();
+				});
+				timer.start();				
+				
+			}
+			
+
+			
+			private function filtrar(item:Object):Boolean {
+				var docPend:DocumentoDeudor = item as DocumentoDeudor;
+				
+				var cliente:String = docPend.codCliente ? docPend.codCliente : "";
+					
+				var filtrar:Boolean = false;
+				
+				if (_codigoCliente && _codigoCliente.length > 0) {
+					filtrar = (cliente == _codigoCliente);
+					if (!filtrar) {
+						return false;
+					}
+				}
+				
+				
+				if (_fechaVencimiento) {
+					var _fechaVencimientoStr1:String = dateFormatter.format(_fechaVencimiento);
+					var _fechaVencimientoStr2:String = docPend.fechaVencimiento ? dateFormatter.format(docPend.fechaVencimiento) : "";
+					
+					filtrar = (_fechaVencimientoStr1 == _fechaVencimientoStr2);
+					if (!filtrar) {
+						return false;
+					}
+				}
+					
+				return filtrar;
+				
+			}
+												
+			private function date_labelFunction(item:Object, column:GridColumn):String {
+				return item.fecha;
+			}
+			
+			private function bigDecimal_sortCompareFunc(itemA:Object, itemB:Object, gc:GridColumn):int {
+				var value0:BigDecimal = BigDecimal.ZERO;
+				var value1:BigDecimal = BigDecimal.ZERO;
+				
+				if (gc.dataField == "facturado") {
+					value0 = itemA.facturado ? new BigDecimal(itemA.facturado) : BigDecimal.ZERO;
+					value1 = itemB.facturado ? new BigDecimal(itemB.facturado) : BigDecimal.ZERO;
+					
+				} else if (gc.dataField == "cancelado") {
+					value0 = itemA.cancelado ? new BigDecimal(itemA.cancelado) : BigDecimal.ZERO;
+					value1 = itemB.cancelado ? new BigDecimal(itemB.cancelado) : BigDecimal.ZERO;
+					
+				} else if (gc.dataField == "adeudado") {
+					value0 = itemA.adeudado ? new BigDecimal(itemA.adeudado) : BigDecimal.ZERO;
+					value1 = itemB.adeudado ? new BigDecimal(itemB.adeudado) : BigDecimal.ZERO;
+					
+				} else if (gc.dataField == "adeudadoNeto") {
+					value0 = itemA.adeudadoNeto ? new BigDecimal(itemA.adeudadoNeto) : BigDecimal.ZERO;
+					value1 = itemB.adeudadoNeto ? new BigDecimal(itemB.adeudadoNeto) : BigDecimal.ZERO;
+				}
+				return value0.compareTo(value1);
+			}
+
+			public function abrirDocumento(docId:String):void {
+				dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, docId));
+			}
+			
+			private function date_labelFunction2(item:Object, column:GridColumn):String {
+				var dateFormatter:DateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD-MM-YYYY";
+				
+				return dateFormatter.format(item.fechaVencimiento);
+			}
+
+
+			protected function txtFechaDesde_changeHandler(event:CalendarLayoutChangeEvent):void {
+				cmdFiltrar_clickHandler(null);
+			}
+			
+			protected function cmdLimpiar_clickHandler(event:MouseEvent):void {
+				txtFechaVencimiento.selectedDate = null;
+				
+				cmdFiltrar_clickHandler(null);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:Component id="dropDownItemRenderer">
+			<renderers:CodigoNombreItemRenderer />
+		</fx:Component>
+		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2"/>
+		<s:NumberFormatter id="nf_Espanol_Espanol_2" locale="es_ES" fractionalDigits="0"/>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="default" />
+		<s:State name="maximizado" />
+		<s:State name="cargando" />
+	</s:states>
+	
+	<components:PanelShowHide width="100%" height="152" title="Filtrar" styleName="pnlInterno" defaultHeight="152" excludeFrom="maximizado">
+		<s:VGroup width="100%" height="100%">
+			<s:HGroup width="100%" fontWeight="bold" paddingLeft="10" paddingRight="10" verticalAlign="top">
+				<s:Form>
+					<s:layout>
+						<s:FormLayout paddingTop="-10" gap="-14" />
+					</s:layout>
+					<s:FormItem label="Cliente" fontWeight="normal">
+						<components1:MyAutoComplete id="cmbClient" width="320" textAlign="left" change="cmbClient_changeHandler(event)" dataProvider="{ catalogs.getClientesVendedor(true) }" labelField="nombre"
+													matchType="anyPart" prompt="Filtrar por Cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+													allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }"
+													backspaceAction="focus" dropDownWidth="320" dropDownRowCount="10" />
+					</s:FormItem>
+				</s:Form>
+				<s:Form>
+					<s:layout>
+						<s:FormLayout paddingTop="-10" gap="-14" />
+					</s:layout>
+					<s:FormItem fontWeight="normal" label="Fecha vencimiento">
+						<s:HGroup>
+							<mx:DateField id="txtFechaVencimiento" width="110" fontFamily="Helvetica" yearNavigationEnabled="true" focusEnabled="true" formatString="DD/MM/YYYY" locale="es"
+										  change="txtFechaDesde_changeHandler(event)"/>
+							<s:Button id="cmdLimpiar" click="cmdLimpiar_clickHandler(event)" label="" toolTip="Borrar fecha" styleName="clearButton16" />
+						</s:HGroup>
+					</s:FormItem>
+				</s:Form>
+			</s:HGroup>
+		</s:VGroup>
+		
+		<components:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".2" scaleY=".2" />
+				<s:Spacer width="100%" />
+				<!-- s:Button id="cmdFiltrar" click="cmdFiltrar_clickHandler(event)" label="Filtrar" enabled="true" styleName="filtrarButton" / -->
+				<!-- s:Button id="cmdLimpiar" click="cmdRefrescar_clickHandler(event)" label="Limpiar" toolTip="Limpiar todos los campos" styleName="clearButton16" / -->
+			</s:HGroup>
+		</components:controlBarContent>
+	</components:PanelShowHide>
+		
+	<s:Group width="100%" height="100%">
+		<s:VGroup id="mainPnl" width="100%" height="100%" horizontalAlign="center" gap="5" includeIn="[maximizado,default]">
+			<s:DataGrid id="mainList" width="100%"  height="100%" variableRowHeight="true" borderAlpha="0" contentBackgroundAlpha="1.0">
+				<s:columns>
+					<s:ArrayList>
+						<s:GridColumn headerText="FECHA" dataField="date" labelFunction="date_labelFunction" width="85"/>
+						<s:GridColumn headerText="VENCIMIENTO" dataField="fechaVencimiento" labelFunction="date_labelFunction2" width="85"/>
+						<s:GridColumn headerText="COMPROBANTE" dataField="comprobante" labelFunction="codigoNombreLabelFunction" width="170"/>
+						<s:GridColumn headerText="S/N" dataField="numero" width="75">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														label = DocumentoDeudor(data).serie + DocumentoDeudor(data).numero;
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="CLIENTE" dataField="nombreCliente"/>
+						<s:GridColumn headerText="PLAN PAGO" dataField="planPago" labelFunction="codigoNombreLabelFunction" width="180"/>
+						<s:GridColumn headerText="MONEDA" dataField="moneda" labelFunction="codigoNombreLabelFunction" width="75"/>
+						<s:GridColumn headerText="FACTURADO" dataField="facturado" width="80" sortCompareFunction="bigDecimal_sortCompareFunc">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														if (DocumentoDeudor(data).facturado) {
+															label = outerDocument.nf_Espanol_Espanol.format(DocumentoDeudor(data).facturado);
+														} else {
+															label = outerDocument.nf_Espanol_Espanol.format(0);
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="CANCELADO" dataField="cancelado" width="80" sortCompareFunction="bigDecimal_sortCompareFunc">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														if (DocumentoDeudor(data).cancelado) {
+															label = outerDocument.nf_Espanol_Espanol.format(DocumentoDeudor(data).cancelado);
+														} else {
+															label = outerDocument.nf_Espanol_Espanol.format(0);
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="ADEUDADO" dataField="adeudado" width="80" sortCompareFunction="bigDecimal_sortCompareFunc">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														if (DocumentoDeudor(data).adeudado) {
+															label = outerDocument.nf_Espanol_Espanol.format(DocumentoDeudor(data).adeudado);
+														} else {
+															label = outerDocument.nf_Espanol_Espanol.format(0);
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="RETRASO" dataField="diasRetraso" width="75">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														if (DocumentoDeudor(data).diasRetraso) {
+															label = DocumentoDeudor(data).diasRetraso + " días";
+														} else {
+															label = "";
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="DESC." dataField="descuento" width="45">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														if (DocumentoDeudor(data).descuento) {
+															label = outerDocument.nf_Espanol_Espanol_2.format(DocumentoDeudor(data).descuento) + "%";
+														} else {
+															label = outerDocument.nf_Espanol_Espanol_2.format(0) + "%";
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn headerText="A.NETO" dataField="adeudadoNeto" width="100" sortCompareFunction="bigDecimal_sortCompareFunc">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:DefaultGridItemRenderer textAlign="right">
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												override public function prepare(hasBeenRecycled:Boolean):void {
+													if (data) {
+														var simbolo:String = DocumentoDeudor(data).getMonedaSimbolo();											
+														if (DocumentoDeudor(data).adeudadoNeto) {
+															label = simbolo + " " + outerDocument.nf_Espanol_Espanol.format(DocumentoDeudor(data).adeudadoNeto);
+														} else {
+															label = simbolo + " " + outerDocument.nf_Espanol_Espanol.format(0);
+														}
+													}
+												}
+											]]>
+										</fx:Script>
+									</s:DefaultGridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+						<s:GridColumn width="32" headerText="">
+							<s:itemRenderer>
+								<fx:Component>
+									<s:GridItemRenderer>
+										<fx:Script>
+											<![CDATA[
+												import biz.fulltime.model.deudores.DocumentoDeudor;
+												
+												protected function cmdAbrir_clickHandler(event:MouseEvent):void {
+													var docId:String = DocumentoDeudor(data).documento.docId;
+													
+													outerDocument.abrirDocumento(docId);
+												}
+											]]>
+										</fx:Script>
+										
+										<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
+											<s:Button id="cmdOpen" width="100%" height="100%" icon="@Embed('/assets/general/Open.png')" click="cmdAbrir_clickHandler(event)" toolTip="Ver Cotización" />
+										</s:VGroup>
+									</s:GridItemRenderer>
+								</fx:Component>
+							</s:itemRenderer>
+						</s:GridColumn>
+
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+		</s:VGroup>
+		
+		<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" gap="5" includeIn="cargando">
+			<s:BorderContainer backgroundColor="#FAFAFA" borderColor="#5a5a5a" borderStyle="solid" cornerRadius="4" minHeight="0" minWidth="0">
+				<s:layout>
+					<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" verticalAlign="middle" />
+				</s:layout>
+				<components:AnimatedGIFImage width="32" height="32" />
+				
+			</s:BorderContainer>
+			<s:Label text="Cargando" />
+		</s:VGroup>
+	</s:Group>
+	<s:Spacer height="5"/>
+	<s:BorderContainer width="100%" minHeight="0" borderAlpha="0" backgroundAlpha=".16" backgroundColor="0x666666" >
+		<s:layout>
+			<s:HorizontalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalAlign="middle" gap="10" />
+		</s:layout>
+		<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+	</s:BorderContainer>
+	
+</s:BorderContainer>

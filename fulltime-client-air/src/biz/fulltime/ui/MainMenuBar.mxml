@@ -129,6 +129,8 @@
 				}
 				
 				if (user.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
+					delete menuProvider.menu[5];
+					delete menuProvider.menu[4];					
 					delete menuProvider.menu[3];
 					delete menuProvider.menu[1]; 	
 				

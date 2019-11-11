@@ -50,6 +50,8 @@ public class GeneralOptions extends EventDispatcher {
 	private var _loggedUser:Usuario;
 
 	private var _cajaSeleccionada:Caja;
+	
+	private var _idPuntoVenta:String;
 
 	private var _localSeleccionada:Localescomerciale;
 
@@ -91,6 +93,14 @@ public class GeneralOptions extends EventDispatcher {
 		if (caller != GeneralOptions.getInstance) {
 			throw new Error("GeneralOptions is a singleton class, use getInstance() instead");
 		}
+	}
+
+	public function get idPuntoVenta():String {
+		return _idPuntoVenta;
+	}
+
+	public function set idPuntoVenta(value:String):void {
+		_idPuntoVenta = value;
 	}
 
 	[Bindable]

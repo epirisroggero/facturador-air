@@ -127,6 +127,16 @@
 			}
 
 			protected function loginButton_clickHandler(event:Event):void {
+				if (_configuracion.puestoDeTrabajo.toString() == "") {
+					var alert:Alert = Alert.show("Debe ingresar el puesto de trabajo, este dato es requerido", "Información", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+				
+					alert.addEventListener(Event.CLOSE, function(e:Event):void {
+						linkbutton1_clickHandler();
+					})
+				
+					return;
+				}
+				
 				enabledButtons = false;
 
 				remObjLogin.channelSet = ServerConfig.getInstance().channelSet;
@@ -161,11 +171,11 @@
 				}
 			}
 
-			protected function linkbutton1_clickHandler(event:MouseEvent):void {
+			protected function linkbutton1_clickHandler(event:MouseEvent = null):void {
 				if (helpWindow == null) {
 					helpWindow = new TitleWindow();
 					helpWindow.width = 350;
-					helpWindow.height = 200;
+					helpWindow.height = 250;
 					helpWindow.title = "Configuración";
 					helpWindow.visible = true;
 
@@ -249,10 +259,6 @@
 			}
 
 			public function handleFault(event:FaultEvent):void {
-				/*var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
-				if (!message) {
-					message = event.message.toString();
-				}*/				
 				var message:String = "Error de conexión. \n" +
 					"No se pudo conectar al servidor " + _configuracion.server.host + ":" + _configuracion.server.port + ".";
 					
@@ -285,6 +291,8 @@
 					remObj.addEventListener(FaultEvent.FAULT, handleFault);
 					remObj.showBusyCursor = true;
 					remObj.getUsuarioLogin(); 
+					
+					GeneralOptions.getInstance().idPuntoVenta = _configuracion.puestoDeTrabajo;
 
 					// Guardar último usuario conectado
 					var file:File = File.applicationStorageDirectory.resolvePath("FullTime/user.properties");

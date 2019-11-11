@@ -218,6 +218,8 @@ public class Documento extends DocumentoBase {
 	public var centroCostosId:String; 
 	
 	public var docCenCostosId:String; 
+	
+	public var puntoVentaId:String; 
 
 	public function isPendiente():Boolean {
 		return pendiente == null || pendiente != "N";

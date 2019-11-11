@@ -45,8 +45,11 @@
 						<menuitem label="Reporte de Stock y Precios" data="reporteStockPrecios" accelerator="Ctrl+R" />
 						<menuitem type="separator" />
 						<menuitem label="Deudores" data="deudores-0" enabled="{GeneralOptions.getInstance().loggedUser.permisos.contains(Permisos.DEUDORES)}" accelerator="Ctrl+D"/>
+						<menuitem label="Vencimientos" data="deudores-1" enabled="{GeneralOptions.getInstance().loggedUser.permisos.contains(Permisos.DEUDORES)}"/>
 						<menuitem type="separator" />
 						<menuitem label="Compras Mercadería en Plaza " data="compraMercaderiaPlaza"/>
+						<menuitem type="separator" />
+						<menuitem label="Cierre parcial de operaciones " data="cierreParcialOperaciones"/>
 					</menu>
 					<menu label="Informes" data="top">
 						<menuitem label="Listado de Control+" data="reporteControl+" enabled="true" />
@@ -216,7 +219,6 @@
 						GeneralOptions.getInstance().mostrarPrecioIndRev = false;
 					}					
 				}
-
 			}
 
 			// Event handler for the MenuBar control's itemClick event.
@@ -233,6 +235,8 @@
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REFRESCAR_CATALOGOS_EVENT));
 				} else if (value == 'deudores-0') {
 						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_DEUDORES_EVENT));
+				} else if (value == 'deudores-1') { // Venimientos
+ 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_VENCIDAS_EVENT));
 				} else if (value == 'expediciones') {
 						dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EXPEDICIONES_EVENT));
 				} else if (value == 'conf-1') {
@@ -277,9 +281,17 @@
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.EFACTURA_EVENT));
 				} else if (value == 'reporteAfilados') {
 					dispatchEvent(new MenuEventFT(MenuEventFT.MENU_CHANGE, MenuEventFT.REPORTE_AFILADOS_EVENT));
-				} 
-
+				} else if (value == 'cierreParcialOperaciones') {
+					gotoCierreParcialOperaciones();
+				}
 			}
+			
+			protected function gotoCierreParcialOperaciones():void {
+				var urlRequest:URLRequest = new URLRequest("https://efactura.info/consultacfe/cierreDGI.php?rut=215002560012&idpdv=" + GeneralOptions.getInstance().idPuntoVenta);
+				
+				navigateToURL(urlRequest, "_blank");
+			}
+
 		]]>
 	</fx:Script>
 

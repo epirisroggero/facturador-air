@@ -3,16 +3,25 @@
   <component name="ChangeListManager">
     <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/header-mail.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/fulltime-theme-blue/src/main/flex/assets/general/preimpresos/header-mail.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/LoginPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/LoginPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainApp.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainApp.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainMenuBar.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/biz/fulltime/ui/MainMenuBar.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/event/MenuEventFT.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/event/MenuEventFT.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoDeudores.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoDeudores.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/AntecedentesPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/AntecedentesPnl.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFacturaA4.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFacturaA4.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/SummaryGasto.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/SummaryGasto.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListadoFacturasPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListadoFacturasPanel.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FrmVencimientos.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FrmVencimientos.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmConfiguracion.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmConfiguracion.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasVenta.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmLineasVenta.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/.actionScriptProperties" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/.actionScriptProperties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/conf/GeneralOptions.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/conf/GeneralOptions.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Cliente.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Cliente.as" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/deudores/DocumentoDeudor.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/deudores/DocumentoDeudor.as" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,8 +30,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="DefaultGradleProjectSettings">
-    <option name="testRunner" value="GRADLE" />
-    <option name="delegatedBuild" value="true" />
+    <option name="isMigrated" value="true" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
@@ -76,7 +84,7 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="17">
@@ -86,15 +94,21 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="vcs://C:/Projects/fulltime/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-8693">
-              <caret line="17" column="46" selection-start-line="17" selection-start-column="46" selection-end-line="17" selection-end-column="46" />
-            </state>
-          </provider>
+        <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoVencidos.mxml">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>cmbClient_helpFTHandler</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -109,6 +123,7 @@
         <option value="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" />
         <option value="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/EditarCliente.mxml" />
         <option value="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/gastos/GastosPnl.mxml" />
+        <option value="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" />
       </list>
     </option>
   </component>
@@ -134,44 +149,64 @@
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="biz" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
-              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="biz" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="biz" type="462c0819:PsiDirectoryNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
-              <item name="model" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="deudores" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="facturacion" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -244,6 +279,14 @@
       <option name="presentableId" value="Default" />
       <updated>1538527496921</updated>
     </task>
+    <task id="LOCAL-00001" summary="Listar documentos vencidos">
+      <created>1573511459932</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1573511459933</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -253,11 +296,11 @@
       <window_info id="Designer" order="1" />
       <window_info id="UI Designer" order="2" />
       <window_info id="Favorites" order="3" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.32163325" />
+      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.34670487" />
       <window_info id="Structure" order="5" weight="0.25" />
       <window_info id="Image Layers" order="6" />
       <window_info anchor="bottom" id="Event Log" order="0" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.7025572" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.4885599" />
       <window_info anchor="bottom" id="Terminal" order="2" />
       <window_info anchor="bottom" id="Message" order="3" />
       <window_info anchor="bottom" id="Find" order="4" />
@@ -329,6 +372,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
+    <MESSAGE value="Listar documentos vencidos" />
+    <option name="LAST_COMMIT_MESSAGE" value="Listar documentos vencidos" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo2.mxml" />
@@ -376,6 +421,12 @@
           <caret line="1" column="20" selection-start-line="1" selection-start-column="20" selection-end-line="1" selection-end-column="20" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoVencidos.mxml">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>

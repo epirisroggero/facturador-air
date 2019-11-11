@@ -681,6 +681,7 @@
 				} else {
 					// Emitir documento
 					factura = event.result as Documento;
+					factura.puntoVentaId = GeneralOptions.getInstance().idPuntoVenta;
 					running = true;
 					emitir(factura);
 				}
@@ -1104,6 +1105,8 @@
 							}
 							
 						});
+						doc.puntoVentaId = GeneralOptions.getInstance().idPuntoVenta;
+						
 						remObjEFactura.generateCFE(doc);
 					}					
 				}				
@@ -3434,7 +3437,6 @@
 				facPendWindow.width = 860;
 				facPendWindow.height = 600;
 				facPendWindow.addElement(frmListadoDeudores);
-				facPendWindow.closeButton.visible = false;
 
 				var parent:Sprite;
 				var sm:ISystemManager = ISystemManager(FlexGlobals.topLevelApplication.systemManager);
@@ -3448,7 +3450,9 @@
 
 				PopUpManager.addPopUp(facPendWindow, parent, true);
 				PopUpManager.centerPopUp(facPendWindow);
-			}
+
+				facPendWindow.closeButton.visible = false;
+}
 						
 			protected function cmdReparar_clickHandler(event:MouseEvent):void {
 				var remObjEFactura:RemoteObject = getNewRemoteObject();

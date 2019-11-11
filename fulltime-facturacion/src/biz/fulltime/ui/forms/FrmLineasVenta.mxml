@@ -936,7 +936,6 @@
 						_art.addItem(cuponera);
 					}
 					articulos = _art;
-					
 				}
 
 			}
@@ -1594,8 +1593,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="40" dataField="linDto2" headerText="VOLUMEN" visible="{esAfilado() &amp;&amp; !hideDescAfilado}" itemEditor="biz.fulltime.ui.forms.DGNumberEditorInt"
-										  >
+							<s:GridColumn width="40" dataField="linDto2" headerText="VOLUMEN" visible="{esAfilado() &amp;&amp; !hideDescAfilado}" itemEditor="biz.fulltime.ui.forms.DGNumberEditorInt">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">
@@ -1616,8 +1614,7 @@
 								</s:itemRenderer>
 							</s:GridColumn>
 
-							<s:GridColumn width="40" dataField="linDto3" headerText="ESTADO" visible="{esAfilado() &amp;&amp; !hideDescAfilado}" itemEditor="biz.fulltime.ui.forms.DGNumberEditorInt"
-										  editable="{documento.comprobante.codigo != '81' &amp;&amp; documento.comprobante.codigo != '82'}">
+							<s:GridColumn width="40" dataField="linDto3" headerText="ESTADO" visible="{esAfilado() &amp;&amp; !hideDescAfilado}" itemEditor="biz.fulltime.ui.forms.DGNumberEditorInt">
 								<s:itemRenderer>
 									<fx:Component>
 										<s:DefaultGridItemRenderer textAlign="right">

@@ -143,7 +143,7 @@ public class Cliente extends CodigoNombreEntity {
 			remFactPendientes.addEventListener(FaultEvent.FAULT, handleFault);
 		}
 
-		remFactPendientes.getDocumentosDeudores();
+		remFactPendientes.getDocumentosDeudoresCliente(codigo);
 	}
 	
 	
@@ -166,19 +166,19 @@ public class Cliente extends CodigoNombreEntity {
 		var resultPendientes:ArrayCollection = new ArrayCollection();
 		
 		for each (var doc:DocumentoDeudor in data) {
-			if (doc.deudor.codigo == codigo) {
-				if (resultPendientes.length > 0) {
-					var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
-					pendiente.documentos.addItem(doc);
-				} else {
-					var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
-					docsDeudores.codCliente = doc.deudor.codigo;
-					docsDeudores.cliente = doc.deudor;
-					docsDeudores.documentos.addItem(doc);
-					
-					resultPendientes.addItem(docsDeudores);
-				}
+//			if (doc.deudor.codigo == codigo) {
+			if (resultPendientes.length > 0) {
+				var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+				pendiente.documentos.addItem(doc);
+			} else {
+				var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
+				docsDeudores.codCliente = doc.deudor.codigo;
+				docsDeudores.cliente = doc.deudor;
+				docsDeudores.documentos.addItem(doc);
+				
+				resultPendientes.addItem(docsDeudores);
 			}
+//			}
 		}
 		if (resultPendientes.length > 0) {
 			docPendientes = resultPendientes.getItemAt(0) as DocPendientesCliente;

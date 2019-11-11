@@ -234,7 +234,6 @@
 
 				cmbMoneda.selectedItem = monedas.getItemAt(1) as Moneda;
 
-				// 
 				remObj = new RemoteObject();
 				remObj.destination = "CreatingRpc";
 				remObj.channelSet = ServerConfig.getInstance().channelSet;

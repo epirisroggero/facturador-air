@@ -615,49 +615,26 @@ public class LineaDocumento extends EventDispatcher {
 			if (comprobanteComputaIva()) {
 				if (ivaLin) {
 					return ivaLin.getTasaIva();
-				} /*else if (concept && concept.ivaIdConcepto) {
-					for each(var iva:Iva in CatalogoFactory.getInstance().ivas) {
-						if (iva && iva.codigo == _concept.ivaIdConcepto.toString()) {
-							return iva.getTasaIva();
-						}
-					}
-				}*/
-			}
-			
+				} 
+			}			
 			return BigDecimal.ZERO;
 		}
 	}
 
 	public function getCantidad():BigDecimal {
-		if (!cantidad) {
-			return BigDecimal.ZERO;
-		} else {
-			return new BigDecimal(cantidad);	
-		}
+		return !cantidad ? BigDecimal.ZERO : new BigDecimal(cantidad);
 	}
 	
 	public function getDiametro():BigDecimal {
-		if (!diametro) {
-			return BigDecimal.ZERO;
-		} else {
-			return new BigDecimal(diametro);	
-		}
+		return !diametro ? BigDecimal.ZERO : new BigDecimal(diametro);
 	}
 	
 	public function getRotos():BigDecimal {
-		if (!rotos) {
-			return BigDecimal.ZERO;
-		} else {
-			return new BigDecimal(rotos);	
-		}
+		return !rotos ? BigDecimal.ZERO : new BigDecimal(rotos);
 	}
 	
 	public function getCascados():BigDecimal {
-		if (!rotos) {
-			return BigDecimal.ZERO;
-		} else {
-			return new BigDecimal(cascados);	
-		}
+		return !cascados ? BigDecimal.ZERO : new BigDecimal(cascados);
 	}
 
 	public function getArticulo():Articulo {
@@ -716,8 +693,7 @@ public class LineaDocumento extends EventDispatcher {
 	public function getCostoTotal():BigDecimal {
 		return getCosto().multiply(new BigDecimal(cantidad)).setScale(4, MathContext.ROUND_UP);
 	}
-	
-	
+		
 	public function getPrecioBaseDistribuidorTotal():BigDecimal {
 		return getPrecioBaseDistribuidor().multiply(new BigDecimal(cantidad)).setScale(4, MathContext.ROUND_UP);
 	}

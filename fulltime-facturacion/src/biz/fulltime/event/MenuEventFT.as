@@ -39,6 +39,7 @@ public class MenuEventFT extends Event {
 	
 	public static const REPORTE_RENTAS_EVENT:String = "_reporteRentas";
 	public static const REPORTE_DEUDORES_EVENT:String = "_reporteDeudores";
+	public static const REPORTE_VENCIDAS_EVENT:String = "_reporteVencidas";
 	public static const EXPEDICIONES_EVENT:String = "_expediciones";
 	public static const CONFIGURAR_IMPRESORAS_EVENT:String = "_configurarImpresoras";
 	

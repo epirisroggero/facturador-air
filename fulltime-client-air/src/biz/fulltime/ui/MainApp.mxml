@@ -23,6 +23,7 @@
 			import biz.fulltime.ui.crud.tipoEntrega.FrmTipoEntrega;
 			import biz.fulltime.ui.crud.usuarios.FormUsuario;
 			import biz.fulltime.ui.deudores.ListadoDeudores;
+			import biz.fulltime.ui.deudores.ListadoVencidos;
 			import biz.fulltime.ui.efactura.FrmEFactura;
 			import biz.fulltime.ui.expediciones.FrmExpediciones;
 			import biz.fulltime.ui.facturacion.FacturacionPnl;
@@ -246,6 +247,32 @@
 						}					
 					});
 
+				} else if (event.navigate == MenuEventFT.REPORTE_VENCIDAS_EVENT) {
+					currentState = "running";
+					
+					callLater(function():void {
+						var encontre:Boolean = searchElement("vencidas");
+						
+						if (!encontre) {
+							var pnlDeudores:ListadoVencidos = new ListadoVencidos();
+							pnlDeudores.addEventListener(AbrirFacturaEvent.ABRIR_DOCUMENTO, function(evt:AbrirFacturaEvent):void {
+								abrirDocumentoEnVentana(evt.docId);
+							});
+							
+							var navContext:NavigatorContent = new NavigatorContent();
+							navContext.label = "Vencimientos";
+							navContext.id = "vencidas"; 
+							navContext.addElement(pnlDeudores);
+							
+							myViewStack.addElement(navContext);
+							
+							callLater(function() : void {
+								myViewStack.selectedIndex = myViewStack.getChildren().length - 1;
+								myTabBar.selectedIndex = myViewStack.getChildren().length - 1;
+							});							
+						}					
+					});
+					
 				} else if (event.navigate == MenuEventFT.MOSTRAR_CLIENTES_EVENT) {
 					currentState = "running";
 					

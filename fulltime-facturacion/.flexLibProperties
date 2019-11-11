@@ -111,6 +111,7 @@
     <classEntry path="biz.fulltime.ui.facturacion.SummaryGasto"/>
     <classEntry path="biz.fulltime.ui.facturacion.SeleccionarTipoGasto"/>
     <classEntry path="biz.fulltime.ui.facturacion.PrintJobFacturaA4"/>
+    <classEntry path="biz.fulltime.ui.deudores.ListadoVencidos"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

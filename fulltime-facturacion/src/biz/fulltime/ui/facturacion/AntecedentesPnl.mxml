@@ -7,6 +7,8 @@
 			import biz.fulltime.conf.ServerConfig;
 			import biz.fulltime.ui.components.HelpPnl;
 			
+			import com.hillelcoren.utils.StringUtils;
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.core.IFlexDisplayObject;

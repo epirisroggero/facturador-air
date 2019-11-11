@@ -43,8 +43,12 @@
 						<s:TextInput id="txtServidor" width="100%" textAlign="left" enter="txtPuerto.setFocus()" prompt="Ingrese Servidor" text="@{configuracion.server.host}" />
 					</mx:FormItem>
 					<mx:FormItem width="100%" label="Puerto">
-						<s:TextInput id="txtPuerto" width="100" textAlign="left" enter="cmdAceptar.setFocus()" prompt="Por Defecto" text="@{configuracion.server.port}"
+						<s:TextInput id="txtPuerto" width="100" textAlign="left" enter="txtPuestoTrabajo.setFocus()" prompt="Por Defecto" text="@{configuracion.server.port}"
 									 restrict="0-9" maxChars="4" />
+					</mx:FormItem>
+					<s:Spacer height="25"/>
+					<mx:FormItem width="100%" label="Puesto de trabajo">
+						<s:TextInput id="txtPuestoTrabajo" maxChars="5" width="100%" textAlign="left" enter="cmdAceptar.setFocus()" prompt="Ingrese puesto de trabajo" text="@{configuracion.puestoDeTrabajo}" />
 					</mx:FormItem>
 				</mx:Form>
 			</s:VGroup>

@@ -132,9 +132,18 @@
 				}
 				
 				if (user.permisoId == Usuario.USUARIO_VENDEDOR_DISTRIBUIDOR) {
+					delete menuProvider.menu[6];
+					delete menuProvider.menu[5];					
 					delete menuProvider.menu[3];
 					delete menuProvider.menu[1]; 	
-				
+
+					delete menuProvider.menu[2].menuitem[5];
+					delete menuProvider.menu[2].menuitem[4];
+
+					delete menuProvider.menu[1].menuitem[8];
+					delete menuProvider.menu[1].menuitem[7];
+					delete menuProvider.menu[1].menuitem[6];
+					
 				} else if (user.permisoId == Usuario.USUARIO_TITO) {
 					delete menuProvider.menu[3];
 					

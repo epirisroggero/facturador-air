@@ -106,11 +106,7 @@ public class LineaDocumento extends EventDispatcher {
 	public var linDto4:String = "0"; // Máximo 25
 	
 	public var ivaLin:Iva;
-	
-	//public var ivaId:Number;
-	
-	//public var linIva:String;
-	
+		
 	public var ordenTrabajo:String;
 	
 	private var articuloPrecio:ArticuloPrecio;
@@ -371,9 +367,7 @@ public class LineaDocumento extends EventDispatcher {
 				}
 				
 				conceptoIdLin = value.codigo;
-			} 
-			
-			
+			}			
 		} 
 	}
 	
@@ -385,8 +379,7 @@ public class LineaDocumento extends EventDispatcher {
 				_deposito = "1";
 				
 			}
-		}		
-
+		}
 		if (!_articulo) {
 			return;
 		}
@@ -438,6 +431,7 @@ public class LineaDocumento extends EventDispatcher {
 			_articulo = value as Articulo;
 			
 			obtenerStock();
+			obtenerIva(_articulo);
 			
 			var monedaFacturacion:String = documento.moneda.codigo;
 			var oCotizaciones:biz.fulltime.rapi.Cotizaciones = obtenerCotizaciones(CotizacionesModel.getInstance().cotizaciones);
@@ -600,24 +594,17 @@ public class LineaDocumento extends EventDispatcher {
 					return false;
 			}			
 			return articulo != null && !(documento.comprobante.aster || documento.comprobante.exento);
-		}
-		
+		}		
 	}
 
 	public function getTasaIva():BigDecimal {
-		if (!documento.comprobante.esGasto()) {
-			if (!comprobanteComputaIva()) {
-				return BigDecimal.ZERO;
-			}
-			return articulo.getTasaIva();
-						
-		} else {
-			if (comprobanteComputaIva()) {
-				if (ivaLin) {
-					return ivaLin.getTasaIva();
-				} 
-			}			
+		if (!comprobanteComputaIva()) {
 			return BigDecimal.ZERO;
+		}
+		if (documento.comprobante.esGasto()) {
+			return ivaLin ? ivaLin.getTasaIva() : BigDecimal.ZERO;
+		} else {
+			return articulo ? articulo.getTasaIva() : BigDecimal.ZERO;
 		}
 	}
 
@@ -757,7 +744,6 @@ public class LineaDocumento extends EventDispatcher {
 		}
 	}
 
-
 	public function getNumeroLinea():int {
 		return numeroLinea;
 	}
@@ -788,7 +774,6 @@ public class LineaDocumento extends EventDispatcher {
 			this.precioDistribuidor = new BigDecimal(value.numberValue() / t).toString();
 		} 
 	}
-
 	
 	public function obtenerCotizaciones(_cotizacionesXML:XML):biz.fulltime.rapi.Cotizaciones {
 		var cotizaciones:biz.fulltime.rapi.Cotizaciones = new biz.fulltime.rapi.Cotizaciones();

@@ -24,6 +24,7 @@ import biz.fulltime.model.Deposito;
 import biz.fulltime.model.Entrega;
 import biz.fulltime.model.FamiliaArticulos;
 import biz.fulltime.model.Fanfold;
+import biz.fulltime.model.Iva;
 import biz.fulltime.model.Moneda;
 import biz.fulltime.model.ParametrosAdministracion;
 import biz.fulltime.model.PlanPagos;
@@ -1340,6 +1341,19 @@ public class CatalogoFactory extends EventDispatcher {
 	public function set ivas(value:ArrayCollection):void {
 		_ivas = value;
 	}
+	
+	public function getIvasList():ArrayCollection {
+		var iva:Iva = new Iva();
+		iva.nombre = "[exento]";
+		
+		var aux:ArrayCollection = new ArrayCollection();
+		aux.addItem(iva);
+		for each (var elem:Iva in _ivas) {
+			aux.addItem(elem);
+		}
+		return aux;
+	}
+
 
 	public function get cajas():ArrayCollection {
 		return _cajas;

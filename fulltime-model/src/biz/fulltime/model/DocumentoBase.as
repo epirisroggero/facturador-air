@@ -338,6 +338,8 @@ public class DocumentoBase extends EventDispatcher {
 		if (result is Cliente) {
 			cliente = result as Cliente;
 
+			cliente.obtenerDocumentosPendientes();
+
 			clienteLoaded();
 		}
 	}

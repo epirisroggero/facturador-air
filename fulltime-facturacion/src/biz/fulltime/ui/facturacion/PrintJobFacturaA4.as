@@ -561,7 +561,7 @@ package biz.fulltime.ui.facturacion {
 			}
 
 			var dtf:DateTimeFormatter = new DateTimeFormatter();
-			dtf.dateTimePattern = "dd/MM/yyyy";
+			dtf.dateTimePattern = "dd-MM-yyyy";
 			
 			var _comisiones:String = "";
 			var first:Boolean = true;
@@ -723,14 +723,20 @@ package biz.fulltime.ui.facturacion {
 				{x:XX+80, y:YY+60, width:130, height:25, fontSize:14, align:'rigth'}, false, true));
 			
 
+			if (documento.CAEvencimiento) {
+				frame.graphics.drawRect(420, YY + 145, 230, 30);
+				sheet.addChild(createText("Fecha de Vencimiento " + dtf.format(documento.CAEvencimiento), 
+					{x:425, y:YY+150, width:220, height:20, fontSize:12, align:'center'}, false, true));
+			}
 			sheet.addChild(createText("VÍA " + _via.toUpperCase() , 
-				{x:XX+85, y:YY+125, width:130, height:25, fontSize:11, align:'rigth'}, false, false));
+				{x:XX+85, y:YY+115, width:130, height:25, fontSize:11, align:'rigth'}, false, false));
 
 			XX=50;
 			YY=915;
 
 			frame.graphics.drawRect(XX, YY, 600, 47);
-
+			
+			
 			sheet.addChild(createText("ADENDA:", 
 				{x:XX+5, y:YY+5, width:60, height:32, fontSize:11, align:'left'}));
 			sheet.addChild(createText((documento.notas != null ? StringUtil.trim(documento.notas) : ""), 

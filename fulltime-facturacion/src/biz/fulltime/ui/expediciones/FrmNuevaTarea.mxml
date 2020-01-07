@@ -7,9 +7,13 @@
 		<![CDATA[
 			import biz.fulltime.conf.GeneralOptions;
 			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.AbrirFacturaEvent;
 			import biz.fulltime.model.AgendaTarea;
 			import biz.fulltime.model.Contacto;
 			import biz.fulltime.model.Usuario;
+			import biz.fulltime.model.deudores.DocPendientesCliente;
+			import biz.fulltime.model.deudores.DocumentoDeudor;
+			import biz.fulltime.ui.deudores.ListadoDeudoresCliente;
 			import biz.fulltime.ui.expediciones.asignados.AsignadosEditor;
 			
 			import com.adobe.images.JPGEncoder;
@@ -21,6 +25,7 @@
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CalendarLayoutChangeEvent;
 			import mx.events.CloseEvent;
@@ -91,6 +96,7 @@
 			
 			private var _contacto:Contacto;
 			
+			[Bindable]
 			private var _descripcion:String;
 			
 			private var _usuarioAsignado:Usuario;
@@ -99,6 +105,11 @@
 			private var notifyEnabled:Boolean = true;
 
 			private var loader : Loader = new Loader();
+
+			private var facturasPendientes:DocPendientesCliente;
+			
+			private var remFactPendientes:RemoteObject;
+			
 
 			public var periodosDP:ArrayCollection = new ArrayCollection(
 				[   {periodo:"Todos los días hábiles", value:1},
@@ -119,14 +130,12 @@
 				tarea.usuarioAsignado = value;
 			}
 
-			[Bindable]
 			public function get descripcion():String {
 				return _descripcion;
 			}
 
 			public function set descripcion(value:String):void {
 				_descripcion = value;
-				tarea.descripcion = value;
 			}
 
 			[Bindable]
@@ -182,8 +191,9 @@
 				_tarea = value;
 				
 				ageBlob = _tarea.ageBlob;
-				ageBlobExt = _tarea.ageBlobExt;
+				ageBlobExt = _tarea.ageBlobExt
 				contacto = _tarea.contacto;
+				descripcion = _tarea.descripcion;
 				
 				if (tarea.usuarioSolicitante) {
 					notifyEnabled = GeneralOptions.getInstance().loggedUser.codigo == _tarea.usuarioSolicitante.codigo;
@@ -276,8 +286,7 @@
 					tarea.usuarioSolicitante = GeneralOptions.getInstance().loggedUser;
 					remObj.alta(tarea, matutina);
 					
-				}
-				
+				}				
 			}
 			
 			protected function copiarTarea():AgendaTarea {
@@ -324,6 +333,8 @@
 			}
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
+				tarea.descripcion = descripcion;
+				
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 
@@ -551,171 +562,17 @@
 				trace("completeHandler: " + fileR.name);
 				//txtAdjunto.text = fileR.name;
 				
-				var ba:ByteArray = fileR.data; // get data
-				var loader:Loader = new Loader();
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaded);
-				loader.loadBytes(ba); // load with Loader
 
 			}
 
-			private function loaded(e:Event):void { // bitmap loaded
-				var bm:Bitmap = e.currentTarget.loader.content as Bitmap;
-				
-				// resize bitmap if larger than stage
-				if (bm.width > imgPreview.width || bm.height > imgPreview.height) {
-					var xscale:Number = (imgPreview.width) / bm.width;
-					var yscale:Number = (imgPreview.height) / bm.height;
-					if (xscale < yscale) {
-						pageViewer.scaleX = pageViewer.scaleY = xscale;
-					} else {
-						pageViewer.scaleX = pageViewer.scaleY = yscale;
-					}
-				}
-				
-				scaleImage = Math.round(pageViewer.scaleX * 100); 
-				
-				bitmapData = bm.bitmapData;
-					
-				var quality:int = 75;
-				var jpg:JPGEncoder = new JPGEncoder(quality);
-				ageBlob = jpg.encode(bm.bitmapData);
-				ageBlobExt = "jpg";
-				
-				pageViewer.source = bm;
-			}
-
-			
-			private function byteArrayToBitmapData(byteArray : ByteArray):void {
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, getBitmapData);
-				loader.loadBytes(byteArray);
-			}
-
-			private function getBitmapData(e:Event):void {
-				var content:* = loader.content;
-				bitmapData = new BitmapData(content.width,content.height,true,0x00000000);
-				 
-				var matrix:Matrix = new Matrix();
-				bitmapData.draw(content, matrix, null, null, null, true);
-				
-				pageViewer.source = new Bitmap( bitmapData );
-				
-				// resize bitmap if larger than stage
-				if (bitmapData.width > imgPreview.width || bitmapData.height > imgPreview.height) {
-					var xscale:Number = (imgPreview.width) / bitmapData.width;
-					var yscale:Number = (imgPreview.height) / bitmapData.height;
-					if (xscale < yscale) {
-						pageViewer.scaleX = pageViewer.scaleY = xscale;
-					} else {
-						pageViewer.scaleX = pageViewer.scaleY = yscale;
-					}
-				}
-				
-				scaleImage = Math.round(pageViewer.scaleX * 100); 
-				 
-			}
 			
 			override protected function commitProperties():void {
 				super.commitProperties();
-				
-				if (_changeTarea && pageViewer) {
-					_changeTarea = false;
-					if (ageBlob) {
-						byteArrayToBitmapData(ageBlob);
-					} else {
-						pageViewer.source = null;
-					}
-				}
 			}
-
 			
 			protected function pageViewer_creationCompleteHandler(event:FlexEvent):void {
 				invalidateProperties();
 				
-			}
-			
-			protected function mySlider_changeHandler(event:Event):void {
-				var xscale:Number = mySlider.value / 100;
-
-				pageViewer.scaleX = pageViewer.scaleY = xscale;
-				
-				scaleImage = mySlider.value;
-				
-			}
-			
-			private function pasteFromClipboard():void {
-				if (Clipboard.generalClipboard.hasFormat(ClipboardFormats.BITMAP_FORMAT)) {					
-					bitmapData = Clipboard.generalClipboard.getData(ClipboardFormats.BITMAP_FORMAT) as BitmapData;
-					
-					if (bitmapData) {						
-						pageViewer.source = new Bitmap( bitmapData );
-						
-						var quality:int = 75;
-						var jpg:JPGEncoder = new JPGEncoder(quality);
-						ageBlob = jpg.encode(bitmapData);
-						ageBlobExt = "jpg";
-						
-						// resize bitmap if larger than stage
-						if (bitmapData.width > imgPreview.width || bitmapData.height > imgPreview.height) {
-							var xscale:Number = (imgPreview.width) / bitmapData.width;
-							var yscale:Number = (imgPreview.height) / bitmapData.height;
-							if (xscale < yscale) {
-								pageViewer.scaleX = pageViewer.scaleY = xscale;
-							} else {
-								pageViewer.scaleX = pageViewer.scaleY = yscale;
-							}
-						}
-						
-						scaleImage = Math.round(pageViewer.scaleX * 100); 
-						
-						callLater(function():void {
-							cursorManager.removeBusyCursor();
-						});
-					}
-				}
-
-			}
-
-			protected function paste_clickHandler(event:MouseEvent):void {
-				pasteFromClipboard();
-			}
-
-
-			protected function imgPreview_creationCompleteHandler(event:FlexEvent):void {
-				var editMenu: ContextMenu = new ContextMenu();
-				editMenu.hideBuiltInItems();
-				editMenu.clipboardMenu = true;
-				editMenu.clipboardItems.copy = false;
-				editMenu.clipboardItems.paste = true;
-				editMenu.clipboardItems.cut = false;
-				editMenu.clipboardItems.selectAll = false;
-				
-				imgPrv.contextMenu = editMenu;
-				imgPrv.addEventListener(Event.PASTE, handlePaste);
-			}
-			
-			protected function imgPreview2_creationCompleteHandler(event:FlexEvent):void {
-				var editMenu: ContextMenu = new ContextMenu();
-				editMenu.hideBuiltInItems();
-				editMenu.clipboardMenu = false;
-				
-				var customItem:ContextMenuItem = new ContextMenuItem("Borrar Imagen");
-				editMenu.customItems.push(customItem);
-				customItem.enabled = true;
-				customItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, menuItemHandler);
-				
-				pageViewer.contextMenu = editMenu;				
-				
-				invalidateProperties();				
-			}
-			
-			protected function handlePaste(event:Event):void {
-				var clipboard:Clipboard =  Clipboard.generalClipboard;
-				if (clipboard.hasFormat(ClipboardFormats.BITMAP_FORMAT)) {
-					cursorManager.setBusyCursor();
-					
-					pasteFromClipboard();	
-				}
-
 			}
 			
 			private function menuItemHandler(event:ContextMenuEvent):void{
@@ -966,6 +823,105 @@
 			
 
 						
+			protected function button1_clickHandler(event:MouseEvent):void	{
+				obtenerDocumentosPendientes();
+			}
+			
+			
+			////////////////////////////////
+			///// FACTURAS PENDIENTES //////
+			////////////////////////////////
+			
+			
+			public function obtenerDocumentosPendientes():void {
+				if (!remFactPendientes) {
+					remFactPendientes = new RemoteObject();
+					remFactPendientes.destination = "CreatingRpc";
+					remFactPendientes.channelSet = ServerConfig.getInstance().channelSet;
+					remFactPendientes.addEventListener(ResultEvent.RESULT, resultFacturasPendientes);
+					remFactPendientes.addEventListener(FaultEvent.FAULT, handleFault);
+				}
+				
+				remFactPendientes.getDocumentosDeudoresCliente(_contacto.codigo);
+			}
+			
+			private function resultFacturasPendientes(event:ResultEvent):void {
+				var data:ArrayCollection = event.result as ArrayCollection;
+				
+				var resultPendientes:ArrayCollection = new ArrayCollection();
+				
+				for each (var doc:DocumentoDeudor in data) {
+					if (doc.deudor.codigo == _contacto.codigo) {
+						if (resultPendientes.length > 0) {
+							var pendiente:DocPendientesCliente = resultPendientes.getItemAt(0) as DocPendientesCliente;
+							pendiente.documentos.addItem(doc);
+						} else {
+							var docsDeudores:DocPendientesCliente = new DocPendientesCliente();
+							docsDeudores.codCliente = doc.deudor.codigo;
+							docsDeudores.cliente = doc.deudor;
+							docsDeudores.documentos.addItem(doc);
+							
+							resultPendientes.addItem(docsDeudores);
+						}
+					}
+				}
+				if (resultPendientes.length > 0) {
+					facturasPendientes = resultPendientes.getItemAt(0) as DocPendientesCliente;
+				} else {
+					facturasPendientes = null;
+				}
+				
+				mostrarFacturasPendientes();
+			}
+			
+			
+			private function mostrarFacturasPendientes():void {
+				var facPendWindow:TitleWindow = new TitleWindow();
+				facPendWindow.title = "Facturas pendientes: " + _contacto.nombre;
+				facPendWindow.width = 840;
+				facPendWindow.height = 600;
+				
+				var frmListadoDeudores:ListadoDeudoresCliente = new ListadoDeudoresCliente();
+				
+				var docPendientes:ArrayCollection = new ArrayCollection();
+				docPendientes.addItem(facturasPendientes);
+				
+				frmListadoDeudores.dataProvider = docPendientes;
+				frmListadoDeudores.codigoCliente = _contacto.codigo;
+				
+				PopUpManager.addPopUp(facPendWindow, Sprite(FlexGlobals.topLevelApplication), true);
+				PopUpManager.centerPopUp(facPendWindow);
+				
+				facPendWindow.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
+				
+				frmListadoDeudores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+				});
+				
+				
+				frmListadoDeudores.addEventListener(AbrirFacturaEvent.ABRIR_DOCUMENTO_CLIENTE, function(event:AbrirFacturaEvent):void {
+					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
+					facPendWindow = null;
+					dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, event.docId));
+				});
+				
+				facPendWindow.addElement(frmListadoDeudores);
+				
+				facPendWindow.closeButton.visible = true;
+			}
+
+			private function handleFault(event:FaultEvent):void {
+				var message:String = event.fault && event.fault.rootCause && event.fault.rootCause.localizedMessage ? event.fault.rootCause.localizedMessage : null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+			}
+
 		]]>
 	</fx:Script>
 
@@ -1022,7 +978,7 @@
 								<s:layout>
 									<s:BasicLayout />
 								</s:layout>
-								<s:TextArea id="txtDescription" width="100%" height="60" textAlign="left" text="{tarea.descripcion}" />
+								<s:TextArea id="txtDescription" width="100%" height="60" textAlign="left" text="@{_descripcion}" />
 							</s:FormItem>
 							<s:FormItem textAlign="right" label="Asignado">
 								<s:HGroup width="100%" verticalAlign="middle">
@@ -1064,13 +1020,20 @@
 							<s:FormItem textAlign="right" label="Prioridad">
 								<s:DropDownList id="ddlPrioridad" textAlign="left" labelField="label" dataProvider="{myDP}" selectedIndex="1" />
 							</s:FormItem>
-							<s:FormItem textAlign="right" label="Contacto" enabled="{ nueva }">
-								<components:MyAutoComplete id="cmbContacto" width="100%" textAlign="left" change="cmbContacto_changeHandler(event)"
-														   dataProvider="{ catalogs.getContactosActivos()}" labelField="nombre" matchType="anyPart"
-														   prompt="Contacto" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-														   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="contactoLabelFunction" backspaceAction="focus"
-														   dropDownWidth="320" dropDownRowCount="10" selectedItem="{tarea.contacto}" next_focus="{txtVinculo}" />
+							<s:FormItem textAlign="right" label="Contacto" >
+								<s:HGroup width="100%" verticalAlign="middle">
+									<components:MyAutoComplete id="cmbContacto" width="100%" textAlign="left" change="cmbContacto_changeHandler(event)"
+															   dataProvider="{ catalogs.getContactosActivos()}" labelField="nombre" matchType="anyPart"
+															   prompt="Contacto" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+															   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+															   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="contactoLabelFunction" backspaceAction="focus"
+															   dropDownWidth="320" dropDownRowCount="10" selectedItem="{tarea.contacto}" next_focus="{txtVinculo}" 
+															   enabled="{ nueva }"/>
+									<s:Button  label="Facturas pendientes" 
+											   visible="{_tarea &amp;&amp; _tarea.tarea &amp;&amp; _tarea.tarea.codigo == '030'}" 
+											   includeInLayout="{_tarea &amp;&amp; _tarea.tarea &amp;&amp; _tarea.tarea.codigo == '030'}" 
+											   click="button1_clickHandler(event)" styleName="textButton"/>
+								</s:HGroup>
 							</s:FormItem>
 
 							<s:FormItem width="100%" includeInLayout="{contacto}" visible="{contacto}">
@@ -1093,6 +1056,11 @@
 								<s:TextArea id="txtNotas" width="100%" height="{showFecha ? 50 : 100}" textAlign="left" text="{tarea.notas}" prompt="Nota" />
 							</s:FormItem>
 						</s:Form>
+					</s:VGroup>
+				</s:NavigatorContent>
+				<s:NavigatorContent label="Descripción">
+					<s:VGroup width="100%" height="100%" >
+						<s:TextArea width="100%" height="100%" text="@{_descripcion}" borderAlpha="0"/>
 					</s:VGroup>
 				</s:NavigatorContent>
 				<s:NavigatorContent label="Repetir" enabled="{nueva}" >
@@ -1129,57 +1097,18 @@
 														   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 														   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="contactoLabelFunction" backspaceAction="focus"
 														   dropDownRowCount="10" selectedItem="{tarea.contacto}" />
+									
 							</s:FormItem>
 						</s:Form>
 					</s:VGroup>
 				</s:NavigatorContent>
 					
-				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta" enabled="false">
-					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">
-						<s:HGroup width="100%" verticalAlign="middle" paddingLeft="10" paddingRight="10">
-							<s:Label text="Adjuntar Imagen:" />
-							<s:Button width="24" height="24" icon="@Embed(source='/assets/general/attach.png')" click="adjunto_clickHandler(event)"
-									  toolTip="Adjuntar imagen" />
-							
-							<s:Button id="cmdCopyToClipboard" width="24" height="24" icon="@Embed(source='/assets/general/clipboard_paste_image.png')" click="paste_clickHandler(event)"
-									  toolTip="Pegar el contenido del portapapeles" />
-
-						</s:HGroup>
-
-						<s:Group width="100%" height="100%" mouseEnabled="true">
-							<s:BorderContainer width="100%" height="100%" backgroundColor="0xffffff" borderColor="0x666666" backgroundAlpha=".7" mouseEnabled="true" >
-								<s:VGroup width="100%" height="100%" paddingLeft="0" paddingTop="0" paddingBottom="0" paddingRight="0" gap="0" visible="{ageBlob != null}">
-									<s:VGroup id="imgPreview" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
-										<s:Scroller width="100%" height="100%">
-											<s:VGroup top="0" left="0" bottom="0" right="0" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
-												<s:SWFLoader id="pageViewer" mouseEnabled="true" creationComplete="imgPreview2_creationCompleteHandler(event)">
-													<s:filters>
-														<s:DropShadowFilter/>
-													</s:filters>
-												</s:SWFLoader>
-											</s:VGroup>
-										</s:Scroller>
-									</s:VGroup>
-									<s:BorderContainer width="100%" backgroundColor="0xDADADA" borderColor="0x666666" visible="{ageBlob != null}" minHeight="0">
-										<s:layout>
-											<s:HorizontalLayout paddingTop="5" paddingLeft="10" paddingBottom="5"/>
-										</s:layout>
-										<s:HSlider id="mySlider" liveDragging="true" dataTipPrecision="0" change="mySlider_changeHandler(event)" value="{scaleImage}" minimum="10" maximum="200"/>
-										<s:Label text="Zoom: {scaleImage}%" />
-									</s:BorderContainer>
-								</s:VGroup>
-							</s:BorderContainer >
-							<s:VGroup id="imgPrv" width="100%" height="100%" visible="{ageBlob == null}" verticalAlign="middle" horizontalAlign="center" mouseEnabled="true" creationComplete="imgPreview_creationCompleteHandler(event)">
-								<s:Label width="100%" height="100%" verticalAlign="middle" textAlign="center" horizontalCenter="0" text="No hay Imagen"  fontWeight="bold" fontSize="20" color="0x888888" />
-							</s:VGroup>
-						</s:Group>
-					</s:VGroup>
-				</s:NavigatorContent>
 				<s:NavigatorContent label="{tarea.textoAdjunto ? ' * ' : ''}Texto Adjunto">
 					<s:VGroup width="100%" height="100%" >
 						<s:TextArea id="txtTextoAdjunto" width="100%" height="100%" text="{tarea.textoAdjunto}" borderAlpha="0" prompt="Pegar texto aquí !!!"/>
 					</s:VGroup>
-				</s:NavigatorContent>
+				</s:NavigatorContent>				
+
 			</mx:ViewStack>
 		</s:BorderContainer>
 

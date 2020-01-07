@@ -1364,6 +1364,29 @@
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>
+
+							
+							<!--s:GridColumn width="75" dataField="ivaLin" headerText="IVA" editable="false">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:DefaultGridItemRenderer textAlign="right">
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.model.LineaDocumento;
+													
+													override public function prepare(hasBeenRecycled:Boolean):void {
+														if (!data) {
+															return;
+														}
+														label = LineaDocumento(data).ivaLin != null ? LineaDocumento(data).ivaLin.tasa : "-";
+													}
+												]]>
+											</fx:Script>
+										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn-->
+							
 							
 							<s:GridColumn width="80" dataField="precioDistribuidor" headerText="BASE DIST."
 										  visible="{!esAfilado() &amp;&amp; hay_vendedor_dist || GeneralOptions.getInstance().loggedUser.usuarioModoDistribuidor &amp;&amp; !documento.esSolicitudCompra}"

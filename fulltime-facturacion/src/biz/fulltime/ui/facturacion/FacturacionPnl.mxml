@@ -2834,12 +2834,7 @@
 
 				if (_documento.esCotizacionDeVenta) {
 					if (loggedUser.permisoId == Usuario.USUARIO_TITO) {
-					  return !(_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92");
- 						/*if (_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92") {
-							return false;
-						} else {
-							return true;
-						}*/
+						return !(_documento.comprobante.codigo == "73" || _documento.comprobante.codigo == "82" || _documento.comprobante.codigo == "92");
 					} else if (loggedUser.esSupervisor() || loggedUser.permisoId == Usuario.USUARIO_ADMINISTRADOR || loggedUser.permisoId == Usuario.USUARIO_FACTURACION) {
 						return true;
 					} 

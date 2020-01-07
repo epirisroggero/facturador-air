@@ -117,47 +117,8 @@
 			
 			override protected function commitProperties():void {
 				super.commitProperties();
-				
-				if (_changeTarea && pageViewer) {
-					_changeTarea = false;
-					if (ageBlob) {
-						byteArrayToBitmapData(ageBlob);
-					} else {
-						pageViewer.source = null;
-					}
-				}
 			}
 
-			private function byteArrayToBitmapData(byteArray : ByteArray):void {
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, getBitmapData);
-				loader.loadBytes(byteArray);
-			}
-			
-			
-			private function getBitmapData(e:Event):void {
-				var content:* = loader.content;
-				bitmapData = new BitmapData(content.width,content.height,true,0x00000000);
-				 
-				var matrix:Matrix = new Matrix();
-				bitmapData.draw(content, matrix, null, null, null, true);
-				
-				pageViewer.source = new Bitmap( bitmapData );
-				
-				// resize bitmap if larger than stage
-				if (bitmapData.width > imgPreview.width || bitmapData.height > imgPreview.height) {
-					var xscale:Number = (imgPreview.width) / bitmapData.width;
-					var yscale:Number = (imgPreview.height) / bitmapData.height;
-					if (xscale < yscale) {
-						pageViewer.scaleX = pageViewer.scaleY = xscale;
-					} else {
-						pageViewer.scaleX = pageViewer.scaleY = yscale;
-					}
-				}
-				
-				scaleImage = Math.round(pageViewer.scaleX * 100); 
-				 
-			}
-			
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
@@ -180,18 +141,8 @@
 				myTabBar.setCloseableTab(0, false);
 				myTabBar.setCloseableTab(1, false);
 				myTabBar.setCloseableTab(2, false);
-				//myTabBar.setCloseableTab(3, false);
 			}
 			
-			protected function mySlider_changeHandler(event:Event):void {
-				var xscale:Number = mySlider.value / 100;
-				
-				pageViewer.scaleX = pageViewer.scaleY = xscale;
-
-				scaleImage = mySlider.value;
-				
-			}
-
 			protected function imgPreview2_creationCompleteHandler(event:FlexEvent):void {				
 				invalidateProperties();				
 			}
@@ -279,44 +230,18 @@
 					</s:BorderContainer>					
 				</s:NavigatorContent>
 				
-				<s:NavigatorContent label="{ageBlob ? ' * ' : ''}Imagen Adjunta" enabled="false">
-					<s:VGroup width="100%" height="100%" gap="5" mouseEnabled="true">						
-						<s:Group width="100%" height="100%" mouseEnabled="true">
-							<s:BorderContainer width="100%" height="100%" backgroundColor="0xffffff" borderColor="0x666666" backgroundAlpha=".7" mouseEnabled="true" >
-								<s:VGroup width="100%" height="100%" paddingLeft="0" paddingTop="0" paddingBottom="0" paddingRight="0" gap="0" visible="{ageBlob != null}">
-									<s:VGroup id="imgPreview" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
-										<s:Scroller width="100%" height="100%">
-											<s:VGroup top="0" left="0" bottom="0" right="0" horizontalAlign="center" verticalAlign="middle" mouseEnabled="true">
-												<s:SWFLoader id="pageViewer" mouseEnabled="true" creationComplete="imgPreview2_creationCompleteHandler(event)">
-													<s:filters>
-														<s:DropShadowFilter/>
-													</s:filters>
-												</s:SWFLoader>
-											</s:VGroup>
-										</s:Scroller>
-									</s:VGroup>
-									<s:BorderContainer width="100%" backgroundColor="0xDADADA" borderColor="0x666666" visible="{ageBlob != null}" minHeight="0">
-										<s:layout>
-											<s:HorizontalLayout paddingTop="5" paddingLeft="10" paddingBottom="5"/>
-										</s:layout>
-										<s:HSlider id="mySlider" liveDragging="true" dataTipPrecision="0" change="mySlider_changeHandler(event)" value="{scaleImage}" minimum="10" maximum="200"/>
-										<s:Label text="Zoom: {scaleImage}%" />
-									</s:BorderContainer>
-								</s:VGroup>
-							</s:BorderContainer >
-							<s:VGroup id="imgPrv" width="100%" height="100%" visible="{ageBlob == null}" verticalAlign="middle" horizontalAlign="center" mouseEnabled="true">
-								<s:Label width="100%" height="100%" verticalAlign="middle" textAlign="center" horizontalCenter="0" text="No hay Imagen"  fontWeight="bold" fontSize="20" color="0x888888" />
-							</s:VGroup>
-						</s:Group>
+				<s:NavigatorContent label="Descripción">
+					<s:VGroup width="100%" height="100%" >
+						<s:TextArea width="100%" height="100%" text="{tarea.descripcion}" borderAlpha="0" editable="false"/>
 					</s:VGroup>
 				</s:NavigatorContent>
-				
+								
 				<s:NavigatorContent label="{tarea.textoAdjunto ? ' * ' : ''}Texto Adjunto">
 					<s:VGroup width="100%" height="100%" >
 						<s:TextArea id="txtTextoAdjunto" width="100%" height="100%" text="{tarea.textoAdjunto}" borderAlpha="0" editable="false"/>
 					</s:VGroup>
 				</s:NavigatorContent>
-				
+
 			</mx:ViewStack>
 		</s:BorderContainer>
 		

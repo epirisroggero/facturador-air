@@ -10,6 +10,7 @@ package biz.fulltime.model.deudores {
 
 import biz.fulltime.dto.CodigoNombre;
 import biz.fulltime.model.Cliente;
+import biz.fulltime.model.Comprobante;
 import biz.fulltime.model.Documento;
 import biz.fulltime.model.Moneda;
 
@@ -24,7 +25,7 @@ public class DocumentoDeudor {
 	public var date:Date;
 	public var fecha:String;
 	public var deudor:Cliente;
-	public var comprobante:CodigoNombre;
+	public var comprobante:Comprobante;
 	public var numero:Number;
 	public var serie:String;
 	public var vendedores:ArrayCollection;

@@ -229,6 +229,8 @@
 				
 				remObj.getArticuloPrecio(_articulo.codigo);
 				
+				txtIva.clear();
+				
 				txtIva.selectedItem = _articulo.iva;
 				
 				for each (var unidad:UnidadesStock in CatalogoFactory.getInstance().unidadesstock)  {
@@ -278,6 +280,7 @@
 					articulo.videoYoutube = articulo.videoYoutube ? articulo.videoYoutube : "";
 					articulo.videoYoutube2 = articulo.videoYoutube2 ? articulo.videoYoutube2 : "";
 					articulo.videoYoutube3 = articulo.videoYoutube3 ? articulo.videoYoutube3 : "";
+					articulo.iva = txtIva.selectedItem ? txtIva.selectedItem : null;
 					
 					if (txtFamilia.selectedItem != null) {
 						var familia:FamiliaArticulos = new FamiliaArticulos();
@@ -684,6 +687,7 @@
 				articulo.unidadId = unidadesStock.codigo;
 			}
 			
+			
 		]]>
 	</mx:Script>
 	
@@ -834,10 +838,10 @@
 													<s:VGroup width="100%" paddingBottom="10" paddingLeft="5" paddingRight="5" paddingTop="5">
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="IVA" />
-															<components:MyAutoComplete id="txtIva" width="270" dataProvider="{ CatalogoFactory.getInstance().ivas }" matchType="anyPart" contentBackgroundAlpha="1"
+															<components:MyAutoComplete id="txtIva" width="270" dataProvider="{CatalogoFactory.getInstance().ivas}" matchType="anyPart" contentBackgroundAlpha="1"
 																					   prompt="[Exento]" selectedItemStyleName="{AutoComplete.STYLE_MAC_MAIL}" allowMultipleSelection="false" labelField="nombre"
 																					   backspaceAction="remove" allowNewValues="false" dropDownRowCount="10" 
-																					   change="txtIva_changeHandler(event)" next_focus="{txtUnidad}"/>
+																					   next_focus="{txtUnidad}"/>
 														</s:HGroup>
 														<s:HGroup width="100%" verticalAlign="middle">
 															<s:Label width="70" text="Unidades" />

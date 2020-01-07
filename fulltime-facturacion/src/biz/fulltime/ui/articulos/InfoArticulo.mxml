@@ -237,17 +237,17 @@
 				for each (var articuloPrecio:ArticuloPrecio in precios) {
 					if (articuloPrecio.precioBaseId == "01") {
 						_monedaPrecioFabrica = articuloPrecio.moneda ? articuloPrecio.moneda.simbolo : "";
-						_precioFabrica = new BigDecimal(articuloPrecio.precio).toString();
+						_precioFabrica = articuloPrecio.precio ? new BigDecimal(articuloPrecio.precio).toString() : null;
 					} else if (articuloPrecio.precioBaseId == "0") {
-						_costo = new BigDecimal(articuloPrecio.precio).toString();
+						_costo = articuloPrecio.precio ? new BigDecimal(articuloPrecio.precio).toString() : null;
 					} else if (articuloPrecio.precioBaseId == "1") {
-						_precioDistribuidor = new BigDecimal(articuloPrecio.precio).toString();
+						_precioDistribuidor = articuloPrecio.precio ? new BigDecimal(articuloPrecio.precio).toString() : null;
 					} else if (articuloPrecio.precioBaseId == "2") {
-						_precioMayorista = new BigDecimal(articuloPrecio.precio).toString();	
+						_precioMayorista = articuloPrecio.precio ? new BigDecimal(articuloPrecio.precio).toString() : null;	
 					} else if (articuloPrecio.precioBaseId == "3") {
-						_precioMinorista = new BigDecimal(articuloPrecio.precio).toString();	
+						_precioMinorista = articuloPrecio.precio ? new BigDecimal(articuloPrecio.precio).toString() : null;	
 					} else if (articuloPrecio.precioBaseId == "4") {
-						_precioReventa  = new BigDecimal(articuloPrecio.precio).toString();
+						_precioReventa  = articuloPrecio.precio ? new BigDecimal(articuloPrecio.precio).toString() : null;
 					} 
 				}
 			}

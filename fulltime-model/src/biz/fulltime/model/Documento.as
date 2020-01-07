@@ -191,6 +191,8 @@ public class Documento extends DocumentoBase {
 	
 	public var CAEserie:String;
 	
+	public var CAEvencimiento:Date;
+	
 	public var tipoCFEid:Number;
 
 	public var docRecMda:Moneda;

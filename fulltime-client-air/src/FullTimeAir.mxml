@@ -52,7 +52,7 @@
 			private var exclamationIcon:Class;
 			
 			[Bindable]
-			public var version:String = "FullTime - Facturador v1.7.303";
+			public var version:String = "FullTime - Facturador v1.7.305";
 			
 			private function initializeThemeData():void {
 				Font.registerFont(MyriadProTLF);

@@ -568,7 +568,6 @@ public class LineaDocumento extends EventDispatcher {
 		} else {
 			this.precioDistribuidor = "0";
 		}
-		
 	}
 
 	

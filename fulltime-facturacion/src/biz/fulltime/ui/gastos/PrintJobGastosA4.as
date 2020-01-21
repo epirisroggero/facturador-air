@@ -6,10 +6,11 @@
 // source code 
 //------------------------------------------------------------------------------
 
-package biz.fulltime.ui.facturacion {
+package biz.fulltime.ui.gastos {
 	
 	import biz.fulltime.conf.GeneralOptions;
 	import biz.fulltime.conf.ServerConfig;
+	import biz.fulltime.model.CentrosCosto;
 	import biz.fulltime.model.Comprobante;
 	import biz.fulltime.model.Contacto;
 	import biz.fulltime.model.Cuponera;
@@ -17,6 +18,7 @@ package biz.fulltime.ui.facturacion {
 	import biz.fulltime.model.LineaCuponera;
 	import biz.fulltime.model.LineaDocumento;
 	import biz.fulltime.model.ParticipacionVendedor;
+	import biz.fulltime.model.Referencia;
 	import biz.fulltime.model.Usuario;
 	import biz.fulltime.model.VinculoDocumentos;
 	import biz.fulltime.ui.forms.FrmEMail;
@@ -67,7 +69,7 @@ package biz.fulltime.ui.facturacion {
 	import util.ErrorPanel;
 	import util.PNGDecoder;
 	
-	public class PrintJobFacturaA4 {
+	public class PrintJobGastosA4 {
 		
 		public static const VIA_CLIENTE:String = "CLIENTE";
 		
@@ -112,7 +114,7 @@ package biz.fulltime.ui.facturacion {
 		
 		public var codigoQRLoader:Loader = new Loader();
 		
-		public function PrintJobFacturaA4(loadImage:Boolean = true) {
+		public function PrintJobGastosA4(loadImage:Boolean = true) {
 			if (loadImage) {
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandler);
 				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
@@ -429,17 +431,19 @@ package biz.fulltime.ui.facturacion {
 					{x:50, y:YY+5, width:200, height:25, fontSize:11, align:'center'}));
 				if (documento.tipoDoc == "R") {
 					sheet.addChild(createText(documento.rut ? documento.rut : "", 
-						{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}));
+						{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}, false, true));
 				} else { 
 					sheet.addChild(createText(documento.rut ? "CI " + documento.rut : "", 
-						{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}));
+						{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}, false, true));
 				}
 			}
-						
+			
+			/*
 			sheet.addChild(createText("Vend.", 
 				{x:250, y:YY+5, width:150, height:25, fontSize:11, align:'center'}));
 			sheet.addChild(createText(documento.vendedor ? documento.vendedor.nombre : "DIRECTO", 
 				{x:250, y:YY+25, width:150, height:25, fontSize:10, align:'center'}));
+			*/
 
 			// ROW 2
 			YY+=50;
@@ -448,8 +452,8 @@ package biz.fulltime.ui.facturacion {
 			frame.graphics.drawRect(175, YY, 225, 25);
 			
 			if (documento.razonSocial && documento.razonSocial != "") {
-				sheet.addChild(createText("CLIENTE", 
-					{x:55, y:YY+5, width:75, height:20, fontSize:11, align:'left'}));
+				sheet.addChild(createText("PROVEEDOR", 
+					{x:55, y:YY+5, width:75, height:20, fontSize:10, align:'left'}));
 				if (documento.cliente) {				
 					sheet.addChild(createText(documento.cliente.codigo, 
 						{x:125, y:YY+5, width:50, height:20, fontSize:11, align:'center'}));
@@ -460,7 +464,7 @@ package biz.fulltime.ui.facturacion {
 				sheet.addChild(createText(documento.razonSocial, 
 					{x:175, y:YY+5, width:225, height:20, fontSize:10, align:'center'}));
 			} else {
-				if (documento.cliente) {				
+				/*if (documento.cliente) {				
 					sheet.addChild(createText("CLIENTE", 
 						{x:55, y:YY+5, width:75, height:20, fontSize:11, align:'left'}));
 					sheet.addChild(createText(documento.cliente.codigo, 
@@ -468,9 +472,10 @@ package biz.fulltime.ui.facturacion {
 					sheet.addChild(createText(documento.cliente.nombre, 
 						{x:175, y:YY+5, width:225, height:20, fontSize:10, align:'center'}));
 					
-				} else if (documento.proveedor) {
+				} else */
+				if (documento.proveedor) {
 					sheet.addChild(createText("PROVEEDOR", 
-						{x:55, y:YY+5, width:75, height:25, fontSize:11, align:'left'}));
+						{x:55, y:YY+5, width:75, height:25, fontSize:10, align:'left'}));
 					sheet.addChild(createText(documento.proveedor.codigo, 
 						{x:125, y:YY+5, width:50, height:25, fontSize:11, align:'center'}));
 					sheet.addChild(createText(documento.proveedor.nombre, 
@@ -531,17 +536,15 @@ package biz.fulltime.ui.facturacion {
 			sheet.addChild(createText("FECHA", 
 				{x:425, y:YY+55, width:120, height:25, fontSize:11, align:'left'}, false, true));
 
-			frame.graphics.drawRect(420, YY+90, 130, 75);
+			frame.graphics.drawRect(420, YY+90, 90, 75);
 			frame.graphics.drawRect(420, YY+90, 230, 25);
 			frame.graphics.drawRect(420, YY+115, 230, 25);
 			frame.graphics.drawRect(420, YY+140, 230, 25);
 
-			sheet.addChild(createText("AGENCIA", 
-				{x:425, y:YY+95, width:120, height:25, fontSize:11, align:'left'}));
-			sheet.addChild(createText("ENC. DE CTA.", 
-				{x:425, y:YY+120, width:120, height:25, fontSize:11, align:'left'}));
-			sheet.addChild(createText("TIPO ENTREGA", 
-				{x:425, y:YY+145, width:120, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("CENTRO COSTO", 
+				{x:425, y:YY+95, width:120, height:25, fontSize:9, align:'left'}));
+			sheet.addChild(createText("REFERENCIA", 
+				{x:425, y:YY+120, width:120, height:25, fontSize:9, align:'left'}));
 
 			
 			if (documento.CAEnom) {
@@ -563,36 +566,33 @@ package biz.fulltime.ui.facturacion {
 			var dtf:DateTimeFormatter = new DateTimeFormatter();
 			dtf.dateTimePattern = "dd-MM-yyyy";
 			
-			var _comisiones:String = "";
-			var first:Boolean = true;
-			for each (var participacion:ParticipacionVendedor in documento.comisiones.participaciones) {
-				if (participacion.vendedor) {
-					var code:String = "";
-					if (participacion.vendedor.codigo.length == 1) {
-						code = "0" + participacion.vendedor.codigo;
-					} else if (participacion.vendedor.codigo.length == 2) {
-						code = participacion.vendedor.codigo;
-					} else {
-						code = participacion.vendedor.codigo.substring(participacion.vendedor.codigo.length - 2, participacion.vendedor.codigo.length);
-					}
-					_comisiones += (first ? "" : "-") + code + (participacion.porcentaje < 10 ? "0" + participacion.porcentaje : participacion.porcentaje);
-					first = false;
-				}
-			}
-			
 			YY+=30;
 			
-			sheet.addChild(createText(documento.moneda.nombre,  
+			sheet.addChild(createText(documento.moneda ? documento.moneda.nombre.toUpperCase() : "",  
 				{x:550, y:YY, width:100, height:18, fontSize:11, align:'center'}));
 			sheet.addChild(createText(dtf.format(documento.fechaDoc), 
 				{x:550, y:YY+25, width:100, height:18, fontSize:11, align:'center'}, false, true));
 
-			sheet.addChild(createText(documento.agencia, 
-				{x:550, y:YY+65, width:100, height:18, fontSize:11, align:'center'}));
-			sheet.addChild(createText(_comisiones, 
-				{x:550, y:YY+90, width:100, height:18, fontSize:11, align:'center'}));
-			sheet.addChild(createText(documento.entrega ? documento.entrega.codigo : "", 
-				{x:550, y:YY+115, width:100, height:18, fontSize:11, align:'center'}));
+			var _centroCosto:CentrosCosto = null;
+			for each (var ct:CentrosCosto in CatalogoFactory.getInstance().centrosCosto) {
+				if (ct.codigo == _documento.docCenCostosId || ct.codigo == _documento.centroCostosId) {
+					_centroCosto = ct;
+					break;
+				}
+			}
+			
+			var _referencia:Referencia = null;
+			for each (var ref:Referencia in CatalogoFactory.getInstance().referencias) {
+				if (ref.codigo == _documento.referencia) {
+					_referencia = ref;
+					break;
+				}
+			}
+			
+			sheet.addChild(createText(_centroCosto ? _centroCosto.nombre : "", 
+				{x:510, y:YY+65, width:180, height:18, fontSize:9, align:'left'}));
+			sheet.addChild(createText(_referencia ? _referencia.nombre : "", 
+				{x:510, y:YY+90, width:140, height:18, fontSize:9, align:'left'}));
 
 			var simbolo:String = documento.moneda.simbolo;
 			var mda:String = documento.moneda.mndAbrevia;
@@ -608,34 +608,46 @@ package biz.fulltime.ui.facturacion {
 			nf2.fractionalDigits = 2;
 			
 			var row:Number = 0;
-			var descuento:int = 0;
 			
 			var l:LineaDocumento = null;
 			
 			var XX:int = 50;
 			YY += 160;
 
-			sheet.addChild(createText("Códigos",  
-				{x:50, y:YY, width:100, height:18, fontSize:11, align:'left'}, true, true));
-			sheet.addChild(createText("Detalle",  
-				{x:150, y:YY, width:250, height:18, fontSize:11, align:'left'}, true, true));
-			sheet.addChild(createText("Cant.",  
-				{x:400, y:YY, width:50, height:18, fontSize:11, align:'rigth'}, true, true));
-			sheet.addChild(createText("Precio",  
-				{x:450, y:YY, width:60, height:18, fontSize:11, align:'rigth'}, true, true));
-			sheet.addChild(createText("Desc.",  
-				{x:510, y:YY, width:60, height:18, fontSize:11, align:'center'}, true, true));
-			sheet.addChild(createText("Total",  
-				{x:570, y:YY, width:80, height:18, fontSize:11, align:'rigth'}, true, true));
+			sheet.addChild(createText("Código".toUpperCase(),  
+				{x:50, y:YY, width:100, height:18, fontSize:10, align:'left'}, true, true));
+			sheet.addChild(createText("Detalle".toUpperCase(),  
+				{x:150, y:YY, width:250, height:18, fontSize:10, align:'left'}, true, true));
+			sheet.addChild(createText("Cant.".toUpperCase(),  
+				{x:400, y:YY, width:50, height:18, fontSize:10, align:'rigth'}, true, true));
+			sheet.addChild(createText("Precio".toUpperCase(),  
+				{x:450, y:YY, width:60, height:18, fontSize:10, align:'rigth'}, true, true));
+			sheet.addChild(createText("Tasa IVA".toUpperCase(),  
+				{x:510, y:YY, width:60, height:18, fontSize:10, align:'rigth'}, true, true));
+			sheet.addChild(createText("Total".toUpperCase(),  
+				{x:570, y:YY, width:80, height:18, fontSize:10, align:'rigth'}, true, true));
+			
+			frame.graphics.drawRect(50, YY+18, 600, 300);
 			
 			YY += 25;
-				
+			
+			var ivaTasaBasica:BigDecimal = BigDecimal.ZERO; 
+			var ivaTasaMinima:BigDecimal = BigDecimal.ZERO; 
+			
 			for each (l in documento.lineas.lineas) {
+				if (l.ivaLin) {
+					if (l.ivaLin.codigo == "1" || l.ivaLin.codigo == "3") {
+						ivaTasaBasica = ivaTasaBasica.add(l.getIva());
+					} else if (l.ivaLin.codigo == "2" || l.ivaLin.codigo == "4") {
+						ivaTasaMinima = ivaTasaMinima.add(l.getIva());
+					}
+				}
+				
 				XX=50;
 				if (_via == "COBRANZA") {
 					sheet.addChild(createText(disguise(l.getPorcentajeUtilidad()), {x:XX - 48, y:YY + 18 * row, width:48, height:16, fontSize:8, align:'left'})); // % de utilidad. Solo Vía Cobranza.
 				}
-				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:XX, y:YY + 18 * row, width:100, height:16, fontSize:10, align:'left'}));
+				sheet.addChild(createText(l.concept ? l.concept.codigo : "", {x:XX, y:YY + 18 * row, width:100, height:16, fontSize:10, align:'left'}));
 				
 				XX+=100;
 				sheet.addChild(createText(l.concepto, {x:XX, y:YY + 18 * row, width:250, height:16, fontSize:10, align:'left'}));
@@ -649,11 +661,11 @@ package biz.fulltime.ui.facturacion {
 				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'rigth'}));
 				
 				XX+=60;
-				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
-				if (descuento > 0) {
-					sheet.addChild(createText(descuento + "%", {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'center'}));
+				var tasaIVA:String = l.ivaLin ? l.ivaLin.tasa : null; //() .setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				if (tasaIVA) {
+					sheet.addChild(createText(tasaIVA + "%", {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'rigth'}));
 				} else {
-					sheet.addChild(createText("", {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'center'}));
+					sheet.addChild(createText("0%", {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'rigth'}));
 				}
 				XX+=60;
 				sheet.addChild(createText(nf.format(l.getSubTotal().toString()), {x:XX, y:YY + 18 * row, width:80, height:16, fontSize:10, align:'rigth'}));
@@ -702,15 +714,29 @@ package biz.fulltime.ui.facturacion {
 			
 			XX=420;
 			YY=725;
+			
+			frame.graphics.drawRect(50, YY, 220, 1);
+			frame.graphics.drawRect(50, YY+48, 220, 1);
+			
+			sheet.addChild(createText("IVA Tasa Basica 22%",  
+				{x:50, y:YY+5, width:120, height:25, fontSize:10, align:'left'}));
+			sheet.addChild(createText("IVA Tasa Mínima 10%",  
+				{x:50, y:YY+25, width:120, height:25, fontSize:10, align:'left'}));
 
+			sheet.addChild(createText(simbolo + " " + nf.format(ivaTasaBasica.toString()),  
+				{x:170, y:YY+5, width:100, height:25, fontSize:10, align:'rigth'}));
+			sheet.addChild(createText(simbolo + " " + nf.format(ivaTasaMinima.toString()),  
+				{x:170, y:YY+25, width:100, height:25, fontSize:10, align:'rigth'}));
+			
 			frame.graphics.drawRect(XX, YY, 230, 50);
 			frame.graphics.drawRect(XX, YY+60, 230, 30);
+			
 			
 			XX+=12;
 			YY+=5;
 			sheet.addChild(createText("SUBTOTAL:",  
 				{x:XX, y:YY, width:80, height:25, fontSize:11, align:'left'}));
-			sheet.addChild(createText("IVA:",  
+			sheet.addChild(createText("IVA TOTAL:",  
 				{x:XX, y:YY+25, width:80, height:25, fontSize:11, align:'left'}));
 			sheet.addChild(createText("TOTAL:",  
 				{x:XX, y:YY+60, width:80, height:25, fontSize:14, align:'left'}, false, true));
@@ -728,9 +754,9 @@ package biz.fulltime.ui.facturacion {
 				sheet.addChild(createText("Fecha de Vencimiento " + dtf.format(documento.CAEvencimiento), 
 					{x:425, y:YY+150, width:220, height:20, fontSize:12, align:'center'}, false, true));
 			}
-			sheet.addChild(createText("VÍA " + _via.toUpperCase() , 
+			/*sheet.addChild(createText("VÍA " + _via.toUpperCase() , 
 				{x:XX+85, y:YY+115, width:130, height:25, fontSize:11, align:'rigth'}, false, false));
-
+			*/
 			XX=50;
 			YY=915;
 
@@ -741,33 +767,7 @@ package biz.fulltime.ui.facturacion {
 				{x:XX+5, y:YY+5, width:60, height:32, fontSize:11, align:'left'}));
 			sheet.addChild(createText((documento.notas != null ? StringUtil.trim(documento.notas) : ""), 
 				{x:XX+60, y:YY+5, width:510, height:40, fontSize:10, align:'left'}));
-			
-			if (_via == "COBRANZA") {
-				sheet.addChild(createText(disguise(documento.getUtilidadEstimada()), 
-					{x:10, y:700, width:40, height:14, fontSize:10, align:'left'}));
-			}
-			
-			//PLAN de PAGO
-			if (documento.comprobante.isCredito()) {
-				sheet.addChild(createText("Plan de pago".toUpperCase(), 
-					{x:XX, y:725, width:100, height:16, fontSize:10, align:'left'}, true, false));
-				if (documento.planPagos) {
-					sheet.addChild(createText(documento.planPagos.nombre, 
-						{x:XX+100, y:725, width:175, height:16, fontSize:10, align:'left'}, true, false));
-				} else if (documento.condicion) {
-					sheet.addChild(createText(documento.condicion.nombre, 
-						{x:XX+100, y:725, width:175, height:16, fontSize:10, align:'left'}, true, false));
-				}
-
-				if (documento.comprobante.codigo == "8" || documento.comprobante.codigo == "9") {
-					XX = 47; 
-					YY = 700;
-					
-					sheet.addChild(createText("BONIFICACIÓN POR CUMPLIMIENTO: Plazo acordado 36%, vencido 30 días 20%, vencido 60 días Neto",  
-						{x:XX, y:YY, width:550, height:16, fontSize:9, align:'left'}, false, true));
-				}
-			}
-
+						
 		}
 		
 		public function nl2br(str:String):String {

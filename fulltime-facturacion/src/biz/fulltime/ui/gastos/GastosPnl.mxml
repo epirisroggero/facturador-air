@@ -887,9 +887,9 @@
 			}
 												
 			protected function cmdEMail_clickHandler(event:MouseEvent):void {
-				var pgasto:PrintJobFactura = new PrintJobFactura(false);
+				var pgasto:PrintJobGastosA4 = new PrintJobGastosA4(false);
 				pgasto.documento = this._documento;
-				pgasto.createSMSImage();
+				pgasto.createEmailImage();
 				
 			}
 			
@@ -933,12 +933,12 @@
 			}
 			
 			private function imprimir():void {
-				var pjFactura:PrintJobFactura = new PrintJobFactura();
-				pjFactura.documento = gasto;
-				pjFactura.forzarRemitos = true;
-				pjFactura.print_vias = [PrintJobFactura.VIA_CLIENTE];
+				var pjGasto:PrintJobGastosA4 = new PrintJobGastosA4();
+				pjGasto.documento = gasto;
+				pjGasto.forzarRemitos = true;
+				pjGasto.print_vias = [PrintJobFactura.VIA_CLIENTE];
 				
-				pjFactura.print();
+				pjGasto.print();
 			}
 			
 			private function cs_closeHandler(event:Event):void {
@@ -1606,7 +1606,7 @@
 	
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
-			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" visible="false" includeInLayout="false"/>
+			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" visible="true" includeInLayout="true"/>
 			<components1:IconButton id="cmdTrazabilidad" click="cmdTrazabilidad_clickHandler(event)" styleName="trackingButton" label="Trazabilidad" toolTip="Trazabilidad"
 									visible="{_documento.docId != null}" includeInLayout="{_documento.docId != null}" />
 			
@@ -1634,7 +1634,7 @@
 			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar" visible="{showGuardar &amp;&amp; !_modoVisualizacion}"
 					  includeInLayout="{showGuardar &amp;&amp; !_modoVisualizacion}" focusEnabled="false" enabled="{(_documento.cliente || _documento.proveedor) &amp;&amp; (tieneCambios || _documento.nuevo)}" />
 			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" 
-					  visible="{/* showEMail */false}" includeInLayout="{/* showEMail */false}" focusEnabled="false" />
+					  visible="{showEMail}" includeInLayout="{showEMail}" focusEnabled="false" />
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />

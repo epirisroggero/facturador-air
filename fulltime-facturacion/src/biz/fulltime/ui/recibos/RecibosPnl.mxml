@@ -33,6 +33,7 @@
 			import biz.fulltime.ui.facturacion.FacturacionPnl;
 			import biz.fulltime.ui.facturacion.FrmClaveSupervisora;
 			import biz.fulltime.ui.facturacion.PrintJobFactura;
+			import biz.fulltime.ui.facturacion.PrintJobFacturaA4;
 			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
 			import biz.fulltime.ui.personas.ListadoFacturasPanel;
 			
@@ -1961,6 +1962,17 @@
 				return remObj;
 			}
 
+			protected function cmdImprimir_clickHandler(event:MouseEvent):void {
+				imprimir();
+			}
+			
+			private function imprimir():void {					
+				var pjFactura:PrintJobFactura = new PrintJobFactura();
+				pjFactura.documento = this._recibo;
+				pjFactura.forzarRemitos = true;
+				pjFactura.print_vias = [PrintJobFactura.VIA_CLIENTE];
+				pjFactura.print();			
+			}			
 			
 			public function handleFault(event:FaultEvent):void {
 				var message:String = (event.fault && event.fault.rootCause) 
@@ -2534,6 +2546,8 @@
 					  focusEnabled="false" visible="true" />
 
 			<s:Spacer width="100%" />
+			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
+			<s:Spacer width="10" />
 
 			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 			

@@ -2209,7 +2209,7 @@
 					var pjFactura:PrintJobFactura = new PrintJobFactura();
 					pjFactura.documento = factura;
 					pjFactura.forzarRemitos = true;
-					pjFactura.print_vias = [PrintJobFacturaA4.VIA_CLIENTE];
+					pjFactura.print_vias = [PrintJobFactura.VIA_CLIENTE];
 					pjFactura.print();
 				
 				} else {
@@ -2255,7 +2255,7 @@
 					remObjBorrar.baja(_documento);
 				}
 			}
-
+			
 			protected function txtCotizacion_changeHandler(event:Event):void {
 				_documento.docTCC = txtCotizacion.text;
 				tieneCambios = true;
@@ -2385,8 +2385,8 @@
 						helpWindow.addElement(frmClaveSup);
 						helpWindow.addEventListener(CloseEvent.CLOSE, cs_closeHandler);
 
-            PopUpManager.addPopUp(helpWindow, this, true);
-            PopUpManager.centerPopUp(helpWindow);
+			            PopUpManager.addPopUp(helpWindow, this, true);
+			            PopUpManager.centerPopUp(helpWindow);
 					}
 				} else {
 					convertirCotizacion();
@@ -2404,11 +2404,12 @@
 				}
 				if (newmoneda) {
 					if (oldmoneda) {
-						_documento.updateLineasVenta(oldmoneda.codigo, newmoneda.codigo);
+						_documento.updateLineasVenta(oldmoneda.codigo, newmoneda.codigo);												
 					} else {
 						_documento.update();
 					}
 				}
+				obtenerTipoCambio();
 				obtenerTipoCambioFiscal();
 			}
 
@@ -2703,7 +2704,7 @@
 				helpWindow.title = "Convertir '" + title + "'";
 				helpWindow.height = 420;
 				helpWindow.visible = true;
-			  helpWindow.addElement(convertPnl);
+			  	helpWindow.addElement(convertPnl);
 				helpWindow.addEventListener(CloseEvent.CLOSE, function(event:Event):void {
 						helpWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerComisiones);
 						PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
@@ -2947,10 +2948,20 @@
 
 				CotizacionesModel.getInstance().cotizaciones = _cotizaciones;
 
-				if (_documento) {
+				if (_documento && _documento.moneda && !CatalogoFactory.getInstance().ultimaCotizacion) {
 				  fireEvents = false;
-					_documento.docTCC = _cotizaciones.dolarVenta.@value;
-					fireEvents = true;
+				  if (_documento.moneda.codigo == Moneda.DOLARES || _documento.moneda.codigo == Moneda.DOLARES_ASTER) {
+					  _documento.docTCC = _cotizaciones.dolarVenta.@value;
+					  
+				  } else if (_documento.moneda.codigo == Moneda.EUROS || _documento.moneda.codigo == Moneda.EUROS_ASTER) {
+					  _documento.docTCC = _cotizaciones.euroVenta.@value;
+					  
+				  } else {
+					  _documento.docTCC = "1.00";
+				  }
+				  //CatalogoFactory.getInstance().ultimaCotizacion = null;
+				  
+				  fireEvents = true;
 				}
 			}
 

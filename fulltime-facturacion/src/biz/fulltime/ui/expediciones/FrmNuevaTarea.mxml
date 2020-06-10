@@ -110,10 +110,10 @@
 			
 			private var remFactPendientes:RemoteObject;
 			
-
+			[Binding]
 			public var periodosDP:ArrayCollection = new ArrayCollection(
 				[   {periodo:"Todos los días hábiles", value:1},
-					{periodo:"Todos los días miercoles", value:2},
+					{periodo:"Todos los días miércoles", value:2},
 					{periodo:"Todos los días 26 de cada mes", value:3},
 					{periodo:"Todos los 26 de marzo", value:4},
 					{periodo:"El primer día de cada mes", value:5},

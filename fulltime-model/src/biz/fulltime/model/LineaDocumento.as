@@ -418,7 +418,7 @@ public class LineaDocumento extends EventDispatcher {
 		if (codigoArt == null) {
 			return;
 		}
-		// Obtener todos los dataos del articulo ...
+		// Obtener todos los datos del articulo ...
 		remObj.addEventListener(ResultEvent.RESULT, resultDatosArticulo);
 		remObj.findCatalogEntity("Articulo", codigoArt);
 	}

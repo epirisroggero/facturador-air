@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:personas="biz.fulltime.ui.personas.*" xmlns:s="library://ns.adobe.com/flex/spark"
-		 xmlns:viewStackEffects="org.efflex.mx.viewStackEffects.*"
 		 width="400" height="300" xmlns:contactos="biz.fulltime.ui.contactos.*">
 	<fx:Script>
 		<![CDATA[
@@ -135,24 +134,20 @@
 		]]>
 	</fx:Script>
 
-	<fx:Declarations>
-		<viewStackEffects:Grid id="effect" transparent="true" />
-	</fx:Declarations>
-
 	<s:Panel x="0" y="0" width="100%" height="100%" title="Contacto" dropShadowVisible="false" borderAlpha=".25">
 		<s:layout>
 			<s:VerticalLayout paddingBottom="0" />
 		</s:layout>
 		<s:VGroup width="100%" height="100%" horizontalAlign="center">
 			<mx:ViewStack id="viewStack" width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
-				<mx:Canvas width="100%" height="100%" showEffect="effect" hideEffect="effect">
+				<mx:Canvas width="100%" height="100%">
 					<s:HGroup bottom="5" right="25">
 						<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".45" scaleY=".45" />
 					</s:HGroup>
 					<contactos:InfoContacto id="viewPanel" width="100%" height="100%" creationComplete="viewPanel_creationCompleteHandler(event)" contacto="{contacto}"
 										  visible="{contacto != null}" personas="{personas}" />
 				</mx:Canvas>
-				<mx:Canvas showEffect="effect" hideEffect="effect">
+				<mx:Canvas>
 					<s:HGroup bottom="5" right="25">
 						<mx:Image id="loader2" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".45" scaleY=".45" />
 					</s:HGroup>

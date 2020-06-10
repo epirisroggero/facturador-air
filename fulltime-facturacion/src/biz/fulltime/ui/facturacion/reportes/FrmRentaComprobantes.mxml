@@ -37,8 +37,8 @@
 			import mx.utils.StringUtil;
 			
 			import org.alivepdf.colors.RGBColor;
-			import org.alivepdf.data.Grid;
-			import org.alivepdf.data.GridColumn;
+			import org.alivepdf.grid.Grid;
+			import org.alivepdf.grid.GridColumn;
 			import org.alivepdf.display.Display;
 			import org.alivepdf.fonts.CodePage;
 			import org.alivepdf.fonts.CoreFont;

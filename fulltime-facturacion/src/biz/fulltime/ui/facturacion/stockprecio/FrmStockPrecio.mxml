@@ -40,8 +40,8 @@
 			import mx.utils.StringUtil;
 
 			import org.alivepdf.colors.RGBColor;
-			import org.alivepdf.data.Grid;
-			import org.alivepdf.data.GridColumn;
+			import org.alivepdf.grid.Grid;
+			import org.alivepdf.grid.GridColumn;
 			import org.alivepdf.display.Display;
 			import org.alivepdf.fonts.CodePage;
 			import org.alivepdf.fonts.CoreFont;
@@ -393,7 +393,7 @@
 
 				var col:int = 0;
 				for each (var colName:String in repColumns) {
-					var gridcolumn:org.alivepdf.data.GridColumn = new org.alivepdf.data.GridColumn(StringUtil.trim(colName).toUpperCase(), 'col_' + col, (col == 0) ? 14 : (col == 1) ? 32 : (col == 2 ? 86 : 22), (col == 1 || col == 2) ? Align.LEFT : Align.RIGHT, (col == 1 || col == 2) ? Align.LEFT : Align.RIGHT);
+					var gridcolumn:org.alivepdf.grid.GridColumn = new org.alivepdf.grid.GridColumn(StringUtil.trim(colName).toUpperCase(), 'col_' + col, (col == 0) ? 14 : (col == 1) ? 32 : (col == 2 ? 86 : 22), (col == 1 || col == 2) ? Align.LEFT : Align.RIGHT, (col == 1 || col == 2) ? Align.LEFT : Align.RIGHT);
 					columns.push(gridcolumn);
 					col++;
 				}
@@ -420,9 +420,10 @@
 					}
 					myDP.push(o);
 				}
-
+				
 				// create a Grid object as usual
-				var grid:Grid = new Grid(myDP, 272, 160, new RGBColor(0x6E87B5), new RGBColor(0xCCCCCC), true, new RGBColor(0x665511), .1, null, columns);
+				var grid:Grid = new Grid(myDP, 272, 160, new RGBColor(0x6E87B5), new RGBColor(0xCCCCCC), 
+					true, new RGBColor(0x665511),  new RGBColor(0x665511), .3, 5, 5, "0 j", columns);
 
 				myPDF.textStyle(new RGBColor(0x000000), 1);
 				myPDF.setFont(uf, 6);

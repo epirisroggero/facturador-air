@@ -380,7 +380,10 @@ public class PrintJobFactura {
 
 	private function init():void {
 		var request:URLRequest = null;
-		if (_documento.esCotizacionDeVenta) {
+		
+		if (_documento.esRecibo()) {
+			request = new URLRequest(url_recibo);
+		} else if (_documento.esCotizacionDeVenta) {
 			request = new URLRequest(url_cotizacion);
 		} else if (_documento.comprobante.codigo == "101" || _documento.comprobante.codigo == "111") {
 			request = new URLRequest(url_ordenCompra);
@@ -1147,8 +1150,17 @@ public class PrintJobFactura {
 			
 			row++;
 			row++;
+			
+			var totalVinculado:BigDecimal = BigDecimal.ZERO;
+			var totalCancelado:BigDecimal = BigDecimal.ZERO;
+			var totalSaldo:BigDecimal = BigDecimal.ZERO;
+			var tieneVinculos:Boolean = false;
+			
 
 			for each (var v:VinculoDocumentos in documento.facturasVinculadas) {
+				if (!v.factura || !v.factura.comprobante) {
+					continue;
+				}
 				var factura:String = v.factura.serie + "/" + v.factura.numero + "  " + v.factura.comprobante.nombre.toUpperCase();
 
 				var fecha:String = dtf.format(v.factura.fechaDoc);
@@ -1160,6 +1172,9 @@ public class PrintJobFactura {
 				var vinculado:String = v.neto;
 				var cancelado:String = v.monto;
 				
+				totalVinculado = totalVinculado.add(new BigDecimal(vinculado));
+				totalCancelado = totalCancelado.add(new BigDecimal(cancelado));
+				
 				sheet.addChild(createText(fecha, {x:70, y:YY + 18 * row, width:100, height:16, fontSize:12, align:'left'})); 
 				sheet.addChild(createText(factura, {x:170, y:YY + 18 * row, width:200, height:16, fontSize:12, align:'left'})); 
 				sheet.addChild(createText(nf.format(total), {x:370, y:YY + 18 * row, width:100, height:16, fontSize:12, align:'rigth'})); 
@@ -1168,7 +1183,22 @@ public class PrintJobFactura {
 				sheet.addChild(createText(descuentoPorc + "%", {x:670, y:YY + 18 * row, width:100, height:16, fontSize:12, align:'rigth'})); 
 				sheet.addChild(createText(nf.format(vinculado), {x:770, y:YY + 18 * row, width:110, height:16, fontSize:12, align:'rigth'})); 
 				
+				tieneVinculos = true;
+				
 				row++;
+			}
+			
+			if (tieneVinculos) {
+				totalSaldo =  new BigDecimal(documento.total).subtract(totalVinculado);
+					
+				sheet.addChild(createText("Total Cancelado", {x:570, y:YY + 18 * 22 + 10, width:100, height:16, fontSize:12, align:'rigth'})); 
+				sheet.addChild(createText("Total Vinculado", {x:670, y:YY + 18 * 22 + 10, width:100, height:16, fontSize:12, align:'rigth'})); 
+				sheet.addChild(createText("Saldo Recibo", {x:770, y:YY + 18 * 22 + 10, width:100, height:16, fontSize:12, align:'rigth'})); 
+				
+				sheet.addChild(createText(simbolo + " " + nf.format(totalCancelado), {x:570, y:YY + 18 * 23 + 10, width:100, height:16, fontSize:12, align:'rigth'})); 
+				sheet.addChild(createText(simbolo + " " + nf.format(totalVinculado), {x:670, y:YY + 18 * 23 + 10, width:100, height:16, fontSize:12, align:'rigth'})); 
+				sheet.addChild(createText(simbolo + " " + nf.format(totalSaldo), {x:770, y:YY + 18 * 23 + 10, width:100, height:16, fontSize:12, align:'rigth'})); 
+
 			}
 
 		} else if (documento.esAfilado()) {		

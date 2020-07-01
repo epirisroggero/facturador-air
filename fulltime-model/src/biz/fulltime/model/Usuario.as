@@ -9,6 +9,8 @@
 package biz.fulltime.model {
 import biz.fulltime.conf.Permisos;
 
+import flash.utils.ByteArray;
+
 import mx.collections.ArrayCollection;
 
 
@@ -47,6 +49,9 @@ public class Usuario extends CodigoNombreEntity {
 	public var usuEmail:String;
 	
 	public var venId:String;
+	
+	public var usuBlob:ByteArray;
+
 	
 	public function Usuario(codigo:String = "", nombre:String = "") {
 		super(codigo, nombre);

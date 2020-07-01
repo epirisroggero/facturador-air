@@ -32,8 +32,6 @@
 			import biz.fulltime.ui.documentosValores.FrmDocumentosValores;
 			import biz.fulltime.ui.facturacion.FacturacionPnl;
 			import biz.fulltime.ui.facturacion.FrmClaveSupervisora;
-			import biz.fulltime.ui.facturacion.PrintJobFactura;
-			import biz.fulltime.ui.facturacion.PrintJobFacturaA4;
 			import biz.fulltime.ui.forms.FrmLineasAuditoriaDoc;
 			import biz.fulltime.ui.personas.ListadoFacturasPanel;
 			
@@ -1936,11 +1934,10 @@
 			}
 			
 			protected function cmdEMail_clickHandler(event:MouseEvent):void {
-				var pfactura:PrintJobFactura = new PrintJobFactura(false);
-				pfactura.documento = this._recibo;
-				pfactura.createSMSImage();
+				var precibo:PrintJobReciboA4= new PrintJobReciboA4(false);
+				precibo.documento = this._recibo;
+				precibo.createEmailImage();
 			}
-
 			
 			protected function cmdActualizar_clickHandler(event:MouseEvent):void {
 				// Emitir Documento
@@ -1967,10 +1964,10 @@
 			}
 			
 			private function imprimir():void {					
-				var pjFactura:PrintJobFactura = new PrintJobFactura();
+				var pjFactura:PrintJobReciboA4 = new PrintJobReciboA4();
 				pjFactura.documento = this._recibo;
 				pjFactura.forzarRemitos = true;
-				pjFactura.print_vias = [PrintJobFactura.VIA_CLIENTE];
+				pjFactura.print_vias = [PrintJobReciboA4.VIA_CLIENTE];
 				pjFactura.print();			
 			}			
 			

@@ -3729,7 +3729,7 @@
 													   dataProvider="{_proveedores}" labelField="nombre" matchType="anyPart" prompt="Ingrese proveedor" allowNewValues="false"
 													   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
 													   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="proveedorLabelFunction" backspaceAction="focus" next_focus="{txtRazonSocial}"
-													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" dropDownWidth="320" dropDownRowCount="10" 
+													   previous_focus="{txtNumber}" selectedItem="{_documento.proveedor}" dropDownWidth="480" dropDownRowCount="10" 
 													   enabled="{GeneralOptions.getInstance().loggedUser.esSupervisor() || (!_modoVisualizacion &amp;&amp; !_documento.emitido)}" />
 							<s:Label id="lblCorreoProveedor" fontSize="10" fontWeight="normal" text="Correo: {_documento.proveedor.contacto.ctoEmail1}"
 									 visible="{_documento.proveedor &amp;&amp; _documento.proveedor.contacto.ctoEmail1}" />

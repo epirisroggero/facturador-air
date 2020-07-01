@@ -127,28 +127,8 @@
 				CatalogoFactory.getInstance().addEventListener("changeContactos", function(evt:Event):void {
 					obtenerPrimeroDisponible();	
 				});
+				
 				CatalogoFactory.getInstance().loadCatalogo("Contacto");
-
-				/*
-				var clienteObj:RemoteObject = new RemoteObject();
-				clienteObj.destination = "CreatingRpc";
-				clienteObj.channelSet = ServerConfig.getInstance().channelSet;
-				clienteObj.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
-					var code:Number = new Number(event.result.toString());
-					
-					var cliente:ClienteDTO = new ClienteDTO();
-					cliente.codigo = (code + 1).toString();
-					cliente.nombre = "";
-
-					callLater(function():void {
-						dispatchEvent(new ClienteEvent(ClienteEvent.CLIENTE_NUEVO, null, cliente));
-					});
-					
-				});
-				clienteObj.addEventListener(FaultEvent.FAULT, handleFault);					
-				clienteObj.showBusyCursor = true;				
-				clienteObj.getLastId();
-				*/
 				
 			}
 			
@@ -457,7 +437,7 @@
 											   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 											   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
 											   backspaceAction="focus" next_focus="{cmbZona}" previous_focus="{filter}" dropShadowVisible="true"
-											   dropDownItemRenderer="{ dropDownItemRenderer }" />
+											   dropDownItemRenderer="{ dropDownItemRenderer }"/>
 				</s:Group>
 			</s:VGroup>			
 		</s:HGroup>
@@ -474,7 +454,7 @@
 											   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 											   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
 											   backspaceAction="focus" next_focus="{cmbEncargadoCuenta}" previous_focus="{cmbVendedor}"
-											   dropDownItemRenderer="{ dropDownItemRenderer }" />
+											   dropDownItemRenderer="{ dropDownItemRenderer }" dropDownWidth="300"/>
 				</s:Group>
 			</s:VGroup>			
 			<s:VGroup width="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="0" >
@@ -488,7 +468,7 @@
 											   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 											   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
 											   backspaceAction="focus" next_focus="{cmbCategorias}" previous_focus="{cmbZona}"
-											   dropDownItemRenderer="{ dropDownItemRenderer }"/>
+											   dropDownItemRenderer="{ dropDownItemRenderer }" dropDownWidth="300"/>
 				</s:Group>
 			</s:VGroup>			
 		</s:HGroup>
@@ -501,7 +481,7 @@
 										   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 										   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
 										   backspaceAction="focus" next_focus="{cmbEspecialista}" previous_focus="{cmbEncargadoCuenta}"
-										   dropDownItemRenderer="{ dropDownItemRenderer }" />
+										   dropDownItemRenderer="{ dropDownItemRenderer }" dropDownWidth="300"/>
 			</s:VGroup>
 			<s:VGroup width="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" verticalAlign="middle" gap="0">
 				<s:Label id="lblEspecialista" fontSize="12" text="ESPECIALISTA" width="100%" left="5"/>
@@ -510,7 +490,7 @@
 										   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 										   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
 										   backspaceAction="focus" next_focus="{cmdFiltrar}" previous_focus="{cmbCategorias}"
-										   dropDownItemRenderer="{ dropDownItemRenderer }" />
+										   dropDownItemRenderer="{ dropDownItemRenderer }" dropDownWidth="300"/>
 			</s:VGroup>
 		</s:HGroup>	
 		<s:HGroup width="100%">			
@@ -521,7 +501,7 @@
 										   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 										   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
 										   backspaceAction="focus" next_focus="{cmbEspecialista}" previous_focus="{cmbEncargadoCuenta}"
-										   dropDownItemRenderer="{ dropDownItemRenderer }" />
+										   dropDownItemRenderer="{ dropDownItemRenderer }"/>
 			</s:VGroup>
 		</s:HGroup>	
 		<s:HGroup width="100%">			

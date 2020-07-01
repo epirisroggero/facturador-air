@@ -11,6 +11,7 @@
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
+			import mx.controls.ProgressBarMode;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.rpc.events.FaultEvent;
@@ -34,8 +35,11 @@
 						
 			[Bindable]
 			private var _vendedor:Vendedor;
-
 			
+			private var imagesFilter:FileFilter = new FileFilter("Images", "*.jpg;*.gif;*.png");
+			
+			private var mFileReference:FileReference = new FileReference();
+		
 			[Bindable]
 			public var lstPermisos:ArrayCollection = new ArrayCollection([
 				{value:"5", label:"Taller y mantenimiento"}, 
@@ -53,6 +57,13 @@
 				
 				if (_changeUsuario) {
 					_changeUsuario = false;
+					
+					if (usuarioActual.usuBlob && usuarioActual.usuBlob.length > 0) {
+						var movieClipLoader:Loader = new Loader();
+						movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+						movieClipLoader.loadBytes(usuarioActual.usuBlob);
+					}
+
 					
 					_permisoActual = null;
 					for each(var p:Object in lstPermisos) {
@@ -82,8 +93,87 @@
 
 				}
 			}
-
 			
+			private function buscarImagen():void {
+				mFileReference.browse([imagesFilter]);
+			}
+			
+			private function onError(event:IOErrorEvent):void {
+				Alert.show("Error al subir la Imagen: " + String(event.errorID));
+			}
+			
+			private function onFileSelected(event:Event):void {
+				trace("onFileSelected");
+				// This callback will be called when the file is uploaded and ready to use
+				mFileReference.addEventListener(Event.COMPLETE, onFileLoaded);
+				
+				// This callback will be called if there's error during uploading
+				mFileReference.addEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
+				
+				// Optional callback to track progress of uploading
+				mFileReference.addEventListener(ProgressEvent.PROGRESS, onProgress);
+				
+				// Tells the FileReference to load the file
+				mFileReference.load();
+				
+				// Show progress bar
+				progressBar.visible = true;
+				progressBar.mode = ProgressBarMode.MANUAL;
+				progressBar.minimum = 0;
+				progressBar.maximum = 100;
+				
+			}
+			
+			// This function is called to notify us of the uploading progress
+			private function onProgress(event:ProgressEvent):void {
+				var percentLoaded:Number = event.bytesLoaded / event.bytesTotal * 100;
+				trace("loaded: " + percentLoaded + "%");
+				progressBar.setProgress(percentLoaded, 100);
+			}
+			
+			// This function is called after the file has been uploaded.
+			private function onFileLoaded(event:Event):void {
+				var fileReference:FileReference = event.target as FileReference;
+				
+				// These steps below are to pass the data as DisplayObject
+				// These steps below are specific to this example.
+				var data:ByteArray = fileReference["data"];
+				
+				_usuarioActual.usuBlob = data;
+				//_usuarioActual.ctoBlobExt = "jpg";
+				
+				mFileReference.removeEventListener(Event.COMPLETE, onFileLoaded);
+				mFileReference.removeEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
+				mFileReference.removeEventListener(ProgressEvent.PROGRESS, onProgress);
+				
+				var movieClipLoader:Loader = new Loader();
+				movieClipLoader.loadBytes(data);
+				movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+			}
+
+			// This function below is specific to this example.
+			// It does the processing required to display the swf/png/jpeg file that we have just loaded.
+			private function onMovieClipLoaderComplete(event:Event):void {
+				// Hide progress bar
+				var loadedContent:DisplayObject = event.target.content;
+				var loader:Loader = event.target.loader as Loader;
+
+				// Fit to stage
+				loadedContent.scaleX = container.width / Math.max(loadedContent.width, loadedContent.height);
+				loadedContent.scaleY = container.height / Math.max(loadedContent.width, loadedContent.height);
+				
+				container.addChild(loader);
+			}
+			
+			private function onFileLoadError(event:Event):void {
+				// Hide progress bar
+				progressBar.visible = false;
+				
+				mFileReference.removeEventListener(Event.COMPLETE, onFileLoaded);
+				mFileReference.removeEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
+				mFileReference.removeEventListener(ProgressEvent.PROGRESS, onProgress);
+				trace("File load error");
+			}
 			
 			[Bindable]
 			public function get usuarioActual():Usuario {
@@ -114,6 +204,8 @@
 			}
 			
 			protected function creationCompleteHandler(event:FlexEvent):void {
+				mFileReference.addEventListener(Event.SELECT, onFileSelected);
+				
 				if (lstTUsuario.dataProvider.length > 0) {
 					callLater(function():void {
 						lstTUsuario.selectedIndex = 0;
@@ -130,8 +222,7 @@
 							}
 						}
 					});
-				});
-				
+				});				
 				
 			}
 			
@@ -247,24 +338,42 @@
 					<s:layout>
 						<s:VerticalLayout />
 					</s:layout>
-					<s:Form width="100%" height="100%">
+					<s:HGroup width="100%" >
+						<mx:VBox horizontalAlign="center" paddingLeft="0">
+							<s:SkinnableContainer width="130" height="130" styleName="photoFramework">
+								<s:layout>
+									<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+								</s:layout>
+								<s:MovieClipSWFLoader id="container" width="100" height="100" horizontalAlign="center" verticalAlign="middle" />
+							</s:SkinnableContainer>
+							<mx:LinkButton click="buscarImagen()" label="Imagen" />
+							<mx:ProgressBar id="progressBar" visible="false" minimum="0" maximum="100" mode="manual" />
+						</mx:VBox>
+						<s:Form width="100%">
+							<s:layout>
+								<s:FormLayout gap="-12" />
+							</s:layout>
+							<s:FormItem label="Código">
+								<s:TextInput id="txtCodigo" width="100" textAlign="left" text="{usuarioActual.codigo}" enabled="false"/>
+							</s:FormItem>
+							<s:FormItem label="Activo">
+								<s:CheckBox width="100" selected="{usuarioActual.usuActivo == 'S'}" enabled="false"/>
+							</s:FormItem>
+							<s:FormItem label="Supervisor">
+								<s:CheckBox id="chbSupervisor" width="100" selected="{usuarioActual.usuTipo == 'S'}" change="chbSupervisor_changeHandler(event)"/>
+							</s:FormItem>
+						</s:Form>
+					</s:HGroup>
+
+					<s:Form width="100%">
 						<s:layout>
 							<s:FormLayout gap="-12" />
 						</s:layout>
-						<s:FormItem label="Código">
-							<s:TextInput id="txtCodigo" width="100" textAlign="left" text="{usuarioActual.codigo}" enabled="false"/>
-						</s:FormItem>
 						<s:FormItem width="100%" label="Nombre">
 							<s:TextInput id="txtNombre" width="100%" textAlign="left" text="{usuarioActual.nombre}" />
 						</s:FormItem>
 						<s:FormItem width="100%" label="Email">
 							<s:TextInput id="txtEmail" width="100%" textAlign="left" text="{usuarioActual.usuEmail}" />
-						</s:FormItem>
-						<s:FormItem label="Activo">
-							<s:CheckBox width="100" selected="{usuarioActual.usuActivo == 'S'}" enabled="false"/>
-						</s:FormItem>
-						<s:FormItem label="Supervisor">
-							<s:CheckBox id="chbSupervisor" width="100" selected="{usuarioActual.usuTipo == 'S'}" change="chbSupervisor_changeHandler(event)"/>
 						</s:FormItem>
 						<s:FormItem label="Permiso" visible="{!chbSupervisor.selected}">
 							<s:DropDownList id="ddlPermiso" width="100%" textAlign="left" labelField="label" dataProvider="{lstPermisos}" selectedItem="{_permisoActual}" change="ddlPermiso_changeHandler(event)" />
@@ -277,9 +386,8 @@
 													   backspaceAction="focus" next_focus="{txtNotas}" previous_focus="{ddlPermiso}" dropShadowVisible="true"
 													   dropDownItemRenderer="{ dropDownItemRenderer }" selectedItem="{_vendedor}"/>
 						</s:FormItem>
-						
 						<s:FormItem label="Notas">
-							<s:TextArea id="txtNotas" width="100%" height="120" text="{usuarioActual.usuNotas}" />
+							<s:TextArea id="txtNotas" width="100%" height="90" text="{usuarioActual.usuNotas}" />
 						</s:FormItem>
 					</s:Form>
 					<s:Spacer height="100%" />

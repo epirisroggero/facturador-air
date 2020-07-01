@@ -1447,19 +1447,8 @@
 	<s:Group width="100%" height="100%" excludeFrom="cargando"> 		
 		<s:Rect height="42" width="170" left="620" top="10" visible="{!_documento.isPendiente()}">
 			<s:fill>
-				<s:LinearGradient rotation="90">
-					<s:GradientEntry color="0x000000" ratio="0.2" alpha="0.33" />
-					<s:GradientEntry color="0x000000" ratio="0.48" alpha="0.52" />
-					<s:GradientEntry color="0x000000" ratio="0.48001" alpha="0.83" />
-				</s:LinearGradient>
+				<s:SolidColor color="0x000" alpha="0.33"/>
 			</s:fill>
-			<s:stroke>
-				<s:LinearGradientStroke rotation="90" weight="3">
-					<s:GradientEntry color="0xFF0000" alpha="0.70" ratio="0.4" />
-					<s:GradientEntry color="0xFA0000" alpha="0.40" ratio="0.965" />
-					<s:GradientEntry color="0xFF0000" alpha="0.30" ratio="0.9651" />
-				</s:LinearGradientStroke>
-			</s:stroke>
 		</s:Rect>
 		<s:Label width="120" color="#ffffff" fontSize="28" left="640" textAlign="center" top="20" text="Finalizado" visible="{!_documento.isPendiente()}" />
 

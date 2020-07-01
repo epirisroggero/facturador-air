@@ -345,7 +345,7 @@
 											   dataProvider="{ CatalogoFactory.getInstance().zonas }" labelField="nombre" matchType="anyPart" prompt="No Filtrar"
 											   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 											   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
-											   backspaceAction="focus" dropDownItemRenderer="{ dropDownItemRenderer }" />
+											   backspaceAction="focus" dropDownItemRenderer="{ dropDownItemRenderer }" dropDownWidth="400"/>
 				</s:Group>
 			</s:VGroup>			
 		</s:HGroup>
@@ -357,7 +357,7 @@
 										   dataProvider="{ CatalogoFactory.getInstance().giros }" labelField="nombre" matchType="anyPart" prompt="No Filtrar"
 										   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 										   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
-										   backspaceAction="focus" dropDownItemRenderer="{ dropDownItemRenderer }" />
+										   backspaceAction="focus" dropDownItemRenderer="{ dropDownItemRenderer }" dropDownWidth="400"/>
 			</s:VGroup>
 		</s:HGroup>	
 		<s:controlBarContent>
@@ -393,7 +393,7 @@
 			<s:VGroup width="100%" height="100%" visible="{!loading}" includeInLayout="{!loading}">
 				<components:RoundedSelectionList id="listaProveedors" width="100%" height="100%" borderSkin="{null}" selectionColor="0xfafafa" change="listaProveedors_changeHandler(event)"
 												 creationComplete="listaPersonas_creationCompleteHandler(event)" dataProvider="{proveedores}" selectionDuration="600" useRollOver="false"
-												 itemRenderer="biz.fulltime.ui.proveedores.ProveedorLabel" />
+												 itemRenderer="biz.fulltime.ui.proveedores.ProveedorLabel"  />
 				
 			</s:VGroup>
 			

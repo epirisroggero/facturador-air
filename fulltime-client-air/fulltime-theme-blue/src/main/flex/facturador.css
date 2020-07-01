@@ -84,7 +84,7 @@ s|WindowedApplication {
 
 s|Panel {
 	skinClass: ClassReference("skin.components.MyPanelSkin");
-	fontLabelTitle: 18;
+	fontLabelTitle: 14;
 	shadowFilterColor: "0x000000";
 }
 

@@ -286,11 +286,11 @@ components|AutoComplete {
 	shadowFilterColor: "0x111111";
 	
 	titleBackgroundColor: #666666;
-	titleColor: "0xffffff";
+	titleColor: "0x333";
 	dropShadowVisible: false;
 	backgroundColor: #EFEFEF;
-	backgroundAlpha: 0.35;
-	headerTitleAlpha:.50;
+	backgroundAlpha: .35;
+	headerTitleAlpha: .25;
 	borderColor: #879ABF;
 	borderAlpha: .76;
 	borderVisible: true;
@@ -313,7 +313,6 @@ components|AutoComplete {
 	fontLabelTitle: 14;
 }
 
-
 .pnlForm {
 	skinClass: ClassReference("skin.components.MyPanelSkin");
 	
@@ -321,15 +320,13 @@ components|AutoComplete {
 	titleBackgroundColor: #666666;
 	dropShadowVisible: false;
 	backgroundAlpha: 0;
-	headerTitleAlpha: .45;
-	titleColor: #ffffff;
+	headerTitleAlpha: .25;
+	titleColor: #333;
 	borderColor: #879ABF;
 	borderAlpha: 0;
 	borderVisible: false;
 	fontLabelTitle: 14;
 }
-
-
 
 .none {
 	over-skin: ClassReference("com.hillelcoren.assets.skins.BlankSkin");

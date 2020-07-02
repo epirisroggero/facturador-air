@@ -1053,7 +1053,7 @@
 					
 					var fanfold:String = "";
 					
-					if (doc.esRemito()) { // Remitos seguro no van por el efactura. 
+					if (doc.esRemito() || doc.comprobante.esSalidaGira()) { // Remitos seguro no van por el efactura. 
 						remObjEmitir.emitir(doc, fanfold);
 					} else {
 						// Crear e-ticket, e-factura 

@@ -283,6 +283,11 @@ public class Comprobante extends CodigoNombreEntity {
 	public function esImportacion():Boolean {
 		return codigo == '120' || codigo == '121' || codigo == '122' || codigo == '124';
 	}
+	
+	public function esSalidaGira():Boolean {
+		return codigo == '17' || (nombre != null && nombre.toLowerCase().indexOf("gira") > 0);
+	}
+
 
 	public function esGasto():Boolean {
 		switch(codigo) {

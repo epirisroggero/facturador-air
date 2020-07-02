@@ -58,12 +58,10 @@
 				if (_changeUsuario) {
 					_changeUsuario = false;
 					
-					if (usuarioActual.usuBlob && usuarioActual.usuBlob.length > 0) {
-						var movieClipLoader:Loader = new Loader();
-						movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+					movieClipLoader.unload();
+					if (usuarioActual.usuBlob && usuarioActual.usuBlob.length > 0) {						
 						movieClipLoader.loadBytes(usuarioActual.usuBlob);
-					}
-
+					} 
 					
 					_permisoActual = null;
 					for each(var p:Object in lstPermisos) {
@@ -117,18 +115,18 @@
 				mFileReference.load();
 				
 				// Show progress bar
-				progressBar.visible = true;
-				progressBar.mode = ProgressBarMode.MANUAL;
-				progressBar.minimum = 0;
-				progressBar.maximum = 100;
+//				progressBar.visible = true;
+//				progressBar.mode = ProgressBarMode.MANUAL;
+//				progressBar.minimum = 0;
+//				progressBar.maximum = 100;
 				
 			}
 			
 			// This function is called to notify us of the uploading progress
 			private function onProgress(event:ProgressEvent):void {
-				var percentLoaded:Number = event.bytesLoaded / event.bytesTotal * 100;
-				trace("loaded: " + percentLoaded + "%");
-				progressBar.setProgress(percentLoaded, 100);
+//				var percentLoaded:Number = event.bytesLoaded / event.bytesTotal * 100;
+//				trace("loaded: " + percentLoaded + "%");
+//				progressBar.setProgress(percentLoaded, 100);
 			}
 			
 			// This function is called after the file has been uploaded.
@@ -146,9 +144,9 @@
 				mFileReference.removeEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
 				mFileReference.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 				
-				var movieClipLoader:Loader = new Loader();
+				//var movieClipLoader:Loader = new Loader();
 				movieClipLoader.loadBytes(data);
-				movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+				//movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
 			}
 
 			// This function below is specific to this example.
@@ -167,7 +165,7 @@
 			
 			private function onFileLoadError(event:Event):void {
 				// Hide progress bar
-				progressBar.visible = false;
+//				progressBar.visible = false;
 				
 				mFileReference.removeEventListener(Event.COMPLETE, onFileLoaded);
 				mFileReference.removeEventListener(IOErrorEvent.IO_ERROR, onFileLoadError);
@@ -203,7 +201,13 @@
 				
 			}
 			
+			private var movieClipLoader:Loader;
+			
 			protected function creationCompleteHandler(event:FlexEvent):void {
+				
+				movieClipLoader = new Loader();
+				movieClipLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onMovieClipLoaderComplete);
+
 				mFileReference.addEventListener(Event.SELECT, onFileSelected);
 				
 				if (lstTUsuario.dataProvider.length > 0) {
@@ -347,7 +351,7 @@
 								<s:MovieClipSWFLoader id="container" width="100" height="100" horizontalAlign="center" verticalAlign="middle" />
 							</s:SkinnableContainer>
 							<mx:LinkButton click="buscarImagen()" label="Imagen" />
-							<mx:ProgressBar id="progressBar" visible="false" minimum="0" maximum="100" mode="manual" />
+							<!--mx:ProgressBar id="progressBar" visible="false" minimum="0" maximum="100" mode="manual" /-->
 						</mx:VBox>
 						<s:Form width="100%">
 							<s:layout>
@@ -399,17 +403,17 @@
 						<s:Label id="msgLabel" text="" width="100%" color="white" maxDisplayedLines="1" fontSize="14" fontWeight="normal" textAlign="center" paddingBottom="5"/>
 					</s:BorderContainer>
 				</s:BorderContainer>
-				<s:controlBarContent>
-					<s:HGroup width="100%" horizontalAlign="right" verticalAlign="middle" paddingBottom="5" paddingRight="5" paddingTop="5">
-						<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".20" scaleY=".20" />
-						
-						<s:Spacer width="100%" />
-						<s:Button id="cmdAplicar" click="cmdAplicar_clickHandler(event)" label="Aplicar" styleName="aplicarButton16" />
-						<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cerrar" styleName="closeButton16"/>
-					</s:HGroup>
-				</s:controlBarContent>
 			</s:Panel>
 		</s:HGroup>
+		<s:controlBarContent>
+			<s:HGroup width="100%" horizontalAlign="right" verticalAlign="middle" paddingBottom="5" paddingRight="5" paddingTop="5">
+				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".20" scaleY=".20" />
+				
+				<s:Spacer width="100%" />
+				<s:Button id="cmdAplicar" click="cmdAplicar_clickHandler(event)" label="Aplicar" styleName="aplicarButton16" />
+				<s:Button id="cmdCancelar" click="cmdCancelar_clickHandler(event)" label="Cerrar" styleName="closeButton16"/>
+			</s:HGroup>
+		</s:controlBarContent>
 		
 	</s:Panel>
 	

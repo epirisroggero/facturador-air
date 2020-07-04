@@ -273,13 +273,13 @@
 			public function enviarEMail():void {
 				byteArray.position = 0;
 				
-				var pdf:PDF = new PDF(documento && documento.comprobante.isRecibo() ? Orientation.LANDSCAPE : Orientation.PORTRAIT, Unit.POINT, true, Size.A4);
+				var pdf:PDF = new PDF(Orientation.PORTRAIT, Unit.POINT, true, Size.A4);
 				pdf.setDisplayMode(Display.FULL_PAGE, Layout.SINGLE_PAGE);
 				pdf.setMargins(10,10,10,0);
 				
 				var newPage:Page;
 				
-				newPage = new Page(documento && documento.comprobante.isRecibo() ? Orientation.LANDSCAPE : Orientation.PORTRAIT, Unit.POINT, Size.A4);
+				newPage = new Page(Orientation.PORTRAIT, Unit.POINT, Size.A4);
 				pdf.addPage(newPage);			
 				
 				var resizeMode:Resize = new Resize(Mode.FIT_TO_PAGE, Position.CENTERED);

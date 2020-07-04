@@ -285,7 +285,7 @@ public class Comprobante extends CodigoNombreEntity {
 	}
 	
 	public function esSalidaGira():Boolean {
-		return codigo == '17' || (nombre != null && nombre.toLowerCase().indexOf("gira") > 0);
+		return codigo == '17';
 	}
 
 

@@ -578,28 +578,40 @@ package biz.fulltime.ui.recibos {
 			YY += 90;
 			
 			var DEFAULT_W:int = 85; 
-
-			sheet.addChild(createText("Fecha",  
-				{x:50, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'left'}, true, true));
-			sheet.addChild(createText("Comprobante",  
-				{x:50+DEFAULT_W*1, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'left'}, true, true));
-			sheet.addChild(createText("Total",  
-				{x:50+DEFAULT_W*2, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
-			sheet.addChild(createText("Cancelado",  
-				{x:50+DEFAULT_W*3, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
-			sheet.addChild(createText("Saldo",  
-				{x:50+DEFAULT_W*4, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
-			sheet.addChild(createText("Dtos.",  
-				{x:50+DEFAULT_W*5, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
-			sheet.addChild(createText("Vinculado",  
-				{x:50+DEFAULT_W*6, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
+			
+			var tieneVinculos:Boolean = false;
+			
+			for each (var v:VinculoDocumentos in documento.facturasVinculadas) {
+				if (!v.factura || !v.factura.comprobante) {
+					continue;
+				} else {
+					tieneVinculos = true;
+					break;
+				}
+			}
+			
+			if (tieneVinculos) {
+				sheet.addChild(createText("Fecha",  
+					{x:50, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'left'}, true, true));
+				sheet.addChild(createText("Comprobante",  
+					{x:50+DEFAULT_W*1, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'left'}, true, true));
+				sheet.addChild(createText("Total",  
+					{x:50+DEFAULT_W*2, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
+				sheet.addChild(createText("Cancelado",  
+					{x:50+DEFAULT_W*3, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
+				sheet.addChild(createText("Saldo",  
+					{x:50+DEFAULT_W*4, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
+				sheet.addChild(createText("Dtos.",  
+					{x:50+DEFAULT_W*5, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
+				sheet.addChild(createText("Vinculado",  
+					{x:50+DEFAULT_W*6, y:YY, width:DEFAULT_W, height:18, fontSize:11, align:'rigth'}, true, true));
+			}
 			
 			YY += 25;
 			
 			var totalVinculado:BigDecimal = BigDecimal.ZERO;
 			var totalCancelado:BigDecimal = BigDecimal.ZERO;
 			var totalSaldo:BigDecimal = BigDecimal.ZERO;
-			var tieneVinculos:Boolean = false;
 
 			for each (var v:VinculoDocumentos in documento.facturasVinculadas) {
 				if (!v.factura || !v.factura.comprobante) {
@@ -626,8 +638,6 @@ package biz.fulltime.ui.recibos {
 				sheet.addChild(createText(nf.format(saldo), {x:50+DEFAULT_W*4, y:YY + 18 * row, width:DEFAULT_W, height:16, fontSize:12, align:'rigth'})); 
 				sheet.addChild(createText(descuentoPorc + "%", {x:50+DEFAULT_W*5, y:YY + 18 * row, width:DEFAULT_W, height:16, fontSize:12, align:'rigth'})); 
 				sheet.addChild(createText(nf.format(vinculado), {x:50+DEFAULT_W*6, y:YY + 18 * row, width:DEFAULT_W, height:16, fontSize:12, align:'rigth'})); 
-				
-				tieneVinculos = true;
 				
 				row++;
 			}
@@ -703,9 +713,6 @@ package biz.fulltime.ui.recibos {
 				sheet.addChild(createText("Fecha de Vencimiento " + dtf.format(documento.CAEvencimiento), 
 					{x:425, y:YY+150, width:220, height:20, fontSize:12, align:'center'}, false, true));
 			}
-
-			sheet.addChild(createText("BONIFICACIÓN POR CUMPLIMIENTO: Plazo acordado 36%, vencido 30 días 20%, vencido 60 días Neto",  
-				{x:50, y:YY+115, width:550, height:16, fontSize:9, align:'left'}, false, true));
 
 			
 			XX=50;

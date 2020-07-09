@@ -111,7 +111,6 @@
 
 							contClient = new BorderContainer();
 							contClient.layout = vertLayout0;
-							contClient.minHeight = 60;
 							contClient.percentWidth = 100;
 
 							var solidColor2:SolidColor = new SolidColor();
@@ -674,7 +673,10 @@
 				
 				contClient.visible = false;
 				contClient.includeInLayout = false;
+
 				invalidateProperties();
+				
+				validateNow();
 				
 				
 				var emailPnl:FrmEMail = new FrmEMail();
@@ -684,6 +686,7 @@
 				emailPnl.cliente = docPendCliente.cliente; 
 				emailPnl.asunto = "FULLTIME - Facturas pendientes de pago de '" + docPendCliente.cliente.nombre + "'.";
 				emailPnl.takeSnapshot(mainGroup);
+				emailPnl.esListadoFacturasPendientes = true;
 				emailPnl.addEventListener(CloseEvent.CLOSE, function():void {
 					PopUpManager.removePopUp(mailWindow);
 					mailWindow = null;
@@ -709,7 +712,8 @@
 				contClient.visible = true;
 				contClient.includeInLayout = true;
 				invalidateProperties();
-
+				validateNow();
+				
 			}				
 			
 			private function closeHandlerEmail(event:Event):void {
@@ -742,13 +746,20 @@
 				<mx:FormItem fontWeight="bold" label="Moneda">
 					<components:MyAutoComplete id="cmbMoneda" width="160" textAlign="left" change="cmbMoneda_changeHandler(event)" dataProvider="{ monedas }" labelField="nombre"
 											   matchType="anyPart" prompt="Moneda" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-											   allowDuplicates="{ false }" allowMultipleSelection="{ false }" allowEditingNewValues="{ false }" selectedItem="{_monedaActual}"
+											   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false" selectedItem="{_monedaActual}"
 											   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus" dropDownWidth="200" />
 
 				</mx:FormItem>
 			</mx:Form>
 			<s:Scroller width="100%" height="100%">
-				<s:HGroup id="mainGroup" horizontalAlign="center" />
+				<s:HGroup horizontalAlign="center" >
+					<s:BorderContainer id="mainGroup" backgroundAlpha="1.0" borderAlpha="0" backgroundColor="0xFFFFFF" minHeight="0">
+						<s:layout>
+							<s:HorizontalLayout horizontalAlign="center" paddingLeft="3" paddingRight="3" gap="0" />
+						</s:layout>
+					</s:BorderContainer>
+				</s:HGroup>
+				
 			</s:Scroller>
 		</s:VGroup>
 		<s:controlBarContent>

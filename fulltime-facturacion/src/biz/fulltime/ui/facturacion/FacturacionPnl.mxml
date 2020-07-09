@@ -3113,6 +3113,8 @@
 					nuevoDoc.cuotasDocumento = doc.cuotasDocumento;
 					nuevoDoc.pendiente = "S";
 					nuevoDoc.usuIdAut = doc.usuIdAut;
+					
+					nuevoDoc.depositoOrigen = doc.depositoDestino;
 
 					nuevoDoc.update(ajustarPrecio, factor);
 					nuevoDoc.prevDocId = String(doc.docId);

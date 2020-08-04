@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="Facturador v1.7.223">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorRightPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorRightPanel.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/contactos/ContactoEditorRightPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/contactos/ContactoEditorRightPanel.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmNuevaTarea.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/expediciones/FrmNuevaTarea.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFactura.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFactura.as" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ClienteEditorRightPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ClienteEditorRightPanel.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/ProveedorEditorRightPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/proveedores/ProveedorEditorRightPanel.mxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" afterDir="false" />
     </list>
     <list id="9acb1ad8-87b2-437f-a567-38a097769839" name="Revert: Documentos de Gasto" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -25,24 +18,6 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticuloEditor.mxml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="850">
-              <caret line="50" column="67" selection-start-line="50" selection-start-column="67" selection-end-line="50" selection-end-column="67" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/ArticulosEditorRightPanel.mxml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="18" column="12" selection-start-line="18" selection-start-column="12" selection-end-line="18" selection-end-column="12" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo.mxml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="170">
@@ -54,8 +29,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="15" column="26" selection-start-line="15" selection-start-column="26" selection-end-line="15" selection-end-column="26" />
+            <state relative-caret-position="119">
+              <caret line="7" column="26" selection-start-line="7" selection-start-column="26" selection-end-line="7" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -86,15 +61,28 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" column="20" selection-start-line="1" selection-start-column="20" selection-end-line="1" selection-end-column="20" />
+            <state relative-caret-position="255">
+              <caret line="15" selection-start-line="15" selection-end-line="15" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoDeudoresCliente.mxml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="187">
+              <caret line="11" column="68" selection-start-line="11" selection-start-column="68" selection-end-line="11" selection-end-column="68" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-16116">
+              <caret line="11" column="48" selection-start-line="11" selection-start-column="48" selection-end-line="11" selection-end-column="48" />
+            </state>
+          </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -115,6 +103,11 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -130,11 +123,11 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="35" />
-    <option name="y" value="-20" />
-    <option name="width" value="2280" />
-    <option name="height" value="1375" />
+  <component name="ProjectFrameBounds" extendedState="1">
+    <option name="x" value="-1095" />
+    <option name="y" value="193" />
+    <option name="width" value="2850" />
+    <option name="height" value="1378" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -207,14 +200,69 @@
               <item name="biz" type="462c0819:PsiDirectoryNode" />
               <item name="fulltime" type="462c0819:PsiDirectoryNode" />
               <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="deudores" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
               <item name="facturacion" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-facturacion" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="ui" type="462c0819:PsiDirectoryNode" />
+              <item name="forms" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fulltime" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime-model" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="biz" type="462c0819:PsiDirectoryNode" />
+              <item name="fulltime" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -290,21 +338,28 @@
       <option name="project" value="LOCAL" />
       <updated>1573511459933</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Facturador v1.7.501">
+      <created>1594338949416</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1594338949416</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <frame x="-876" y="155" width="2280" height="1102" extended-state="1" />
     <layout>
       <window_info id="Capture Tool" order="0" />
       <window_info id="Designer" order="1" />
       <window_info id="UI Designer" order="2" />
       <window_info id="Favorites" order="3" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.35369128" />
+      <window_info content_ui="combo" id="Project" order="4" visible="true" weight="0.1527027" />
       <window_info id="Structure" order="5" weight="0.25" />
       <window_info id="Image Layers" order="6" />
       <window_info anchor="bottom" id="Event Log" order="0" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.33286119" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="1" visible="true" weight="0.3443299" />
       <window_info anchor="bottom" id="Terminal" order="2" />
       <window_info anchor="bottom" id="Message" order="3" />
       <window_info anchor="bottom" id="Find" order="4" />
@@ -374,6 +429,17 @@
               <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
                 <collection />
               </option>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/develop" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
               <option name="COLUMN_ORDER">
                 <list>
                   <option value="0" />
@@ -391,7 +457,18 @@
       <map>
         <entry key="Branch">
           <value>
-            <list />
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="origin/develop" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="master" />
+                </option>
+              </RecentGroup>
+            </list>
           </value>
         </entry>
         <entry key="User">
@@ -405,7 +482,8 @@
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
     <MESSAGE value="Listar documentos vencidos" />
-    <option name="LAST_COMMIT_MESSAGE" value="Listar documentos vencidos" />
+    <MESSAGE value="Facturador v1.7.501" />
+    <option name="LAST_COMMIT_MESSAGE" value="Facturador v1.7.501" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/articulos/EditarArticulo2.mxml" />
@@ -430,6 +508,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="26" selection-start-line="7" selection-start-column="26" selection-end-line="7" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -449,8 +534,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="20" selection-start-line="1" selection-start-column="20" selection-end-line="1" selection-end-column="20" />
+        <state relative-caret-position="255">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
         </state>
       </provider>
     </entry>
@@ -461,15 +546,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
+    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmEMail.mxml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="26" selection-start-line="15" selection-start-column="26" selection-end-line="15" selection-end-column="26" />
+        <state relative-caret-position="51">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/deudores/ListadoDeudoresCliente.mxml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="68" selection-start-line="11" selection-start-column="68" selection-end-line="11" selection-end-column="68" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml">
-      <provider selected="true" editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-16116">
+          <caret line="11" column="48" selection-start-line="11" selection-start-column="48" selection-end-line="11" selection-end-column="48" />
+        </state>
+      </provider>
     </entry>
   </component>
 </project>

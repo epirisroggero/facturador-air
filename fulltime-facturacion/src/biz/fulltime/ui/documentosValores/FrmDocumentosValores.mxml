@@ -151,16 +151,13 @@
 					window = null;
 				});
 				
-				var lstDocumentosValores:ListDocumentosValores = new ListDocumentosValores();
-				lstDocumentosValores.formaPagoTipo = 44; // Cheque recibido
+				var lstDocumentosValores:ListTarjetasRecibidas = new ListTarjetasRecibidas();
+				lstDocumentosValores.formaPagoTipo = 44; // Tarjeta
 				lstDocumentosValores.recibo = recibo;
 				lstDocumentosValores.cliente = recibo.cliente;
 				
 				window.addElement(lstDocumentosValores);
 		
-				var frmTarjetas:FrmTarjetas = new FrmTarjetas();
-				window.addElement(frmTarjetas);
-
 				PopUpManager.addPopUp(window, DisplayObject(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(window);
 				
@@ -552,7 +549,7 @@
 						<s:HorizontalLayout horizontalAlign="left" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" />
 					</s:layout>
 					<mx:LinkButton id="cmdCheques" height="32" click="cmdCheques_clickHandler(event)" label="Cheques" enabled="true" styleName="prueba1" />
-					<mx:LinkButton id="cmdTarjetas" height="32" click="cmdTarjetas_clickHandler(event)" label="Tarjetas" enabled="false" styleName="prueba1" cornerRadius="0" />
+					<mx:LinkButton id="cmdTarjetas" height="32" click="cmdTarjetas_clickHandler(event)" label="Tarjetas" enabled="true" styleName="prueba1" cornerRadius="0" />
 					<mx:LinkButton id="cmdDocumentos" height="32" click="cmdDocumentos_clickHandler(event)" label="Documentos" enabled="false" styleName="prueba1" cornerRadius="0" />
 					<mx:LinkButton id="cmdBanco" height="32" click="cmdBanco_clickHandler(event)" label="Banco" styleName="prueba1" enabled="false"/>
 				</s:BorderContainer>

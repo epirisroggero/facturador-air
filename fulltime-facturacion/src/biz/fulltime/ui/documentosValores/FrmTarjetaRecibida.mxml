@@ -2,7 +2,7 @@
 <s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*"
 		  xmlns:s="library://ns.adobe.com/flex/spark"
 		  width="100%" height="100%" xmlns:components1="components.*">
-
+	
 	<fx:Script>
 		<![CDATA[
 			import biz.fulltime.model.Banco;
@@ -17,11 +17,11 @@
 			import mx.events.CloseEvent;
 			
 			import util.CatalogoFactory;
-
-			private var _banco:Banco;
+			
+			private var _financiera:String;
 			
 			private var _cliente:Cliente;
-
+			
 			private var _recibo:Documento;
 			
 			private var _documento:Documento;
@@ -30,7 +30,7 @@
 			
 			[Bindable]
 			public var modeStr:String;
-
+			
 			
 			public function get formaPagoTipo():Number {
 				return _formaPagoTipo;
@@ -45,27 +45,27 @@
 							formaPagoTipo == 51 ? "Créditos bancarios" : "")));
 				
 			}
-
-
+			
+			
 			[Bindable]
-			public function get banco():Banco {
-				return _banco;
+			public function get financiera():String {
+				return _financiera;
 			}
-
-			public function set banco(value:Banco):void {
-				_banco = value;
+			
+			public function set financiera(value:String):void {
+				_financiera = value;
 			}
-
+			
 			[Bindable]
 			public function get recibo():Documento {
 				return _recibo;
 			}
-
+			
 			public function set recibo(value:Documento):void {
 				_recibo = value;
 			}
-
-
+			
+			
 			public function codigoNombreLabelFunction(item:Object):String {
 				var label:String = "";
 				if (item && item.hasOwnProperty("codigo")) {
@@ -74,10 +74,10 @@
 				if (item && item.hasOwnProperty("nombre")) {
 					label += " - " + item.nombre;
 				}
-
+				
 				return label.toUpperCase();
 			}
-
+			
 			[Bindable]
 			public function get documento():Documento {
 				return _documento;
@@ -89,7 +89,7 @@
 			
 			public function clienteLabelFunction(item:Object):String {
 				var client:Cliente = item as Cliente;
-
+				
 				var label:String;
 				if (item && item.hasOwnProperty("codigo")) {
 					label = item.codigo;
@@ -100,10 +100,10 @@
 				if (client && client.razonSocial != client.nombre) {
 					label += " [" + client.razonSocial + "] ";
 				}
-
+				
 				return label;
 			}
-
+			
 			public function monedaLabelFunction(item:Object):String {
 				var moneda:Moneda = item as Moneda;
 				
@@ -114,12 +114,12 @@
 				
 				return label;
 			}
-
-
+			
+			
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
-
+			
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
@@ -128,7 +128,7 @@
 			public function get cliente():Cliente {
 				return _cliente;
 			}
-
+			
 			public function set cliente(value:Cliente):void {
 				for each (var c:Cliente in CatalogoFactory.getInstance().clientes)  {
 					if (c.codigo == value.codigo) {
@@ -137,15 +137,15 @@
 				}
 				
 			}
-
+			
 		]]>
 	</fx:Script>
-
+	
 	<fx:Declarations>
 		<fx:Component id="dropDownItemRenderer">
 			<renderers:CodigoNombreItemRenderer />
 		</fx:Component>
-
+		
 	</fx:Declarations>
 	<s:Panel width="100%" height="100%" title="{documento.comprobante.codigo}-{documento.comprobante.nombre}"
 			 backgroundAlpha="0.85" backgroundColor="0xfafafa">
@@ -160,8 +160,8 @@
 					<components1:MyTextInput id="txtNumero" width="100%" text="@{documento.numero}"/>
 				</s:VGroup>
 				<s:VGroup width="100">
-					<s:Label text="Vencimiento" />
-					<mx:DateField id="dfVencimiento" width="100%" selectedDate="@{documento.fechaDoc}" />
+					<s:Label text="Fecha" />
+					<mx:DateField id="dfFecha" width="100%" selectedDate="@{documento.fechaDoc}" />
 				</s:VGroup>
 				<s:VGroup width="100">
 					<s:Label text="Emisión" />
@@ -183,11 +183,8 @@
 				<s:FormItem label="Concepto" width="100%">
 					<s:TextInput id="txtConcepto" width="100%" text="@{documento.concepto}"/>
 				</s:FormItem>
-				<s:FormItem label="Banco" width="100%">
-					<components:MyAutoComplete id="cmbBanco" width="100%" height="24" fontSize="14" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().bancos }" labelField="nombre"
-											   matchType="anyPart" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-											   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
-											   dropDownRowCount="{CatalogoFactory.getInstance().bancos.length}" selectedItem="@{banco}" next_focus="{cmbCliente}" previous_focus="{txtConcepto}" />
+				<s:FormItem label="Financiera" width="100%">
+					<s:TextInput id="txtFinanciera" width="100%"/>
 				</s:FormItem>
 				<s:FormItem label="Cliente" width="100%">
 					<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre" matchType="anyPart"
@@ -199,26 +196,36 @@
 				<s:FormItem label="Titular" width="100%">
 					<s:TextInput id="txtTitular" width="100%" />
 				</s:FormItem>
+				<s:FormItem label="Nº Tarjeta" width="100%">
+					<s:HGroup verticalAlign="middle">
+						<components1:MyTextInput id="txtNroTarjeta" width="150"/>
+						<s:Label text="Plan Pagos" paddingLeft="30" />
+						<components1:MyTextInput id="txtPlanPagos" width="60"/>
+					</s:HGroup>
+				</s:FormItem>
+				<s:FormItem label="Nº Autorización" width="100%">
+					<components1:MyTextInput id="txtAutorizacion" width="100%"/>
+				</s:FormItem>
 				<s:FormItem label="Caja">
 					<s:DropDownList id="ddlCaja" dataProvider="{CatalogoFactory.getInstance().cajas}" labelField="nombre" width="100%" selectedIndex="0"/>
 				</s:FormItem>
 				<s:FormItem label="Total">
 					<components1:MyTextInput id="txtTotal" text="@{documento.total}" width="240" textAlign="right" permitirNegativos="false" />
-
+					
 				</s:FormItem>
 			</s:Form>
 		</s:VGroup>
 		
-
+		
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
 				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" enabled="false"/>
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>
-
-
+	
+	
 </s:VGroup>

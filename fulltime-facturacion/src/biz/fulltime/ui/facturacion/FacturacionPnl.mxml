@@ -706,18 +706,14 @@
 
 			private function grabarFacturaOk(close:Boolean = false):void {
 				if (_documento.emitido || 
-					(!_documento.pendiente && (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR))) {
+					(!_documento.isPendiente() && (_documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_CLIENTE || _documento.comprobante.tipo == Comprobante.MOVIMIENTO_DE_STOCK_DE_PROVEEDOR))) {
 					
-					if (_documento.iva != _documento.getIva().setScale(4, MathContext.ROUND_UP).toString()) {
-						Alert.show("Los valores de 'Subtotal', 'Total' e 'IVA' no se puede modificar en documentos ya emitodos. \n" + "\nTotal = [Antes:" + _documento.total + "  Después:" + _documento.getTotalRedondeado().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nSubtotal = [" + _documento.subTotal + " Después:" + _documento.getSubTotal().setScale(4, MathContext.ROUND_UP).toString() + "]" + "\nIva = [" + _documento.iva + " Después:" + _documento.getIva().setScale(4, MathContext.ROUND_UP).toString() + "]" + "", "Información");
-					} else {
-						running = true;
+					running = true;
 
-						// Guardar la factura.
-						var remObj:RemoteObject = getNewRemoteObject();
-						remObj.addEventListener(ResultEvent.RESULT, resultGuardarDocumento);
-						remObj.guardarDocumento(_documento);
-					}
+					// Guardar la factura.
+					var remObj:RemoteObject = getNewRemoteObject();
+					remObj.addEventListener(ResultEvent.RESULT, resultGuardarDocumento);
+					remObj.guardarDocumento(_documento);
 
 				} else {
 					// Para los 80s y los 90s no hacemos controles ni de stock ni verificación de crédito del cliente.
@@ -742,11 +738,9 @@
 
 			protected function cmdGuardar_clickHandler(event:MouseEvent, close:Boolean = false):void {
 				emitiendo_documento = false;
-				
+
 				if (GeneralOptions.getInstance().loggedUser.esSupervisor()) {
-					//if (!_documento.usuIdAut) {
 					_documento.usuIdAut = GeneralOptions.getInstance().loggedUser.codigo;
-					//}
 					grabarFacturaOk(false);
 					return;
 				}
@@ -758,7 +752,8 @@
 					grabarFacturaOk(false);
 					return;
 				}
-				if ((_documento.cliente && _documento.cliente.categCliId == 'G')) {
+					
+				if (_documento.cliente && _documento.cliente.categCliId == 'G') {
 					obtenerClaveSupervisora(function(evt:ClaveSupervisoraEvent):void {
 							PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
 							helpWindow = null;
@@ -3623,7 +3618,7 @@
 			
 			public function handleFault(event:FaultEvent):void {
 				var message:String = (event.fault && event.fault.rootCause) 
-					? (event.fault.rootCause.cause ? event.fault.rootCause.cause.message : "") 
+					? (event.fault.rootCause.message ? event.fault.rootCause.message : "") 
 					: null;
 				if (!message) {
 					message = event.message.toString();
@@ -3912,7 +3907,7 @@
 						<s:Panel width="480" height="100%" title="Cuponeras" styleName="pnlInterno" visible="{(_documento.comprobante.codigo == '80' || _documento.comprobante.codigo == '81' || _documento.comprobante.codigo == '82' || _documento.comprobante.codigo == '84')}"
 								 includeInLayout="{(_documento.comprobante.codigo == '80' || _documento.comprobante.codigo == '81' || _documento.comprobante.codigo == '82' || _documento.comprobante.codigo == '84')}">
 							<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" gap="5" visible="{(_documento.artCuponera.length > 0)}"
-									  includeInLayout="{(_documento.artCuponera.length > 0)}" enabled="{_documento.pendiente == 'S'}">
+									  includeInLayout="{(_documento.artCuponera.length > 0)}" enabled="{_documento.isPendiente()}">
 								<s:VGroup>
 									<s:RadioButton id="rbFacturar" groupName="rbgCuponera" value="factura" label="Factura de afilado" selected="{!modoCuponera}"/>
 									<s:RadioButton id="rbCuponera" groupName="rbgCuponera" value="cuponera" label="Descarga cuponera" selected="{modoCuponera}" />
@@ -4077,19 +4072,19 @@
 			<s:Button id="cmdFinalizar" click="cmdFinalizar_clickHandler(event)" styleName="finishButton" label="Finalizar" toolTip="Finalizar documento"
 					  visible="{!_modoVisualizacion &amp;&amp; (_documento.comprobante.codigo == '98' || _documento.comprobante.codigo == '111' || _documento.comprobante.codigo == '124' || _documento.esCompra())}"
 					  includeInLayout="{!_modoVisualizacion &amp;&amp; (_documento.comprobante.codigo == '98'|| _documento.comprobante.codigo == '111' || _documento.comprobante.codigo == '124' || _documento.esCompra())}"
-					  enabled="{_documento.pendiente &amp;&amp; !_documento.nuevo}" focusEnabled="false" />
+					  enabled="{_documento.isPendiente() &amp;&amp; !_documento.nuevo}" focusEnabled="false" />
 
 			<s:Button id="cmdDuplicar" click="cmdDuplicar_clickHandler(event)" styleName="convertButton" label="Duplicar" toolTip="Duplicar documento" visible="{_documento.comprobante.codigo == '14'}"
-					  includeInLayout="{_documento.comprobante.codigo == '14'}" enabled="{!_documento.pendiente &amp;&amp; _documento.cliente &amp;&amp; !_modoVisualizacion}" />
+					  includeInLayout="{_documento.comprobante.codigo == '14'}" enabled="{!_documento.isPendiente() &amp;&amp; _documento.cliente &amp;&amp; !_modoVisualizacion}" />
 			<s:Button id="cmdMovimientoStock" click="cmdMovimientoStock_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir movimiento stock"
 					  enabled="{!_documento.nuevo &amp;&amp; _documento.cliente &amp;&amp; !_modoVisualizacion}"
-					  visible="{_documento.comprobante.tipo == 32 &amp;&amp; _documento.comprobante.codigo != '98' &amp;&amp; _documento.comprobante.codigo != '1' &amp;&amp;  _documento.pendiente &amp;&amp; hasConvertMS()}"
-					  includeInLayout="{_documento.comprobante.tipo == 32 &amp;&amp; _documento.comprobante.codigo != '98' &amp;&amp; _documento.comprobante.codigo != '1' &amp;&amp; _documento.pendiente}" />
+					  visible="{_documento.comprobante.tipo == 32 &amp;&amp; _documento.comprobante.codigo != '98' &amp;&amp; _documento.comprobante.codigo != '1' &amp;&amp;  _documento.isPendiente() &amp;&amp; hasConvertMS()}"
+					  includeInLayout="{_documento.comprobante.tipo == 32 &amp;&amp; _documento.comprobante.codigo != '98' &amp;&amp; _documento.comprobante.codigo != '1' &amp;&amp; _documento.isPendiente()}" />
 
 			<s:Button id="cmdConvertirSol" click="cmdConvertirSol_clickHandler(event)" styleName="convertButton" label="Convertir" toolTip="Converir solicitud"
 					  enabled="{!_convirtiendo &amp;&amp; !_documento.nuevo &amp;&amp; _documento.proveedor &amp;&amp; !_modoVisualizacion &amp;&amp; GeneralOptions.getInstance().loggedUser.permisoId != Usuario.USUARIO_TITO}"
-					  visible="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; _documento.pendiente)}"
-					  includeInLayout="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.pendiente &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; _documento.pendiente)}" />
+					  visible="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.isPendiente() &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; _documento.isPendiente())}"
+					  includeInLayout="{(_documento.comprobante.tipo == 31 &amp;&amp; _documento.isPendiente() &amp;&amp; _documento.comprobante.codigo != '111' &amp;&amp; _documento.comprobante.codigo != '124') || (_documento.comprobante.codigo == '122' &amp;&amp; _documento.isPendiente())}" />
 			
 			<s:Spacer width="5" />
 			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo documento" focusEnabled="false"

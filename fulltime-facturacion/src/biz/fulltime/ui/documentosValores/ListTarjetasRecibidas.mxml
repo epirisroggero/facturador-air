@@ -270,22 +270,22 @@
 
 			protected function cmdVer_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = "Ver cheque recibido";
+				window.title = "Ver tarjeta recibida";
 				window.width = 650;
-				window.height = 450;
+				window.height = 500;
 
 				window.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 						PopUpManager.removePopUp(window as IFlexDisplayObject);
 						window = null;
 					});
 
-				var frmChequeRecibido:FrmDocumentoRecibidoVer = new FrmDocumentoRecibidoVer();
-				var cheque:Documento = dgVinculos.selectedItem as Documento; 
-				frmChequeRecibido.cheque = cheque;
+				var frmTarjetaRecibida:FrmTarjetaRecibidaVer = new FrmTarjetaRecibidaVer();
+				var tarjeta:Documento = dgVinculos.selectedItem as Documento; 
+				frmTarjetaRecibida.tarjeta = tarjeta;
 				
-				window.addElement(frmChequeRecibido);
+				window.addElement(frmTarjetaRecibida);
 
-				frmChequeRecibido.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
+				frmTarjetaRecibida.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 						PopUpManager.removePopUp(window as IFlexDisplayObject);
 						window = null;
 					});
@@ -351,8 +351,9 @@
 		</fx:Component>
 
 		<s:ArrayList id="cols">
-			<s:GridColumn dataField="comprobante" headerText="COMPROBANTE" labelFunction="comprobante_cod_labelFunction" />
-			<s:GridColumn width="90" dataField="numero" headerText="SERIE y N°">
+			<s:GridColumn width="85" dataField="fechaStr" headerText="Fecha" labelFunction="fechaDoc_labelFunction"/>
+			<s:GridColumn dataField="comprobante" headerText="Comprobante" labelFunction="comprobante_cod_labelFunction" />
+			<s:GridColumn width="90" dataField="numero" headerText="Serie y Nº">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">
@@ -377,8 +378,10 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="85" dataField="titular" headerText="TITULAR" />
-			<s:GridColumn width="85" dataField="estado" headerText="ESTADO" >
+			<s:GridColumn width="100" headerText="Financiera" />
+			<s:GridColumn width="85" dataField="titular" headerText="Titular" />
+			<s:GridColumn width="85" dataField="tarjetaNro" headerText="Nº de Tarjeta" />
+			<s:GridColumn width="85" dataField="estado" headerText="Estado" >
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="left">
@@ -409,8 +412,8 @@
 				</s:itemRenderer>
 
 			</s:GridColumn>
-			<s:GridColumn width="60" dataField="moneda" headerText="MONEDA" labelFunction="moneda_labelFunction" />
-			<s:GridColumn width="75" dataField="total" headerText="TOTAL">
+			<s:GridColumn width="60" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
+			<s:GridColumn width="75" dataField="total" headerText="Total">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="right">

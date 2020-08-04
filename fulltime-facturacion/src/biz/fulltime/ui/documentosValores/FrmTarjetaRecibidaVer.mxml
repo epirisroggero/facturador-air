@@ -17,7 +17,7 @@
 						
 			private var _cliente:Cliente;
 			
-			private var _cheque:Documento;
+			private var _tarjeta:Documento;
 			
 						
 			public function codigoNombreLabelFunction(item:Object):String {
@@ -33,12 +33,12 @@
 			}
 			
 			[Bindable]
-			public function get cheque():Documento {
-				return _cheque;
+			public function get tarjeta():Documento {
+				return _tarjeta;
 			}
 			
-			public function set cheque(value:Documento):void {
-				_cheque = value;
+			public function set tarjeta(value:Documento):void {
+				_tarjeta = value;
 			}
 			
 			public function clienteLabelFunction(item:Object):String {
@@ -93,26 +93,26 @@
 		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2" />
 		
 	</fx:Declarations>
-	<s:Panel width="100%" height="100%" title="{cheque.comprobante.codigo}-{cheque.comprobante.nombre}"
+	<s:Panel width="100%" height="100%" title="{tarjeta.comprobante.codigo}-{tarjeta.comprobante.nombre}"
 			 backgroundAlpha="0.85" backgroundColor="0xfafafa">
 		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
 			<s:HGroup width="100%" paddingBottom="10" paddingLeft="20" paddingRight="20" paddingTop="10" gap="10">
 				<s:HGroup >
-					<s:Label fontSize="16" text="Serie: {cheque.serie}" />
+					<s:Label fontSize="16" text="Serie: {tarjeta.serie}" />
 				</s:HGroup>
 				<s:HGroup>
-					<s:Label fontSize="16" text="Número: {cheque.numero}" />
+					<s:Label fontSize="16" text="Número: {tarjeta.numero}" />
 				</s:HGroup>
 			</s:HGroup>
 			<s:HGroup width="100%" paddingBottom="10" paddingLeft="20" paddingRight="20" paddingTop="10" gap="10">
 				<s:HGroup>
-					<s:Label text="Vencimiento: {cheque.fechaStr}" />
+					<s:Label text="Fecha: {tarjeta.fechaStr}" />
 				</s:HGroup>
 				<s:HGroup>
-					<s:Label text="Emisión: {cheque.fechaEmisionStr}" />
+					<s:Label text="Emisión: {tarjeta.fechaEmisionStr}" />
 				</s:HGroup>
 				<s:HGroup>
-					<s:Label text="Moneda: {cheque.moneda.codigo} - {cheque.moneda.simbolo}" />
+					<s:Label text="Moneda: {tarjeta.moneda.codigo} - {tarjeta.moneda.simbolo}" />
 				</s:HGroup>
 			</s:HGroup>
 			
@@ -121,22 +121,32 @@
 					<s:FormLayout gap="-6" />
 				</s:layout>
 				<s:FormItem label="Concepto:">
-					<s:Label id="lblConcepto" text="{cheque.concepto}" verticalAlign="middle" paddingTop="5" />
+					<s:Label id="lblConcepto" text="{tarjeta.concepto}" verticalAlign="middle" paddingTop="5" />
 				</s:FormItem>
 				<s:FormItem label="Banco:">
-					<s:Label id="lblBanco" text="{getBanco(cheque.bancoIdDoc)}" verticalAlign="middle"/>
+					<s:Label id="lblBanco" text="{getBanco(tarjeta.bancoIdDoc)}" verticalAlign="middle"/>
 				</s:FormItem>
 				<s:FormItem label="Cliente:">
-					<s:Label id="lblCliente" text="{cheque.cliente.codigo} - {cheque.cliente.nombre}" verticalAlign="bottom"/>					
+					<s:Label id="lblCliente" text="{tarjeta.cliente.codigo} - {tarjeta.cliente.nombre}" verticalAlign="bottom"/>					
 				</s:FormItem>
 				<s:FormItem label="Titular:">
-					<s:Label id="lblTitular" text="{cheque.titular}"/>
+					<s:Label id="lblTitular" text="{tarjeta.titular}"/>
+				</s:FormItem>
+				<s:FormItem label="Nº Tarjeta:" width="100%">
+					<s:HGroup verticalAlign="middle">
+						<s:Label id="txtNroTarjeta" width="150"/>
+						<s:Label text="Plan Pagos:" paddingLeft="30" />
+						<s:Label id="txtPlanPagos" width="60"/>
+					</s:HGroup>
+				</s:FormItem>
+				<s:FormItem label="Nº Autorización:">
+					<s:Label text=""/>
 				</s:FormItem>
 				<s:FormItem label="Caja:">
-					<s:Label id="lblCaja" height="30" text="{getCaja(cheque.cajaId)}"/>
+					<s:Label id="lblCaja" height="30" text="{getCaja(tarjeta.cajaId)}"/>
 				</s:FormItem>
 				<s:FormItem label="Total:">
-					<s:Label id="lblTotal" fontWeight="bold" fontSize="16" text="{nf_Espanol_Espanol.format(cheque.total)}"/>
+					<s:Label id="lblTotal" fontWeight="bold" fontSize="16" text="{nf_Espanol_Espanol.format(tarjeta.total)}"/>
 				</s:FormItem>
 			</s:Form>
 		</s:VGroup>

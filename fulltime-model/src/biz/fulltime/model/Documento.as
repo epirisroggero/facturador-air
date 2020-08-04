@@ -222,6 +222,9 @@ public class Documento extends DocumentoBase {
 	public var docCenCostosId:String; 
 	
 	public var puntoVentaId:String; 
+	
+	public var tarjetaNro:String; 
+	
 
 	public function isPendiente():Boolean {
 		return pendiente == null || pendiente != "N";

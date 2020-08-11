@@ -225,6 +225,7 @@ public class Documento extends DocumentoBase {
 	
 	public var tarjetaNro:String; 
 	
+	public var notaCreditoFinanciera:Documento;
 
 	public function isPendiente():Boolean {
 		return pendiente == null || pendiente != "N";

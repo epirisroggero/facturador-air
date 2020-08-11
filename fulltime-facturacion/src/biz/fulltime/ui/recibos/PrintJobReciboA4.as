@@ -77,11 +77,15 @@ package biz.fulltime.ui.recibos {
 		
 		private var _documento:Documento;
 		
+		private var _notaCreditoFinanciera:Documento;
+		
 		private var pj:PrintJob;
 		
 		private var uiOpt:PrintJobOptions;
 		
 		private var sheet1:Sprite;
+		
+		private var sheet2:Sprite;
 		
 		private var _via:String = VIA_CLIENTE;
 		
@@ -93,9 +97,11 @@ package biz.fulltime.ui.recibos {
 		
 		private var loader:Loader = new Loader();
 		
+		private var loader2:Loader = new Loader();
+		
 		private var frame:Sprite = new Sprite();
 		
-		private var frame2:Sprite = new Sprite();		
+		private var frameNCF:Sprite = new Sprite();		
 		
 		
 		private var isEMail:Boolean = false;
@@ -109,6 +115,8 @@ package biz.fulltime.ui.recibos {
 		public var printNotasInterlineadas:Boolean = true;
 		
 		private var frameQR:Sprite = new Sprite();
+		
+		private var frameQR_NCF:Sprite = new Sprite();
 		
 		public var codigoQRLoader:Loader = new Loader();
 		
@@ -137,18 +145,10 @@ package biz.fulltime.ui.recibos {
 			var request:URLRequest = new URLRequest(url_factura);
 			loader.load(request);
 			
+			loader2.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandlerMail2);
+			loader2.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 		}
-		
-		private function completeHandlerMail(event:Event):void {
-			_via = VIA_CLIENTE;
-			
-			sheet1 = new Sprite();
-			if (_documento.codigoQR) {
-				loadCodigoQR();
-			} else {
-				createSheetMM();
-			}			
-		}
+				
 		
 		public function loadCodigoQR():void {
 			codigoQRLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onCodigoQRLoaderComplete);
@@ -171,16 +171,80 @@ package biz.fulltime.ui.recibos {
 			
 			createSheetMM();			
 		}
+		
+		public function loadCodigoQR_NCF():void {
+			codigoQRLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onCodigoQRLoaderComplete_NCF);
+			codigoQRLoader.loadBytes(_notaCreditoFinanciera.codigoQR);
+		}
+		
+		private function onCodigoQRLoaderComplete_NCF(event:Event):void {
+			var loaderQR:Loader = event.target.loader as Loader;
+			
+			var picture:Bitmap = Bitmap(loaderQR.content);
+			var bitmap:BitmapData = picture.bitmapData;
+			
+			var matrix:Matrix = new Matrix();
+			matrix.scale(1.0, 1.0);
+			
+			frameQR_NCF.graphics.beginBitmapFill(bitmap, matrix, false);
+			frameQR_NCF.graphics.lineStyle(1, 0xffffff);
+			frameQR_NCF.graphics.drawRect(0, 0, 148, 148);
+			frameQR_NCF.graphics.endFill();
+			
+			createSheets();			
+		}
+
 			
 		private function createSheetMM():void {
 			createSheet(sheet1);
+			if (_documento.notaCreditoFinanciera) {
+				_notaCreditoFinanciera = _documento.notaCreditoFinanciera;
+				
+				var request:URLRequest = new URLRequest(url_factura);
+				loader2.load(request);
+				
+			} else {
+				createSheets();
+			}
 			
+		}
+		
+		private function completeHandlerMail(event:Event):void {
+			_via = VIA_CLIENTE;
+			
+			sheet1 = new Sprite();
+			if (_documento.codigoQR) {
+				loadCodigoQR();
+			} else {
+				createSheetMM();
+			}			
+		}
+
+		private function completeHandlerMail2(event:Event):void {
+			sheet2 = new Sprite();
+			createSheetNCF(sheet2);
+			if (_notaCreditoFinanciera.codigoQR) {
+				loadCodigoQR_NCF();
+			} else {
+				createSheets();
+			}	
+		}
+		
+		private function createSheets():void {
 			if (_automatic) {
 				var imageBitmapData:BitmapData = ImageSnapshot.captureBitmapData(sheet1);
 				
 				var enc:JPGEncoder = new JPGEncoder();
 				var byteArray:ByteArray = enc.encode(imageBitmapData);
 				byteArray.position = 0;
+				
+				var byteArrayNCF:ByteArray =  null;
+				if (sheet2) {
+					var imageBitmapData2:BitmapData = ImageSnapshot.captureBitmapData(sheet2);
+					var enc2:JPGEncoder = new JPGEncoder();
+					byteArrayNCF = enc2.encode(imageBitmapData2);
+					byteArrayNCF.position = 0;
+				}
 				
 				var _selectedContact:Contacto = _documento.cliente.contacto;
 				
@@ -197,20 +261,28 @@ package biz.fulltime.ui.recibos {
 					hasEmail = true;
 				}
 				
-								
 				if (hasEmail) {
 					var pdf:PDF = new PDF(Orientation.PORTRAIT, Unit.POINT, true, Size.A4);
 					pdf.setDisplayMode(Display.FULL_PAGE, Layout.SINGLE_PAGE);
-					var newPage:Page;
+					var pageRbo:Page;
+					var pageNCF:Page;
 					
-					newPage = new Page(Orientation.LANDSCAPE, Unit.POINT, Size.A4);
-					pdf.addPage(newPage);			
+					pageRbo = new Page(Orientation.LANDSCAPE, Unit.POINT, Size.A4);
+					pdf.addPage(pageRbo);
 					
 					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, null, 10, 300, 0, 0, 0, 1, "Normal", new HTTPLink("http://alivepdf.bytearray.org/"));
 					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, null, 400, 10, 0, 0, 0, 1, "Normal", new HTTPLink("http://alivepdf.bytearray.org/"));
 					
-					var ba:ByteArray = pdf.save(Method.LOCAL);
+					if (byteArrayNCF) {
+						pageNCF = new Page(Orientation.LANDSCAPE, Unit.POINT, Size.A4);
+						pdf.addPage(pageNCF);
 
+						pdf.addImageStream(byteArrayNCF, ColorSpace.DEVICE_RGB, null, 10, 300, 0, 0, 0, 1, "Normal", new HTTPLink("http://alivepdf.bytearray.org/"));
+						pdf.addImageStream(byteArrayNCF, ColorSpace.DEVICE_RGB, null, 400, 10, 0, 0, 0, 1, "Normal", new HTTPLink("http://alivepdf.bytearray.org/"));
+					}
+					
+					var ba:ByteArray = pdf.save(Method.LOCAL);
+					
 					var remObj:RemoteObject = new RemoteObject();
 					remObj.destination = "CreatingRpc";
 					remObj.channelSet = ServerConfig.getInstance().channelSet;
@@ -256,6 +328,10 @@ package biz.fulltime.ui.recibos {
 				
 				emailPnl.asunto = "FULLTIME - " + comprobante2.toUpperCase();
 				emailPnl.takeSnapshot(sheet1);
+				
+				if (sheet2) {
+					emailPnl.takeSnapshot2(sheet2);
+				}
 				
 				emailPnl.addEventListener(CloseEvent.CLOSE, function():void {
 					PopUpManager.removePopUp(mailWindow);
@@ -391,6 +467,394 @@ package biz.fulltime.ui.recibos {
 				return b;
 			}
 			return "";
+		}
+		
+		private function createSheetNCF(sheet:Sprite):void {
+			var picture:Bitmap = Bitmap(loader2.content);
+			var bitmap:BitmapData = picture.bitmapData;
+			
+			var scale:Number = 698 / bitmap.width;
+			
+			var myBitmap:BitmapData = new BitmapData(loader2.width, loader2.height, false);
+			var matrix:Matrix = new Matrix();			
+			matrix.scale(scale, scale);
+			
+			frameNCF.graphics.beginBitmapFill(bitmap, matrix, false, true)
+			
+			frameNCF.graphics.lineStyle(1, 0xffffff);
+			frameNCF.graphics.drawRect(0, 0, 698, 987); //210mm, 297mm - 2480 x 3508
+			frameNCF.graphics.endFill();
+			
+			sheet.addChild(frameNCF);
+			
+			sheet.addChild(createText("R.U.T. 21 500256 0012", 
+				{x:400, y:45, width:250, height:25, fontSize:18, align:'rigth'}, false, true));
+			
+			// Agregar campos de la factura.				
+			// LEFT TOP
+			// ROW 1
+			var YY:Number = 208; 
+			frameNCF.graphics.lineStyle(1, 0x666666);
+			frameNCF.graphics.drawRect(50, YY, 200, 50);
+			frameNCF.graphics.drawRect(50, YY, 350, 50);
+			
+			sheet.addChild(createText("Gral. LUNA 1386/1390", 
+				{x:50, y:YY-90, width:250, height:20, fontSize:11, align:'left'}));
+			sheet.addChild(createText("Tels.: 2204 47 72 - Cel.: 099 68 15 86", 
+				{x:50, y:YY-70, width:250, height:20, fontSize:11, align:'left'}));
+			sheet.addChild(createText("Email: ventas@fulltimeuy.com - www.fulltime.com.uy", 
+				{x:50, y:YY-50, width:300, height:20, fontSize:11, align:'left'}));
+			sheet.addChild(createText("MONTEVIDEO - Uruguay", 
+				{x:50, y:YY-30, width:250, height:20, fontSize:11, align:'left'}));
+			
+			if (documento.esConsumoFinal()) {
+				sheet.addChild(createText("CONSUMO FINAL", 
+					{x:50, y:YY+5, width:200, height:25, fontSize:11, align:'center'}));
+				sheet.addChild(createText(_notaCreditoFinanciera.rut ? "CI " + _notaCreditoFinanciera.rut : "", 
+					{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}));
+			} else {
+				sheet.addChild(createText("RUC COMPRADOR", 
+					{x:50, y:YY+5, width:200, height:25, fontSize:11, align:'center'}));
+				if (_notaCreditoFinanciera.tipoDoc == "R") {
+					sheet.addChild(createText(_notaCreditoFinanciera.rut ? documento.rut : "", 
+						{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}));
+				} else { 
+					sheet.addChild(createText(_notaCreditoFinanciera.rut ? "CI " + documento.rut : "", 
+						{x:50, y:YY+25, width:200, height:25, fontSize:11, align:'center'}));
+				}
+			}
+			
+			sheet.addChild(createText("Vend.", 
+				{x:250, y:YY+5, width:150, height:25, fontSize:11, align:'center'}));
+			sheet.addChild(createText(_notaCreditoFinanciera.vendedor ? _notaCreditoFinanciera.vendedor.nombre : "DIRECTO", 
+				{x:250, y:YY+25, width:150, height:25, fontSize:10, align:'center'}));
+			
+			// ROW 2
+			YY+=50;
+			frameNCF.graphics.drawRect(50, YY, 75, 25);
+			frameNCF.graphics.drawRect(125, YY, 50, 25);
+			frameNCF.graphics.drawRect(175, YY, 225, 25);
+			
+			if (_notaCreditoFinanciera.razonSocial && _notaCreditoFinanciera.razonSocial != "") {
+				sheet.addChild(createText("CLIENTE", 
+					{x:55, y:YY+5, width:75, height:20, fontSize:11, align:'left'}));
+				if (_notaCreditoFinanciera.cliente) {				
+					sheet.addChild(createText(_notaCreditoFinanciera.cliente.codigo, 
+						{x:125, y:YY+5, width:50, height:20, fontSize:11, align:'center'}));
+				} else {
+					sheet.addChild(createText(_notaCreditoFinanciera.proveedor.codigo, 
+						{x:125, y:YY+5, width:50, height:25, fontSize:10, align:'center'}));
+				}
+				sheet.addChild(createText(_notaCreditoFinanciera.razonSocial, 
+					{x:175, y:YY+5, width:225, height:20, fontSize:10, align:'center'}));
+			} else {
+				if (_notaCreditoFinanciera.cliente) {				
+					sheet.addChild(createText("CLIENTE", 
+						{x:55, y:YY+5, width:75, height:20, fontSize:11, align:'left'}));
+					sheet.addChild(createText(_notaCreditoFinanciera.cliente.codigo, 
+						{x:125, y:YY+5, width:50, height:20, fontSize:11, align:'center'}));
+					sheet.addChild(createText(_notaCreditoFinanciera.cliente.nombre, 
+						{x:175, y:YY+5, width:225, height:20, fontSize:10, align:'center'}));
+					
+				} else if (_notaCreditoFinanciera.proveedor) {
+					sheet.addChild(createText("PROVEEDOR", 
+						{x:55, y:YY+5, width:75, height:25, fontSize:11, align:'left'}));
+					sheet.addChild(createText(_notaCreditoFinanciera.proveedor.codigo, 
+						{x:125, y:YY+5, width:50, height:25, fontSize:11, align:'center'}));
+					sheet.addChild(createText(_notaCreditoFinanciera.proveedor.nombre, 
+						{x:175, y:YY+5, width:225, height:25, fontSize:10, align:'center'}));
+				}
+			}
+			
+			// ROW 3
+			YY+=25;
+			frameNCF.graphics.drawRect(50, YY, 75, 45);
+			frameNCF.graphics.drawRect(50, YY, 350, 45);
+			
+			var localidadDepto:String = "";
+			if (_notaCreditoFinanciera.getLocalidad()) {
+				localidadDepto += _notaCreditoFinanciera.getLocalidad() + "  |  ";
+			}
+			if (_notaCreditoFinanciera.getDepartamento()) {
+				localidadDepto += _notaCreditoFinanciera.getDepartamento();
+			}			
+			
+			sheet.addChild(createText("DOMICILIO", 
+				{x:55, y:YY+15, width:75, height:20, fontSize:11, align:'left'}));
+			sheet.addChild(createText(_notaCreditoFinanciera.direccion ? _notaCreditoFinanciera.direccion : "No Tiene", 
+				{x:125, y:YY+5, width:275, height:45, fontSize:10, align:'center'}));
+			sheet.addChild(createText(localidadDepto.toUpperCase(), 
+				{x:125, y:YY+25, width:275, height:45, fontSize:10, align:'center'}));
+			
+			// ROW 4			
+			YY+=45; 
+			frameNCF.graphics.drawRect(50, YY, 75, 25);
+			frameNCF.graphics.drawRect(50, YY, 350, 25);
+			
+			sheet.addChild(createText("TELÉFONO", 
+				{x:55, y:YY+5, width:75, height:20, fontSize:11, align:'left'}));
+			sheet.addChild(createText(_notaCreditoFinanciera.telefono, 
+				{x:125, y:YY+5, width:275, height:20, fontSize:11, align:'center'}));
+			
+			// RIGTH TOP			
+			YY-=190; 
+			frameNCF.graphics.drawRect(420, YY, 230, 125);
+			frameNCF.graphics.drawRect(420, YY+50, 130, 75);
+			
+			YY+=5; 
+			sheet.addChild(createText(_notaCreditoFinanciera.CAEnom ? _notaCreditoFinanciera.CAEnom : _notaCreditoFinanciera.comprobante.nombre, 
+				{x:420, y:YY, width:230, height:25, fontSize:12, align:'center'}));
+			sheet.addChild(createText("Serie " + (_notaCreditoFinanciera.serie ? _notaCreditoFinanciera.serie.toUpperCase() : "") + " " + (_notaCreditoFinanciera.numero ? _notaCreditoFinanciera.numero : ""), 
+				{x:420, y:YY+20, width:230, height:25, fontSize:12, align:'center'}, false, true));
+			
+			YY+=45; 			
+			frameNCF.graphics.drawRect(420, YY, 230, 25);
+			frameNCF.graphics.drawRect(420, YY+25, 230, 25);
+			frameNCF.graphics.drawRect(420, YY+50, 230, 25);
+			
+			sheet.addChild(createText("COMPROBANTE TIPO", 
+				{x:425, y:YY+5, width:120, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("MONEDA", 
+				{x:425, y:YY+30, width:120, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("FECHA", 
+				{x:425, y:YY+55, width:120, height:25, fontSize:11, align:'left'}, false, true));
+			
+			frameNCF.graphics.drawRect(420, YY+90, 130, 75);
+			frameNCF.graphics.drawRect(420, YY+90, 230, 25);
+			frameNCF.graphics.drawRect(420, YY+115, 230, 25);
+			frameNCF.graphics.drawRect(420, YY+140, 230, 25);
+			
+			sheet.addChild(createText("AGENCIA", 
+				{x:425, y:YY+95, width:120, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("ENC. DE CTA.", 
+				{x:425, y:YY+120, width:120, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("TIPO ENTREGA", 
+				{x:425, y:YY+145, width:120, height:25, fontSize:11, align:'left'}));
+			
+			
+			if (_notaCreditoFinanciera.CAEnom) {
+				if (_notaCreditoFinanciera.comprobante.isCredito()) {
+					if (_notaCreditoFinanciera.comprobante.codigo == "7" || _notaCreditoFinanciera.comprobante.codigo == "8" || _notaCreditoFinanciera.comprobante.codigo == "9") {
+						sheet.addChild(createText(_notaCreditoFinanciera.comprobante.nombre, 
+							{x:550, y:YY+5, width:100, height:18, fontSize:11, align:'center'}));
+					} else {
+						sheet.addChild(createText("Crédito", 
+							{x:550, y:YY+5, width:100, height:18, fontSize:11, align:'center'}));
+					}
+					
+				} else {
+					sheet.addChild(createText("Contado", 
+						{x:550, y:YY+5, width:100, height:18, fontSize:11, align:'center'}));
+				}
+			}
+			
+			var dtf:DateTimeFormatter = new DateTimeFormatter();
+			dtf.dateTimePattern = "dd-MM-yyyy";
+			
+			var _comisiones:String = "";
+			var first:Boolean = true;
+			for each (var participacion:ParticipacionVendedor in _notaCreditoFinanciera.comisiones.participaciones) {
+				if (participacion.vendedor) {
+					var code:String = "";
+					if (participacion.vendedor.codigo.length == 1) {
+						code = "0" + participacion.vendedor.codigo;
+					} else if (participacion.vendedor.codigo.length == 2) {
+						code = participacion.vendedor.codigo;
+					} else {
+						code = participacion.vendedor.codigo.substring(participacion.vendedor.codigo.length - 2, participacion.vendedor.codigo.length);
+					}
+					_comisiones += (first ? "" : "-") + code + (participacion.porcentaje < 10 ? "0" + participacion.porcentaje : participacion.porcentaje);
+					first = false;
+				}
+			}
+			
+			YY+=30;
+			
+			sheet.addChild(createText(_notaCreditoFinanciera.moneda.nombre,  
+				{x:550, y:YY, width:100, height:18, fontSize:11, align:'center'}));
+			sheet.addChild(createText(dtf.format(_notaCreditoFinanciera.fechaDoc), 
+				{x:550, y:YY+25, width:100, height:18, fontSize:11, align:'center'}, false, true));
+			
+			sheet.addChild(createText(_notaCreditoFinanciera.agencia, 
+				{x:550, y:YY+65, width:100, height:18, fontSize:11, align:'center'}));
+			sheet.addChild(createText(_comisiones, 
+				{x:550, y:YY+90, width:100, height:18, fontSize:11, align:'center'}));
+			sheet.addChild(createText(_notaCreditoFinanciera.entrega ? _notaCreditoFinanciera.entrega.codigo : "", 
+				{x:550, y:YY+115, width:100, height:18, fontSize:11, align:'center'}));
+			
+			var simbolo:String = _notaCreditoFinanciera.moneda.simbolo;
+			var mda:String = _notaCreditoFinanciera.moneda.mndAbrevia;
+			
+			var nf:NumberFormatter = new NumberFormatter();
+			nf.setStyle("locale", "es_ES");
+			nf.trailingZeros = true;
+			nf.fractionalDigits = 2;
+			
+			var nf2:NumberFormatter = new NumberFormatter();
+			nf2.setStyle("locale", "es_ES");
+			nf2.trailingZeros = false;
+			nf2.fractionalDigits = 2;
+			
+			var row:Number = 0;
+			var descuento:int = 0;
+			
+			var l:LineaDocumento = null;
+			
+			var XX:int = 50;
+			YY += 160;
+			
+			sheet.addChild(createText("Códigos",  
+				{x:50, y:YY, width:100, height:18, fontSize:11, align:'left'}, true, true));
+			sheet.addChild(createText("Detalle",  
+				{x:150, y:YY, width:250, height:18, fontSize:11, align:'left'}, true, true));
+			sheet.addChild(createText("Cant.",  
+				{x:400, y:YY, width:50, height:18, fontSize:11, align:'rigth'}, true, true));
+			sheet.addChild(createText("Precio",  
+				{x:450, y:YY, width:60, height:18, fontSize:11, align:'rigth'}, true, true));
+			sheet.addChild(createText("Desc.",  
+				{x:510, y:YY, width:60, height:18, fontSize:11, align:'center'}, true, true));
+			sheet.addChild(createText("Total",  
+				{x:570, y:YY, width:80, height:18, fontSize:11, align:'rigth'}, true, true));
+			
+			YY += 25;
+			
+			for each (l in _notaCreditoFinanciera.lineas.lineas) {
+				XX=50;
+				if (_via == "COBRANZA") {
+					sheet.addChild(createText(disguise(l.getPorcentajeUtilidad()), {x:XX - 48, y:YY + 18 * row, width:48, height:16, fontSize:8, align:'left'})); // % de utilidad. Solo Vía Cobranza.
+				}
+				sheet.addChild(createText(l.articulo ? l.articulo.codigo : "", {x:XX, y:YY + 18 * row, width:100, height:16, fontSize:10, align:'left'}));
+				
+				XX+=100;
+				sheet.addChild(createText(l.concepto, {x:XX, y:YY + 18 * row, width:250, height:16, fontSize:10, align:'left'}));
+				
+				XX+=250;
+				if (l.getCantidad() != BigDecimal.ZERO) {
+					sheet.addChild(createText(nf2.format(l.getCantidad().toString()), {x:XX, y:YY + 18 * row, width:50, height:16, fontSize:10, align:'rigth'}));
+				} 
+				
+				XX+=50;
+				sheet.addChild(createText(nf.format(l.getPrecio().toString()), {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'rigth'}));
+				
+				XX+=60;
+				descuento = l.getDescuento().setScale(0, MathContext.ROUND_DOWN).intValueExact();
+				if (descuento > 0) {
+					sheet.addChild(createText(descuento + "%", {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'center'}));
+				} else {
+					sheet.addChild(createText("", {x:XX, y:YY + 18 * row, width:60, height:16, fontSize:10, align:'center'}));
+				}
+				XX+=60;
+				sheet.addChild(createText(nf.format(l.getSubTotal().toString()), {x:XX, y:YY + 18 * row, width:80, height:16, fontSize:10, align:'rigth'}));
+				
+				row++;
+				XX=50;
+				if (l.notas && printNotasInterlineadas) {
+					var notas:String = l.notas;
+					if (notas) {
+						notas = nl2br(l.notas);
+					}
+					sheet.addChild(createText(notas, {x:XX, y:YY + 18 * row, width:564, height:16, fontSize:10, align:'left'}));
+					row++;
+				}
+			}
+			
+			var byteArray:ByteArray = _notaCreditoFinanciera.codigoQR;
+			if (byteArray) {
+				frameQR_NCF.x = 44;
+				frameQR_NCF.y = 757;
+				
+				sheet.addChild(frameQR_NCF);
+			}
+			
+			if (_notaCreditoFinanciera.CAEnro) {
+				var XX_CAE:int = 187;
+				var YY_CAE:int = 770;
+				sheet.addChild(createText("Código seguridad: " + _notaCreditoFinanciera.codSeguridadCFE, 
+					{x:XX_CAE, y:YY_CAE, width:200, height:18, fontSize:10, align:'left'}));
+				sheet.addChild(createText("Res. 2939/2016 - IVA al día", 
+					{x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:200, height:18, fontSize:10, align:'left'}));
+				sheet.addChild(createText("Puede verificar comprobante en", 
+					{x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:200, height:18, fontSize:10, align:'left'}));
+				if (!_notaCreditoFinanciera.esConsumoFinal()) {
+					sheet.addChild(createText("www.efactura.dgi.gub.uy", 
+						{x:XX_CAE, y:YY_CAE = YY_CAE + 16, width:200, height:18, fontSize:10, align:'left'}));
+				} else {
+					sheet.addChild(createText("www.efactura.info", 
+						{x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:126, height:18, fontSize:10, align:'left'}));
+				}
+				sheet.addChild(createText("Nro CAE: " + _notaCreditoFinanciera.CAEnro, 
+					{x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:200, height:18, fontSize:10, align:'left'}));
+				sheet.addChild(createText("Rango: " + _notaCreditoFinanciera.CAEdesde + " - " + _notaCreditoFinanciera.CAEhasta + "  Serie: " + _notaCreditoFinanciera.CAEserie, 
+					{x:XX_CAE, y:YY_CAE = YY_CAE + 20, width:200, height:18, fontSize:10, align:'left'}));
+			}
+			
+			XX=420;
+			YY=725;
+			
+			frameNCF.graphics.drawRect(XX, YY, 230, 50);
+			frameNCF.graphics.drawRect(XX, YY+60, 230, 30);
+			
+			XX+=12;
+			YY+=5;
+			sheet.addChild(createText("SUBTOTAL:",  
+				{x:XX, y:YY, width:80, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("IVA:",  
+				{x:XX, y:YY+25, width:80, height:25, fontSize:11, align:'left'}));
+			sheet.addChild(createText("TOTAL:",  
+				{x:XX, y:YY+60, width:80, height:25, fontSize:14, align:'left'}, false, true));
+			
+			sheet.addChild(createText(simbolo + " " + nf.format(_notaCreditoFinanciera.subTotal), 
+				{x:XX+80, y:YY, width:130, height:25, fontSize:11, align:'rigth'}));
+			sheet.addChild(createText(simbolo + " " + nf.format(_notaCreditoFinanciera.iva), 
+				{x:XX+80, y:YY+25, width:130, height:25, fontSize:11, align:'rigth'}));
+			sheet.addChild(createText(simbolo + " " + nf.format(_notaCreditoFinanciera.total), 
+				{x:XX+80, y:YY+60, width:130, height:25, fontSize:14, align:'rigth'}, false, true));
+			
+			
+			if (_notaCreditoFinanciera.CAEvencimiento) {
+				frameNCF.graphics.drawRect(420, YY + 145, 230, 30);
+				sheet.addChild(createText("Fecha de Vencimiento " + dtf.format(_notaCreditoFinanciera.CAEvencimiento), 
+					{x:425, y:YY+150, width:220, height:20, fontSize:12, align:'center'}, false, true));
+			}
+			sheet.addChild(createText("VÍA " + _via.toUpperCase() , 
+				{x:XX+85, y:YY+115, width:130, height:25, fontSize:11, align:'rigth'}, false, false));
+			
+			XX=50;
+			YY=915;
+			
+			frameNCF.graphics.drawRect(XX, YY, 600, 47);
+			
+			sheet.addChild(createText("ADENDA:", 
+				{x:XX+5, y:YY+5, width:60, height:32, fontSize:11, align:'left'}));
+			sheet.addChild(createText((documento.notas != null ? StringUtil.trim(documento.notas) : ""), 
+				{x:XX+60, y:YY+5, width:510, height:40, fontSize:10, align:'left'}));
+			
+			if (_via == "COBRANZA") {
+				sheet.addChild(createText(disguise(documento.getUtilidadEstimada()), 
+					{x:10, y:700, width:40, height:14, fontSize:10, align:'left'}));
+			}
+			
+			//PLAN de PAGO
+			if (documento.comprobante.isCredito()) {
+				sheet.addChild(createText("Plan de pago".toUpperCase(), 
+					{x:XX, y:725, width:100, height:16, fontSize:10, align:'left'}, true, false));
+				if (documento.planPagos) {
+					sheet.addChild(createText(documento.planPagos.nombre, 
+						{x:XX+100, y:725, width:175, height:16, fontSize:10, align:'left'}, true, false));
+				} else if (documento.condicion) {
+					sheet.addChild(createText(documento.condicion.nombre, 
+						{x:XX+100, y:725, width:175, height:16, fontSize:10, align:'left'}, true, false));
+				}
+				
+				if (documento.comprobante.codigo == "8" || documento.comprobante.codigo == "9") {
+					XX = 47; 
+					YY = 700;
+					
+					sheet.addChild(createText("BONIFICACIÓN POR CUMPLIMIENTO: Plazo acordado 36%, vencido 30 días 20%, vencido 60 días Neto",  
+						{x:XX, y:YY, width:550, height:16, fontSize:9, align:'left'}, false, true));
+				}
+			}
+			
 		}
 		
 		private function createSheet(sheet:Sprite):void {
@@ -581,8 +1045,8 @@ package biz.fulltime.ui.recibos {
 			
 			var tieneVinculos:Boolean = false;
 			
-			for each (var v:VinculoDocumentos in documento.facturasVinculadas) {
-				if (!v.factura || !v.factura.comprobante) {
+			for each (var v1:VinculoDocumentos in documento.facturasVinculadas) {
+				if (!v1.factura || !v1.factura.comprobante) {
 					continue;
 				} else {
 					tieneVinculos = true;

@@ -79,7 +79,7 @@
     <classEntry path="biz.fulltime.event.ClaveSupervisoraEvent"/>
     <classEntry path="biz.fulltime.ui.forms.FrmLineasAuditoriaDoc"/>
     <classEntry path="biz.fulltime.ui.expediciones.renderers.StateRenderer"/>
-    <classEntry path="biz.fulltime.ui.facturacion.convertir.ProcesoTorneria"/>
+    <classEntry path="biz.fulltime.ui.facturacion.convertir.ProcesoNeumatica"/>
     <classEntry path="biz.fulltime.ui.crud.fanfold.FrmFanfold"/>
     <classEntry path="biz.fulltime.ui.facturacion.FrmActualizarPrecios"/>
     <classEntry path="biz.fulltime.ui.personas.ListadoFacturasPanel"/>
@@ -94,7 +94,6 @@
     <classEntry path="biz.fulltime.ui.documentosValores.FrmDocumentosValores"/>
     <classEntry path="biz.fulltime.event.ListadoFacturasEvent"/>
     <classEntry path="biz.fulltime.ui.documentosValores.FrmDocumentoRecibido"/>
-    <classEntry path="biz.fulltime.ui.documentosValores.FrmTarjetaRecibida"/>
     <classEntry path="biz.fulltime.ui.documentosValores.ListDocumentosValores"/>
     <classEntry path="biz.fulltime.ui.efactura.FrmEFactura"/>
     <classEntry path="biz.fulltime.ui.facturacion.FrmDatosRequeridos"/>

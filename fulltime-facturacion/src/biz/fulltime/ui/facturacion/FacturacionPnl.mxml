@@ -631,7 +631,8 @@
 			public function resultPrecios1(event:ResultEvent):void {
 				resultPrecios = event.result as ArrayCollection;	
 				if (resultPrecios != null && resultPrecios.length > 0) {
-					var alert:Alert = Alert.show("¿Desea actualizar los precios?", "Los precios han cambiado", Alert.YES | Alert.NO, this, actualizarClickHandler, exclamationIcon);
+					var alert:Alert = Alert.show("¿Desea actualizar los precios?", "Los precios han cambiado", 
+						Alert.YES | Alert.NO, this, actualizarClickHandler, exclamationIcon);
 					alert.width = 400;
 					alert.height = 160;
 				}
@@ -1919,7 +1920,7 @@
 				}
 			}
 
-			public function showPopupMessage() {
+			public function showPopupMessage():void {
 		        customPopup = new ErrorPanel();
 		        customPopup.cornerRadius = 10;
 		        customPopup.backgroundAlpha = .95;
@@ -3157,7 +3158,10 @@
 				proveedorRemObj.addEventListener(FaultEvent.FAULT, function handleFault(e:FaultEvent):void {
 						Alert.show(e.fault.faultString, "Error", 4, null, null);
 					});
-				proveedorRemObj.findCatalogEntity("Proveedor", doc.proveedor.codigo);
+				
+				if (doc.proveedor && doc.proveedor.codigo) {
+					proveedorRemObj.findCatalogEntity("Proveedor", doc.proveedor.codigo);
+				}
 
 			}
 

@@ -264,7 +264,8 @@
 			}
 
 			public function takeSnapshot2(source:IBitmapDrawable):void {
-				var image:ImageSnapshot = ImageSnapshot.captureImage(source, 0, null, false);
+				var encoder:mx.graphics.codec.JPEGEncoder = new mx.graphics.codec.JPEGEncoder(100.0);
+				var image:ImageSnapshot = ImageSnapshot.captureImage(source, 0, encoder, false);
 				byteArray2 = image.data;
 			}
 
@@ -298,7 +299,7 @@
 			}
 
 			public function dropDownLabelFunction(item:Object):String {
-				var string:String = item.codigo + " - " + item.nombre; // + "-[" + item.email + "]";
+				var string:String = item.codigo + " - " + item.nombre;
 				var searchStr:String = autocomplete.searchText;
 				var returnStr:String = StringUtils.highlightMatch(string, searchStr);
 

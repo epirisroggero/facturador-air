@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:Panel xmlns:classes="com.hillelcoren.components.autoComplete.classes.*" xmlns:componentes="componentes.*" xmlns:components="biz.fulltime.ui.components.*" xmlns:components1="components.*"
-		 xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:loader="biz.fulltime.util.loader.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:recibocion="biz.fulltime.ui.recibocion.*"
-		 xmlns:renderers="biz.fulltime.ui.renderers.*" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:util="biz.fulltime.util.*"
-		 width="100%" height="100%" backgroundAlpha="0.85" backgroundColor="0xfafafa" creationComplete="onCreationComplete(event)" initialize="initializeHandler(event)" enabled="{!running}">
+<s:Panel xmlns:classes="com.hillelcoren.components.autoComplete.classes.*"
+		 xmlns:componentes="componentes.*"
+		 xmlns:components="biz.fulltime.ui.components.*"
+		 xmlns:components1="components.*"
+		 xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:loader="biz.fulltime.util.loader.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:recibocion="biz.fulltime.ui.recibocion.*"
+		 xmlns:renderers="biz.fulltime.ui.renderers.*"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:util="biz.fulltime.util.*"
+		 width="100%" height="100%" backgroundAlpha="0.85" backgroundColor="0xfafafa" creationComplete="onCreationComplete(event)" enabled="{!running}"
+		 initialize="initializeHandler(event)">
 
 	<fx:Script>
 		<![CDATA[
@@ -145,8 +154,6 @@
 
 			[Bindable]
 			private var currentLine:VinculoDocumentos;
-
-			private var emitiendo_recibo:Boolean = false;
 
 			private var creando_nuevo:Boolean = false; 
 
@@ -314,7 +321,7 @@
 						actualizarTotales(netoTotal, montoTotal, desctoTotal, rentaTotal);
 					} 
 					
-					// Ponerle el titulo del recibo					
+					// Ponerle el título del recibo					
 					title = _recibo.comprobante.nombre.toUpperCase();
 
 					// Actualizar campo de cotizacion comercial.
@@ -407,20 +414,7 @@
 			}
 
 			private function resultModify(event:ResultEvent):void {
-				if (emitiendo_recibo) {
-					recibo = event.result as Documento;
-					
-					// Emitir recibo si este no esta emitido
-					if (!recibo.emitido) {
-						fireEvents = false;
-						recibo.emitidoPor = GeneralOptions.getInstance().loggedUser.codigo;
-						fireEvents = true;
-						
-						running = true;
-						remObjEmitir.emitir(recibo, "");
-					}
-					
-				} else if (creando_nuevo) {
+				if (creando_nuevo) {
 					creando_nuevo = false;
 					tieneCambios = false;
 					running = false;
@@ -452,21 +446,7 @@
 					return;
 				}
 				
-				/*
-				var aux:ArrayCollection = new ArrayCollection();
-				var facturasVinculadas:ArrayCollection = _recibo.facturasVinculadas;
-				for each (var vinculo:VinculoDocumentos in facturasVinculadas) {
-					if (new BigDecimal(vinculo.monto).compareTo(new BigDecimal(vinculo.factura.saldo)) > 0) {
-						alert = Alert.show("La factura vinculada '" + vinculo.factura.serie + vinculo.factura.numero + "' no es correcta. Monto a cancelar es mayor al saldo pendiente. (" + vinculo.monto + ">" + vinculo.factura.saldo + ")", "Error");
-						alert.width = 400;
-						alert.height = 200;
-						
-						return;
-					}
-				}*/
-
 				var monto:String = "";
-				
 				try {
 					var valor:BigDecimal = new BigDecimal(_recibo.docRecNeto);
 					if (valor.compareTo(BigDecimal.ZERO) <= 0) {
@@ -533,14 +513,6 @@
 			private function resultGuardarRecibo(event:ResultEvent):void {
 				recibo = event.result as Documento;
 				
-				if (emitiendo_recibo) {
-					running = true;					
-					if (!recibo.emitido) {
-						recibo.emitidoPor = GeneralOptions.getInstance().loggedUser.codigo;
-						remObjEmitir.emitir(recibo, "");
-					}
-					return;
-				}
 				error = new ErrorPanel();
 				error.cornerRadius = 10;
 				error.backgroundAlpha = .95;
@@ -716,7 +688,7 @@
 				_recibo.cuotasDocumento.cuotas = new ArrayCollection();
 				_recibo.lineas.lineas = new ArrayCollection();
 				
-				// Agregar linea en tabla de pagos
+				// Agregar línea en tabla de pagos
 				if (_recibo.docId) {
 					_recibo.establecerFormaPago();				
 				}				
@@ -736,7 +708,7 @@
 				}
 				_recibo.facturasVinculadas = aux;
 
-				// guardar errores para auditoría
+				// Guardar errores para auditoría
 				if (_recibo.nuevo) {
 					remObjSave.altaRecibo(_recibo, auditoria);
 				} else {
@@ -782,7 +754,8 @@
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				if (tieneCambios && _recibo.permisosDocumentoUsuario.edicion && !_modoVisualizacion) {
-					var alert:Alert = Alert.show("El recibo ha sido modificado.\n¿Desea guardar los cambios?", "Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
+					var alert:Alert = Alert.show("El recibo ha sido modificado.\n¿Desea guardar los cambios?", 
+						"Guardar", Alert.YES + Alert.NO + Alert.CANCEL, null, confirmCloseHandler, iconSymbol);
 					alert.width = 400;
 					alert.height = 200;
 				} else {
@@ -853,7 +826,8 @@
 			}
 
 			protected function cmdBorrar_clickHandler(event:MouseEvent):void {
-				var alert:Alert = Alert.show("¿Esta seguro de BORRAR el recibo?", "Borrar recibo", Alert.YES | Alert.NO, this, alertBorrarClickHandler, mediaIcon);
+				var alert:Alert = Alert.show("¿Esta seguro de BORRAR el recibo?", "Borrar recibo", 
+					Alert.YES | Alert.NO, this, alertBorrarClickHandler, mediaIcon);
 				alert.width = 400;
 				alert.height = 200;
 			}
@@ -1275,7 +1249,8 @@
 					var totalMdaVinculos:BigDecimal = netoTotal.add(desctoTotal);
 					
 					recibo.descuentos = desctoTotal.setScale(presicion, MathContext.ROUND_HALF_EVEN).toString();
-					recibo.descuentosPorc = totalMdaVinculos.numberValue() > 0 ? desctoTotal.multiply(Maths.ONE_HUNDRED).divideRound(totalMdaVinculos, MathContext.ROUND_HALF_EVEN).toString() : "0.00";
+					recibo.descuentosPorc = totalMdaVinculos.numberValue() > 0 ? desctoTotal.multiply(Maths.ONE_HUNDRED)
+						.divideRound(totalMdaVinculos, MathContext.ROUND_HALF_EVEN).toString() : "0.00";
 					recibo.total = montoTotal.setScale(presicion, MathContext.ROUND_HALF_EVEN).toString();
 
 				} else {
@@ -1314,10 +1289,12 @@
 				}
 				
 				if (monedaRecibo.codigo != monedaVinculos.codigo) {
-					lblSaldoPendiente.text = "Saldo pendiente " + (monedaVinculos ? monedaVinculos.simbolo + " " : "") + nf_Espanol_Espanol.format(saldoPendiente.numberValue())
+					lblSaldoPendiente.text = "Saldo pendiente " + (monedaVinculos ? monedaVinculos.simbolo + " " : "") 
+						+ nf_Espanol_Espanol.format(saldoPendiente.numberValue())
 						+ " (" + monedaRecibo.simbolo + " " + nf_Espanol_Espanol.format(pendienteMdaRecibo.numberValue()) + ")";
 				} else {
-					lblSaldoPendiente.text = "Saldo pendiente " + (monedaVinculos ? monedaVinculos.simbolo + " " : "") + nf_Espanol_Espanol.format(saldoPendiente.numberValue());
+					lblSaldoPendiente.text = "Saldo pendiente " + (monedaVinculos ? monedaVinculos.simbolo + " " : "") 
+						+ nf_Espanol_Espanol.format(saldoPendiente.numberValue());
 				}
 				
 				lblMontoTotal.text = buffer;
@@ -1379,7 +1356,11 @@
 					
 					event.preventDefault();
 					
-				} else if ((event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || (event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || (event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9) || event.keyCode == Keyboard.NUMPAD_DECIMAL || event.keyCode == Keyboard.PERIOD) {
+				} else if ((event.keyCode >= Keyboard.A && event.keyCode <= Keyboard.Z) || 
+						(event.keyCode >= Keyboard.NUMBER_0 && event.keyCode <= Keyboard.NUMBER_9) || 
+						(event.keyCode >= Keyboard.NUMPAD_0 && event.keyCode <= Keyboard.NUMPAD_9) || 
+						event.keyCode == Keyboard.NUMPAD_DECIMAL || event.keyCode == Keyboard.PERIOD) {
+					
 					if ((dgVinculos.columns.getItemAt(cellPos.columnIndex) as GridColumn).editable) {
 						dgVinculos.startItemEditorSession(cellPos.rowIndex, cellPos.columnIndex);
 					}
@@ -1454,14 +1435,11 @@
 			}
 
 			protected function cmdEmitir_clickHandler(event:MouseEvent):void {
-				emitiendo_recibo = true;
-				
-				guardarRecibo();
+				running = true;
+				remObjEmitir.emitirRecibo(recibo);
 			}
 
 			private function resultEmitir(event:ResultEvent):void {
-				emitiendo_recibo = false;
-				
 				recibo = event.result as Documento;
 			}
 			
@@ -1645,7 +1623,7 @@
 				abrirNotaCreditoFinanciera(docVin);
 			}
 			
-			private function abrirNotaCreditoFinanciera(doc:Documento):void {
+			private function abrirNotaCreditoFinanciera(doc:Documento, reload:Boolean = true):void {
 				var facWindow:TitleWindow = new TitleWindow();
 				facWindow.title = "Nota de crédito financiera";
 				facWindow.width = 1120;
@@ -1668,7 +1646,10 @@
 					PopUpManager.removePopUp(facWindow as IFlexDisplayObject);
 					
 					//TODO: Volver a cargar el documento
-					reloadDocumento(_recibo.docId);
+					if (reload) {
+						reloadDocumento(_recibo.docId);
+					}
+					
 				});
 				
 				PopUpManager.addPopUp(facWindow, DisplayObject(FlexGlobals.topLevelApplication), true);
@@ -1779,8 +1760,13 @@
 			}
 			
 			protected function cmdAbrirNotaCredito_clickHandler(event:MouseEvent):void {
-				dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, recibo.processId));
-			}
+				if (!recibo.notaCreditoFinanciera) {
+					dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, recibo.processId));
+					
+				} else {
+					abrirNotaCreditoFinanciera(recibo.notaCreditoFinanciera, false);
+				}
+			}			
 			
 			protected function cmdDocumentos_clickHandler(event:MouseEvent):void {
 				var facPendWindow:TitleWindow = new TitleWindow();
@@ -1934,14 +1920,12 @@
 			}
 			
 			protected function cmdEMail_clickHandler(event:MouseEvent):void {
-				var precibo:PrintJobReciboA4= new PrintJobReciboA4(false);
-				precibo.documento = this._recibo;
-				precibo.createEmailImage();
+				var pjRecibo:PrintJobReciboA4= new PrintJobReciboA4(false);
+				pjRecibo.documento = this._recibo;
+				pjRecibo.createEmailImage();
 			}
 			
 			protected function cmdActualizar_clickHandler(event:MouseEvent):void {
-				// Emitir Documento
-				
 				var remObjActualizar:RemoteObject = getNewRemoteObject();
 				remObjActualizar.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
 					Alert.show("Actualización finalizada");
@@ -1980,7 +1964,6 @@
 				}				
 				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
 				
-				emitiendo_recibo = false;
 				running = false;
 				creando_nuevo = false
 				
@@ -1988,146 +1971,161 @@
 				currentState = "default";
 			}
 			
-
-			
 		]]>
 
 	</fx:Script>
 
 	<fx:Declarations>
 		<fx:Component id="dropDownItemRenderer">
-			<renderers:CodigoNombreItemRenderer />
+			<renderers:CodigoNombreItemRenderer/>
 		</fx:Component>
 
-		<util:RutValidator id="rut_stringValidator" source="{txtRUT}" required="false" property="text" minLength="12" maxLength="12" tooShortError="Número de RUT inválido." checkRut="true" />
-		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="2" locale="es_ES" />
+		<util:RutValidator id="rut_stringValidator" checkRut="true" maxLength="12" minLength="12" property="text" required="false" source="{txtRUT}"
+						   tooShortError="Número de RUT inválido."/>
+		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="2" locale="es_ES"/>
 		
 	</fx:Declarations>
 
 	<s:states>
-		<s:State name="default" />
-		<s:State name="cargando" />
+		<s:State name="default"/>
+		<s:State name="cargando"/>
 	</s:states>
 
-	<s:VGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" includeIn="cargando">
-		<loader:LoadComponent />
+	<s:VGroup includeIn="cargando" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+		<loader:LoadComponent/>
 	</s:VGroup>
 
-	<s:Group width="100%" height="100%" excludeFrom="cargando">		
-		<s:Rect x="408" y="7" width="186" height="36" visible="{recibo.emitido}">
+	<s:Group excludeFrom="cargando" width="100%" height="100%">		
+		<s:Rect visible="{recibo.emitido}" x="408" y="7" width="186" height="36">
 			<s:fill>
 				<s:LinearGradient rotation="90">
-					<s:GradientEntry color="0xFFFFFF" ratio="0.2" alpha="0.23" />
-					<s:GradientEntry color="0xFFFFFF" ratio="0.48" alpha="0.32" />
-					<s:GradientEntry color="0xFFFFFF" ratio="0.48001" alpha="0.63" />
+					<s:GradientEntry alpha="0.23" color="0xFFFFFF" ratio="0.2"/>
+					<s:GradientEntry alpha="0.32" color="0xFFFFFF" ratio="0.48"/>
+					<s:GradientEntry alpha="0.63" color="0xFFFFFF" ratio="0.48001"/>
 				</s:LinearGradient>
 			</s:fill>
 			<s:stroke>
 				<s:LinearGradientStroke rotation="90" weight="3">
-					<s:GradientEntry color="0xFF0000" alpha="0.70" ratio="0.4" />
-					<s:GradientEntry color="0xFA0000" alpha="0.40" ratio="0.965" />
-					<s:GradientEntry color="0xFF0000" alpha="0.30" ratio="0.9651" />
+					<s:GradientEntry alpha="0.70" color="0xFF0000" ratio="0.4"/>
+					<s:GradientEntry alpha="0.40" color="0xFA0000" ratio="0.965"/>
+					<s:GradientEntry alpha="0.30" color="0xFF0000" ratio="0.9651"/>
 				</s:LinearGradientStroke>
 			</s:stroke>
 		</s:Rect>
-		<s:Label width="120" color="#ff0000" fontSize="24" left="440" textAlign="center" top="15" text="Emitido" 
-				 visible="{recibo.emitido}" />
+		<s:Label visible="{recibo.emitido}" left="440" top="15" width="120" color="#ff0000" fontSize="24" text="Emitido" textAlign="center"/>
 
-		<s:VGroup width="100%" height="100%" excludeFrom="cargando">
+		<s:VGroup excludeFrom="cargando" width="100%" height="100%">
 			<s:VGroup width="100%" height="100%">
-				<s:HGroup id="pnlHeader" width="100%" gap="5" >
-					<s:Panel width="120" title="SERIE" styleName="pnlInterno" minHeight="0">
+				<s:HGroup id="pnlHeader" width="100%" gap="5">
+					<s:Panel width="120" minHeight="0" styleName="pnlInterno" title="SERIE">
 						<s:HGroup width="100%" horizontalAlign="center">
-							<s:DropDownList id="ddlSerie" width="100%" dataProvider="{serieReciboList}" labelField="label" height="36" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido &amp;&amp; !tieneVinculos}" 
-											selectedItem="{serieSelected}" change="ddlSerie_changeHandler(event)" fontSize="18"/>
+							<s:DropDownList id="ddlSerie" width="100%" height="36" change="ddlSerie_changeHandler(event)" dataProvider="{serieReciboList}"
+											enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido &amp;&amp; !tieneVinculos}" fontSize="18"
+											labelField="label" selectedItem="{serieSelected}"/>
 						</s:HGroup>
 					</s:Panel>
-					<s:Panel width="180" title="NÚMERO" styleName="pnlInterno" minHeight="0" >
+					<s:Panel width="180" minHeight="0" styleName="pnlInterno" title="NÚMERO">
 						<s:HGroup width="100%" horizontalAlign="center">
-							<s:TextInput id="txtNumero" width="100%" height="36" paddingRight="15" textAlign="right"  fontSize="18"
-										 text="@{recibo.numero}" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido &amp;&amp; !tieneVinculos}" enter="{txtTipoCambio.setFocus()}"/>
+							<s:TextInput id="txtNumero" width="100%" height="36"
+										 enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido &amp;&amp; !tieneVinculos}" enter="{txtTipoCambio.setFocus()}"
+										 fontSize="18" paddingRight="15" text="@{recibo.numero}" textAlign="right"/>
 						</s:HGroup>
 					</s:Panel>
-					<s:HGroup width="100%" height="60" horizontalAlign="center" verticalAlign="middle" visible="{!recibo.docId}">
-						<s:Label text="Para agregar facturas vinculadas debe guardar el recibo." fontSize="14" fontStyle="italic" />
+					<s:HGroup visible="{!recibo.docId}" width="100%" height="60" horizontalAlign="center" verticalAlign="middle">
+						<s:Label fontSize="14" fontStyle="italic" text="Para agregar facturas vinculadas debe guardar el recibo."/>
 					</s:HGroup>
 				
-					<s:Panel width="180" title="FECHA" styleName="pnlInterno" minHeight="0">
+					<s:Panel width="180" minHeight="0" styleName="pnlInterno" title="FECHA">
 						<s:HGroup width="100%" horizontalAlign="center">
-							<mx:DateField id="txtDate" width="100%" fontSize="18" fontFamily="Helvetica" paddingLeft="10" focusEnabled="false" selectedDate="{recibo.fechaDoc}" yearNavigationEnabled="true"
-										  formatString="DD/MM/YYYY" locale="es" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" change="txtDate_changeHandler(event)" close="txtDate_closeHandler(event)"/>
+							<mx:DateField id="txtDate" width="100%" change="txtDate_changeHandler(event)" close="txtDate_closeHandler(event)"
+										  enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" focusEnabled="false" fontFamily="Helvetica" fontSize="18"
+										  formatString="DD/MM/YYYY" locale="es" paddingLeft="10" selectedDate="{recibo.fechaDoc}" yearNavigationEnabled="true"/>
 						</s:HGroup>
 					</s:Panel>
 				</s:HGroup>
 	
 				<s:HGroup width="100%" height="100%">
 					<s:VGroup width="30%" height="100%">
-						<s:VGroup width="100%" height="100%" horizontalAlign="right" gap="5">
-							<s:HGroup width="100%" horizontalAlign="right" paddingTop="5" gap="0" enabled="{hasPerm()}">
-								<s:Panel width="120" title="T.C.COMERCIAL" styleName="pnlInterno" minHeight="0" >
+						<s:VGroup width="100%" height="100%" gap="5" horizontalAlign="right">
+							<s:HGroup width="100%" enabled="{hasPerm()}" gap="0" horizontalAlign="right" paddingTop="5">
+								<s:Panel width="120" minHeight="0" styleName="pnlInterno" title="T.C.COMERCIAL">
 									<s:HGroup width="100%" horizontalAlign="center">
-										<components1:MyTextInput id="txtTipoCambio" width="100%" height="36" fontSize="16" textAlign="right" permitirNegativos="false" text="@{recibo.docTCC}" 
-																 enter="{cmbMoney.setFocus()}" enabled="{!tieneVinculos}" change="txtTipoCambio_changeHandler(event)"/>
+										<components1:MyTextInput id="txtTipoCambio" width="100%" height="36" change="txtTipoCambio_changeHandler(event)"
+																 enabled="{!tieneVinculos}" enter="{cmbMoney.setFocus()}" fontSize="16"
+																 permitirNegativos="false" text="@{recibo.docTCC}" textAlign="right"/>
 									</s:HGroup>
 								</s:Panel>
-								<s:Spacer width="100%" />
-								<s:Panel width="180" title="MONEDA" styleName="pnlInterno" minHeight="0" >
+								<s:Spacer width="100%"/>
+								<s:Panel width="180" minHeight="0" styleName="pnlInterno" title="MONEDA">
 									<s:HGroup width="100%" horizontalAlign="center">
-										<components:MyAutoComplete id="cmbMoney" width="100%" height="36" fontSize="16" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart"
-																   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-																   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction"
-																   backspaceAction="focus" dropDownRowCount="{monedas.length}" selectedItem="{recibo.docRecMda}" change="cmbMoney_changeHandler(event)" 
-																   next_focus="{txtTotal}" previous_focus="{txtTipoCambio}" enabled="{!tieneVinculos}"/>
+										<components:MyAutoComplete id="cmbMoney" width="100%" height="36" allowDuplicates="false" allowEditingNewValues="false"
+																   allowMultipleSelection="false" allowNewValues="false" backspaceAction="focus"
+																   change="cmbMoney_changeHandler(event)" dataProvider="{ monedas }"
+																   dropDownItemRenderer="{ dropDownItemRenderer }" dropDownRowCount="{monedas.length}"
+																   enabled="{!tieneVinculos}" fontSize="16" labelField="nombre"
+																   labelFunction="codigoNombreLabelFunction" matchType="anyPart" next_focus="{txtTotal}"
+																   previous_focus="{txtTipoCambio}" selectedItem="{recibo.docRecMda}"
+																   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" textAlign="left"/>
 									</s:HGroup>
 								</s:Panel>
-								<s:Panel width="120" title="{isAster ? 'NETO' : 'TOTAL' }" styleName="pnlInterno" minHeight="0">
+								<s:Panel width="120" minHeight="0" styleName="pnlInterno" title="{isAster ? 'NETO' : 'TOTAL' }">
 									<s:HGroup width="100%" horizontalAlign="center">
-										<components1:MyTextInput id="txtTotal" width="100%" height="36" fontSize="16" textAlign="right" permitirNegativos="false" text="{recibo.docRecNeto}" change="txtTotal_changeHandler(event)" 
-																 enter="{cmbClient.setFocus()}" enabled="{!tieneVinculos}" />
+										<components1:MyTextInput id="txtTotal" width="100%" height="36" change="txtTotal_changeHandler(event)"
+																 enabled="{!tieneVinculos}" enter="{cmbClient.setFocus()}" fontSize="16"
+																 permitirNegativos="false" text="{recibo.docRecNeto}" textAlign="right"/>
 									</s:HGroup>
 								</s:Panel>
 							</s:HGroup>
 	
 							<s:HGroup width="100%" gap="0">
-								<s:Panel width="100%" minHeight="0" title="R.U.T COMPRADOR" styleName="pnlInterno">
+								<s:Panel width="100%" minHeight="0" styleName="pnlInterno" title="R.U.T COMPRADOR">
 									<s:HGroup width="100%" horizontalAlign="center">
-										<s:TextInput id="txtRUT" width="100%" height="36" fontSize="18" paddingLeft="12" textAlign="left" change="txtRUT_changeHandler(event)" prompt="No tiene"
-													 text="@{recibo.rut}" restrict="0-9" editable="true" maxChars="12" enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" />
+										<s:TextInput id="txtRUT" width="100%" height="36" change="txtRUT_changeHandler(event)" editable="true"
+													 enabled="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" fontSize="18" maxChars="12" paddingLeft="12"
+													 prompt="No tiene" restrict="0-9" text="@{recibo.rut}" textAlign="left"/>
 									</s:HGroup>
 								</s:Panel>
 							</s:HGroup>
 	
-							<s:Panel width="100%" height="100%" title="DATOS CLIENTE" styleName="pnlInterno" minHeight="0" >
+							<s:Panel width="100%" height="100%" minHeight="0" styleName="pnlInterno" title="DATOS CLIENTE">
 								<s:HGroup width="100%" horizontalAlign="center">
-									<s:Form width="100%" textAlign="right" enabled="{hasPerm()}">
+									<s:Form width="100%" enabled="{hasPerm()}" textAlign="right">
 										<s:layout>
-											<s:FormLayout gap="-12" />
+											<s:FormLayout gap="-12"/>
 										</s:layout>
 
 										<s:FormItem width="100%" label="Cliente">
 											<s:HGroup width="100%" gap="3" verticalAlign="middle">
-												<components:MyAutoComplete id="cmbClient" width="100%" textAlign="left" change="cmbClient_changeHandler(event)"
-																		   keyDown="capture_keyDownHandlerCliente(event)" dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre"
-																		   matchType="anyPart" prompt="Ingrese cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
-																		   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
-																		   dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
-																		   next_focus="{txtRazonSocial}" dropDownWidth="480" dropDownRowCount="10" selectedItem="{recibo.cliente}" enabled="{!tieneVinculos}" />
+												<components:MyAutoComplete id="cmbClient" width="100%" allowDuplicates="false" allowEditingNewValues="false"
+																		   allowMultipleSelection="false" allowNewValues="false" backspaceAction="focus"
+																		   change="cmbClient_changeHandler(event)"
+																		   dataProvider="{ CatalogoFactory.getInstance().clientes }"
+																		   dropDownItemRenderer="{ dropDownItemRenderer }" dropDownRowCount="10"
+																		   dropDownWidth="480" enabled="{!tieneVinculos}"
+																		   keyDown="capture_keyDownHandlerCliente(event)" labelField="nombre"
+																		   labelFunction="clienteLabelFunction" matchType="anyPart"
+																		   next_focus="{txtRazonSocial}" prompt="Ingrese cliente"
+																		   selectedItem="{recibo.cliente}"
+																		   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" textAlign="left"/>
 
-												<components1:IconButton  styleName="moneyButton" width="28" height="26" toolTip="Facturas Pendientes" 
-																		 click="cmdMostrarFacturasPendientes_clickHandler(event)" 
-																		 enabled="{recibo.cliente &amp;&amp; recibo.cliente.documentsPendientes}" />
+												<components1:IconButton width="28" height="26" click="cmdMostrarFacturasPendientes_clickHandler(event)"
+																		enabled="{recibo.cliente &amp;&amp; recibo.cliente.documentsPendientes}"
+																		styleName="moneyButton" toolTip="Facturas Pendientes"/>
 
 											</s:HGroup>
 										</s:FormItem>
 										<s:FormItem width="100%" label="Razón social">
-											<s:TextInput id="txtRazonSocial" width="100%" textAlign="left" prompt="Ingrese razón social" text="@{recibo.razonSocial}" editable="{!_modoVisualizacion}"
-														 maxChars="128" enabled="{!tieneVinculos}" enter="{txtDate.setFocus();txtDate.open();}"/>
+											<s:TextInput id="txtRazonSocial" width="100%" editable="{!_modoVisualizacion}" enabled="{!tieneVinculos}"
+														 enter="{txtDate.setFocus();txtDate.open();}" maxChars="128" prompt="Ingrese razón social"
+														 text="@{recibo.razonSocial}" textAlign="left"/>
 										</s:FormItem>
 										<s:FormItem width="100%" label="Departamento">
-											<s:TextInput id="txtDpto" width="100%" textAlign="left" enter="{txtDirection.setFocus()}" prompt="Departamento" text="@{recibo.departamento}" editable="false" maxChars="40" enabled="{!tieneVinculos}"/>
+											<s:TextInput id="txtDpto" width="100%" editable="false" enabled="{!tieneVinculos}" enter="{txtDirection.setFocus()}"
+														 maxChars="40" prompt="Departamento" text="@{recibo.departamento}" textAlign="left"/>
 										</s:FormItem>
 										<s:FormItem width="100%" label="Dirección">
-											<s:TextInput id="txtDirection" width="100%" textAlign="left" enter="{txtRUT.setFocus()}" prompt="Dirección" text="@{recibo.direccion}" editable="false" maxChars="100" enabled="{!tieneVinculos}"/>
+											<s:TextInput id="txtDirection" width="100%" editable="false" enabled="{!tieneVinculos}" enter="{txtRUT.setFocus()}"
+														 maxChars="100" prompt="Dirección" text="@{recibo.direccion}" textAlign="left"/>
 										</s:FormItem>
 									</s:Form>
 								</s:HGroup>
@@ -2136,33 +2134,41 @@
 					</s:VGroup>
 	
 					<s:VGroup width="100%" height="100%" paddingTop="5">
-						<s:Panel id="pnlFacturasVinculadas" width="100%" height="100%" title="FACTURAS VINCULADAS" styleName="pnlInterno" enabled="{recibo.docId != null}">
+						<s:Panel id="pnlFacturasVinculadas" width="100%" height="100%" enabled="{recibo.docId != null}" styleName="pnlInterno"
+								 title="FACTURAS VINCULADAS">
 							<s:VGroup width="100%" height="100%" gap="0">
 								<s:HGroup width="100%">
-									<s:Panel width="180" title="MONEDA VINCULOS" styleName="pnlInterno" minHeight="0">
+									<s:Panel width="180" minHeight="0" styleName="pnlInterno" title="MONEDA VINCULOS">
 										<s:HGroup width="100%" horizontalAlign="center">
-											<components:MyAutoComplete id="cmbMonedaVinculos" width="100%" height="36" fontSize="14" textAlign="left" dataProvider="{ monedas }" labelField="nombre" matchType="anyPart"
-																	   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
-																	   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" 
-																	   backspaceAction="focus" dropDownRowCount="{monedas.length}" selectedItem="@{recibo.moneda}" enabled="{!tieneVinculos &amp;&amp; hasPerm()}"
-																	   change="cmbMonedaVinculos_changeHandler(event)"/>
+											<components:MyAutoComplete id="cmbMonedaVinculos" width="100%" height="36" allowDuplicates="false"
+																	   allowEditingNewValues="false" allowMultipleSelection="false" allowNewValues="false"
+																	   backspaceAction="focus" change="cmbMonedaVinculos_changeHandler(event)"
+																	   dataProvider="{ monedas }" dropDownItemRenderer="{ dropDownItemRenderer }"
+																	   dropDownRowCount="{monedas.length}" enabled="{!tieneVinculos &amp;&amp; hasPerm()}"
+																	   fontSize="14" labelField="nombre" labelFunction="codigoNombreLabelFunction"
+																	   matchType="anyPart" selectedItem="@{recibo.moneda}"
+																	   selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" textAlign="left"/>
 										</s:HGroup>
 									</s:Panel>
-									<s:Panel width="180" title="{isAster ? 'NETO' : 'TOTAL' }" styleName="pnlInterno" minHeight="0">
+									<s:Panel width="180" minHeight="0" styleName="pnlInterno" title="{isAster ? 'NETO' : 'TOTAL' }">
 										<s:HGroup width="100%" horizontalAlign="center" paddingBottom="10">
-											<components1:MyTextInput id="txtTotalVinculado" width="100%" height="36" fontSize="16" textAlign="right" permitirNegativos="false" text="{recibo.total}" 
-																	 change="txtTotalVinculado_changeHandler(event)" enabled="{!tieneVinculos &amp;&amp; monedasDistintas &amp;&amp; hasPerm()}"/>
+											<components1:MyTextInput id="txtTotalVinculado" width="100%" height="36"
+																	 change="txtTotalVinculado_changeHandler(event)"
+																	 enabled="{!tieneVinculos &amp;&amp; monedasDistintas &amp;&amp; hasPerm()}" fontSize="16"
+																	 permitirNegativos="false" text="{recibo.total}" textAlign="right"/>
 										</s:HGroup>
 									</s:Panel>
 								</s:HGroup>
 	
-								<s:DataGrid id="dgVinculos" width="100%" height="100%" fontSize="10" creationComplete="dgVinculos_creationCompleteHandler(event)"
-											keyDown="dgVinculos_keyDownHandler(event)" gridItemEditorSessionSave="dgVinculos_gridItemEditorSessionSaveHandler(event)"
-											dataProvider="{recibo.facturasVinculadas}" selectionMode="singleCell" sortableColumns="false" editable="{hasPerm()}">
+								<s:DataGrid id="dgVinculos" width="100%" height="100%" creationComplete="dgVinculos_creationCompleteHandler(event)"
+											dataProvider="{recibo.facturasVinculadas}" editable="{hasPerm()}" fontSize="10"
+											gridItemEditorSessionSave="dgVinculos_gridItemEditorSessionSaveHandler(event)"
+											keyDown="dgVinculos_keyDownHandler(event)" selectionMode="singleCell" sortableColumns="false">
 									
 									<s:columns>
 										<s:ArrayList>
-											<s:GridColumn  width="80" sortable="false" headerText="S/N" editable="{!recibo.emitido &amp;&amp; hasPerm()}" resizable="false">
+											<s:GridColumn width="80" editable="{!recibo.emitido &amp;&amp; hasPerm()}" headerText="S/N" resizable="false"
+														  sortable="false">
 												<s:itemEditor>
 													<fx:Component>
 														<s:GridItemEditor>
@@ -2245,7 +2251,8 @@
 																	
 																]]>
 															</fx:Script>
-															<s:TextInput id="txtSerieNumero" width="100%" height="100%" change="txtSerieNumero_changeHandler(event)" restrict="0-9a-zA-Z" /> 
+															<s:TextInput id="txtSerieNumero" width="100%" height="100%"
+																		 change="txtSerieNumero_changeHandler(event)" restrict="0-9a-zA-Z"/> 
 														</s:GridItemEditor>
 													</fx:Component>
 												</s:itemEditor>
@@ -2273,7 +2280,7 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 	
-											<s:GridColumn sortable="false" headerText="COMPROBANTE" editable="false" dataField="factura" resizable="false">
+											<s:GridColumn dataField="factura" editable="false" headerText="COMPROBANTE" resizable="false" sortable="false">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="left">
@@ -2300,7 +2307,8 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 	
-											<s:GridColumn width="78" dataField="factura.fecha" headerText="FECHA" editable="false" labelFunction="date_labelFunction">
+											<s:GridColumn width="78" dataField="factura.fecha" editable="false" headerText="FECHA"
+														  labelFunction="date_labelFunction">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="left"/>
@@ -2308,7 +2316,8 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 	
-											<s:GridColumn width="78" dataField="factura.moneda" resizable="false" headerText="MONEDA" editable="false" labelFunction="moneda_labelFunction" >
+											<s:GridColumn width="78" dataField="factura.moneda" editable="false" headerText="MONEDA"
+														  labelFunction="moneda_labelFunction" resizable="false">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="left"/>
@@ -2316,7 +2325,8 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 											
-											<s:GridColumn width="80" dataField="factura.total" headerText="TOTAL" editable="false" labelFunction="total_labelFunction">
+											<s:GridColumn width="80" dataField="factura.total" editable="false" headerText="TOTAL"
+														  labelFunction="total_labelFunction">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right"/>
@@ -2324,7 +2334,8 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="80" dataField="factura.saldo" resizable="false" headerText="SALDO" editable="false" labelFunction="saldo_labelFunction" >
+											<s:GridColumn width="80" dataField="factura.saldo" editable="false" headerText="SALDO"
+														  labelFunction="saldo_labelFunction" resizable="false">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right"/>
@@ -2332,7 +2343,9 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="60" dataField="descuentoPorc" headerText="DESCUENTO" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
+											<s:GridColumn visible="{recibo.serie != 'A'}" width="60" dataField="descuentoPorc"
+														  editable="{!recibo.emitido &amp;&amp; hasPerm()}" headerText="DESCUENTO"
+														  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2358,7 +2371,9 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="70" dataField="descuentoMonto" headerText="M.DESCUENTO" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor" visible="{recibo.serie != 'A'}">
+											<s:GridColumn visible="{recibo.serie != 'A'}" width="70" dataField="descuentoMonto"
+														  editable="{!recibo.emitido &amp;&amp; hasPerm()}" headerText="M.DESCUENTO"
+														  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2386,7 +2401,8 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 
-											<s:GridColumn width="90" dataField="neto" headerText="{isAster ? 'M.NETO' : 'M.VINCULADO'}" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+											<s:GridColumn width="90" dataField="neto" editable="{!recibo.emitido &amp;&amp; hasPerm()}"
+														  headerText="{isAster ? 'M.NETO' : 'M.VINCULADO'}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2411,7 +2427,8 @@
 												</s:itemRenderer>
 											</s:GridColumn>
 											
-											<s:GridColumn width="70" dataField="monto"  headerText="M.CANCELA" editable="{!recibo.emitido &amp;&amp; hasPerm()}" itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
+											<s:GridColumn width="70" dataField="monto" editable="{!recibo.emitido &amp;&amp; hasPerm()}" headerText="M.CANCELA"
+														  itemEditor="biz.fulltime.ui.forms.DGNumberEditor">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2436,7 +2453,7 @@
 											</s:GridColumn>
 
 											
-											<s:GridColumn width="70" headerText="RENTA FINANCIERA"  editable="false" visible="{tieneRF}">
+											<s:GridColumn visible="{tieneRF}" width="70" editable="false" headerText="RENTA FINANCIERA">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:DefaultGridItemRenderer fontSize="12" textAlign="right">
@@ -2458,7 +2475,7 @@
 											</s:GridColumn>
 
 	
-											<s:GridColumn width="34" headerText="" rendererIsEditable="true" visible="{!recibo.emitido &amp;&amp; hasPerm()}">
+											<s:GridColumn visible="{!recibo.emitido &amp;&amp; hasPerm()}" width="34" headerText="" rendererIsEditable="true">
 												<s:itemRenderer>
 													<fx:Component>
 														<s:GridItemRenderer>
@@ -2492,9 +2509,10 @@
 																]]>
 															</fx:Script>
 	
-															<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingLeft="2" verticalAlign="middle" creationComplete="cmdRemove.setFocus()">
-																<s:Button id="cmdRemove" width="100%" height="100%" icon="@Embed('/assets/general/trash.png')" click="cmdRemove_clickHandler(event)"
-																		  focusEnabled="false" toolTip="Quitar" />
+															<s:VGroup width="100%" height="100%" creationComplete="cmdRemove.setFocus()" horizontalAlign="center"
+																	  paddingLeft="2" verticalAlign="middle">
+																<s:Button id="cmdRemove" width="100%" height="100%" click="cmdRemove_clickHandler(event)"
+																		  focusEnabled="false" icon="@Embed('/assets/general/trash.png')" toolTip="Quitar"/>
 															</s:VGroup>
 														</s:GridItemRenderer>
 													</fx:Component>
@@ -2504,18 +2522,20 @@
 										</s:ArrayList>
 									</s:columns>
 								</s:DataGrid>
-								<s:HGroup width="100%" height="36" horizontalAlign="right" paddingBottom="2" paddingLeft="5" paddingRight="5" verticalAlign="middle">
-									<s:Label id="lblSaldoPendiente" fontSize="14" />
-									<s:Spacer width="100%" />
-									<s:Label id="lblMontoTotal" fontSize="14" text="Monto total" />
+								<s:HGroup width="100%" height="36" horizontalAlign="right" paddingBottom="2" paddingLeft="5" paddingRight="5"
+										  verticalAlign="middle">
+									<s:Label id="lblSaldoPendiente" fontSize="14"/>
+									<s:Spacer width="100%"/>
+									<s:Label id="lblMontoTotal" fontSize="14" text="Monto total"/>
 								</s:HGroup>
 							</s:VGroup>
 	
 							<s:controlBarContent>
 								<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
-									<s:Spacer width="100%" />
-									<s:Button id="cmdAgregar" width="140" click="cmdAgregar_clickHandler(event)" styleName="textButton" label="Agregar vinculo" toolTip="Agregar factura"
-											  focusEnabled="true" enabled="{saldoPendiente.numberValue() > 0}" visible="{!recibo.emitido &amp;&amp; hasPerm()}"/>
+									<s:Spacer width="100%"/>
+									<s:Button id="cmdAgregar" visible="{!recibo.emitido &amp;&amp; hasPerm()}" width="140" label="Agregar vinculo"
+											  click="cmdAgregar_clickHandler(event)" enabled="{saldoPendiente.numberValue() &gt; 0}" focusEnabled="true"
+											  styleName="textButton" toolTip="Agregar factura"/>
 								</s:HGroup>
 							</s:controlBarContent>
 	
@@ -2525,10 +2545,11 @@
 				</s:HGroup>
 			</s:VGroup>
 			<s:HGroup width="100%" gap="0">
-				<s:Panel width="100%" title="NOTAS DEL COMPROBANTE" styleName="pnlInterno">
+				<s:Panel width="100%" styleName="pnlInterno" title="NOTAS DEL COMPROBANTE">
 					<s:VGroup width="100%" height="100" gap="0">
-						<s:TextArea id="txtComments" width="100%" height="100%" fontSize="14" keyDown="txtComments_keyDownHandler(event)" borderAlpha="0" contentBackgroundAlpha=".78"
-									text="@{recibo.notas}" editable="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" minHeight="0" maxChars="1024" />
+						<s:TextArea id="txtComments" width="100%" height="100%" minHeight="0" borderAlpha="0" contentBackgroundAlpha=".78"
+									editable="{!_modoVisualizacion &amp;&amp; !recibo.emitido}" fontSize="14" keyDown="txtComments_keyDownHandler(event)"
+									maxChars="1024" text="@{recibo.notas}"/>
 					</s:VGroup>
 				</s:Panel>
 			</s:HGroup>
@@ -2537,45 +2558,46 @@
 
 	<s:controlBarContent>
 		<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0" verticalAlign="middle">
-			<components1:IconButton id="cmdAuditoria" click="cmdAuditoria_clickHandler(event)" styleName="trackingButton" label="Auditoría" toolTip="Líneas auditoría"
-									visible="{recibo.docId != null}" includeInLayout="{recibo.docId != null}"/>
-			<s:Button id="cmdDocumentos" click="cmdDocumentos_clickHandler(event)" styleName="nuevoButton" label="Documentos" toolTip="Documentos" 
-					  focusEnabled="false" visible="true" />
+			<components1:IconButton id="cmdAuditoria" visible="{recibo.docId != null}" label="Auditoría" click="cmdAuditoria_clickHandler(event)"
+									includeInLayout="{recibo.docId != null}" styleName="trackingButton" toolTip="Líneas auditoría"/>
+			<s:Button id="cmdDocumentos" visible="true" label="Documentos" click="cmdDocumentos_clickHandler(event)" focusEnabled="false" styleName="nuevoButton"
+					  toolTip="Documentos"/>
 
-			<s:Spacer width="100%" />
-			<components1:IconButton id="cmdImprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton" label="Imprimir" toolTip="Imprimir documento" />
-			<s:Spacer width="10" />
+			<s:Spacer width="100%"/>
+			<components1:IconButton id="cmdImprimir" label="Imprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton"
+									toolTip="Imprimir documento"/>
+			<s:Spacer width="10"/>
 
-			<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
+			<mx:Image id="loader1" alpha=".5" scaleX=".25" scaleY=".25" source="@Embed(source='assets/general/logo_oscuro.gif')"/>
 			
-			<s:Spacer width="100%" />
+			<s:Spacer width="100%"/>
 
-			<s:Button id="cmdNuevo" click="cmdNuevo_clickHandler(event)" styleName="nuevoButton" label="Nuevo" toolTip="Nuevo recibo" focusEnabled="false"
-						  visible="{!_modoVisualizacion }" includeInLayout="{!_modoVisualizacion}" />
+			<s:Button id="cmdNuevo" visible="{!_modoVisualizacion }" label="Nuevo" click="cmdNuevo_clickHandler(event)" focusEnabled="false"
+					  includeInLayout="{!_modoVisualizacion}" styleName="nuevoButton" toolTip="Nuevo recibo"/>
 
-			<s:Button id="cmdAbrirNotaCredito" click="cmdAbrirNotaCredito_clickHandler(event)" styleName="verButton" label="Visualizar NCF" toolTip="Visualizar N/C 36 Financiera" 
-					  focusEnabled="false" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.processId &amp;&amp; recibo.serie != 'A'}" 
-					  enabled="{tieneDescuentos}"/>
-			<s:Button id="cmdCrearNotaCredito" click="cmdCrearNotaCredito_clickHandler(event)" styleName="nuevoButton" label="Nota Crédito" toolTip="Generar N/C 36 Financiera" 
-					  focusEnabled="false" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.processId &amp;&amp; recibo.serie != 'A'}" 
-					  enabled="{tieneDescuentos}"/>
+			<s:Button id="cmdAbrirNotaCredito" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.processId &amp;&amp; recibo.serie != 'A'}"
+					  label="Visualizar NCF" click="cmdAbrirNotaCredito_clickHandler(event)" enabled="{tieneDescuentos}" focusEnabled="false"
+					  styleName="verButton" toolTip="Visualizar N/C 36 Financiera"/>
+			<s:Button id="cmdCrearNotaCredito" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.processId &amp;&amp; recibo.serie != 'A'}"
+					  label="Nota Crédito" click="cmdCrearNotaCredito_clickHandler(event)" enabled="{tieneDescuentos}" focusEnabled="false"
+					  styleName="nuevoButton" toolTip="Generar N/C 36 Financiera"/>
 			
-			<s:Button id="cmdBorrar" click="cmdBorrar_clickHandler(event)" styleName="trashButton" label="Eliminar" toolTip="Borrar documento"
-					  focusEnabled="false" enabled="{!tieneVinculos &amp;&amp; !recibo.nuevo &amp;&amp; !recibo.emitido}"  visible="false" includeInLayout="false"/>
-			<s:Button id="cmdGuardar" click="cmdGuardar_clickHandler(event)" styleName="saveButton" label="Guardar" toolTip="Guardar documento" focusEnabled="false" 
-					  enabled="{!recibo.emitido &amp;&amp; tieneCambios}" visible="{hasPerm()}"/>
+			<s:Button id="cmdBorrar" visible="false" label="Eliminar" click="cmdBorrar_clickHandler(event)"
+					  enabled="{!tieneVinculos &amp;&amp; !recibo.nuevo &amp;&amp; !recibo.emitido}" focusEnabled="false" includeInLayout="false"
+					  styleName="trashButton" toolTip="Borrar documento"/>
+			<s:Button id="cmdGuardar" visible="{hasPerm()}" label="Guardar" click="cmdGuardar_clickHandler(event)"
+					  enabled="{!recibo.emitido &amp;&amp; tieneCambios}" focusEnabled="false" styleName="saveButton" toolTip="Guardar documento"/>
 			
-			<s:Button id="cmdEmitir" click="cmdEmitir_clickHandler(event)" styleName="emitirButton" label="Emitir" toolTip="Emitir" 
-					  visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" 
-					  focusEnabled="false" enabled="{(!recibo.emitido &amp;&amp; tieneVinculos) || (recibo.serie == 'P')}" />
+			<s:Button id="cmdEmitir" visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" label="Emitir" click="cmdEmitir_clickHandler(event)"
+					  enabled="{(!recibo.emitido &amp;&amp; tieneVinculos) || (recibo.serie == 'P')}" focusEnabled="false"
+					  includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" styleName="emitirButton" toolTip="Emitir"/>
 
-			<s:Button id="cmdEMail" click="cmdEMail_clickHandler(event)" styleName="eMailButton" label="Email" toolTip="Enviar por eMail" 
-					  focusEnabled="false" />
+			<s:Button id="cmdEMail" label="Email" click="cmdEMail_clickHandler(event)" focusEnabled="false" styleName="eMailButton" toolTip="Enviar por eMail"/>
 			
-			<s:Spacer width="5" />
+			<s:Spacer width="5"/>
 
-			<s:Spacer width="10" />
-			<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" toolTip="Cerrar" focusEnabled="false" />
+			<s:Spacer width="10"/>
+			<s:Button id="cmdCancel" label="Cerrar" click="cmdCancel_clickHandler(event)" focusEnabled="false" styleName="cancelarButton" toolTip="Cerrar"/>
 		</s:HGroup>
 	</s:controlBarContent>
 

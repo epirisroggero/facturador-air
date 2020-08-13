@@ -280,15 +280,17 @@
 				pdf.setDisplayMode(Display.FULL_PAGE, Layout.SINGLE_PAGE);
 				pdf.setMargins(10,10,10,0);
 				
-				var newPage:Page;
-				
-				newPage = new Page(Orientation.PORTRAIT, Unit.POINT, Size.A4);
-				pdf.addPage(newPage);			
+				pdf.addPage();			
 				
 				if (esListadoFacturasPendientes) {
 					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.NONE, Position.LEFT), 10, 10, 530, 0, 0, 1, "Normal", new HTTPLink("http://fulltime.uy/"));
 				} else {
 					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal", new HTTPLink("http://fulltime.uy/"));
+				
+					if (byteArray2) {
+						pdf.addPage();			
+						pdf.addImageStream(byteArray2, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal", new HTTPLink("http://fulltime.uy/"));
+					}
 				}
 				
 				var ba:ByteArray = pdf.save(Method.LOCAL);

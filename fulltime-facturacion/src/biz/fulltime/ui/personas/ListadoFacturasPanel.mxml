@@ -254,7 +254,7 @@
 			private function filtrarFacturas(item:Object):Boolean {
 				var doc:DocumentoDTO = item as DocumentoDTO;
 				for each (var vinculo:VinculoDocumentos in filtros)  {
-					if (doc.docId == vinculo.factura.docId) {
+					if (doc.docId == vinculo.docIdVin1) {
 						return false;
 					}
 				}

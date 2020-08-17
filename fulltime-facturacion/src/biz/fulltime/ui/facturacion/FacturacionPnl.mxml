@@ -2588,6 +2588,11 @@
 						documento.cliente = cliente;
 						documento.moneda = doc.moneda;
 						documento.lineas = doc.lineas;
+						
+						if (codigo == "83") { 
+							documento.updateIvaIdDoc();
+						}
+						
 						documento.artCuponera = doc.artCuponera;
 						documento.cuponerasList = doc.cuponerasList;
 						documento.preciosVenta = doc.preciosVenta ? doc.preciosVenta : preciosVenta;
@@ -2613,6 +2618,7 @@
 						documento.localidad = doc.localidad;
 						documento.notas = doc.notas;
 						documento.cuotasDocumento = doc.cuotasDocumento;
+						documento.tipoDoc = doc.tipoDoc;
 
 						if (doc.processId && doc.processId.length > 0) {
 							documento.processId = doc.processId;
@@ -2623,6 +2629,8 @@
 
 						documento.planPagos = null;
 						documento.cuotasDocumento.cuotas = new ArrayCollection();
+						
+						
 
 						if ((codigo == "71" || codigo == "72" || codigo == "73") 
 							|| (codigo == "131" || codigo == "132" || codigo == "133") 
@@ -2779,6 +2787,8 @@
 					doc.fechaEmision = new Date();
 					doc.localidad = _documento.localidad;
 					doc.notas = _documento.notas;
+					doc.tipoDoc = _documento.tipoDoc;
+					
 					if (_documento.processId && _documento.processId.length > 0) {
 						doc.processId = _documento.processId;
 					} else {

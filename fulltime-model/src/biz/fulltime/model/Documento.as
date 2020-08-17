@@ -960,7 +960,7 @@ public class Documento extends DocumentoBase {
 			return sum.setScale(4, MathContext.ROUND_HALF_EVEN);
 		}
 	}
-
+	
 	public function getSubTotal():BigDecimal {
 		var items:ArrayCollection = lineas.lineas;
 		var sum:BigDecimal = BigDecimal.ZERO;
@@ -1805,15 +1805,19 @@ public class Documento extends DocumentoBase {
 				return true;
 			}
 		}
-		return false;		
+		return false;
 		
 	}
 	
 	public function tieneFaturasVincululadas():Boolean {
 		for each (var vinculo:VinculoDocumentos in facturasVinculadas) {
-			if (vinculo.factura && vinculo.factura.docId && vinculo.factura.docId.length > 0) {
+//			if (vinculo.factura && vinculo.factura.docId && vinculo.factura.docId.length > 0) {
+//				return true;
+//			}
+			if (vinculo.docIdVin1 && vinculo.docIdVin1.length > 0) {
 				return true;
 			}
+
 		}
 		return false;		
 		
@@ -1890,6 +1894,20 @@ public class Documento extends DocumentoBase {
 		}
 		
 		return false;
+	}
+	
+	public function updateIvaIdDoc() :void {
+		if (!comprobanteComputaIva()) {
+			return;
+		}
+
+		var items:ArrayCollection = lineas.lineas;
+		for each (var lineaDocumento:LineaDocumento in items) {
+			var articulo:Articulo = lineaDocumento.getArticulo();
+			if (articulo) {
+				lineaDocumento.ivaLin = articulo.iva;	
+			}
+		}
 	}
 
 }

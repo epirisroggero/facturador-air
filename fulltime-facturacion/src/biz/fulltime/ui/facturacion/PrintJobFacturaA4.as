@@ -64,7 +64,10 @@ package biz.fulltime.ui.facturacion {
 	import org.alivepdf.fonts.FontFamily;
 	import org.alivepdf.images.ColorSpace;
 	import org.alivepdf.layout.Layout;
+	import org.alivepdf.layout.Mode;
 	import org.alivepdf.layout.Orientation;
+	import org.alivepdf.layout.Position;
+	import org.alivepdf.layout.Resize;
 	import org.alivepdf.layout.Size;
 	import org.alivepdf.layout.Unit;
 	import org.alivepdf.links.HTTPLink;
@@ -212,15 +215,11 @@ package biz.fulltime.ui.facturacion {
 				
 								
 				if (hasEmail) {
-					var pdf:PDF = new PDF(Orientation.PORTRAIT, Unit.POINT, true, Size.A4);
+					var pdf:PDF = new PDF(Orientation.LANDSCAPE, Unit.POINT, true, Size.A4);
 					pdf.setDisplayMode(Display.FULL_PAGE, Layout.SINGLE_PAGE);
-					var newPage:Page;
-					
-					newPage = new Page(Orientation.LANDSCAPE, Unit.POINT, Size.A4);
-					pdf.addPage(newPage);			
-					
-					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, null, 10, 300, 0, 0, 0, 1, "Normal", new HTTPLink("http://alivepdf.bytearray.org/"));
-					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, null, 400, 10, 0, 0, 0, 1, "Normal", new HTTPLink("http://alivepdf.bytearray.org/"));
+
+					pdf.addPage();			
+					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal");
 					
 					var ba:ByteArray = pdf.save(Method.LOCAL);
 

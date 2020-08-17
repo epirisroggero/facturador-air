@@ -283,19 +283,18 @@
 				pdf.addPage();			
 				
 				if (esListadoFacturasPendientes) {
-					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.NONE, Position.LEFT), 10, 10, 530, 0, 0, 1, "Normal", new HTTPLink("http://fulltime.uy/"));
+					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.NONE, Position.LEFT), 10, 10, 530, 0, 0, 1, "Normal");
 				} else {
-					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal", new HTTPLink("http://fulltime.uy/"));
-				
+					pdf.addImageStream(byteArray, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal");
 					if (byteArray2) {
 						pdf.addPage();			
-						pdf.addImageStream(byteArray2, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal", new HTTPLink("http://fulltime.uy/"));
+						pdf.addImageStream(byteArray2, ColorSpace.DEVICE_RGB, new Resize(Mode.FIT_TO_PAGE, Position.CENTERED), 0, 0, 0, 0, 0, 1, "Normal");
 					}
 				}
 				
 				var ba:ByteArray = pdf.save(Method.LOCAL);
-								
-				remObj.sendEmail(addresses, txtSubject.text, txtBody.text, byteArray, documento, cliente, ba);
+				
+				remObj.sendEmail(addresses, txtSubject.text, txtBody.text, byteArray, documento, cliente, ba, byteArray2);
 
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}

@@ -62,6 +62,8 @@ public class LineaDocumento extends EventDispatcher {
 	
 	private var _concept:Concepto;
 	
+	
+	
 	private var remObj:RemoteObject;
 
 	private var remObjPS:RemoteObject;

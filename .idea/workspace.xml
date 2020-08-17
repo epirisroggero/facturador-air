@@ -1,14 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="e05cc0f2-8998-4a36-934d-dfad919bf882" name="Default" comment="Facturador v1.7.223">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/.flexLibProperties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir-app.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-client-air/src/FullTimeAir.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/FacturacionPnl.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFacturaA4.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/facturacion/PrintJobFacturaA4.as" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmEMail.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/forms/FrmEMail.mxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListadoFacturasPanel.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/personas/ListadoFacturasPanel.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/PrintJobReciboA4.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/PrintJobReciboA4.as" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-facturacion/src/biz/fulltime/ui/recibos/RecibosPnl.mxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/Documento.as" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" beforeDir="false" afterPath="$PROJECT_DIR$/fulltime-model/src/biz/fulltime/model/LineaDocumento.as" afterDir="false" />
     </list>
     <list id="9acb1ad8-87b2-437f-a567-38a097769839" name="Revert: Documentos de Gasto" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,11 +43,6 @@
   </component>
   <component name="DefaultGradleProjectSettings">
     <option name="isMigrated" value="true" />
-  </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>cmbClient_helpFTHandler</find>
-    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -179,5 +196,19 @@
     <MESSAGE value="Listar documentos vencidos" />
     <MESSAGE value="Facturador v1.7.501" />
     <option name="LAST_COMMIT_MESSAGE" value="Facturador v1.7.501" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="93" y="93" width="1350" height="638" maximized="true" key="DiffContextDialog" timestamp="1597367760424">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="93" y="93" width="1350" height="638" maximized="true" key="DiffContextDialog/0.0.1536.824/-1440.0.1440.860@0.0.1536.824" timestamp="1597367760424" />
+    <state x="478" y="116" width="579" height="592" key="find.popup" timestamp="1597367455593">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="478" y="116" width="579" height="592" key="find.popup/0.0.1536.824/-1440.0.1440.860@0.0.1536.824" timestamp="1597367455593" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1597367480524">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824/-1440.0.1440.860@0.0.1536.824" timestamp="1597367480524" />
   </component>
 </project>

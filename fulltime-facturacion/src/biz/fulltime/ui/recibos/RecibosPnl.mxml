@@ -1441,8 +1441,35 @@
 
 			private function resultEmitir(event:ResultEvent):void {
 				recibo = event.result as Documento;
+								
+				enviarEmail();
 			}
 			
+			private function enviarEmail():void {
+				{
+					if (!chbEnvioMailAut.selected) {
+						running = false;
+						Alert.show("¿Desea enviar el recibo por correo?", "Envío de recibo", Alert.YES | Alert.NO, this, alertClickHandler);
+					} else {
+						createEmailImage();
+					}
+				}
+			}
+			
+			// Event handler function for displaying the selected Alert button.
+			private function alertClickHandler(evt:CloseEvent):void {
+				if (evt.detail == Alert.YES) {
+					//Enviar eMail
+					createEmailImage();
+				}
+			}
+			
+			private function createEmailImage():void {
+				var pfacturaA4:PrintJobReciboA4 = new PrintJobReciboA4(false);
+				pfacturaA4.documento = recibo;
+				pfacturaA4.createEmailImage(true);
+			}
+
 			public function obtenerFacturas(orden:String = null):void {
 				if (!remFacturasCliente) {
 					remFacturasCliente = getNewRemoteObject(false);
@@ -2567,11 +2594,12 @@
 			<components1:IconButton id="cmdImprimir" label="Imprimir" click="cmdImprimir_clickHandler(event)" styleName="imprimirButton"
 									toolTip="Imprimir documento"/>
 			<s:Spacer width="10"/>
-
 			<mx:Image id="loader1" alpha=".5" scaleX=".25" scaleY=".25" source="@Embed(source='assets/general/logo_oscuro.gif')"/>
-			
 			<s:Spacer width="100%"/>
-
+			<s:CheckBox id="chbEnvioMailAut" selected="{GeneralOptions.getInstance().opciones.envioAutomaticoMail == 'true'}" label="Envío correo automático"
+						includeInLayout="{!recibo.emitido}"
+						visible="{!recibo.emitido}" />
+			<s:Spacer width="100%" />
 			<s:Button id="cmdNuevo" visible="{!_modoVisualizacion }" label="Nuevo" click="cmdNuevo_clickHandler(event)" focusEnabled="false"
 					  includeInLayout="{!_modoVisualizacion}" styleName="nuevoButton" toolTip="Nuevo recibo"/>
 

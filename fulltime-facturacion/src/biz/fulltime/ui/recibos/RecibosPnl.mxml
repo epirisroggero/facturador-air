@@ -33,6 +33,7 @@
 			import biz.fulltime.model.LineaDocumento;
 			import biz.fulltime.model.LineasDocumento;
 			import biz.fulltime.model.Moneda;
+			import biz.fulltime.model.PermisosDocumentoUsuario;
 			import biz.fulltime.model.SerieNumero;
 			import biz.fulltime.model.Usuario;
 			import biz.fulltime.model.VinculoDocumentos;
@@ -74,6 +75,7 @@
 			import util.DateUtil;
 			import util.ErrorPanel;
 			import util.Maths;
+			import util.WarningPnl;
 
 			private const WINDOW_WIDTH:Number = 640;
 			
@@ -173,6 +175,7 @@
 
 			private var fireEvents:Boolean = false;
 			
+			private var creandoNCF:Boolean = false;
 			
 			
 			protected function initializeHandler(event:FlexEvent):void {
@@ -452,7 +455,7 @@
 					if (valor.compareTo(BigDecimal.ZERO) <= 0) {
 						_recibo.docRecNeto = "";
 					} else {
-						_recibo.docRecNeto = valor.setScale(2).toString();
+						_recibo.docRecNeto = valor.setScale(2, MathContext.ROUND_HALF_EVEN).toString();
 					}
 					monto = _recibo.docRecNeto;
 					
@@ -533,10 +536,15 @@
 					}, 1500);
 			}
 
-			private function reloadDocumento(docId:String):void {
+			private function reloadDocumento(docId:String, sendMail:Boolean):void {
 				var remObj:RemoteObject = getNewRemoteObject();
 				remObj.addEventListener(ResultEvent.RESULT, function(evt:ResultEvent):void {
 					recibo = evt.result as Documento;
+					
+					if (sendMail) {
+						enviarEmail();
+					}
+					
 				});
 				remObj.getDocumento(docId);
 			}
@@ -1436,23 +1444,28 @@
 
 			protected function cmdEmitir_clickHandler(event:MouseEvent):void {
 				running = true;
+				
 				remObjEmitir.emitirRecibo(recibo);
 			}
 
 			private function resultEmitir(event:ResultEvent):void {
 				recibo = event.result as Documento;
+				
+				if (recibo.emitido && !isAster && !recibo.processId && recibo.serie != 'A') {
+					cmdCrearNotaCredito_clickHandler(null);
+				} else {
+					enviarEmail();	
+				}
 								
-				enviarEmail();
+				
 			}
 			
 			private function enviarEmail():void {
-				{
-					if (!chbEnvioMailAut.selected) {
-						running = false;
-						Alert.show("¿Desea enviar el recibo por correo?", "Envío de recibo", Alert.YES | Alert.NO, this, alertClickHandler);
-					} else {
-						createEmailImage();
-					}
+				if (!chbEnvioMailAut.selected) {
+					running = false;
+					Alert.show("¿Desea enviar el recibo por correo?", "Envío de recibo", Alert.YES | Alert.NO, this, alertClickHandler);
+				} else {
+					createEmailImage();
 				}
 			}
 			
@@ -1559,104 +1572,29 @@
 				return dtoTotal.setScale(4, MathContext.ROUND_HALF_EVEN);
 			}
 			
-			protected function cmdAgregarVinculos_clickHandler(event:MouseEvent):void {
-				// TODO Auto-generated method stub
+			
+			protected function cmdCrearNotaCredito_clickHandler(event:MouseEvent):void {
+				creandoNCF = true;
+				
+				var remObj:RemoteObject = getNewRemoteObject();
+				remObj.addEventListener(ResultEvent.RESULT,  function(evt:ResultEvent):void {
+					var notaCreditoFin:Documento = evt.result as Documento;
+					notaCreditoFin.nuevo = true;
+					notaCreditoFin.permisosDocumentoUsuario = new PermisosDocumentoUsuario();
+					
+					abrirNotaCreditoFinanciera(notaCreditoFin);
+				});	
+				remObj.crearNCF(_recibo); 
+				
 			}
 			
-			protected function cmdCrearNotaCredito_clickHandler(event:MouseEvent):void {				
-				var cmp:Comprobante = new Comprobante();
-				for each (var comprobante:Comprobante in CatalogoFactory.getInstance().comprobantes)  {
-					if (comprobante.codigo == "28") {
-						cmp = comprobante; 	
-						break;
-					}
-				}
-				var art:Articulo = new Articulo();
-				for each (var articulo:Articulo in CatalogoFactory.getInstance().articulos)  {
-					if (articulo.codigo == "DESCUENTO") {
-						art = articulo;
-						break;
-					}
-				}	
-				var iva:Iva = new Iva();
-				iva.tasa = "22";
-				art.iva = iva;
-				
-				var dtf:DateTimeFormatter = new DateTimeFormatter();
-				dtf.setStyle("locale", "es-ES");
-				dtf.dateTimePattern = "dd-MM-yyyy";
-				
-				var docVin:Documento = Documento.getNuevoDocumento(cmp);
-				docVin.tomarCamposDelCliente(recibo.cliente.codigo);
-				docVin.docTCC = recibo.docTCC;
-				
-				// Seteo el recibo que lo genera como el processId
-				docVin.processId = recibo.docId;
-				
-				var razonCFERef:String = "";
-				
-				LineasDocumento(docVin.lineas).lineas.removeAll();
-				
-				var index:int = 0;
-				for each (var vinculo:VinculoDocumentos in recibo.facturasVinculadas) {
-					var desto:BigDecimal = vinculo.descuentoPorc && vinculo.descuentoPorc.length > 0 ? new BigDecimal(vinculo.descuentoPorc) : BigDecimal.ZERO;
-					var monto:BigDecimal = new BigDecimal(vinculo.neto ? vinculo.neto : vinculo.monto);
-					
-					if (!monto || !desto) continue;
-					
-					var montoLinea:BigDecimal = monto;
-					if ((Maths.ONE_HUNDRED.subtract(desto)).compareTo(BigDecimal.ZERO) != 0) { 
-						montoLinea = monto.multiply(desto).divideScaleRound(Maths.ONE_HUNDRED.subtract(desto), 4, MathContext.ROUND_HALF_EVEN);
-					}
-					razonCFERef += vinculo.factura.numero + "\n"; 
-
-					if (vinculo.monto != null && vinculo.monto.length > 0) {
-						var precio:BigDecimal = montoLinea.divideScaleRound(new BigDecimal("1.22"), 4, MathContext.ROUND_HALF_EVEN);
-						var concepto:String = recibo.serie + recibo.numero + ", dto:" + desto.setScale(2).toString() + "% en factura " + vinculo.factura.serie + vinculo.factura.numero;
-						if (concepto.length > 50) {
-							concepto = concepto.substr(0, 50);
-						}
-						
-						// Guardo datos en la línea para el momento de dar el alta crear los vínculos
-						var notas:String = recibo.docId + "|" + recibo.serie + "|" + recibo.numero + "|" + dtf.format(recibo.fechaDoc) + "|" + montoLinea.toString() + "\n";
-						notas += vinculo.factura.docId + "|" + vinculo.factura.serie + "|" + vinculo.factura.numero + "|" + desto.setScale(2).toString() + "|" + vinculo.monto;
-						
-						// Agregar una linea vacia al documento
-						var lineaDoc:LineaDocumento = new LineaDocumento();
-						lineaDoc.documento = docVin;
-						lineaDoc.numeroLinea = index;
-						lineaDoc.cantidad = "1";
-						lineaDoc.articulo = art;
-						lineaDoc.concepto = concepto;
-						lineaDoc.notas = notas;
-						lineaDoc.precio = precio.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-						lineaDoc.costo = precio.multiply(new BigDecimal(".64")).setScale(4, MathContext.ROUND_HALF_EVEN).toString();
-
-						LineasDocumento(docVin.lineas).lineas.addItem(lineaDoc);
-						
-						// moneda de la nota de crédito debe ser la misma de las facturas vinculadas.
-						if (index == 0) {
-							docVin.moneda = vinculo.factura.moneda;
-						}
-						// Indice de la línea
-						index++;
-					}
-				}
-				
-				docVin.indGlobalCFERef = "G";
-				docVin.razonCFERef = razonCFERef;
-				docVin.update();
-				
-				abrirNotaCreditoFinanciera(docVin);
-			}
-			
-			private function abrirNotaCreditoFinanciera(doc:Documento, reload:Boolean = true):void {
+			private function abrirNotaCreditoFinanciera(doc:Documento):void {
 				var facWindow:TitleWindow = new TitleWindow();
 				facWindow.title = "Nota de crédito financiera";
 				facWindow.width = 1120;
 				facWindow.height = 718;
 				
-				facWindow.addEventListener(CloseEvent.CLOSE, closeHandlerNCF);
+				//facWindow.addEventListener(CloseEvent.CLOSE, closeHandlerNCF);
 				
 				var frmFactura:FacturacionPnl = new FacturacionPnl();
 				frmFactura.factura = doc;
@@ -1669,14 +1607,13 @@
 				frmFactura.modoVentana = true;
 								
 				frmFactura.addEventListener("_cancel_", function():void {
-					facWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerNCF);
+					//facWindow.removeEventListener(CloseEvent.CLOSE, closeHandlerNCF);
 					PopUpManager.removePopUp(facWindow as IFlexDisplayObject);
 					
 					//TODO: Volver a cargar el documento
-					if (reload) {
-						reloadDocumento(_recibo.docId);
-					}
-					
+					if (creandoNCF && frmFactura.factura.emitido) {
+						reloadDocumento(_recibo.docId, frmFactura.factura.emitido);
+					}					
 				});
 				
 				PopUpManager.addPopUp(facWindow, DisplayObject(FlexGlobals.topLevelApplication), true);
@@ -1687,14 +1624,14 @@
 				
 			}
 			
-			private function closeHandlerNCF(event:Event):void {
+			/*private function closeHandlerNCF(event:Event):void {
 				var titleWin:TitleWindow = event.target as TitleWindow;
 				titleWin.removeEventListener(CloseEvent.CLOSE, closeHandler);
 				PopUpManager.removePopUp(titleWin as IFlexDisplayObject);
 				
 				//TODO: Volver a cargar el documento
-				reloadDocumento(_recibo.docId);
-			}
+				reloadDocumento(_recibo.docId, false);
+			}*/
 			
 			protected function cmdAuditoria_clickHandler(event:MouseEvent):void {
 				var remAuditoria:RemoteObject = getNewRemoteObject(); 
@@ -1787,11 +1724,13 @@
 			}
 			
 			protected function cmdAbrirNotaCredito_clickHandler(event:MouseEvent):void {
+				creandoNCF = false;
+				
 				if (!recibo.notaCreditoFinanciera) {
 					dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, recibo.processId));
 					
 				} else {
-					abrirNotaCreditoFinanciera(recibo.notaCreditoFinanciera, false);
+					abrirNotaCreditoFinanciera(recibo.notaCreditoFinanciera);
 				}
 			}			
 			
@@ -1821,9 +1760,13 @@
 				frmDocumentosValores.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void {
 					PopUpManager.removePopUp(facPendWindow as IFlexDisplayObject);
 					facPendWindow = null;
+					
+					recibo = frmDocumentosValores.recibo;
 				});
 				
 				frmDocumentosValores.addEventListener("save_documentos_y_valores", function(event:Event):void {
+					recibo = frmDocumentosValores.recibo;
+					
 					guardarRecibo();
 				});
 				
@@ -1984,12 +1927,33 @@
 			
 			public function handleFault(event:FaultEvent):void {
 				var message:String = (event.fault && event.fault.rootCause) 
-					? (event.fault.rootCause.cause ? event.fault.rootCause.cause.message : "") 
+					? (event.fault.rootCause.message ? event.fault.rootCause.message : "") 
 					: null;
 				if (!message) {
 					message = event.message.toString();
 				}				
-				Alert.show(message, "Error", 4, null, null, StyleManager.getStyleManager(null).getStyleDeclaration('.icons32').getStyle('ErrorIcon'));
+				var errorPnl:ErrorPanel = new ErrorPanel();
+				errorPnl.type = 0;
+				errorPnl.showButtons = true;
+				errorPnl.errorText = message;
+				errorPnl.detailsText = event.fault.getStackTrace();
+				
+				var helpWindow:TitleWindow = new TitleWindow();
+				helpWindow.title = "Error";
+				helpWindow.width = 640;
+				
+				PopUpManager.addPopUp(helpWindow, this, true);
+				PopUpManager.centerPopUp(helpWindow);
+				
+				helpWindow.y = 120;
+				helpWindow.addElement(errorPnl);
+				
+				helpWindow.addEventListener(CloseEvent.CLOSE, function():void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				});					
+				errorPnl.addEventListener(CloseEvent.CLOSE, function():void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				});
 				
 				running = false;
 				creando_nuevo = false
@@ -2597,33 +2561,33 @@
 			<mx:Image id="loader1" alpha=".5" scaleX=".25" scaleY=".25" source="@Embed(source='assets/general/logo_oscuro.gif')"/>
 			<s:Spacer width="100%"/>
 			<s:CheckBox id="chbEnvioMailAut" selected="{GeneralOptions.getInstance().opciones.envioAutomaticoMail == 'true'}" label="Envío correo automático"
-						includeInLayout="{!recibo.emitido}"
-						visible="{!recibo.emitido}" />
+						includeInLayout="false" visible="false" />
 			<s:Spacer width="100%" />
 			<s:Button id="cmdNuevo" visible="{!_modoVisualizacion }" label="Nuevo" click="cmdNuevo_clickHandler(event)" focusEnabled="false"
 					  includeInLayout="{!_modoVisualizacion}" styleName="nuevoButton" toolTip="Nuevo recibo"/>
 
-			<s:Button id="cmdAbrirNotaCredito" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.processId &amp;&amp; recibo.serie != 'A'}"
+			<s:Button id="cmdAbrirNotaCredito" 
+					  visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.processId &amp;&amp; recibo.serie != 'A'}"
+					  includeInLayout="{!isAster &amp;&amp; recibo.emitido &amp;&amp; recibo.processId &amp;&amp; recibo.serie != 'A'}"
 					  label="Visualizar NCF" click="cmdAbrirNotaCredito_clickHandler(event)" enabled="{tieneDescuentos}" focusEnabled="false"
 					  styleName="verButton" toolTip="Visualizar N/C 36 Financiera"/>
-			<s:Button id="cmdCrearNotaCredito" visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.processId &amp;&amp; recibo.serie != 'A'}"
+			<s:Button id="cmdCrearNotaCredito" 
+					  visible="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.processId &amp;&amp; recibo.serie != 'A'}"
+					  includeInLayout="{!isAster &amp;&amp; recibo.emitido &amp;&amp; !recibo.processId &amp;&amp; recibo.serie != 'A'}"
 					  label="Nota Crédito" click="cmdCrearNotaCredito_clickHandler(event)" enabled="{tieneDescuentos}" focusEnabled="false"
 					  styleName="nuevoButton" toolTip="Generar N/C 36 Financiera"/>
 			
-			<s:Button id="cmdBorrar" visible="false" label="Eliminar" click="cmdBorrar_clickHandler(event)"
-					  enabled="{!tieneVinculos &amp;&amp; !recibo.nuevo &amp;&amp; !recibo.emitido}" focusEnabled="false" includeInLayout="false"
-					  styleName="trashButton" toolTip="Borrar documento"/>
+			<s:Button id="cmdBorrar" label="Eliminar" click="cmdBorrar_clickHandler(event)"  enabled="{!tieneVinculos &amp;&amp; !recibo.nuevo &amp;&amp; !recibo.emitido}" 
+					  focusEnabled="false" styleName="trashButton" toolTip="Borrar documento"/>
 			<s:Button id="cmdGuardar" visible="{hasPerm()}" label="Guardar" click="cmdGuardar_clickHandler(event)"
 					  enabled="{!recibo.emitido &amp;&amp; tieneCambios}" focusEnabled="false" styleName="saveButton" toolTip="Guardar documento"/>
 			
-			<s:Button id="cmdEmitir" visible="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" label="Emitir" click="cmdEmitir_clickHandler(event)"
+			<s:Button id="cmdEmitir" visible="{!recibo.emitido &amp;&amp; !_modoVisualizacion &amp;&amp; !recibo.nuevo}" label="Emitir" click="cmdEmitir_clickHandler(event)"
 					  enabled="{(!recibo.emitido &amp;&amp; tieneVinculos) || (recibo.serie == 'P')}" focusEnabled="false"
-					  includeInLayout="{!_modoVisualizacion &amp;&amp; !recibo.nuevo}" styleName="emitirButton" toolTip="Emitir"/>
+					  includeInLayout="{!recibo.emitido &amp;&amp; !_modoVisualizacion &amp;&amp; !recibo.nuevo}" styleName="emitirButton" toolTip="Emitir"/>
 
 			<s:Button id="cmdEMail" label="Email" click="cmdEMail_clickHandler(event)" focusEnabled="false" styleName="eMailButton" toolTip="Enviar por eMail"/>
 			
-			<s:Spacer width="5"/>
-
 			<s:Spacer width="10"/>
 			<s:Button id="cmdCancel" label="Cerrar" click="cmdCancel_clickHandler(event)" focusEnabled="false" styleName="cancelarButton" toolTip="Cerrar"/>
 		</s:HGroup>

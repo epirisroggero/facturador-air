@@ -219,6 +219,9 @@
 					PopUpManager.removePopUp(comprasWindow as IFlexDisplayObject);
 					comprasWindow = null;
 				});
+				frmHistoricoCompras.addEventListener(AbrirFacturaEvent.ABRIR_DOCUMENTO, function(event:AbrirFacturaEvent):void {
+					dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, event.docId));
+				});
 				
 				var docPendientes:ArrayCollection = new ArrayCollection();
 				docPendientes.addItem(facturasPendientes);

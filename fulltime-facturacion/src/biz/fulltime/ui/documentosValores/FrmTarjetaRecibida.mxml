@@ -5,6 +5,8 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.ReciboEvent;
 			import biz.fulltime.model.Banco;
 			import biz.fulltime.model.Cliente;
 			import biz.fulltime.model.Comprobante;
@@ -14,11 +16,20 @@
 			import com.hillelcoren.components.AutoComplete;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.TitleWindow;
 			
 			import util.CatalogoFactory;
+			import util.ErrorPanel;
 			
-			private var _financiera:String;
+			private var _banco:Banco;
 			
 			private var _cliente:Cliente;
 			
@@ -26,34 +37,17 @@
 			
 			private var _documento:Documento;
 			
-			private var _formaPagoTipo:Number;
-			
 			[Bindable]
-			public var modeStr:String;
+			public var modeStr:String = "Tarjetas recibidas";
 			
-			
-			public function get formaPagoTipo():Number {
-				return _formaPagoTipo;
-			}
-			
-			public function set formaPagoTipo(value:Number):void {
-				_formaPagoTipo = value;
-				
-				modeStr = formaPagoTipo == 43 ? "Cheques recibidos" : (
-					formaPagoTipo == 44 ? "Tarjetas recibidas" : (
-						formaPagoTipo == 45 ? "Conformes recibidos" : (
-							formaPagoTipo == 51 ? "Créditos bancarios" : "")));
-				
-			}
-			
-			
+									
 			[Bindable]
-			public function get financiera():String {
-				return _financiera;
+			public function get banco():Banco {
+				return _banco;
 			}
 			
-			public function set financiera(value:String):void {
-				_financiera = value;
+			public function set banco(value:Banco):void {
+				_banco = value;
 			}
 			
 			[Bindable]
@@ -64,7 +58,6 @@
 			public function set recibo(value:Documento):void {
 				_recibo = value;
 			}
-			
 			
 			public function codigoNombreLabelFunction(item:Object):String {
 				var label:String = "";
@@ -113,11 +106,53 @@
 				}
 				
 				return label;
-			}
-			
+			}			
 			
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
+				// Guardar Documento
+				documento.bancoIdDoc = banco.codigo;
+				documento.cliente = cliente;
+				documento.estado = "C";
+				
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.showBusyCursor = true;
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+					recibo = event.result as Documento;
+					
+					var reciboEvent:ReciboEvent = new ReciboEvent(ReciboEvent.RECIBO_MODIFICADO);
+					reciboEvent.recibo = recibo;
+					
+					dispatchEvent(reciboEvent);
+				});
+				
+				remObj.altaDocValores(documento, recibo.docId);
+			}
+			
+			private function resultSave(event:ResultEvent):void {
+				var result:Documento = event.result as Documento;
+				if (!recibo) {
+					Alert.show("No se grabó correctamente la tarjeta", "Error");
+					return;
+				}
+				var  error:ErrorPanel = new ErrorPanel();
+				error.cornerRadius = 10;
+				error.backgroundAlpha = .95;
+				error.showButtons = false;
+				error.type = 2;
+				
+				error.errorText = "TARJETA GUARDADA.";
+				
+				PopUpManager.addPopUp(error, this, true);
+				PopUpManager.centerPopUp(error);
+				
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				
+				setTimeout(function():void {
+					PopUpManager.removePopUp(error);
+				}, 1500);				
 			}
 			
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
@@ -138,6 +173,48 @@
 				
 			}
 			
+			private function getNewRemoteObject(showBusyCursor:Boolean = true):RemoteObject {
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.showBusyCursor = showBusyCursor;
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				
+				return remObj;
+			}
+
+			public function handleFault(event:FaultEvent):void {
+				var message:String = (event.fault && event.fault.rootCause) 
+					? (event.fault.rootCause.message ? event.fault.rootCause.message : "") 
+					: null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				var errorPnl:ErrorPanel = new ErrorPanel();
+				errorPnl.type = 0;
+				errorPnl.showButtons = true;
+				errorPnl.errorText = message;
+				errorPnl.detailsText = event.fault.getStackTrace();
+				
+				var helpWindow:TitleWindow = new TitleWindow();
+				helpWindow.title = "Error";
+				helpWindow.width = 640;
+				
+				PopUpManager.addPopUp(helpWindow, this, true);
+				PopUpManager.centerPopUp(helpWindow);
+				
+				helpWindow.y = 120;
+				helpWindow.addElement(errorPnl);
+				
+				helpWindow.addEventListener(CloseEvent.CLOSE, function():void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				});
+				errorPnl.addEventListener(CloseEvent.CLOSE, function():void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				});
+			}
+
+
 		]]>
 	</fx:Script>
 	
@@ -180,13 +257,17 @@
 				<s:layout>
 					<s:FormLayout gap="-12" />
 				</s:layout>
-				<s:FormItem label="Concepto" width="100%">
+				<s:FormItem label="Concepto" width="100%" required="true">
 					<s:TextInput id="txtConcepto" width="100%" text="@{documento.concepto}"/>
 				</s:FormItem>
 				<s:FormItem label="Financiera" width="100%">
-					<s:TextInput id="txtFinanciera" width="100%"/>
+					<components:MyAutoComplete id="cmbBanco" width="100%" height="24" fontSize="14" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().bancos }" labelField="nombre"
+											   matchType="anyPart" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
+											   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="codigoNombreLabelFunction" backspaceAction="focus"
+											   dropDownRowCount="{CatalogoFactory.getInstance().bancos.length}" selectedItem="@{banco}" next_focus="{cmbCliente}" previous_focus="{txtConcepto}" />
 				</s:FormItem>
-				<s:FormItem label="Cliente" width="100%">
+
+				<s:FormItem label="Cliente" width="100%" required="true">
 					<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre" matchType="anyPart"
 											   prompt="Ingrese cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 											   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
@@ -196,22 +277,21 @@
 				<s:FormItem label="Titular" width="100%">
 					<s:TextInput id="txtTitular" width="100%" />
 				</s:FormItem>
-				<s:FormItem label="Nº Tarjeta" width="100%">
+				<s:FormItem label="Nº Tarjeta" width="100%"  required="true">
 					<s:HGroup verticalAlign="middle">
-						<components1:MyTextInput id="txtNroTarjeta" width="150"/>
+						<components1:MyTextInput id="txtNroTarjeta" width="150" text="@{documento.tarjetaNro}"/>
 						<s:Label text="Plan Pagos" paddingLeft="30" />
-						<components1:MyTextInput id="txtPlanPagos" width="60"/>
+						<components1:MyTextInput id="txtPlanPagos" width="60" text="@{documento.plan}"/>
 					</s:HGroup>
 				</s:FormItem>
 				<s:FormItem label="Nº Autorización" width="100%">
-					<components1:MyTextInput id="txtAutorizacion" width="100%"/>
+					<components1:MyTextInput id="txtAutorizacion" width="100%" text="@{documento.autorizacion}"/>
 				</s:FormItem>
 				<s:FormItem label="Caja">
 					<s:DropDownList id="ddlCaja" dataProvider="{CatalogoFactory.getInstance().cajas}" labelField="nombre" width="100%" selectedIndex="0"/>
 				</s:FormItem>
-				<s:FormItem label="Total">
+				<s:FormItem label="Total" required="true">
 					<components1:MyTextInput id="txtTotal" text="@{documento.total}" width="240" textAlign="right" permitirNegativos="false" />
-					
 				</s:FormItem>
 			</s:Form>
 		</s:VGroup>
@@ -221,8 +301,9 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" enabled="false"/>
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" enabled="false"/>
+				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

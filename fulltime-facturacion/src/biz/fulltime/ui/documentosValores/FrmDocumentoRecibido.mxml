@@ -5,7 +5,10 @@
 
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.event.ReciboEvent;
 			import biz.fulltime.model.Banco;
+			import biz.fulltime.model.Caja;
 			import biz.fulltime.model.Cliente;
 			import biz.fulltime.model.Comprobante;
 			import biz.fulltime.model.Documento;
@@ -14,9 +17,19 @@
 			import com.hillelcoren.components.AutoComplete;
 			
 			import mx.collections.ArrayCollection;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.events.IndexChangeEvent;
 			
 			import util.CatalogoFactory;
+			import util.ErrorPanel;
 
 			private var _banco:Banco;
 			
@@ -29,24 +42,9 @@
 			private var _formaPagoTipo:Number;
 			
 			[Bindable]
-			public var modeStr:String;
+			public var modeStr:String = "Cheques recibidos";
 
-			
-			public function get formaPagoTipo():Number {
-				return _formaPagoTipo;
-			}
-			
-			public function set formaPagoTipo(value:Number):void {
-				_formaPagoTipo = value;
-				
-				modeStr = formaPagoTipo == 43 ? "Cheques recibidos" : (
-					formaPagoTipo == 44 ? "Tarjetas recibidas" : (
-						formaPagoTipo == 45 ? "Conformes recibidos" : (
-							formaPagoTipo == 51 ? "Créditos bancarios" : "")));
-				
-			}
-
-
+		
 			[Bindable]
 			public function get banco():Banco {
 				return _banco;
@@ -64,7 +62,6 @@
 			public function set recibo(value:Documento):void {
 				_recibo = value;
 			}
-
 
 			public function codigoNombreLabelFunction(item:Object):String {
 				var label:String = "";
@@ -115,10 +112,28 @@
 				return label;
 			}
 
-
 			protected function cmdAceptar_clickHandler(event:MouseEvent):void {
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				documento.bancoIdDoc = banco.codigo;
+				documento.cliente = cliente;
+				documento.estado = "C";
+					
+				var remObj:RemoteObject = new RemoteObject();
+				remObj.destination = "CreatingRpc";
+				remObj.showBusyCursor = true;
+				remObj.channelSet = ServerConfig.getInstance().channelSet;
+				remObj.addEventListener(FaultEvent.FAULT, handleFault);
+				remObj.addEventListener(ResultEvent.RESULT, function(event:ResultEvent):void {
+					recibo = event.result as Documento;
+					
+					var reciboEvent:ReciboEvent = new ReciboEvent(ReciboEvent.RECIBO_MODIFICADO);
+					reciboEvent.recibo = recibo;
+					
+					dispatchEvent(reciboEvent);
+				});
+				
+				remObj.altaDocValores(documento, recibo.docId);
 			}
+			
 
 			protected function cmdCancel_clickHandler(event:MouseEvent):void {
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
@@ -135,9 +150,45 @@
 						_cliente = c;		
 					}
 				}
-				
 			}
 
+			public function handleFault(event:FaultEvent):void {
+				var message:String = (event.fault && event.fault.rootCause) 
+					? (event.fault.rootCause.message ? event.fault.rootCause.message : "") 
+					: null;
+				if (!message) {
+					message = event.message.toString();
+				}				
+				var errorPnl:ErrorPanel = new ErrorPanel();
+				errorPnl.type = 0;
+				errorPnl.showButtons = true;
+				errorPnl.errorText = message;
+				errorPnl.detailsText = event.fault.getStackTrace();
+				
+				var helpWindow:TitleWindow = new TitleWindow();
+				helpWindow.title = "Error";
+				helpWindow.width = 640;
+				
+				PopUpManager.addPopUp(helpWindow, this, true);
+				PopUpManager.centerPopUp(helpWindow);
+				
+				helpWindow.y = 120;
+				helpWindow.addElement(errorPnl);
+				
+				helpWindow.addEventListener(CloseEvent.CLOSE, function():void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				});
+				errorPnl.addEventListener(CloseEvent.CLOSE, function():void {
+					PopUpManager.removePopUp(helpWindow as IFlexDisplayObject);
+				});
+			}
+			
+			protected function ddlCaja_changeHandler(event:IndexChangeEvent):void {
+				var caja:Caja = ddlCaja.selectedItem as Caja;
+				documento.cajaId = caja ? new Number(caja.codigo) : 1;
+				
+			}
+			
 		]]>
 	</fx:Script>
 
@@ -193,18 +244,17 @@
 					<components:MyAutoComplete id="cmbCliente" width="100%" textAlign="left" dataProvider="{ CatalogoFactory.getInstance().clientes }" labelField="nombre" matchType="anyPart"
 											   prompt="Ingrese cliente" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false" allowMultipleSelection="false"
 											   allowEditingNewValues="false" dropDownItemRenderer="{ dropDownItemRenderer }" labelFunction="clienteLabelFunction" backspaceAction="focus"
-											   next_focus="{txtTitular}" dropDownWidth="480" dropDownRowCount="10" selectedItem="{cliente}" />
+											   next_focus="{txtTitular}" dropDownWidth="480" dropDownRowCount="10" selectedItem="@{cliente}" />
 					
 				</s:FormItem>
 				<s:FormItem label="Titular" width="100%">
-					<s:TextInput id="txtTitular" width="100%" />
+					<s:TextInput id="txtTitular" width="100%" text="@{documento.titular}"/>
 				</s:FormItem>
 				<s:FormItem label="Caja">
-					<s:DropDownList id="ddlCaja" dataProvider="{CatalogoFactory.getInstance().cajas}" labelField="nombre" width="100%" selectedIndex="0"/>
+					<s:DropDownList id="ddlCaja" dataProvider="{CatalogoFactory.getInstance().cajas}" labelField="nombre" width="100%" selectedIndex="0" change="ddlCaja_changeHandler(event)"/>
 				</s:FormItem>
 				<s:FormItem label="Total">
 					<components1:MyTextInput id="txtTotal" text="@{documento.total}" width="240" textAlign="right" permitirNegativos="false" />
-
 				</s:FormItem>
 			</s:Form>
 		</s:VGroup>
@@ -214,8 +264,9 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar" enabled="false"/>
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="closeButton16" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="aceptarButton" label="Confirmar" focusEnabled="true" toolTip="Confirmar"/>
+				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

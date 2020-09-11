@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:VGroup xmlns:components="biz.fulltime.ui.components.*" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="biz.fulltime.ui.renderers.*"
+<s:VGroup xmlns:components="biz.fulltime.ui.components.*"
+		  xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:renderers="biz.fulltime.ui.renderers.*"
 		  xmlns:s="library://ns.adobe.com/flex/spark"
-		  width="100%" height="100%" creationComplete="creationCompleteHandler(event)" preinitialize="init()">
+		  width="100%" height="100%" creationComplete="creationCompleteHandler(event)"
+		  preinitialize="init()">
 
 	<fx:Script>
 		<![CDATA[
 			import biz.fulltime.dto.DocumentoQuery;
+			import biz.fulltime.event.ReciboEvent;
 			import biz.fulltime.model.Cliente;
 			import biz.fulltime.model.Comprobante;
 			import biz.fulltime.model.Documento;
@@ -35,8 +40,6 @@
 			private var _cliente:Cliente;
 
 			private var _recibo:Documento;
-
-			private var _formaPagoTipo:Number;
 
 			[Bindable]
 			public var modeStr:String;
@@ -103,11 +106,7 @@
 
 			protected function cmdAgregar_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = formaPagoTipo == 43 ? "Cheque recibido" : (
-								formaPagoTipo == 44 ? "Tarjeta recibida" : (
-								 formaPagoTipo == 45 ? "Conforme recibido" : (
-								  formaPagoTipo == 51 ? "Crédito bancario" : "")));
-				
+				window.title = "Nueva tarjeta recibida";
 						
 				window.width = 650;
 				window.height = 600;
@@ -117,54 +116,32 @@
 						window = null;
 					});
 				
-				var docRecibido:Documento = null;
+				var docRecibido:Documento = new Documento(new Comprobante("44", "Tarjeta Recibida"));
+				docRecibido.numero = "0";
+				docRecibido.moneda = _recibo.moneda;
+				docRecibido.cliente = _recibo.cliente;
+				docRecibido.fechaDoc = new Date();
+				docRecibido.fechaEmision = new Date();
+				docRecibido.concepto = _recibo.comprobante.nombre.toLocaleUpperCase() + " N° " + _recibo.serie + _recibo.numero;
+				docRecibido.total = _recibo.total;
+				docRecibido.cajaId = 1;
 				
-				if (formaPagoTipo == 43) {
-					docRecibido = new Documento(new Comprobante("43", "Cheque Recibido"));
-				} else if (formaPagoTipo == 44) {
-					docRecibido = new Documento(new Comprobante("44", "Tarjeta Recibida"));
-				} else if (formaPagoTipo == 45) {
-					docRecibido = new Documento(new Comprobante("45", "Conformes a cobrar"));
-				} else if (formaPagoTipo == 51) {
-					docRecibido = new Documento(new Comprobante("51", "Crédito Bancario"));
-				} 
-				if (docRecibido != null) {
-					docRecibido.numero = "0";
-					docRecibido.moneda = _recibo.moneda;
-					docRecibido.cliente = _recibo.cliente;
-					docRecibido.fechaDoc = new Date();
-					docRecibido.fechaEmision = new Date();
-					docRecibido.concepto = _recibo.comprobante.nombre.toLocaleUpperCase() + " N° " + _recibo.serie + _recibo.numero;
-					docRecibido.total = _recibo.total;
-					
-				} else {
-					return;
-				}
+				var frmTarjetaRecibida:FrmTarjetaRecibida = new FrmTarjetaRecibida();
+				frmTarjetaRecibida.cliente = cliente;
+				frmTarjetaRecibida.documento = docRecibido;
 				
-				if (formaPagoTipo == 43) {
-					var frmChequeRecibido:FrmDocumentoRecibido = new FrmDocumentoRecibido();
-					frmChequeRecibido.cliente = cliente;
-					frmChequeRecibido.documento = docRecibido;
-					frmChequeRecibido.formaPagoTipo = formaPagoTipo;
-					window.addElement(frmChequeRecibido);
+				window.addElement(frmTarjetaRecibida);
+				
+				frmTarjetaRecibida.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
+					PopUpManager.removePopUp(window as IFlexDisplayObject);
+					window = null;
+				});
+				frmTarjetaRecibida.addEventListener(ReciboEvent.RECIBO_MODIFICADO, function chequeGuardado(event:ReciboEvent):void {
+					PopUpManager.removePopUp(window as IFlexDisplayObject);
+					window = null;
 					
-					frmChequeRecibido.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
-						PopUpManager.removePopUp(window as IFlexDisplayObject);
-						window = null;
-					});
-				} else if (formaPagoTipo == 44) {
-					var frmTarjetaRecibida:FrmTarjetaRecibida = new FrmTarjetaRecibida();
-					frmTarjetaRecibida.cliente = cliente;
-					frmTarjetaRecibida.documento = docRecibido;
-					frmTarjetaRecibida.formaPagoTipo = formaPagoTipo;
-					window.addElement(frmTarjetaRecibida);
-					
-					frmTarjetaRecibida.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
-						PopUpManager.removePopUp(window as IFlexDisplayObject);
-						window = null;
-					});
-				}
-
+					recibo = event.recibo;
+				});
 
 				PopUpManager.addPopUp(window, DisplayObject(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(window);
@@ -197,7 +174,7 @@
 				vinculosfp = new ArrayCollection();
 
 				for each (var vinculoFP:VinculosFP in _recibo.vinculosfp) {
-					if (vinculoFP.vinFPTipo == formaPagoTipo) {
+					if (vinculoFP.vinFPTipo == 44) {
 						vinculosfp.addItem(vinculoFP.docFP2);
 					}
 				}
@@ -219,10 +196,6 @@
 					}
 				}
 
-				// Guardar recibo
-				/*for each (var vinculoFP:VinculosFP in _recibo.vinculosfp) {
-					trace(vinculoFP.docIdFP1, vinculoFP.docIdFP2, vinculoFP.vinFPTipo, vinculoFP.vinIE);
-				}*/
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 
@@ -237,10 +210,7 @@
 
 			protected function cmdVincular_clickHandler(event:MouseEvent):void {
 				var window:TitleWindow = new TitleWindow();
-				window.title = formaPagoTipo == 43 ? "Vincular cheques recibidos" : (
-					formaPagoTipo == 44 ? "Vincular tarjetas recibidas" : (
-						formaPagoTipo == 45 ? "Vincular conformes recibidos" : (
-							formaPagoTipo == 51 ? "Vincular créditos bancario" : "")));
+				window.title = "Vincular tarjetas recibidas";
 
 				window.width = 900;
 				window.height = 700;
@@ -290,7 +260,6 @@
 						window = null;
 					});
 
-
 				PopUpManager.addPopUp(window, DisplayObject(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(window);
 
@@ -320,21 +289,7 @@
 				return "";
 			}
 
-			public function get formaPagoTipo():Number {
-				return _formaPagoTipo;
-			}
-
-			public function set formaPagoTipo(value:Number):void {
-				_formaPagoTipo = value;
-				
-				modeStr = formaPagoTipo == 43 ? "Cheques recibidos" : (
-					formaPagoTipo == 44 ? "Tarjetas recibidas" : (
-						formaPagoTipo == 45 ? "Conformes recibidos" : (
-							formaPagoTipo == 51 ? "Créditos bancarios" : "")));
-
-			}
-
-
+		
 			protected function dgVinculos_selectionChangeHandler(event:GridSelectionEvent):void {
 				var vinculoFP:VinculosFP = dgVinculos.selectedItem as VinculosFP;
 				cmdBorrarVinculo.enabled = vinculoFP != null;
@@ -347,12 +302,14 @@
 
 	<fx:Declarations>
 		<fx:Component id="dropDownItemRenderer">
-			<renderers:CodigoNombreItemRenderer />
+			<renderers:CodigoNombreItemRenderer/>
 		</fx:Component>
 
 		<s:ArrayList id="cols">
-			<s:GridColumn width="85" dataField="fechaStr" headerText="Fecha" labelFunction="fechaDoc_labelFunction"/>
-			<s:GridColumn dataField="comprobante" headerText="Comprobante" labelFunction="comprobante_cod_labelFunction" />
+			<s:GridColumn width="85" dataField="fechaStr" headerText="Fecha"
+						  labelFunction="fechaDoc_labelFunction"/>
+			<s:GridColumn dataField="comprobante" headerText="Comprobante"
+						  labelFunction="comprobante_cod_labelFunction"/>
 			<s:GridColumn width="90" dataField="numero" headerText="Serie y Nº">
 				<s:itemRenderer>
 					<fx:Component>
@@ -378,10 +335,10 @@
 					</fx:Component>
 				</s:itemRenderer>
 			</s:GridColumn>
-			<s:GridColumn width="100" headerText="Financiera" />
-			<s:GridColumn width="85" dataField="titular" headerText="Titular" />
-			<s:GridColumn width="85" dataField="tarjetaNro" headerText="Nº de Tarjeta" />
-			<s:GridColumn width="85" dataField="estado" headerText="Estado" >
+			<s:GridColumn width="100" dataField="bancoIdDoc" headerText="Financiera" />
+			<s:GridColumn width="85" dataField="titular" headerText="Titular"/>
+			<s:GridColumn width="85" dataField="tarjetaNro" headerText="Nº de Tarjeta"/>
+			<s:GridColumn width="85" dataField="estado" headerText="Estado">
 				<s:itemRenderer>
 					<fx:Component>
 						<s:DefaultGridItemRenderer textAlign="left">
@@ -412,7 +369,8 @@
 				</s:itemRenderer>
 
 			</s:GridColumn>
-			<s:GridColumn width="60" dataField="moneda" headerText="Moneda" labelFunction="moneda_labelFunction" />
+			<s:GridColumn width="60" dataField="moneda" headerText="Moneda"
+						  labelFunction="moneda_labelFunction"/>
 			<s:GridColumn width="75" dataField="total" headerText="Total">
 				<s:itemRenderer>
 					<fx:Component>
@@ -442,28 +400,43 @@
 			</s:GridColumn>
 		</s:ArrayList>
 
-		<s:NumberFormatter id="nf_Espanol_Espanol" locale="es_ES" fractionalDigits="2" />
+		<s:NumberFormatter id="nf_Espanol_Espanol" fractionalDigits="2" locale="es_ES"/>
 
 	</fx:Declarations>
 
-	<s:Panel width="100%" height="100%" title="{modeStr}" styleName="pnlForm">
-		<s:VGroup width="100%" height="100%" horizontalAlign="left" gap="0">
-			<s:DataGrid id="dgVinculos" width="100%" height="100%" selectionChange="dgVinculos_selectionChangeHandler(event)" dataProvider="{vinculosfp}" sortableColumns="false" columns="{cols}" doubleClickEnabled="true" focusEnabled="true" />
+	<s:Panel width="100%" height="100%" styleName="pnlForm" title="{modeStr}">
+		<s:VGroup width="100%" height="100%" gap="0" horizontalAlign="left">
+			<s:DataGrid id="dgVinculos" width="100%" height="100%" columns="{cols}"
+						dataProvider="{vinculosfp}" doubleClickEnabled="true" focusEnabled="true"
+						selectionChange="dgVinculos_selectionChangeHandler(event)"
+						sortableColumns="false"/>
 		</s:VGroup>
 		<s:controlBarContent>
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
-				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
-				<s:Spacer width="100%" />
-				<s:Button id="cmdAgregar" width="110" click="cmdAgregar_clickHandler(event)" styleName="textButton" label="Agregar" focusEnabled="true" toolTip="Agregar" />
-				<s:Button id="cmdBorrarVinculo" width="110" click="cmdBorrarVinculo_clickHandler(event)" styleName="textButton" label="Quitar vínculo" focusEnabled="true" toolTip="Quitar vínculo" 
-						  enabled="{dgVinculos.selectedItem}"/>
-				<s:Button id="cmdVincular" width="110" click="cmdVincular_clickHandler(event)" styleName="textButton" label="Vincular" focusEnabled="true" toolTip="Vincular"
-						  enabled="{dgVinculos.selectedItem}"/>
-				<s:Button id="cmdVer" width="110" click="cmdVer_clickHandler(event)" styleName="textButton" label="Ver" focusEnabled="true" toolTip="Ver" 
-						  enabled="{dgVinculos.selectedItem}"/>
-				<s:Spacer width="20" />
-				<s:Button id="cmdAceptar" width="110" click="cmdAceptar_clickHandler(event)" styleName="textButton" label="Aplicar" focusEnabled="true" toolTip="Aplicar" />
-				<s:Button id="cmdCancel" width="110" click="cmdCancel_clickHandler(event)" styleName="textButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<mx:Image id="loader1" alpha=".5" scaleX=".25" scaleY=".25"
+						  source="@Embed(source='assets/general/logo_oscuro.gif')"/>
+				<s:Spacer width="100%"/>
+				<s:Button id="cmdAgregar" width="110" label="Agregar"
+						  click="cmdAgregar_clickHandler(event)" focusEnabled="true"
+						  styleName="textButton" toolTip="Agregar"/>
+				<s:Button id="cmdBorrarVinculo" width="110" label="Quitar vínculo"
+						  click="cmdBorrarVinculo_clickHandler(event)"
+						  enabled="{dgVinculos.selectedItem}" focusEnabled="true"
+						  styleName="textButton" toolTip="Quitar vínculo"/>
+				<s:Button id="cmdVincular" width="110" label="Vincular"
+						  click="cmdVincular_clickHandler(event)"
+						  enabled="{dgVinculos.selectedItem}" focusEnabled="true"
+						  styleName="textButton" toolTip="Vincular"/>
+				<s:Button id="cmdVer" width="110" label="Ver" click="cmdVer_clickHandler(event)"
+						  enabled="{dgVinculos.selectedItem}" focusEnabled="true"
+						  styleName="textButton" toolTip="Ver"/>
+				<s:Spacer width="20"/>
+				<s:Button id="cmdAceptar" width="110" label="Aplicar"
+						  click="cmdAceptar_clickHandler(event)" focusEnabled="true"
+						  styleName="aceptarButton" toolTip="Aplicar"/>
+				<s:Button id="cmdCancel" width="110" label="Cerrar"
+						  click="cmdCancel_clickHandler(event)" focusEnabled="true"
+						  styleName="cancelarButton" toolTip="Cerrar"/>
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

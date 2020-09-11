@@ -223,10 +223,14 @@ public class Documento extends DocumentoBase {
 	
 	public var puntoVentaId:String; 
 	
-	public var tarjetaNro:String; 
+	public var tarjetaNro:String;
+	
+	public var autorizacion:String; 
+	
+	public var plan:String;
 	
 	public var notaCreditoFinanciera:Documento;
-
+	
 	public function isPendiente():Boolean {
 		return pendiente == null || pendiente != "N";
 	}
@@ -850,33 +854,33 @@ public class Documento extends DocumentoBase {
 	
 	public function getDocRecNeto():BigDecimal {
 		if (!_docRecNeto || _docRecNeto.length == 0) {
-			return BigDecimal.ZERO.setScale(4);
+			return BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
 		}
-		return new BigDecimal(_docRecNeto).setScale(4);
+		return new BigDecimal(_docRecNeto).setScale(4, MathContext.ROUND_HALF_EVEN);
 	}
 	
 	[Bindable(event="changeLineasVenta")]
 	public override function get total():String {
 		if (_total != null) {
-			return _total.setScale(4).toString();
+			return _total.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
 		}
 		return getTotalRedondeado().toString();
 	}
 
 	public override function set total(value:String):void {
 		if (!value || value.length == 0) {
-			_total = BigDecimal.ZERO.setScale(4);
+			_total = BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN);
 		} else {
-			_total = new BigDecimal(value).setScale(4);
+			_total = new BigDecimal(value).setScale(4, MathContext.ROUND_HALF_EVEN);
 		}
 	}
 
 	[Bindable(event="changeLineasVenta")]
 	public function get subTotal():String {
 		if (_subTotal != null) {
-			return _subTotal.setScale(4).toString();
+			return _subTotal.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
 		}
-		return BigDecimal.ZERO.setScale(4).toString();
+		return BigDecimal.ZERO.setScale(4, MathContext.ROUND_HALF_EVEN).toString();
 	}
 
 	public function set subTotal(value:String):void {
@@ -1654,9 +1658,9 @@ public class Documento extends DocumentoBase {
 				
 				var encargadoDeCuenta:Vendedor;
 				if (cliente.encargadoCuenta) {
-					for each (var v:Vendedor in CatalogoFactory.getInstance().vendedores) {
-						if (cliente.encargadoCuenta == v.codigo) {
-							encargadoDeCuenta = v;
+					for each (var vend:Vendedor in CatalogoFactory.getInstance().vendedores) {
+						if (cliente.encargadoCuenta == vend.codigo) {
+							encargadoDeCuenta = vend;
 							break;
 						}
 					}

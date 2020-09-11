@@ -5,6 +5,7 @@
 	<fx:Script>
 		<![CDATA[
 			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.event.ReciboEvent;
 			import biz.fulltime.model.Documento;
 			import biz.fulltime.model.DocumentoFormaPago;
 			import biz.fulltime.model.FormaPago;
@@ -93,8 +94,6 @@
 				
 				documentosValores = _recibo.pagos;
 				
-				//_documento.facturasVinculadas
-				
 				calcularTotales();
 			}
 			
@@ -130,8 +129,9 @@
 				lstDocumentosValores.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
 					PopUpManager.removePopUp(window as IFlexDisplayObject);
 					window = null;
+					
+					recibo = lstDocumentosValores.recibo;
 				});
-			
 				
 				PopUpManager.addPopUp(window, DisplayObject(FlexGlobals.topLevelApplication), true);
 				PopUpManager.centerPopUp(window);
@@ -152,9 +152,15 @@
 				});
 				
 				var lstDocumentosValores:ListTarjetasRecibidas = new ListTarjetasRecibidas();
-				lstDocumentosValores.formaPagoTipo = 44; // Tarjeta
 				lstDocumentosValores.recibo = recibo;
 				lstDocumentosValores.cliente = recibo.cliente;
+				
+				lstDocumentosValores.addEventListener(CloseEvent.CLOSE, function closeHandler(event:Event):void {
+					PopUpManager.removePopUp(window as IFlexDisplayObject);
+					window = null;
+					
+					recibo = lstDocumentosValores.recibo;
+				});
 				
 				window.addElement(lstDocumentosValores);
 		
@@ -572,7 +578,9 @@
 			<s:HGroup width="100%" horizontalAlign="right" paddingBottom="0" paddingTop="0">
 				<mx:Image id="loader1" source="@Embed(source='assets/general/logo_oscuro.gif')" alpha=".5" scaleX=".25" scaleY=".25" />
 				<s:Spacer width="100%" />
-				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="closeButton16" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				<s:Button id="cmdCancel" click="cmdCancel_clickHandler(event)" width="110" styleName="cancelarButton" label="Cerrar" focusEnabled="true" toolTip="Cerrar" />
+				
+				
 			</s:HGroup>
 		</s:controlBarContent>
 	</s:Panel>

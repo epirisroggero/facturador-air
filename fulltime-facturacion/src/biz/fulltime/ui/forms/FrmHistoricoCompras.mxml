@@ -4,8 +4,16 @@
 		 width="100%" height="100%" creationComplete="group1_creationCompleteHandler(event)" styleName="pntLineasVenta">
 	<fx:Script>
 		<![CDATA[
+			import biz.fulltime.conf.GeneralOptions;
+			import biz.fulltime.conf.ServerConfig;
+			import biz.fulltime.dto.AntecedentesArticulo;
+			import biz.fulltime.event.AbrirFacturaEvent;
+			import biz.fulltime.model.Contacto;
+			import biz.fulltime.model.FamiliaArticulos;
+			import biz.fulltime.model.Usuario;
+			
 			import com.hillelcoren.components.AutoComplete;
-
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CalendarLayoutChangeEvent;
@@ -14,16 +22,9 @@
 			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.remoting.RemoteObject;
-
+			
 			import spark.components.gridClasses.GridColumn;
-
-			import biz.fulltime.conf.GeneralOptions;
-			import biz.fulltime.conf.ServerConfig;
-			import biz.fulltime.dto.AntecedentesArticulo;
-			import biz.fulltime.model.Contacto;
-			import biz.fulltime.model.FamiliaArticulos;
-			import biz.fulltime.model.Usuario;
-
+			
 			import util.CatalogoFactory;
 			import util.DateUtil;
 
@@ -447,6 +448,10 @@
 				return false;
 			}
 
+			public function abrirDocumento(docId:String):void {
+				dispatchEvent(new AbrirFacturaEvent(AbrirFacturaEvent.ABRIR_DOCUMENTO, docId));
+			}
+
 		]]>
 	</fx:Script>
 
@@ -567,7 +572,7 @@
 			</s:VGroup>
 
 			<s:VGroup width="100%" height="100%" fontSize="10" horizontalAlign="center" visible="{!loading}" includeInLayout="{!loading}">
-				<s:DataGrid id="dgAntecedentes" width="100%" height="100%" fontSize="10" borderAlpha="0" rowHeight="22">
+				<s:DataGrid id="dgAntecedentes" width="100%" height="100%" fontSize="10" borderAlpha="0" rowHeight="24">
 					<s:columns>
 						<s:ArrayList>
 							<s:GridColumn width="75" dataField="fecha" headerText="FECHA" sortable="true">
@@ -584,7 +589,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														var fecha:Date = AntecedentesArticulo(data).fecha;
 														if (fecha) {
@@ -612,7 +617,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														label = AntecedentesArticulo(data).comprobante ? AntecedentesArticulo(data).comprobante.nombre : "";
 													}
@@ -634,7 +639,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														label = "";
 														if (AntecedentesArticulo(data).documentoSerie) {
@@ -664,7 +669,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														if (AntecedentesArticulo(data).cantidad > 0) {
 															label = AntecedentesArticulo(data).cantidad.toString();
@@ -691,7 +696,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														label = AntecedentesArticulo(data).articulo ? AntecedentesArticulo(data).articulo.codigo : "";
 													}
@@ -713,7 +718,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														label = AntecedentesArticulo(data).concepto ? AntecedentesArticulo(data).concepto : "";
 													}
@@ -735,7 +740,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														if (AntecedentesArticulo(data).articulo && AntecedentesArticulo(data).articulo.proveedor) {
 															label = AntecedentesArticulo(data).articulo.proveedor.codigo + "-" + AntecedentesArticulo(data).articulo.proveedor.nombre;
@@ -752,7 +757,7 @@
 							<s:GridColumn width="70" dataField="moneda.nombre" headerText="MONEDA" sortable="true">
 								<s:itemRenderer>
 									<fx:Component>
-										<s:DefaultGridItemRenderer fontSize="10" textAlign="left">
+										<s:DefaultGridItemRenderer fontSize="11" textAlign="left">
 											<fx:Script>
 												<![CDATA[
 													import biz.fulltime.dto.AntecedentesArticulo;
@@ -761,7 +766,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														label = AntecedentesArticulo(data).moneda ? AntecedentesArticulo(data).moneda.nombre : "";
 													}
@@ -784,7 +789,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 
 														if (AntecedentesArticulo(data).precioUnitario && AntecedentesArticulo(data).precioUnitario.length > 0) {
 															var precioUnitario:BigDecimal = new BigDecimal(AntecedentesArticulo(data).precioUnitario).setScale(2, MathContext.ROUND_HALF_UP);
@@ -812,7 +817,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 														
 														if (AntecedentesArticulo(data).neto) {
 															var neto:BigDecimal = new BigDecimal(AntecedentesArticulo(data).neto).setScale(2, MathContext.ROUND_HALF_UP);
@@ -840,7 +845,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 														
 														if (AntecedentesArticulo(data).costo) {
 															var costo:BigDecimal = new BigDecimal(AntecedentesArticulo(data).costo).setScale(2, MathContext.ROUND_HALF_UP);
@@ -868,7 +873,7 @@
 														if (data == null) {
 															return;
 														}
-														setStyle("fontSize", 10);
+														setStyle("fontSize", 11);
 														
 														if (AntecedentesArticulo(data).renta) {
 															var renta:BigDecimal = new BigDecimal(AntecedentesArticulo(data).renta).setScale(2, MathContext.ROUND_HALF_UP);
@@ -881,6 +886,29 @@
 												]]>
 											</fx:Script>
 										</s:DefaultGridItemRenderer>
+									</fx:Component>
+								</s:itemRenderer>
+							</s:GridColumn>
+							<s:GridColumn width="32" headerText="">
+								<s:itemRenderer>
+									<fx:Component>
+										<s:GridItemRenderer>
+											<fx:Script>
+												<![CDATA[
+													import biz.fulltime.dto.AntecedentesArticulo;
+													
+													protected function cmdAbrir_clickHandler(event:MouseEvent):void {
+														var docId:String = AntecedentesArticulo(data).docId;
+														
+														outerDocument.abrirDocumento(docId);
+													}
+												]]>
+											</fx:Script>
+											
+											<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingBottom="2" paddingLeft="2" paddingRight="2" paddingTop="2" verticalAlign="middle">
+												<s:Button id="cmdOpen" width="100%" height="100%" icon="@Embed('/assets/general/Open.png')" click="cmdAbrir_clickHandler(event)" toolTip="Ver documento" />
+											</s:VGroup>
+										</s:GridItemRenderer>
 									</fx:Component>
 								</s:itemRenderer>
 							</s:GridColumn>

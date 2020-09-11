@@ -19,6 +19,8 @@ public class AntecedentesArticulo {
 	public var documentoSerie:String;
 
 	public var documentoNumero:Number;
+	
+	public var docId:String;
 
 	public var fecha:Date;
 

@@ -281,7 +281,7 @@
 				
 				invalidateProperties();
 			}
-
+			
 			override protected function commitProperties():void {
 				super.commitProperties();
 				
@@ -1433,7 +1433,7 @@
 					helpWindow.addElement(frmLineasVenta);
 					helpWindow.addEventListener(CloseEvent.CLOSE, closeLineaVentaHandler);
 
-					PopUpManager.addPopUp(helpWindow, this, true);
+					PopUpManager.addPopUp(helpWindow, DisplayObject(FlexGlobals.topLevelApplication), true);
 					PopUpManager.centerPopUp(helpWindow);
 
 					helpWindow.closeButton.visible = false;
@@ -1760,7 +1760,11 @@
 
 			private function guardarDocumento(auditoria:Auditoria = null):void {
 				// Si documento es un contado, el plan de pagos debe de ser nulo y las cuotas deben de ser 0;
-				if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO || _documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.NOTA_CREDITO || _documento.comprobante.tipo == Comprobante.RECIBO_COBRO || _documento.comprobante.isMovimentoDeStockDeCliente() || _documento.comprobante.isMovimentoDeStockDeProveedor()) {
+				if (_documento.comprobante.tipo == Comprobante.VENTA_CONTADO || _documento.comprobante.tipo == Comprobante.DEVOLUCION_CONTADO 
+					|| _documento.comprobante.tipo == Comprobante.COMPRA_CONTADO || _documento.comprobante.tipo == Comprobante.NOTA_CREDITO 
+					|| _documento.comprobante.tipo == Comprobante.RECIBO_COBRO || _documento.comprobante.isMovimentoDeStockDeCliente()
+					|| _documento.comprobante.isMovimentoDeStockDeProveedor()) {
+					
 					_documento.planPagos = null;
 					_documento.cuotasDocumento.cuotas = new ArrayCollection();
 				}

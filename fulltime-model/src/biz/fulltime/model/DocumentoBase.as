@@ -70,6 +70,8 @@ public class DocumentoBase extends EventDispatcher {
 	public var registroFecha:Date;
 
 	public var registroHora:Date;
+	
+	public var estadoFecha:Date;
 
 	
 

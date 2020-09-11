@@ -15,6 +15,7 @@
 			import biz.fulltime.model.Giro;
 			import biz.fulltime.model.Moneda;
 			import biz.fulltime.model.Pais;
+			import biz.fulltime.model.PlanPagos;
 			import biz.fulltime.model.PreciosVenta;
 			import biz.fulltime.model.Proveedor;
 			import biz.fulltime.model.Usuario;
@@ -408,6 +409,11 @@
 					proveedor.contacto.zonaIdCto = null;
 				}
 			}
+			
+			protected function cmbFormaPago_changeHandler(event:Event):void {
+				proveedor.planPagos = cmbFormaPago.selectedItem as PlanPagos;
+			}
+
 
 			protected function cmbDepartamento_changeHandler(event:Event):void {
 				_departamento = cmbDepartamento.selectedItem as Departamento;
@@ -673,9 +679,20 @@
 																	   dataProvider="{ CatalogoFactory.getInstance().giros }" labelField="nombre" matchType="anyPart" prompt="Giro"
 																	   allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }" allowDuplicates="false"
 																	   allowMultipleSelection="false" allowEditingNewValues="false" labelFunction="codigoNombreLabelFunction"
-																	   backspaceAction="focus" next_focus="{apply}" selectedItem="{_giro}" previous_focus="{cmbDepartamento}"
+																	   backspaceAction="focus" next_focus="{cmbFormaPago}" selectedItem="{_giro}" previous_focus="{cmbDepartamento}"
 																	   dropDownItemRenderer="{ dropDownItemRenderer }" />
 										</s:FormItem>
+										<s:FormItem width="100%" label="Forma pago" styleName="ItemStyle">
+											<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+												<components:MyAutoComplete id="cmbFormaPago" width="50%" textAlign="left" change="cmbFormaPago_changeHandler(event)" enabled="{hasPerm()}"
+																		   dataProvider="{ CatalogoFactory.getInstance().planPagos }" labelField="nombre" matchType="anyPart"
+																		   prompt="Ingrese Forma de Pago" allowNewValues="false" selectedItemStyleName="{ AutoComplete.STYLE_MAC_MAIL }"
+																		   allowDuplicates="false" allowMultipleSelection="false" allowEditingNewValues="false"
+																		   labelFunction="codigoNombreLabelFunction" backspaceAction="focus" next_focus="{apply}"
+																		   selectedItem="{proveedor.planPagos}" previous_focus="{cmbGiro}" dropDownItemRenderer="{ dropDownItemRenderer }" />
+											</s:HGroup>
+										</s:FormItem>
+
 									</s:Form>
 								</s:VGroup>
 							</s:Scroller>

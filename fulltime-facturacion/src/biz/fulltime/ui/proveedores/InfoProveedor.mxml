@@ -825,6 +825,15 @@
 								<s:Label id="lblGiro" width="100%" text="{giro ? giro : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:BorderContainer>
 						</s:HGroup>
+						<s:HGroup width="100%" verticalAlign="middle" styleName="ItemStyle">
+							<s:Label width="{DEFAULT_WITH}" color="0x222222" fontWeight="normal" textAlign="right" maxDisplayedLines="1" text="Forma pago" />
+							<s:BorderContainer width="100%" backgroundColor="0xF6F6F6" minWidth="0" minHeight="0" borderAlpha=".6">
+								<s:layout>
+									<s:HorizontalLayout horizontalAlign="left" paddingBottom="2" paddingLeft="5" paddingRight="5" paddingTop="4" />
+								</s:layout>
+								<s:Label id="lblFormaPago" width="100%" text="{proveedor.planPagos.nombre ? proveedor.planPagos.nombre : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
+							</s:BorderContainer>
+						</s:HGroup>
 
 					</s:VGroup>
 					
@@ -865,9 +874,9 @@
 								</s:layout>
 								<s:Label id="lblLocalidad" width="100%" text="{proveedor.contacto.ctoLocalidad ? proveedor.contacto.ctoLocalidad : '-'}" maxDisplayedLines="1" showTruncationTip="true" />
 							</s:BorderContainer>
-						</s:HGroup>						
-						<s:Spacer height="5" />
+						</s:HGroup>				
 						
+						<s:Spacer height="5" />
 						
 					</s:VGroup>
 				</s:HGroup>
